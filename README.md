@@ -45,7 +45,7 @@ section to `CHANGELOG.md`, push.
   "category": "tools",                 // tools, media, office, network, system …
   "license": "MIT",
   "homepage": "https://…",
-  "min_shareos": "0.1.0",
+  "min_shareos": "0.1.0",              // also met by the betas of 0.1.0; name a beta if you need one ("0.1.0-beta.7")
   "permissions": ["cron"],             // see below; ShareOS refuses unknown ones
   "jobs": [                            // scheduled tasks, need "cron" (ShareOS 0.1.0-beta.7+)
     { "id": "cleanup",                 // a-z, 0-9, -; max. 24 characters
