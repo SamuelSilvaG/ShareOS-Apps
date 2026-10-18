@@ -17,6 +17,40 @@ ID_RE = re.compile(r'^[a-z][a-z0-9-]{1,31}$')
 VER_RE = re.compile(r'^v?\d+\.\d+(\.\d+)?(-[A-Za-z0-9.]+)?$')
 TYPES = {'webapp'}
 MAX_FILES = 40 * 1048576
+PERMISSIONS = {'cron'}                 # what ShareOS knows (beta.8+)
+JOB_RE = re.compile(r'^[a-z][a-z0-9-]{0,23}$')
+CRON_RE = re.compile(r'^[0-9*/,-]+( [0-9*/,-]+){4}$')
+MAX_JOBS = 5
+
+
+def cron_ok(s):
+    if not isinstance(s, str) or not CRON_RE.match(s): return False
+    m = s.split(' ')[0]
+    if m == '*': return False
+    n = re.match(r'^\*/(\d+)$', m)
+    return not n or int(n.group(1)) >= 5
+
+
+def check_jobs(a, files):
+    perms, err = a.get('permissions', []), []
+    if not isinstance(perms, list): return ['permissions: a list, e.g. ["cron"]']
+    err += ['unknown permission: %s (known: %s)' % (p, ', '.join(sorted(PERMISSIONS))) for p in perms if p not in PERMISSIONS]
+    jobs = a.get('jobs')
+    if jobs is None: return err
+    if not isinstance(jobs, list) or len(jobs) > MAX_JOBS: return err + ['jobs: a list, at most %d' % MAX_JOBS]
+    if jobs and 'cron' not in perms: err.append('jobs need the permission "cron"')
+    seen = set()
+    for j in jobs:
+        jid = j.get('id', '') if isinstance(j, dict) else ''
+        if not JOB_RE.match(jid) or jid in seen: err.append('job id: a-z, 0-9 and -, unique, max. 24 characters'); continue
+        seen.add(jid)
+        cmd = j.get('command')
+        if not isinstance(cmd, str) or cmd.startswith('/') or '..' in cmd or not os.path.isfile(os.path.join(files, cmd)):
+            err.append('job %s: command missing in files/' % jid)
+        if not cron_ok(j.get('schedule')): err.append('job %s: schedule is a cron time, at most every 5 minutes' % jid)
+        t = j.get('timeout')
+        if t is not None and not (isinstance(t, (int, float)) and 10 <= t <= 3600): err.append('job %s: timeout 10 … 3600 s' % jid)
+    return err
 TOP = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -43,6 +77,7 @@ def check(app_dir):
         for n in names:
             total += os.path.getsize(os.path.join(root, n))
     if total > MAX_FILES: err.append('more than 40 MB')
+    err += check_jobs(a, files)
     return a, err
 
 
