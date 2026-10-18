@@ -47,7 +47,7 @@ section to `CHANGELOG.md`, push.
   "homepage": "https://…",
   "min_shareos": "0.1.0",
   "permissions": ["cron"],             // see below; ShareOS refuses unknown ones
-  "jobs": [                            // scheduled tasks, need "cron" (ShareOS 0.1.0-beta.8+)
+  "jobs": [                            // scheduled tasks, need "cron" (ShareOS 0.1.0-beta.7+)
     { "id": "cleanup",                 // a-z, 0-9, -; max. 24 characters
       "name": "Clean up",
       "command": "jobs/cleanup.sh",    // in files/, run with /bin/sh
@@ -90,6 +90,6 @@ Klick installiert – genauso wie Firmware-Updates angeboten werden.
 - Jede App liegt in `apps/<id>/` mit `app.json` (Name, Version, Herausgeber, Beschreibung, Typ, Startdatei, Symbol) und dem Ordner `files/`.
 - Ein Push auf `main` baut die Pakete (`.sapp` + SHA-256), legt für neue Versionen ein Release `<id>-v<version>` an (mit `-` in der Version = Beta) und erneuert den Katalog `index.json` im Release `catalog`.
 - Neue Version: App ändern, `version` in `app.json` erhöhen, Abschnitt in `CHANGELOG.md`, pushen.
-- **Berechtigungen:** `"permissions": ["cron"]` erlaubt geplante Aufgaben (`jobs` in `app.json`, Skript aus `files/`, Zeitplan im Cron-Format, höchstens alle 5 Minuten, max. 5). Sie laufen als eigener Benutzer `app-<id>` nur im Datenordner der App; der Admin kann Zeitpläne unter APPS → Aufgaben ändern oder abschalten. Ab ShareOS 0.1.0-beta.8.
+- **Berechtigungen:** `"permissions": ["cron"]` erlaubt geplante Aufgaben (`jobs` in `app.json`, Skript aus `files/`, Zeitplan im Cron-Format, höchstens alle 5 Minuten, max. 5). Sie laufen als eigener Benutzer `app-<id>` nur im Datenordner der App; der Admin kann Zeitpläne unter APPS → Aufgaben ändern oder abschalten. Ab ShareOS 0.1.0-beta.7.
 - Web-Apps müssen alles mitbringen (keine CDN-Links), damit sie auch ohne Internet laufen.
 - **Eigene Apps:** `.sapp` unter APPS → Store hochladen (gilt als „eigene/ungeprüft“) oder einen eigenen Katalog unter APPS → Quellen eintragen.
