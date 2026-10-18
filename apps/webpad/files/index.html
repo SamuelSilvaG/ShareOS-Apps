@@ -725,6 +725,7 @@ const TR = {
   '"{name}" saved': ["„{name}“ gespeichert", "« {name} » enregistré"],
   'Copy "{name}" saved': ["Kopie „{name}“ gespeichert", "Copie « {name} » enregistrée"],
   '"{name}" downloaded': ["„{name}“ heruntergeladen", "« {name} » téléchargé"],
+  '"{name}" opened read-only – saving downloads it': ["„{name}“ ist schreibgeschützt geöffnet – Speichern lädt die Datei herunter", "« {name} » ouvert en lecture seule – l’enregistrement le télécharge"],
   '"{name}" saved in the browser': ["„{name}“ im Browser gespeichert", "« {name} » enregistré dans le navigateur"],
   'Saving failed: {err}': ["Speichern fehlgeschlagen: {err}", "Échec de l’enregistrement : {err}"],
   'Everything is already saved': ["Alles ist bereits gespeichert", "Tout est déjà enregistré"],
@@ -1303,6 +1304,7 @@ function setDocLang(d, id){
 async function saveDoc(d, mode){
   try {
     if (d.handle && !mode) { await writeHandle(d.handle, d); return markSaved(d, t('"{name}" saved', {name: d.name})); }
+    if (d.sos && d.sos.mode === 'edit' && !mode) { await saveShareOS(d); return markSaved(d, t('"{name}" saved', {name: d.name})); }
     if (FS) {
       let h;
       try { h = await window.showSaveFilePicker({suggestedName: d.name}); }
@@ -2991,7 +2993,26 @@ window.webpad = { run, commands: () => Object.keys(C), lang: () => uiLang };
   recentCache = (await idb.get('recent')) || [];
   const wh = DIR ? await idb.get('workspace') : null;
   if (wh) { ws = {root: wh, cache: new Map(), expanded: new Set(['']), granted: false}; try { ws.granted = (await wh.queryPermission({mode:'readwrite'})) === 'granted'; } catch(e) {} if (view.workspace) renderSides(); }
+  openFromShareOS();
 })();
+
+/* ---------- ShareOS: a file opened from the file browser (?file=<ticket>) ---------- */
+// The ShareOS app SDK (/_shareos/app.js) is only loaded when ShareOS opened a
+// file, so Webpad still runs as a plain HTML file on any web server.
+async function openFromShareOS(){
+  if (!/^[0-9a-f]{32}$/.test(new URLSearchParams(location.search).get('file') || '')) return;
+  try {
+    if (!window.ShareOS) await new Promise((ok, fail) => { const s = document.createElement('script'); s.src = '/_shareos/app.js'; s.onload = ok; s.onerror = () => fail(new Error('ShareOS SDK not found')); document.head.appendChild(s); });
+    const f = window.ShareOS.file; await f.info();
+    const d = await openFile(new File([await f.blob()], f.name));
+    if (d) { d.sos = f; if (f.mode !== 'edit') toast(t('"{name}" opened read-only – saving downloads it', {name: f.name})); }
+  } catch(e) { toast(t('"{name}" could not be opened: {err}', {name: 'ShareOS', err: e.message || e.name})); }
+}
+async function saveShareOS(d){
+  const {bytes, lost} = encodeText(textOut(d), d.enc);
+  await d.sos.save(new Blob([bytes]));
+  if (lost) toast(tp(lost, '{n} character cannot be represented in ANSI and was saved as ?', '{n} characters cannot be represented in ANSI and were saved as ?'));
+}
 })();
 
 </script>

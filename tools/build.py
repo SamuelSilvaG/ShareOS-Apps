@@ -17,7 +17,7 @@ ID_RE = re.compile(r'^[a-z][a-z0-9-]{1,31}$')
 VER_RE = re.compile(r'^v?\d+\.\d+(\.\d+)?(-[A-Za-z0-9.]+)?$')
 TYPES = {'webapp'}
 MAX_FILES = 40 * 1048576
-PERMISSIONS = {'cron'}                 # what ShareOS knows (beta.7+)
+PERMISSIONS = {'cron', 'embed'}        # what ShareOS knows (cron: beta.7+, embed: beta.9+)
 JOB_RE = re.compile(r'^[a-z][a-z0-9-]{0,23}$')
 CRON_RE = re.compile(r'^[0-9*/,-]+( [0-9*/,-]+){4}$')
 MAX_JOBS = 5
@@ -29,6 +29,28 @@ def cron_ok(s):
     if m == '*': return False
     n = re.match(r'^\*/(\d+)$', m)
     return not n or int(n.group(1)) >= 5
+
+
+EXT_RE = re.compile(r'^\.[a-z0-9]{1,10}$')
+
+
+def check_ui(a):
+    err = []
+    w = a.get('window')
+    if w is not None:
+        if not isinstance(w, dict): err.append('window: {"width": …, "height": …}')
+        else:
+            for k in ('width', 'height'):
+                if k in w and not (isinstance(w[k], int) and 200 <= w[k] <= 4000): err.append('window %s: 200 … 4000' % k)
+    o = a.get('opens')
+    if o is None: return err
+    if not isinstance(o, list) or len(o) > 16: return err + ['opens: a list, at most 16 entries']
+    for e in o:
+        ext = e.get('ext') if isinstance(e, dict) else None
+        if not isinstance(ext, list) or not 0 < len(ext) <= 32: err.append('opens: ext lists file extensions'); continue
+        err += ['opens: invalid extension %r (like ".txt", lower case)' % x for x in ext if not isinstance(x, str) or not EXT_RE.match(x)]
+        if e.get('mode', 'view') not in ('view', 'edit'): err.append('opens: mode is "view" or "edit"')
+    return err
 
 
 def check_jobs(a, files):
@@ -77,7 +99,7 @@ def check(app_dir):
         for n in names:
             total += os.path.getsize(os.path.join(root, n))
     if total > MAX_FILES: err.append('more than 40 MB')
-    err += check_jobs(a, files)
+    err += check_jobs(a, files) + check_ui(a)
     return a, err
 
 
