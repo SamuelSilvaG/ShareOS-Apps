@@ -1,0 +1,61 @@
+name: Apps – build, release, catalog
+
+# Every app version (apps/<id>/app.json) becomes a release <id>-v<version>
+# with the package <id>-<version>.sapp and its .sha256. Versions with a "-"
+# (1.2.0-beta.1) are pre-releases = beta channel. Afterwards the catalog
+# index.json is rebuilt and uploaded to the release "catalog", which ShareOS
+# reads (one download, no GitHub API limit on the box).
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apps-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check manifests
+        run: tools/build.py --check
+      - name: Build packages
+        run: tools/build.py --out dist
+      - name: Release new versions
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          for pkg in dist/*.sapp; do
+            base=$(basename "$pkg" .sapp)          # <id>-<version>
+            id=$(python3 -c "import json,sys; print(json.load(open('apps/'+sys.argv[1]+'/app.json'))['id'])" "${base%%-[0-9]*}")
+            version=${base#"$id"-}
+            tag="$id-v$version"
+            if gh release view "$tag" >/dev/null 2>&1; then
+              echo "$tag exists"
+              continue
+            fi
+            name=$(python3 -c "import json; print(json.load(open('apps/$id/app.json'))['name'])")
+            pre=; case "$version" in *-*) pre=--prerelease ;; esac
+            notes="dist/$base.notes.md"; [ -s "$notes" ] || echo "$name $version" > "$notes"
+            gh release create "$tag" "$pkg" "$pkg.sha256" --title "$name $version" --notes-file "$notes" $pre --latest=false
+          done
+      - name: Rebuild catalog
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          tools/catalog.py > index.json
+          cat index.json
+          if ! gh release view catalog >/dev/null 2>&1; then
+            gh release create catalog --title "App-Katalog" --latest=false \
+              --notes "Katalog für den ShareOS-App-Store (index.json). Wird automatisch erneuert – bitte nicht von Hand ändern."
+          fi
+          gh release upload catalog index.json --clobber

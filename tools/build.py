@@ -1,0 +1,110 @@
+#!/usr/bin/env python3
+"""
+Build ShareOS app packages (.sapp) from apps/<id>/.
+
+    tools/build.py [--out dist] [app-id ...]
+
+apps/<id>/app.json  manifest (checked with the same rules as on the box)
+apps/<id>/files/    the app (entry file, icon, assets)
+apps/<id>/CHANGELOG.md  release notes (optional, the section of the version is used)
+
+Output per app: dist/<id>-<version>.sapp (tar.gz: app.json + files at the top,
+reproducible: sorted, owner 0, fixed time), .sapp.sha256 and <id>-<version>.notes.md
+"""
+import argparse, gzip, hashlib, io, json, os, re, sys, tarfile
+
+ID_RE = re.compile(r'^[a-z][a-z0-9-]{1,31}$')
+VER_RE = re.compile(r'^v?\d+\.\d+(\.\d+)?(-[A-Za-z0-9.]+)?$')
+TYPES = {'webapp'}
+MAX_FILES = 40 * 1048576
+TOP = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def check(app_dir):
+    with open(os.path.join(app_dir, 'app.json'), encoding='utf-8') as f:
+        a = json.load(f)
+    err = []
+    if not ID_RE.match(a.get('id', '')): err.append('id: a-z, 0-9 and -, 2-32 characters')
+    if a.get('id') != os.path.basename(app_dir): err.append('id must match the folder name')
+    if not VER_RE.match(a.get('version', '')): err.append('version: e.g. 1.2.0 or 1.3.0-beta.1')
+    if not isinstance(a.get('name'), str) or not 0 < len(a['name']) <= 64: err.append('name: 1-64 characters')
+    if not a.get('publisher'): err.append('publisher missing')
+    if a.get('type', 'webapp') not in TYPES: err.append('type: ' + ', '.join(sorted(TYPES)))
+    files = os.path.join(app_dir, 'files')
+    entry = a.get('entry', 'index.html')
+    if '..' in entry or entry.startswith('/') or not os.path.isfile(os.path.join(files, entry)): err.append('entry file missing in files/')
+    if a.get('icon') and not os.path.isfile(os.path.join(files, a['icon'])): err.append('icon file missing in files/')
+    if not isinstance(a.get('description', {}), (dict, str)): err.append('description: text or {"de": …, "en": …}')
+    total = 0
+    for root, dirs, names in os.walk(files):
+        for n in names + dirs:
+            p = os.path.join(root, n)
+            if os.path.islink(p): err.append('links are not allowed: ' + os.path.relpath(p, files))
+        for n in names:
+            total += os.path.getsize(os.path.join(root, n))
+    if total > MAX_FILES: err.append('more than 40 MB')
+    return a, err
+
+
+def notes(app_dir, version):
+    p = os.path.join(app_dir, 'CHANGELOG.md')
+    if not os.path.isfile(p): return ''
+    text = open(p, encoding='utf-8').read()
+    m = re.search(r'^## +v?' + re.escape(version.lstrip('v')) + r'\b.*?$(.*?)(?=^## |\Z)', text, re.M | re.S)
+    return m.group(1).strip() if m else ''
+
+
+def build(app_dir, out):
+    a, err = check(app_dir)
+    if err:
+        raise SystemExit('%s: %s' % (app_dir, '; '.join(err)))
+    name = '%s-%s.sapp' % (a['id'], a['version'].lstrip('v'))
+    buf = io.BytesIO()
+
+    def add(tar, path, arc):
+        ti = tar.gettarinfo(path, arc)
+        ti.uid = ti.gid = 0; ti.uname = ti.gname = 'root'; ti.mtime = 0
+        ti.mode = 0o755 if ti.isdir() else 0o644
+        if ti.isdir(): tar.addfile(ti)
+        else:
+            with open(path, 'rb') as f: tar.addfile(ti, f)
+
+    with tarfile.open(fileobj=buf, mode='w', format=tarfile.USTAR_FORMAT) as tar:
+        add(tar, os.path.join(app_dir, 'app.json'), 'app.json')
+        files = os.path.join(app_dir, 'files')
+        for root, dirs, names in os.walk(files):
+            dirs.sort()
+            for d in dirs: add(tar, os.path.join(root, d), os.path.relpath(os.path.join(root, d), files))
+            for n in sorted(names): add(tar, os.path.join(root, n), os.path.relpath(os.path.join(root, n), files))
+    data = gzip.compress(buf.getvalue(), compresslevel=9, mtime=0)
+    os.makedirs(out, exist_ok=True)
+    with open(os.path.join(out, name), 'wb') as f: f.write(data)
+    sha = hashlib.sha256(data).hexdigest()
+    with open(os.path.join(out, name + '.sha256'), 'w') as f: f.write('%s  %s\n' % (sha, name))
+    with open(os.path.join(out, name[:-5] + '.notes.md'), 'w') as f: f.write(notes(app_dir, a['version']))
+    print('%s  %s  %d bytes' % (name, sha, len(data)))
+    return a
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--out', default=os.path.join(TOP, 'dist'))
+    ap.add_argument('--check', action='store_true', help='only check the manifests')
+    ap.add_argument('ids', nargs='*')
+    o = ap.parse_args()
+    base = os.path.join(TOP, 'apps')
+    ids = o.ids or sorted(d for d in os.listdir(base) if os.path.isfile(os.path.join(base, d, 'app.json')))
+    bad = 0
+    for i in ids:
+        d = os.path.join(base, i)
+        if o.check:
+            a, err = check(d)
+            print('%-20s %s' % (i, 'ok ' + a.get('version', '') if not err else 'FAIL ' + '; '.join(err)))
+            bad += bool(err)
+        else:
+            build(d, o.out)
+    sys.exit(1 if bad else 0)
+
+
+if __name__ == '__main__':
+    main()
