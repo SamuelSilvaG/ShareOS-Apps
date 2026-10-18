@@ -124,3 +124,10 @@ Klick installiert – genauso wie Firmware-Updates angeboten werden.
 - **Fenster und Dateien** (ab ShareOS 0.1.0-beta.9): `"window"` legt die Fenstergröße fest, `"opens"` die Dateitypen, die die App aus dem Dateibrowser öffnet (`edit` darf zurückspeichern). Die Berechtigung `embed` zeigt eine reine Einstellungs-App direkt in ShareOS an. Für Aussehen, Menüleiste (Datei | Bearbeiten | Ansicht), geöffnete Datei und Nachrichten zwischen Apps gibt es `/_shareos/theme.css` und `/_shareos/app.js` (siehe oben).
 - Web-Apps müssen alles mitbringen (keine CDN-Links), damit sie auch ohne Internet laufen.
 - **Eigene Apps:** `.sapp` unter APPS → Store hochladen (gilt als „eigene/ungeprüft“) oder einen eigenen Katalog unter APPS → Quellen eintragen.
+
+## Example
+
+`examples/notes-demo/` is a complete small app with the SDK: title bar,
+menu bar (Datei | Bearbeiten | Ansicht), status bar, opened file and saving.
+It is not in the store; `tools/build.py examples/notes-demo` builds its
+`.sapp` (APPS → Store → *Install package*), or copy it as a start for an own app.

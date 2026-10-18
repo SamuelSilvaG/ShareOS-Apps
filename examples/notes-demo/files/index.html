@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Notes Demo</title>
+<link rel="stylesheet" href="/_shareos/theme.css">
+<script src="/_shareos/app.js"></script>
+<style>
+	textarea { width: 100%; height: 100%; border: 0; resize: none; padding: 12px 14px; background: var(--sos-bg); color: var(--sos-text); font: 14px/1.5 var(--sos-font); outline: none; }
+</style>
+</head>
+<body class="sos-app">
+	<div class="sos-titlebar">Notes Demo <span class="sos-title-file" id="file">– neu</span></div>
+	<nav id="menu"></nav>
+	<main class="sos-main"><textarea id="text" spellcheck="false" placeholder="Text …"></textarea></main>
+	<div class="sos-statusbar"><span id="status">Bereit</span><span id="info">UTF-8</span></div>
+<script>
+// A minimal ShareOS app: open the file ShareOS passed, edit it, save it back.
+const $ = (id) => document.getElementById(id);
+const text = $('text');
+let saved = '';
+const dirty = () => text.value !== saved;
+function title() {
+	const f = ShareOS.file;
+	$('file').textContent = '– ' + (f ? f.name : 'neu');
+	$('file').classList.toggle('sos-dirty', dirty());
+	$('info').textContent = text.value.length + ' Zeichen · ' + (f && f.mode === 'view' ? 'nur lesen' : 'UTF-8');
+}
+async function save() {
+	const f = ShareOS.file;
+	if (!f || f.mode !== 'edit') { $('status').textContent = 'Keine Datei zum Speichern (aus dem ShareOS-Dateibrowser öffnen)'; return; }
+	try { await f.save(text.value); saved = text.value; $('status').textContent = 'Gespeichert'; }
+	catch (e) { $('status').textContent = 'Fehler: ' + e.message; }
+	title();
+}
+ShareOS.menu($('menu'), [
+	{ label: 'Datei', items: [{ label: 'Speichern', kbd: 'Ctrl+S', action: save }, '-', { label: 'Schließen', action: () => window.close() }] },
+	{ label: 'Bearbeiten', items: [
+		{ label: 'Alles markieren', kbd: 'Ctrl+A', action: () => text.select() },
+		{ label: 'Großbuchstaben', action: () => { text.value = text.value.toUpperCase(); title(); } }] },
+	{ label: 'Ansicht', items: [
+		{ label: 'Hell', action: () => document.documentElement.setAttribute('data-theme', 'light') },
+		{ label: 'Dunkel', action: () => document.documentElement.setAttribute('data-theme', 'dark') }] }
+]);
+text.addEventListener('input', title);
+ShareOS.on('hello', (data, from) => { $('status').textContent = 'Nachricht von ' + from + ': ' + data; });
+(async () => {
+	if (ShareOS.file) {
+		await ShareOS.file.info();
+		text.value = saved = await ShareOS.file.text();
+		text.readOnly = ShareOS.file.mode !== 'edit';
+	}
+	title();
+})();
+</script>
+</body>
+</html>

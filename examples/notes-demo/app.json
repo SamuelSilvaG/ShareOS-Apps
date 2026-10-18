@@ -1,0 +1,18 @@
+{
+	"id": "notes-demo",
+	"name": "Notes Demo",
+	"version": "0.1.0",
+	"publisher": "UniqueDroid",
+	"description": {
+		"de": "Beispiel für das ShareOS-App-SDK: Menüleiste, Aussehen, geöffnete Datei.",
+		"en": "Example for the ShareOS app SDK: menu bar, look, opened file."
+	},
+	"type": "webapp",
+	"entry": "index.html",
+	"category": "tools",
+	"license": "MIT",
+	"min_shareos": "0.1.0-beta.9",
+	"permissions": [],
+	"window": { "width": 720, "height": 520 },
+	"opens": [ { "ext": [".txt", ".md"], "mode": "edit" } ]
+}

@@ -147,13 +147,14 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--out', default=os.path.join(TOP, 'dist'))
     ap.add_argument('--check', action='store_true', help='only check the manifests')
-    ap.add_argument('ids', nargs='*')
+    ap.add_argument('ids', nargs='*', help='app ids under apps/, or a folder (e.g. examples/notes-demo)')
     o = ap.parse_args()
     base = os.path.join(TOP, 'apps')
     ids = o.ids or sorted(d for d in os.listdir(base) if os.path.isfile(os.path.join(base, d, 'app.json')))
     bad = 0
     for i in ids:
-        d = os.path.join(base, i)
+        d = os.path.abspath(i) if os.sep in i else os.path.join(base, i)
+        i = os.path.basename(d.rstrip(os.sep))
         if o.check:
             a, err = check(d)
             print('%-20s %s' % (i, 'ok ' + a.get('version', '') if not err else 'FAIL ' + '; '.join(err)))
