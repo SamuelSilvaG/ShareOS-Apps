@@ -1,0 +1,214 @@
+:root {
+  --bg-color: #0c0c0c;
+  --header-bg: #1f1f1f;
+  --tab-active: #0c0c0c;
+  --tab-inactive: #2d2d2d;
+  --text-color: #cccccc;
+  --prompt-user: #26a269;
+  --prompt-path: #3378ff;
+  --accent: #3378ff;
+  --error: #f66151;
+  --warning: #e5a50a;
+  --font-mono: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+}
+
+/* ShareOS look: colours of the user's theme (/_shareos/theme.css), light or dark */
+[data-term="shareos"] {
+  --bg-color: var(--sos-bg, #06090d);
+  --header-bg: var(--sos-bar, #0e1726);
+  --tab-active: var(--sos-bg, #06090d);
+  --tab-inactive: var(--sos-panel, #0b111a);
+  --text-color: var(--sos-text, #c6dff5);
+  --prompt-user: var(--sos-ok, #3dff8a);
+  --prompt-path: var(--sos-accent, #3da5ff);
+  --accent: var(--sos-accent, #3da5ff);
+  --error: var(--sos-err, #ff5f5f);
+  --warning: var(--sos-warn, #e6c25a);
+  --font-mono: var(--sos-font, 'Cascadia Code', 'Consolas', 'Courier New', monospace);
+}
+
+[data-term="matrix"] {
+  --bg-color: #020a02;
+  --header-bg: #051605;
+  --tab-active: #020a02;
+  --tab-inactive: #0a290a;
+  --text-color: #00ff41;
+  --prompt-user: #00ff41;
+  --prompt-path: #008f11;
+  --accent: #00ff41;
+}
+
+[data-term="ubuntu"] {
+  --bg-color: #300a24;
+  --header-bg: #220719;
+  --tab-active: #300a24;
+  --tab-inactive: #421233;
+  --text-color: #eeeeec;
+  --prompt-user: #8ae234;
+  --prompt-path: #729fcf;
+  --accent: #e95420;
+}
+
+[data-term="amber"] {
+  --bg-color: #120d00;
+  --header-bg: #1f1700;
+  --tab-active: #120d00;
+  --tab-inactive: #2e2200;
+  --text-color: #ffb000;
+  --prompt-user: #ffb000;
+  --prompt-path: #cc8d00;
+  --accent: #ffb000;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: var(--font-mono);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Windows Terminal Style Header & Tabs */
+.titlebar {
+  background-color: var(--header-bg);
+  display: flex;
+  align-items: flex-end;
+  height: 38px;
+  padding: 0 8px;
+  user-select: none;
+  border-bottom: 1px solid rgba(127,127,127,0.18);
+}
+
+.tabs-container {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  max-width: calc(100% - 150px);
+}
+
+.tab {
+  background-color: var(--tab-inactive);
+  color: var(--text-color);
+  padding: 6px 14px;
+  border-radius: 6px 6px 0 0;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  opacity: 0.75;
+  transition: opacity 0.15s, background-color 0.15s;
+  white-space: nowrap;
+}
+
+.tab.active {
+  background-color: var(--tab-active);
+  opacity: 1;
+  font-weight: 600;
+}
+
+.tab-close {
+  border-radius: 4px;
+  padding: 0 4px;
+  font-size: 14px;
+}
+
+.tab-close:hover {
+  background-color: rgba(255,255,255,0.15);
+}
+
+.new-tab-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-color);
+  font-size: 18px;
+  padding: 4px 10px;
+  cursor: pointer;
+  border-radius: 4px;
+  margin-bottom: 3px;
+}
+
+.new-tab-btn:hover {
+  background-color: rgba(255,255,255,0.1);
+}
+
+.status-right {
+  margin-left: auto;
+  align-self: center;
+  font-size: 11px;
+  opacity: 0.6;
+  padding-right: 8px;
+}
+
+/* Terminal Viewport */
+.terminal-viewport {
+  flex: 1;
+  padding: 14px;
+  overflow-y: auto;
+  cursor: text;
+  position: relative;
+}
+
+.output-line {
+  white-space: pre-wrap;
+  word-break: break-all;
+  margin-bottom: 2px;
+}
+
+.input-line {
+  display: flex;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.prompt {
+  white-space: pre;
+  margin-right: 8px;
+  user-select: none;
+}
+
+.prompt-user { color: var(--prompt-user); font-weight: bold; }
+.prompt-path { color: var(--prompt-path); font-weight: bold; }
+
+.cmd-input {
+  background: transparent;
+  border: none;
+  color: var(--text-color);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  flex: 1;
+  outline: none;
+  caret-color: var(--accent);
+}
+
+/* Helper Styles */
+.dir-item { color: var(--prompt-path); font-weight: bold; }
+.file-item { color: var(--text-color); }
+.text-error { color: var(--error); }
+.text-warn { color: var(--warning); }
+.text-accent { color: var(--accent); }
+.sysinfo-box { display: flex; gap: 20px; margin: 8px 0; flex-wrap: wrap; }
+.ascii-logo { color: var(--accent); font-weight: bold; line-height: 1.2; }
+
+/* Matrix Easter Egg Canvas */
+#matrix-canvas {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  display: none;
+  opacity: 0.85;
+}
+
+/* sandbox frames of "run" stay invisible */
+iframe.sandbox { display: none; }

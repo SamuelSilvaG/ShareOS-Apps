@@ -6,6 +6,13 @@ installs them with one click – the same way it offers firmware updates.
 
 *Deutsch weiter unten.*
 
+## Apps
+
+| App | What it does |
+|---|---|
+| [Webpad](apps/webpad) | Text editor in the style of Notepad++; opens and saves text files of the box, takes files from other apps |
+| [WebTerm](apps/webterm) | Terminal with tabs, a virtual file system, a JavaScript sandbox and a bridge to Webpad; views log files of the box |
+
 ## How it works
 
 ```
