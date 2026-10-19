@@ -1,7 +1,7 @@
 {
 	"id": "webpad",
 	"name": "Webpad",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"publisher": "UniqueDroid",
 	"description": {
 		"de": "Texteditor im Browser im Stil von Notepad++: Syntaxhervorhebung für viele Sprachen, Tabs, Suchen und Ersetzen, Lesezeichen, Makros. Läuft komplett offline.",
@@ -13,6 +13,47 @@
 	"category": "tools",
 	"license": "Webpad © UniqueDroid; CodeMirror MIT, crypto-js MIT, fonts OFL-1.1",
 	"homepage": "https://github.com/UniqueDroid/ShareOS-Apps/tree/main/apps/webpad",
-	"min_shareos": "0.1.0",
-	"permissions": []
+	"min_shareos": "0.1.0-beta.1",
+	"permissions": [],
+	"window": {
+		"width": 1100,
+		"height": 760
+	},
+	"opens": [
+		{
+			"ext": [
+				".txt",
+				".md",
+				".log",
+				".json",
+				".xml",
+				".yml",
+				".yaml",
+				".ini",
+				".conf",
+				".cfg",
+				".csv",
+				".sh",
+				".js",
+				".ts",
+				".css",
+				".html",
+				".htm",
+				".py",
+				".php",
+				".c",
+				".h",
+				".cpp",
+				".java",
+				".sql",
+				".toml",
+				".env"
+			],
+			"mode": "edit",
+			"label": {
+				"de": "Bearbeiten",
+				"en": "Edit"
+			}
+		}
+	]
 }
