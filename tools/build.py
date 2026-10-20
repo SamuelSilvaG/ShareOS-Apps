@@ -55,6 +55,7 @@ def check_ui(a):
 
 def check_jobs(a, files):
     perms, err = a.get('permissions', []), []
+    if 'internet' in a and not isinstance(a['internet'], bool): err.append('internet: true or false')
     if not isinstance(perms, list): return ['permissions: a list, e.g. ["cron"]']
     err += ['unknown permission: %s (known: %s)' % (p, ', '.join(sorted(PERMISSIONS))) for p in perms if p not in PERMISSIONS]
     jobs = a.get('jobs')

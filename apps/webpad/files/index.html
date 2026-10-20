@@ -1202,7 +1202,7 @@ function persistNow(){
 function persist(){ clearTimeout(persistT); persistT = setTimeout(persistNow, 400); }
 function saveHandles(){
   const h = {}; docs.forEach(d => { if (d.handle) h[d.id] = {handle: d.handle, path: d.path}; });
-  idb.set('handles', h);
+  return idb.set('handles', h);
 }
 async function restore(){
   let s = ls.get(STORE, null);
@@ -2938,9 +2938,17 @@ $('tbClose').onclick = () => run('win.close');
 async function closeApp(){
   const dirty = docs.filter(isDirty);
   if (dirty.length && !(await ask(t('Close Webpad'), tp(dirty.length, '{n} document has unsaved changes. Close anyway? The text stays stored in this browser.', '{n} documents have unsaved changes. Close anyway? The text stays stored in this browser.'), t('Close anyway')))) return;
-  persistNow(); saveHandles();
-  try { window.close(); } catch(e) {}
-  setTimeout(() => { if (!window.closed) { leaveFullscreen(); toast(kbl(t('The browser does not let Webpad close this tab. Close it with Ctrl+W.'))); } }, 250);
+  persistNow();
+  // Closing a window that is still in fullscreen, or while IndexedDB and the
+  // app channel are busy, crashed whole browsers (reported with Chrome):
+  // leave fullscreen, finish the writes, close the channels, then close.
+  if (document.fullscreenElement) { try { await document.exitFullscreen(); } catch(e) {} await new Promise(r => setTimeout(r, 150)); }
+  await saveHandles();
+  shutdownBridges();
+  setTimeout(() => {
+    try { window.close(); } catch(e) {}
+    setTimeout(() => { if (!window.closed) { initBridge(); toast(kbl(t('The browser does not let Webpad close this tab. Close it with Ctrl+W.'))); } }, 250);
+  }, 50);
 }
 window.addEventListener('keydown', e => {
   if (!$('modal').hidden) { if (e.key === 'Escape' && dlgResolve) { e.preventDefault(); dlgResolve(null); } return; }
@@ -2964,7 +2972,10 @@ window.addEventListener('keydown', e => {
   if (E().state.completionActive && /^(complete|line\.ins)/.test(id)) return;
   e.preventDefault(); e.stopPropagation(); closeMenus(); run(id); updateToolbar();
 }, true);
-window.addEventListener('beforeunload', () => { persistNow(); saveHandles(); });
+// on leaving only the synchronous part: the file handles are stored whenever
+// they change; no IndexedDB work while the page goes away
+window.addEventListener('pagehide', () => { persistNow(); shutdownBridges(); });
+window.addEventListener('pageshow', e => { if (e.persisted) initBridge(); });
 
 /* =====================================================================
    Start-up
@@ -3112,8 +3123,12 @@ async function boxSave(d){
 // same web server hears it, so only files the user sent here travel this way.
 let bridge = null;
 function bridgeEmit(type, data){ if (bridge) bridge.postMessage({type, data, from: 'webpad'}); }
+function shutdownBridges(){
+  try { if (bridge) bridge.close(); } catch(e) {}
+  bridge = null;
+}
 function initBridge(){
-  if (!('BroadcastChannel' in window)) return;
+  if (!('BroadcastChannel' in window) || bridge) return;
   bridge = new BroadcastChannel('shareos');
   bridge.onmessage = async (ev) => {
     const m = ev.data || {}, d = m.data || {};

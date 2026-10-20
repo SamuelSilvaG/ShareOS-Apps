@@ -112,9 +112,12 @@ The apps web server serves two files for every app – same address, works offli
 
 Webpad loads the SDK only when ShareOS opened a file, so it still works as a plain HTML file anywhere.
 
-Rules for web apps: everything the app needs must be inside `files/` (no CDN –
-the box often has no internet, and offline it must still work), no symbolic
-links, at most 40 MB.
+Rules for web apps: the app itself (HTML, scripts, styles, fonts, icons) is
+inside `files/` – no CDN for the app's own code, so it starts on a box without
+internet. Apps **may use the internet** when they need it (online services,
+streams, maps, sync …): then set `"internet": true` in `app.json`; the store
+shows "uses the internet" (ShareOS 0.1.0-beta.12+, older versions ignore it).
+No symbolic links, at most 40 MB.
 
 ## Own apps
 
@@ -135,7 +138,7 @@ Klick installiert – genauso wie Firmware-Updates angeboten werden.
 - Neue Version: App ändern, `version` in `app.json` erhöhen, Abschnitt in `CHANGELOG.md`, pushen.
 - **Berechtigungen:** `"permissions": ["cron"]` erlaubt geplante Aufgaben (`jobs` in `app.json`, Skript aus `files/`, Zeitplan im Cron-Format, höchstens alle 5 Minuten, max. 5). Sie laufen als eigener Benutzer `app-<id>` nur im Datenordner der App; der Admin kann Zeitpläne unter APPS → Aufgaben ändern oder abschalten. Ab ShareOS 0.1.0-beta.7.
 - **Fenster und Dateien** (ab ShareOS 0.1.0-beta.9): `"window"` legt die Fenstergröße fest, `"opens"` die Dateitypen, die die App aus dem Dateibrowser öffnet (`edit` darf zurückspeichern). Die Berechtigung `embed` zeigt eine reine Einstellungs-App direkt in ShareOS an. Mit der Berechtigung `files` (ab ShareOS 0.1.0-beta.11) arbeitet eine App mit den Ordnern der Box – mit den Rechten des angemeldeten Benutzers (`ShareOS.fs`). Für Aussehen, Menüleiste (Datei | Bearbeiten | Ansicht), geöffnete Datei und Nachrichten zwischen Apps gibt es `/_shareos/theme.css` und `/_shareos/app.js` (siehe oben).
-- Web-Apps müssen alles mitbringen (keine CDN-Links), damit sie auch ohne Internet laufen.
+- Web-Apps bringen ihren eigenen Code mit (kein CDN für Skripte, Styles, Schriften), damit sie auch auf einer Box ohne Internet starten. **Internet nutzen dürfen sie**, wenn sie es brauchen (Online-Dienste, Streams, Karten, Sync …): dann `"internet": true` in `app.json` setzen – der Store zeigt „Nutzt das Internet“ (ab ShareOS 0.1.0-beta.12, ältere Versionen ignorieren das Feld).
 - **Eigene Apps:** `.sapp` unter APPS → Store hochladen (gilt als „eigene/ungeprüft“) oder einen eigenen Katalog unter APPS → Quellen eintragen.
 
 ## Example
