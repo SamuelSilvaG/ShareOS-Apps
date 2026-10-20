@@ -17,7 +17,7 @@
     <div class="brand">
       <span class="brand-icon">🗂️</span>
       <span class="brand-title">SHARECOMMANDER</span>
-      <span class="brand-version">v1.0</span>
+      <span class="brand-version">v1.1</span>
     </div>
 
     <div class="toolbar">
@@ -42,7 +42,8 @@
     <section class="pane active-pane" id="pane-left" data-side="left">
       <div class="pane-header">
         <div class="drive-bar">
-          <span class="drive-badge">VFS://</span>
+          <span class="drive-badge" id="badge-left">VFS://</span>
+          <select class="drive-select" id="drive-left" hidden title="Laufwerk: Browser-Dateisystem oder Ordner der Box"></select>
           <button class="mini-nav-btn" data-action="root" title="Zum Wurzelverzeichnis">/</button>
           <button class="mini-nav-btn" data-action="home" title="Home-Verzeichnis">~</button>
           <button class="mini-nav-btn" data-action="up" title="Übergeordneter Ordner (Backspace)">⬆ ..</button>
@@ -73,7 +74,8 @@
     <section class="pane" id="pane-right" data-side="right">
       <div class="pane-header">
         <div class="drive-bar">
-          <span class="drive-badge">VFS://</span>
+          <span class="drive-badge" id="badge-right">VFS://</span>
+          <select class="drive-select" id="drive-right" hidden title="Laufwerk: Browser-Dateisystem oder Ordner der Box"></select>
           <button class="mini-nav-btn" data-action="root" title="Zum Wurzelverzeichnis">/</button>
           <button class="mini-nav-btn" data-action="home" title="Home-Verzeichnis">~</button>
           <button class="mini-nav-btn" data-action="up" title="Übergeordneter Ordner (Backspace)">⬆ ..</button>

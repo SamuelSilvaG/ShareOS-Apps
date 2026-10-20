@@ -1,3 +1,8 @@
+## 1.1.0
+
+- **Folders of the box:** each pane can show a folder of the box (drive list above the pane: VFS or BOX:// with the folders the signed-in user may reach) – list, copy and move (also between box and VFS, box files over 1 MB stay on the box), new folder/file, rename, multi-rename, delete with an extra warning, upload from the computer, ZIP packing and unpacking on the box (up to 200 MB), preview (pictures and media straight from the box, text, hex), F4 to Webpad and saving back to the box, music and videos streamed to WinWeb Player, download.
+- Needs the new permission `files` and ShareOS 0.1.0-beta.11 or newer. Inside ShareOS the right pane starts on the box.
+
 ## 1.0.0
 
 - First version in the ShareOS app store: two panes, copy/move/rename/delete, multi-rename, preview, function key bar, themes including the ShareOS look.

@@ -727,6 +727,12 @@ const TR = {
   '"{name}" downloaded': ["„{name}“ heruntergeladen", "« {name} » téléchargé"],
   '"{name}" received from {app}': ["„{name}“ von {app} empfangen", "« {name} » reçu de {app}"],
   '"{name}" sent back to {app}': ["„{name}“ an {app} zurückgegeben", "« {name} » renvoyé à {app}"],
+  'Open from the Box…': ["Von der Box öffnen…", "Ouvrir depuis la box…"], 'Save to the Box…': ["Auf der Box speichern…", "Enregistrer sur la box…"],
+  'Folders of the box': ["Ordner der Box", "Dossiers de la box"], 'File name': ["Dateiname", "Nom du fichier"], 'Up': ["Nach oben", "Remonter"],
+  'New folder': ["Neuer Ordner", "Nouveau dossier"], 'Folder name': ["Ordnername", "Nom du dossier"], 'Overwrite "{name}"?': ["„{name}“ überschreiben?", "Écraser « {name} » ?"],
+  'Overwrite': ["Überschreiben", "Écraser"], '"{name}" saved on the box': ["„{name}“ auf der Box gespeichert", "« {name} » enregistré sur la box"],
+  'Box: {err}': ["Box: {err}", "Box : {err}"], 'Loading…': ["Lade…", "Chargement…"], '(empty folder)': ["(leerer Ordner)", "(dossier vide)"],
+  'No access to the files of the box – open Webpad from ShareOS (ShareOS 0.1.0-beta.11+)': ["Kein Zugriff auf die Dateien der Box – Webpad aus ShareOS öffnen (ShareOS 0.1.0-beta.11+)", "Pas d’accès aux fichiers de la box – ouvrez Webpad depuis ShareOS (ShareOS 0.1.0-beta.11+)"],
   '"{name}" opened read-only – saving downloads it': ["„{name}“ ist schreibgeschützt geöffnet – Speichern lädt die Datei herunter", "« {name} » ouvert en lecture seule – l’enregistrement le télécharge"],
   '"{name}" saved in the browser': ["„{name}“ im Browser gespeichert", "« {name} » enregistré dans le navigateur"],
   'Saving failed: {err}': ["Speichern fehlgeschlagen: {err}", "Échec de l’enregistrement : {err}"],
@@ -2335,6 +2341,8 @@ Object.assign(C, {
   'file.save': () => saveDoc(D()),
   'file.saveAs': () => saveDoc(D(), 'as'),
   'file.saveCopy': () => saveDoc(D(), 'copy'),
+  'file.boxOpen': () => boxOpen(),
+  'file.boxSave': () => boxSave(D()),
   'file.saveAll': saveAll,
   'file.rename': async () => {
     const d = D();
@@ -2610,8 +2618,9 @@ const ck = (label, id, on, kb) => mi(label, id, kb, {checked: !!on});
 const sub = (label, items, o) => Object.assign({label: t(label), sub: items}, o || {});
 function fileMenu(){
   const d = D();
+  const box = window.ShareOS && window.ShareOS.fs ? [mi('Open from the Box…', 'file.boxOpen'), mi('Save to the Box…', 'file.boxSave'), '-'] : [];
   return [mi('New', 'file.new', 'Alt+N'), mi('Open…', 'file.open', 'Ctrl+O'), mi('Open Folder as Workspace…', 'file.openFolder', '', {disabled: !DIR}), mi('Reload from Disk', 'file.reload', '', {disabled: !d.handle}), '-',
-    mi('Save', 'file.save', 'Ctrl+S'), mi('Save As…', 'file.saveAs', 'Ctrl+Alt+S'), mi('Save a Copy As…', 'file.saveCopy', '', {disabled: !FS && !CAN_DL}), mi('Save All', 'file.saveAll', 'Ctrl+Shift+S'), mi('Rename…', 'file.rename'), '-',
+    mi('Save', 'file.save', 'Ctrl+S'), mi('Save As…', 'file.saveAs', 'Ctrl+Alt+S'), mi('Save a Copy As…', 'file.saveCopy', '', {disabled: !FS && !CAN_DL}), mi('Save All', 'file.saveAll', 'Ctrl+Shift+S'), mi('Rename…', 'file.rename'), '-', ...box,
     mi('Close', 'file.close', 'Alt+W'), mi('Close All', 'file.closeAll'),
     sub('Close Multiple Documents', [mi('Close All BUT Current Document', 'file.closeOthers'), mi('Close All to the Left', 'file.closeLeft'), mi('Close All to the Right', 'file.closeRight'), mi('Close All Unchanged', 'file.closeUnchanged')]), '-',
     mi('Download', 'file.download', '', {disabled: !CAN_DL}), mi('Copy content', 'file.copyAll'), '-',
@@ -3003,14 +3012,100 @@ window.webpad = { run, commands: () => Object.keys(C), lang: () => uiLang };
 /* ---------- ShareOS: a file opened from the file browser (?file=<ticket>) ---------- */
 // The ShareOS app SDK (/_shareos/app.js) is only loaded when ShareOS opened a
 // file, so Webpad still runs as a plain HTML file on any web server.
+function loadSDK(){
+  if (window.ShareOS) return Promise.resolve();
+  return new Promise((ok, fail) => { const s = document.createElement('script'); s.src = '/_shareos/app.js'; s.onload = ok; s.onerror = () => fail(new Error('ShareOS SDK not found')); document.head.appendChild(s); });
+}
 async function openFromShareOS(){
-  if (!/^[0-9a-f]{32}$/.test(new URLSearchParams(location.search).get('file') || '')) return;
+  const q = new URLSearchParams(location.search), hex = /^[0-9a-f]{32}$/;
+  let grant = hex.test(q.get('fs') || ''); try { grant = grant || hex.test(sessionStorage.getItem('sos-fs-webpad') || ''); } catch(e) {}
+  if (!hex.test(q.get('file') || '')) { if (grant) loadSDK().catch(() => {}); return; }
   try {
-    if (!window.ShareOS) await new Promise((ok, fail) => { const s = document.createElement('script'); s.src = '/_shareos/app.js'; s.onload = ok; s.onerror = () => fail(new Error('ShareOS SDK not found')); document.head.appendChild(s); });
+    await loadSDK();
     const f = window.ShareOS.file; await f.info();
     const d = await openFile(new File([await f.blob()], f.name));
     if (d) { d.sos = f; if (f.mode !== 'edit') toast(t('"{name}" opened read-only – saving downloads it', {name: f.name})); }
   } catch(e) { toast(t('"{name}" could not be opened: {err}', {name: 'ShareOS', err: e.message || e.name})); }
+}
+/* ---------- ShareOS: open and save files of the box (permission "files", ShareOS.fs) ---------- */
+// A small folder browser in the Webpad dialog; returns {root, path, name} or null.
+async function boxPick(save, suggested){
+  const fs = window.ShareOS && window.ShareOS.fs;
+  if (!fs) { toast(t('No access to the files of the box – open Webpad from ShareOS (ShareOS 0.1.0-beta.11+)')); return null; }
+  let roots;
+  try { roots = await fs.roots(); } catch(e) { toast(t('Box: {err}', {err: e.message})); return null; }
+  if (!roots.length) { toast(t('Box: {err}', {err: 'no folders'})); return null; }
+  let last = {}; try { last = JSON.parse(localStorage.getItem('webpad.boxdir') || '{}'); } catch(e) {}
+  const st = {root: roots.some(r => r.name === last.root) ? last.root : (roots.find(r => r.home) || roots[0]).name, path: last.root && roots.some(r => r.name === last.root) ? (last.path || '') : '', entries: []};
+  const html = `<div class="row"><select id="bxRoot">${roots.map(r => `<option value="${esc(r.name)}">${esc(r.name)}</option>`).join('')}</select>
+    <button class="btn" type="button" id="bxUp">${esc(t('Up'))}</button><button class="btn" type="button" id="bxNew">${esc(t('New folder'))}</button>
+    <span id="bxPath" style="font-family:var(--mono);color:var(--ink-2);overflow-wrap:anywhere"></span></div>
+    <div id="bxList" style="height:260px;overflow:auto;border:1px solid var(--line);border-radius:3px;background:var(--paper);font-family:var(--mono);font-size:12.5px"></div>
+    ${save ? `<div class="row"><span>${esc(t('File name'))}</span><input type="text" id="bxName" style="flex:1" value="${esc(suggested || '')}"></div>` : ''}`;
+  let body;
+  const show = async () => {
+    const list = body.querySelector('#bxList');
+    body.querySelector('#bxRoot').value = st.root;
+    body.querySelector('#bxPath').textContent = '/' + st.path;
+    list.textContent = t('Loading…');
+    try { st.entries = (await fs.list(st.root, st.path)).entries; } catch(e) { list.textContent = t('Box: {err}', {err: e.message}); return; }
+    list.textContent = '';
+    const items = st.entries.filter(e => e.type === 'dir' || e.type === 'dirlink' || e.type === 'file');
+    if (!items.length) list.textContent = t('(empty folder)');
+    for (const e of items) {
+      const dir = e.type !== 'file', row = document.createElement('div');
+      row.textContent = (dir ? '📁 ' : '📄 ') + e.name; row.tabIndex = 0;
+      row.style.cssText = 'padding:3px 8px;cursor:pointer;white-space:nowrap';
+      row.onmouseenter = () => row.style.background = 'var(--sel, #3399ff33)'; row.onmouseleave = () => row.style.background = '';
+      const pick = () => {
+        if (dir) { st.path = (st.path ? st.path + '/' : '') + e.name; show(); }
+        else if (save) body.querySelector('#bxName').value = e.name;
+        else { st.chosen = e.name; dlgResolve && dlgResolve('ok'); }
+      };
+      row.onclick = () => { if (!dir && save) body.querySelector('#bxName').value = e.name; else if (!dir) { list.querySelectorAll('div').forEach(x => x.style.outline = ''); row.style.outline = '1px solid var(--accent, #39f)'; st.chosen = e.name; } else pick(); };
+      row.ondblclick = pick; row.onkeydown = ev => { if (ev.key === 'Enter') pick(); };
+      list.appendChild(row);
+    }
+  };
+  const r = await dialog({title: t(save ? 'Save to the Box…' : 'Open from the Box…'), html, wide: true,
+    buttons: [['cancel', t('Cancel')], ['ok', t(save ? 'Save' : 'Open'), 'primary']],
+    onOpen: b => {
+      body = b;
+      b.querySelector('#bxRoot').onchange = ev => { st.root = ev.target.value; st.path = ''; show(); };
+      b.querySelector('#bxUp').onclick = () => { st.path = st.path.split('/').slice(0, -1).join('/'); show(); };
+      b.querySelector('#bxNew').onclick = async () => {
+        const n = prompt(t('Folder name'), ''); if (!n) return;
+        try { await fs.mkdir(st.root, st.path, n.trim()); st.path = (st.path ? st.path + '/' : '') + n.trim(); } catch(e) { toast(t('Box: {err}', {err: e.message})); }
+        show();
+      };
+      const nm = b.querySelector('#bxName'); if (nm) { nm.onkeydown = ev => { if (ev.key === 'Enter') dlgResolve && dlgResolve('ok'); }; setTimeout(() => nm.focus(), 0); }
+      show();
+    }});
+  if (r.btn !== 'ok') return null;
+  const name = save ? (r.body.querySelector('#bxName').value || '').trim() : st.chosen;
+  if (!name || /[\/]/.test(name) || name === '.' || name === '..') return null;
+  try { localStorage.setItem('webpad.boxdir', JSON.stringify({root: st.root, path: st.path})); } catch(e) {}
+  return {root: st.root, path: st.path, name, exists: st.entries.some(e => e.name === name)};
+}
+async function boxOpen(){
+  const p = await boxPick(false); if (!p) return;
+  try {
+    const f = await window.ShareOS.fs.open(p.root, p.path, p.name, {write: true});
+    const d = await openFile(new File([await f.blob()], p.name));
+    if (d) { d.sos = f; d.path = `box:${p.root}/${p.path ? p.path + '/' : ''}${p.name}`; updateStatus(); }
+  } catch(e) { toast(t('"{name}" could not be opened: {err}', {name: p.name, err: e.message})); }
+}
+async function boxSave(d){
+  const p = await boxPick(true, d.name); if (!p) return false;
+  if (p.exists && !await ask(t('Save to the Box…'), t('Overwrite "{name}"?', {name: p.name}), t('Overwrite'))) return false;
+  try {
+    d.sos = await window.ShareOS.fs.open(p.root, p.path, p.name, {write: true, create: true});
+    await saveShareOS(d);
+    d.handle = null; d.bridge = null; d.name = p.name; d.path = `box:${p.root}/${p.path ? p.path + '/' : ''}${p.name}`;
+    const L = detect(d.name); if (L !== 'text' && L !== d.lang) setDocLang(d, L);
+    updateStatus();
+    return markSaved(d, t('"{name}" saved on the box', {name: p.name}));
+  } catch(e) { toast(t('Saving failed: {err}', {err: e.message || e.name})); return false; }
 }
 /* ---------- App bridge: files from other apps (e.g. WebTerm) over BroadcastChannel "shareos" ---------- */
 // Message format of the ShareOS app SDK: {type, data, from}. Every app on the

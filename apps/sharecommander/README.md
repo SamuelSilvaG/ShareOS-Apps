@@ -12,4 +12,4 @@ Zwei-Spalten-Dateimanager im Stil von **Total Commander / Norton Commander** fü
 - **Import**: Dateien vom Rechner, ganze Ordner (Chrome/Edge), **OPFS-Abgleich** mit dem privaten Speicher des Browsers (hin und zurück).
 - **Themes**: ShareOS (folgt Hell/Dunkel und Akzentfarbe, Standard in ShareOS), Dark, Norton Blue, Matrix.
 
-Hinweis: ShareCommander verwaltet das Dateisystem im Browser, nicht die Freigaben der Box. Für die Dateien der Box gibt es den Dateibrowser in ShareOS.
+- **Ordner der Box** (ab 1.1, ShareOS 0.1.0-beta.11+, Berechtigung `files`): Über die Laufwerksauswahl oben im Panel zeigt jedes Panel entweder das Browser-Dateisystem (`VFS://`) oder einen Ordner der Box (`BOX://`) – genau die Ordner, die der angemeldete Benutzer auch im Dateibrowser von ShareOS sieht, mit seinen Rechten. Kopieren und Verschieben gehen zwischen Box-Ordnern und zwischen Box und VFS, dazu Umbenennen, Löschen (mit Warnung), Hochladen, ZIP packen/entpacken, Vorschau, `F4` → Webpad (Speichern schreibt auf die Box) und Musik/Videos direkt in den WinWeb Player.
