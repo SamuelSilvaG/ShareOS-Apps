@@ -1,3 +1,7 @@
+## 1.2.0
+
+- `webpad <file>` opens a closed Webpad in its **own window** instead of a browser tab (with ShareOS 0.2.0-beta.1 through `ShareOS.openApp`, with look, language and account).
+
 ## 1.1.0
 
 - The virtual file system is shared with ShareCommander (`shareos.vfs`, taken over from `webterm.vfs` on the first start); changes in the other window show up at once.

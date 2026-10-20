@@ -6,6 +6,15 @@
 // the same web server still talk to each other.
 const APP = 'webterm';
 const SOS = window.ShareOS || null;
+
+// open another app of the box in its own window (ShareOS 0.2.0-beta.1+ does it
+// with look, language and account; older versions: a pop-up window here)
+const APP_SIZE = { webpad: { width: 1100, height: 760 }, webplayer: { width: 940, height: 600 } };
+function openApp(app) {
+  const size = APP_SIZE[app] || { width: 1000, height: 700 };
+  if (SOS && SOS.openApp) return SOS.openApp(app, size);
+  return window.open(new URL('/' + app + '/index.html', location.href).href, 'sosapp-' + app, `popup,width=${size.width},height=${size.height}`);
+}
 const chan = !SOS && 'BroadcastChannel' in window ? new BroadcastChannel('shareos') : null;
 const handlers = {};
 function emit(type, data) {
@@ -380,7 +389,7 @@ const commands = {
     }
     // Webpad is not open: open it (same web server) and send the file when it is ready
     (pending.webpad = pending.webpad || []).push(msg);
-    const w = window.open(new URL('/webpad/index.html', location.href).href, 'sos-webpad');
+    const w = openApp('webpad');
     setTimeout(() => { if (pending.webpad) { delete pending.webpad; print(`<span class="text-error">Webpad meldet sich nicht – ist Webpad 1.2 oder neuer installiert?</span>`); } }, 20000);
     return w ? `<span class="text-accent">Webpad wird geöffnet …</span>` : `<span class="text-error">Fenster blockiert – Pop-ups für diese Seite erlauben.</span>`;
   },

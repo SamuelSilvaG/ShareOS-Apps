@@ -1,7 +1,7 @@
 {
 	"id": "webterm",
 	"name": "WebTerm",
-	"version": "1.1.0",
+	"version": "1.2.0",
 	"publisher": "UniqueDroid",
 	"description": {
 		"de": "Terminal im Stil von Windows Terminal / Bash mit Tabs, eigenem Dateisystem im Browser, JavaScript-Sandbox und Brücke zu Webpad. Öffnet Text- und Logdateien der Box zum Durchsuchen.",
@@ -15,8 +15,25 @@
 	"homepage": "https://github.com/UniqueDroid/ShareOS-Apps/tree/main/apps/webterm",
 	"min_shareos": "0.1.0-beta.1",
 	"permissions": [],
-	"window": { "width": 860, "height": 540 },
+	"window": {
+		"width": 860,
+		"height": 540
+	},
 	"opens": [
-		{ "ext": [".log", ".txt", ".js", ".json", ".csv", ".conf"], "mode": "view", "label": { "de": "Im Terminal ansehen", "en": "View in the terminal" } }
+		{
+			"ext": [
+				".log",
+				".txt",
+				".js",
+				".json",
+				".csv",
+				".conf"
+			],
+			"mode": "view",
+			"label": {
+				"de": "Im Terminal ansehen",
+				"en": "View in the terminal"
+			}
+		}
 	]
 }

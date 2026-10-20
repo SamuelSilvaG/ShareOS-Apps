@@ -567,7 +567,7 @@ function handleFiles(fileList) {
 
 fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
 
-// --- music and videos of the box (permission "files", ShareOS 0.1.0-beta.13+) ---
+// --- music and videos of the box (permission "files", ShareOS 0.2.0-beta.1+) ---
 // streamed with a ticket of the box: starts at once, seeking works
 const MEDIA_EXT = ['.mp3', '.wav', '.ogg', '.oga', '.opus', '.flac', '.m4a', '.aac', '.mp4', '.m4v', '.webm'];
 const boxBtn = document.getElementById('box-btn');
