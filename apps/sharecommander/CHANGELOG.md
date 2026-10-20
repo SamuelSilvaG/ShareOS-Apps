@@ -1,6 +1,6 @@
 ## 1.2.0
 
-- F4 (Webpad) and media (WinWeb Player) open a closed app in its **own window** instead of a browser tab (with ShareOS 0.2.0-beta.1 through `ShareOS.openApp`, with look, language and account); a blocked pop-up is reported.
+- F4 (Webpad) and media (WinWeb Player) open a closed app in its **own window** instead of a browser tab (with ShareOS 0.2.0-beta.2 through `ShareOS.openApp`, with look, language and account); a blocked pop-up is reported.
 
 ## 1.1.0
 
