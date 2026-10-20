@@ -1,3 +1,7 @@
+## 1.2.0
+
+- F4 (Webpad) and media (WinWeb Player) open a closed app in its **own window** instead of a browser tab (with ShareOS 0.2.0-beta.1 through `ShareOS.openApp`, with look, language and account); a blocked pop-up is reported.
+
 ## 1.1.0
 
 - **Folders of the box:** each pane can show a folder of the box (drive list above the pane: VFS or BOX:// with the folders the signed-in user may reach) – list, copy and move (also between box and VFS, box files over 1 MB stay on the box), new folder/file, rename, multi-rename, delete with an extra warning, upload from the computer, ZIP packing and unpacking on the box (up to 200 MB), preview (pictures and media straight from the box, text, hex), F4 to Webpad and saving back to the box, music and videos streamed to WinWeb Player, download.
