@@ -13,7 +13,7 @@ installs them with one click – the same way it offers firmware updates.
 | [Webpad](apps/webpad) | Text editor in the style of Notepad++; opens and saves files on the box or on your computer, takes files from other apps |
 | [WebTerm](apps/webterm) | Terminal with tabs, a virtual file system, a JavaScript sandbox and a bridge to Webpad; views log files of the box |
 | [ShareCommander](apps/sharecommander) | Two-pane file manager in the style of Total Commander for the folders of the box and the browser file system (shared with WebTerm): ZIP, multi-rename, preview, bridges to Webpad and WinWeb Player |
-| [WinWeb Player](apps/webplayer) | Audio and video player in retro style with equalizer and visualizer; streams music and videos of the box |
+| [WinWeb Player](apps/webplayer) | Audio and video player in retro style with equalizer and visualizer; plays music and videos from your area on the box (streamed, with seeking) or from your computer |
 | [SheetOS](apps/sheetos) | Small spreadsheet with formulas; opens and saves CSV files of the box |
 | [DevBox](apps/devbox) | Developer toolbox: JSON, Base64/URL/hex, checksums (also of files of the box), regex, diff, JWT |
 
@@ -108,9 +108,11 @@ The apps web server serves two files for every app – same address, works offli
 - **Opened file:** when the user opens a file from the ShareOS file browser, `ShareOS.file` is set: `await ShareOS.file.info()` (name, mode), `await ShareOS.file.text()` / `.blob()`, `await ShareOS.file.save(data)` (mode `edit` only), `ShareOS.file.url` (address of the content for `<audio>`/`<video>`; ShareOS 0.1.0-beta.11+; byte ranges for seeking). The app gets a ticket for exactly this file and the user's rights – nothing else on the box.
 - **Messages between apps:** `ShareOS.emit(type, data)` / `ShareOS.on(type, fn)` (BroadcastChannel `shareos`, `{type, data, from}`; every app hears them, so no secrets). Used by the apps here: `open-file` `{to, name, path, content, readonly}` → `file-saved` `{to, path, name, content}` (Webpad), `open-media` `{to, name, blob|url}` (WinWeb Player), `ping`/`pong`/`app-ready` (is an app open?). The browser file system of WebTerm and ShareCommander is shared under the key `shareos.vfs`.
 - **Folders of the box** (permission `files`, ShareOS 0.1.0-beta.11+): `ShareOS.fs.roots()`, `.list(root, path)`, `.mkdir`, `.rename`, `.copy` / `.move(root, path, names, destRoot, dest)`, `.remove`, `.open(root, path, name, {write, create})` (a file like `ShareOS.file`). Exactly the folders the signed-in user reaches in the file browser, with his rights, while the app is open (ShareOS passes a grant in the URL when it opens the app).
+- **File dialog of the box** (ShareOS 0.1.0-beta.13+): `await ShareOS.fs.pick({ title, ext: ['.mp3'], multiple, save, name })` shows the user's folders and returns `[{root, path, name}]` (with `save`: the chosen folder and file name) or `null`; then `ShareOS.fs.open(…)`. Check `ShareOS.fs && ShareOS.fs.pick` before showing the button.
+- **Storage per account** (ShareOS 0.1.0-beta.13+): all apps share one web origin, so ShareOS passes the account (`?user=`) and the SDK keeps `localStorage` and IndexedDB of the accounts apart (`ShareOS.user`). Load `/_shareos/app.js` **before** the app's own scripts. This separates accounts in one browser but does not protect against someone with the browser's developer tools – private data belongs on the box (`ShareOS.fs`), where the box checks the user's rights.
 - `ShareOS.onTheme(fn)`, `ShareOS.embedded` (true inside the ShareOS interface).
 
-Webpad loads the SDK only when ShareOS opened a file, so it still works as a plain HTML file anywhere.
+Webpad loads the SDK first whenever ShareOS opened it (it passes `?user=`), so it still works as a plain HTML file anywhere.
 
 Rules for web apps: the app itself (HTML, scripts, styles, fonts, icons) is
 inside `files/` – no CDN for the app's own code, so it starts on a box without
@@ -138,6 +140,7 @@ Klick installiert – genauso wie Firmware-Updates angeboten werden.
 - Neue Version: App ändern, `version` in `app.json` erhöhen, Abschnitt in `CHANGELOG.md`, pushen.
 - **Berechtigungen:** `"permissions": ["cron"]` erlaubt geplante Aufgaben (`jobs` in `app.json`, Skript aus `files/`, Zeitplan im Cron-Format, höchstens alle 5 Minuten, max. 5). Sie laufen als eigener Benutzer `app-<id>` nur im Datenordner der App; der Admin kann Zeitpläne unter APPS → Aufgaben ändern oder abschalten. Ab ShareOS 0.1.0-beta.7.
 - **Fenster und Dateien** (ab ShareOS 0.1.0-beta.9): `"window"` legt die Fenstergröße fest, `"opens"` die Dateitypen, die die App aus dem Dateibrowser öffnet (`edit` darf zurückspeichern). Die Berechtigung `embed` zeigt eine reine Einstellungs-App direkt in ShareOS an. Mit der Berechtigung `files` (ab ShareOS 0.1.0-beta.11) arbeitet eine App mit den Ordnern der Box – mit den Rechten des angemeldeten Benutzers (`ShareOS.fs`). Für Aussehen, Menüleiste (Datei | Bearbeiten | Ansicht), geöffnete Datei und Nachrichten zwischen Apps gibt es `/_shareos/theme.css` und `/_shareos/app.js` (siehe oben).
+- **Speicher je Konto** (ab ShareOS 0.1.0-beta.13): Das SDK trennt `localStorage` und IndexedDB der Apps nach Konto – dafür `/_shareos/app.js` vor den eigenen Skripten laden. Private Daten gehören auf die Box (`ShareOS.fs`, Dateidialog `ShareOS.fs.pick`).
 - Web-Apps bringen ihren eigenen Code mit (kein CDN für Skripte, Styles, Schriften), damit sie auch auf einer Box ohne Internet starten. **Internet nutzen dürfen sie**, wenn sie es brauchen (Online-Dienste, Streams, Karten, Sync …): dann `"internet": true` in `app.json` setzen – der Store zeigt „Nutzt das Internet“ (ab ShareOS 0.1.0-beta.12, ältere Versionen ignorieren das Feld).
 - **Eigene Apps:** `.sapp` unter APPS → Store hochladen (gilt als „eigene/ungeprüft“) oder einen eigenen Katalog unter APPS → Quellen eintragen.
 

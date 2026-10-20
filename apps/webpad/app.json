@@ -1,7 +1,7 @@
 {
 	"id": "webpad",
 	"name": "Webpad",
-	"version": "1.3.0",
+	"version": "1.4.0",
 	"publisher": "UniqueDroid",
 	"description": {
 		"de": "Texteditor im Browser im Stil von Notepad++: Syntaxhervorhebung für viele Sprachen, Tabs, Suchen und Ersetzen, Lesezeichen, Makros. Läuft komplett offline. Öffnet und speichert Dateien direkt auf der Box oder auf dem eigenen Rechner.",

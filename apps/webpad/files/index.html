@@ -2,6 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<script>
+/* Opened by ShareOS (it passes the account): load the ShareOS app SDK before
+   anything else, so the storage of Webpad (texts, settings) is kept per account.
+   As a plain HTML file on another web server nothing is loaded. */
+(function(){ var u = new URLSearchParams(location.search).get('user'), s = null;
+  try { s = sessionStorage.getItem('sos-user'); } catch (e) {}
+  if (u || s) document.write('<script src="/_shareos/app.js"><\/script>'); })();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Webpad</title>
 <meta name="claude:viewport-fit-sides" content="cover">
