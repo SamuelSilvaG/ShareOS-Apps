@@ -1,3 +1,8 @@
+## 1.1.0
+
+- The virtual file system is shared with ShareCommander (`shareos.vfs`, taken over from `webterm.vfs` on the first start); changes in the other window show up at once.
+- Binary files (from ShareCommander) are recognised: `cat`, `grep` and `webpad` say so instead of printing data.
+
 ## 1.0.0
 
 - First version as a ShareOS app: tabs, a virtual file system in the browser (`ls`, `cd`, `cat`, `grep` …), JavaScript sandbox (`run`), themes including the ShareOS look.

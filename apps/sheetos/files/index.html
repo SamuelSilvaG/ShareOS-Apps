@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SheetOS – ShareOS</title>
+  <link rel="icon" href="icon.svg">
+  <!-- ShareOS look and SDK; outside ShareOS these are simply missing -->
+  <link rel="stylesheet" href="/_shareos/theme.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="/_shareos/app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">📊 SHEETOS <span class="badge">v1.0</span> <span class="file-name" id="file-name"></span></div>
+    <div class="toolbar">
+      <button class="tool-btn" id="new-btn" title="Neue, leere Tabelle">Neu</button>
+      <label class="tool-btn" for="file-import" title="CSV- oder JSON-Datei öffnen">Öffnen …</label>
+      <input type="file" id="file-import" accept=".csv,.tsv,.txt,.json" hidden>
+      <button class="tool-btn primary hidden" id="save-btn" title="Zurück auf die Box speichern (Strg+S)">Speichern</button>
+      <button class="tool-btn" id="csv-export-btn" title="Als CSV herunterladen (Werte)">CSV ⭳</button>
+      <button class="tool-btn" id="json-export-btn" title="Als JSON herunterladen (mit Formeln)">JSON ⭳</button>
+      <label class="sep-label" title="Trennzeichen für CSV">Trennz.
+        <select id="sep-select">
+          <option value=";">;</option>
+          <option value=",">,</option>
+          <option value="&#9;">Tab</option>
+        </select>
+      </label>
+      <span class="divider"></span>
+      <button class="tool-btn action" id="calc-sum" title="Summe der markierten oder darüberliegenden Zellen">SUM</button>
+      <button class="tool-btn action" id="calc-avg" title="Mittelwert">AVG</button>
+      <button class="tool-btn action" id="calc-min" title="Kleinster Wert">MIN</button>
+      <button class="tool-btn action" id="calc-max" title="Größter Wert">MAX</button>
+    </div>
+  </header>
+
+  <div class="formula-bar">
+    <span class="cell-label" id="active-cell-label">A1</span>
+    <input type="text" id="formula-input" spellcheck="false" autocomplete="off" placeholder="Wert oder Formel, z. B. =SUM(A1:A5)*2 oder =IF(B2>100;&quot;hoch&quot;;&quot;ok&quot;)">
+  </div>
+
+  <main class="grid-container" id="grid-container">
+    <table class="spreadsheet" id="spreadsheet">
+      <thead><tr id="col-headers"><th class="corner"></th></tr></thead>
+      <tbody id="grid-body"></tbody>
+    </table>
+    <input type="text" class="cell-editor hidden" id="cell-editor" spellcheck="false" autocomplete="off">
+  </main>
+
+  <footer class="statusbar">
+    <span id="status-sel">A1</span>
+    <span id="status-calc"></span>
+    <span id="status-msg">Bereit</span>
+  </footer>
+  <script src="app.js"></script>
+</body>
+</html>

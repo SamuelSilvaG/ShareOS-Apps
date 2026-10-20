@@ -1,7 +1,7 @@
 {
 	"id": "webterm",
 	"name": "WebTerm",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"publisher": "UniqueDroid",
 	"description": {
 		"de": "Terminal im Stil von Windows Terminal / Bash mit Tabs, eigenem Dateisystem im Browser, JavaScript-Sandbox und Brücke zu Webpad. Öffnet Text- und Logdateien der Box zum Durchsuchen.",
