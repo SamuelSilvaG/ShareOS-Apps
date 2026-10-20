@@ -7,7 +7,7 @@
 const APP = 'webterm';
 const SOS = window.ShareOS || null;
 
-// open another app of the box in its own window (ShareOS 0.2.0-beta.1+ does it
+// open another app of the box in its own window (ShareOS 0.2.0-beta.2+ does it
 // with look, language and account; older versions: a pop-up window here)
 const APP_SIZE = { webpad: { width: 1100, height: 760 }, webplayer: { width: 940, height: 600 } };
 function openApp(app) {
