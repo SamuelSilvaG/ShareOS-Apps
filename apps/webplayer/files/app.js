@@ -567,6 +567,26 @@ function handleFiles(fileList) {
 
 fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
 
+// --- music and videos of the box (permission "files", ShareOS 0.1.0-beta.13+) ---
+// streamed with a ticket of the box: starts at once, seeking works
+const MEDIA_EXT = ['.mp3', '.wav', '.ogg', '.oga', '.opus', '.flac', '.m4a', '.aac', '.mp4', '.m4v', '.webm'];
+const boxBtn = document.getElementById('box-btn');
+if (SOS && SOS.fs && SOS.fs.pick) {
+  boxBtn.hidden = false;
+  boxBtn.addEventListener('click', async () => {
+    const picked = await SOS.fs.pick({ title: 'Musik & Videos von der Box', ext: MEDIA_EXT, multiple: true });
+    if (!picked) return;
+    let first = currentIndex === -1;
+    for (const p of picked) {
+      try {
+        const f = await SOS.fs.open(p.root, p.path, p.name);
+        addTrackToPlaylist({ name: p.name, url: f.url, type: typeOf(p.name) }, first);
+        first = false;
+      } catch (e) { flash('*** ' + p.name + ': ' + String(e.message).toUpperCase() + ' ***'); }
+    }
+  });
+}
+
 dropZone.addEventListener('dragover', (e) => {
   e.preventDefault();
   dropZone.classList.add('drag-over');

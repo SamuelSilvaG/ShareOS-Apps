@@ -60,6 +60,7 @@ def main():
                               'url': pkg['browser_download_url'], 'sha256': sha, 'size': pkg['size'],
                               'min_shareos': meta.get('min_shareos', '0') if version == meta.get('version') else '0',
                               'permissions': meta.get('permissions', []) if version == meta.get('version') else [],
+                              'internet': bool(meta.get('internet')) if version == meta.get('version') else False,
                               'notes_url': rel['html_url']})
     json.dump({'schema': 1, 'generated': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()), 'repository': REPO,
                'apps': sorted(apps.values(), key=lambda a: a['name'].lower())}, sys.stdout, indent=1, ensure_ascii=False)
