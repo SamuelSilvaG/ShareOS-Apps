@@ -1,0 +1,25 @@
+{
+	"id": "apipilot",
+	"name": "API-Pilot",
+	"version": "1.0.0",
+	"publisher": "UniqueDroid",
+	"description": {
+		"de": "REST- und GraphQL-Client im Stil von Postman / ReqBin: Methoden, Query-Parameter, Header, Bearer/Basic-Auth, JSON-, GraphQL- und Formular-Body, Verlauf, cURL- und fetch-Code. Antworten auf der Box speichern oder in Webpad öffnen.",
+		"en": "REST and GraphQL client in the style of Postman / ReqBin: methods, query parameters, headers, bearer/basic auth, JSON, GraphQL and form bodies, history, cURL and fetch code. Save responses on the box or open them in Webpad."
+	},
+	"type": "webapp",
+	"entry": "index.html",
+	"icon": "icon.svg",
+	"category": "tools",
+	"license": "MIT",
+	"homepage": "https://github.com/UniqueDroid/ShareOS-Apps/tree/main/apps/apipilot",
+	"min_shareos": "0.1.0-beta.11",
+	"permissions": [
+		"files"
+	],
+	"internet": true,
+	"window": {
+		"width": 1000,
+		"height": 640
+	}
+}

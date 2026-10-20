@@ -1,0 +1,36 @@
+{
+	"id": "beatbox",
+	"name": "BeatBox Studio",
+	"version": "1.0.0",
+	"publisher": "UniqueDroid",
+	"description": {
+		"de": "16-Step-Drum-Sequencer mit Synthesizer im Stil von FL Studio / LMMS: Kick, Snare, Hi-Hat, Clap und Bass, spielbare Klaviatur, Oszilloskop. Projekte und WAV-Loops auf der Box speichern oder direkt im WinWeb Player abspielen.",
+		"en": "16-step drum sequencer with synthesizer in the style of FL Studio / LMMS: kick, snare, hi-hat, clap and bass, playable keyboard, oscilloscope. Save projects and WAV loops on the box or play them right away in WinWeb Player."
+	},
+	"type": "webapp",
+	"entry": "index.html",
+	"icon": "icon.svg",
+	"category": "media",
+	"license": "MIT",
+	"homepage": "https://github.com/UniqueDroid/ShareOS-Apps/tree/main/apps/beatbox",
+	"min_shareos": "0.1.0-beta.11",
+	"permissions": [
+		"files"
+	],
+	"window": {
+		"width": 1000,
+		"height": 660
+	},
+	"opens": [
+		{
+			"ext": [
+				".beatbox"
+			],
+			"mode": "edit",
+			"label": {
+				"de": "Öffnen",
+				"en": "Open"
+			}
+		}
+	]
+}

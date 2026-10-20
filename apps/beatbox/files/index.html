@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BeatBox Studio – ShareOS</title>
+  <link rel="icon" href="icon.svg">
+  <!-- ShareOS look and SDK (load first: storage per account); outside ShareOS simply missing -->
+  <link rel="stylesheet" href="/_shareos/theme.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="/_shareos/app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">🎹 BEATBOX STUDIO <span class="badge">v1.0</span></div>
+
+    <div class="transport-bar">
+      <button class="ctrl-btn play-btn" id="play-btn" title="Abspielen (Leertaste)">▶ PLAY</button>
+      <button class="ctrl-btn" id="stop-btn">⏹ STOP</button>
+      <div class="bpm-box">
+        <label for="bpm-input">BPM</label>
+        <input type="number" id="bpm-input" value="124" min="60" max="200">
+      </div>
+      <div class="bpm-box" title="Lautstärke">
+        <label for="vol-input">VOL</label>
+        <input type="range" id="vol-input" min="0" max="1" step="0.05" value="0.8">
+      </div>
+      <select id="preset-select" class="select-box" title="Pattern laden">
+        <option value="" hidden>Pattern …</option>
+        <option value="cyber">Cyber Electro</option>
+        <option value="house">Classic House</option>
+        <option value="hiphop">Boom Bap</option>
+        <option value="clear">Leer</option>
+      </select>
+    </div>
+
+    <div class="export-actions">
+      <button class="action-btn" id="open-btn" title="Projekt (.beatbox) öffnen">📂 Öffnen</button>
+      <button class="action-btn" id="save-btn" title="Projekt (.beatbox) speichern">💾 Speichern</button>
+      <select id="loops-select" class="select-box" title="Länge des WAV-Exports">
+        <option value="1">1 Takt</option>
+        <option value="2" selected>2 Takte</option>
+        <option value="4">4 Takte</option>
+        <option value="8">8 Takte</option>
+      </select>
+      <button class="action-btn" id="export-wav-btn" title="Loop als .wav herunterladen">⬇ WAV</button>
+      <button class="action-btn" id="box-wav-btn" title="Loop als .wav auf der Box speichern" hidden>📤 WAV auf die Box</button>
+      <button class="action-btn winweb-btn" id="send-winweb-btn" title="Loop rendern und an WinWeb Player schicken">⚡ An WinWeb</button>
+      <input type="file" id="file-input" accept=".beatbox,.json,application/json" hidden>
+    </div>
+  </header>
+
+  <main class="studio-workspace">
+    <section class="panel sequencer-panel">
+      <div class="panel-header">
+        <span>16-STEP CHANNEL RACK (DRUMS + BASS) – Spurname klicken = stumm</span>
+        <span class="step-counter" id="step-counter">STEP: -- / 16</span>
+      </div>
+      <div class="rack-container" id="rack-container"></div>
+    </section>
+
+    <section class="lower-grid">
+      <div class="panel synth-panel">
+        <div class="panel-header">
+          <span>SYNTHESIZER (BASS + KLAVIATUR)</span>
+        </div>
+
+        <div class="knobs-row">
+          <div class="param-group">
+            <label for="osc-type">Wellenform</label>
+            <select id="osc-type" class="select-box">
+              <option value="sawtooth">Sägezahn</option>
+              <option value="square">Rechteck (Chiptune)</option>
+              <option value="triangle">Dreieck (weich)</option>
+              <option value="sine">Sinus (Sub)</option>
+            </select>
+          </div>
+          <div class="param-group">
+            <label for="cutoff-slider">Filter: <b id="cutoff-val">2200 Hz</b></label>
+            <input type="range" id="cutoff-slider" min="120" max="8000" value="2200">
+          </div>
+          <div class="param-group">
+            <label for="attack-slider">Attack: <b id="attack-val">0.02 s</b></label>
+            <input type="range" id="attack-slider" min="0.005" max="0.5" step="0.005" value="0.02">
+          </div>
+          <div class="param-group">
+            <label for="release-slider">Release: <b id="release-val">0.28 s</b></label>
+            <input type="range" id="release-slider" min="0.05" max="1.5" step="0.05" value="0.28">
+          </div>
+        </div>
+
+        <div class="piano-wrap">
+          <div class="piano-keys" id="piano-keys"></div>
+          <div class="piano-hint">Spielen mit der Maus oder den Tasten <b>A W S E D F T G Z H U J K</b> · Leertaste = Play/Stop</div>
+        </div>
+      </div>
+
+      <div class="panel scope-panel">
+        <div class="panel-header">
+          <span>OSZILLOSKOP</span>
+          <span id="status-badge" class="accent-text">BEREIT</span>
+        </div>
+        <div class="scope-box">
+          <canvas id="scope-canvas" width="320" height="165"></canvas>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="statusbar">
+    <span id="bb-status">Bereit</span>
+    <span id="bb-file">Neues Projekt</span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
