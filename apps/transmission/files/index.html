@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Transmission</title>
+<link rel="stylesheet" href="/_shareos/theme.css">
+<link rel="stylesheet" href="app.css">
+<script src="/_shareos/app.js"></script>
+</head>
+<body class="sos-app">
+
+  <!-- Title bar -->
+  <div class="sos-titlebar">
+    <div class="titlebar-left">
+      <img src="icon.svg" class="app-icon" alt="Transmission Logo">
+      <span class="app-title">Transmission</span>
+      <span class="version-tag">1.0.0</span>
+    </div>
+    <div class="titlebar-right">
+      <span id="conn-badge" class="conn-badge checking">Prüfe Verbindung...</span>
+    </div>
+  </div>
+
+  <!-- Menu bar -->
+  <nav id="menu" class="sos-menubar"></nav>
+
+  <!-- Toolbar -->
+  <div class="sos-toolbar">
+    <div class="tb-group">
+      <button id="btn-add" class="sos-btn sos-btn-accent" title="Torrent hinzufügen (Ctrl+O)">
+        <span class="btn-icon">＋</span> Torrent
+      </button>
+      <button id="btn-start" class="sos-btn" title="Ausgewählte starten" disabled>
+        <span class="btn-icon">▶</span> Starten
+      </button>
+      <button id="btn-pause" class="sos-btn" title="Ausgewählte anhalten" disabled>
+        <span class="btn-icon">⏸</span> Anhalten
+      </button>
+      <button id="btn-remove" class="sos-btn sos-btn-danger" title="Ausgewählte löschen (Entf)" disabled>
+        <span class="btn-icon">✕</span> Löschen
+      </button>
+    </div>
+
+    <div class="tb-divider"></div>
+
+    <div class="tb-group">
+      <button id="btn-turtle" class="sos-btn" title="Alternative Geschwindigkeitsbegrenzung (Turtle-Modus)">
+        <span class="btn-icon">🐢</span> Drosselung
+      </button>
+      <button id="btn-settings" class="sos-btn" title="Einstellungen">
+        <span class="btn-icon">⚙</span> Einstellungen
+      </button>
+    </div>
+
+    <div class="tb-spacer"></div>
+
+    <div class="tb-group">
+      <select id="filter-status" class="sos-input filter-select">
+        <option value="all">Alle Torrents</option>
+        <option value="downloading">Herunterladen</option>
+        <option value="seeding">Verteilen (Seeding)</option>
+        <option value="paused">Angehalten</option>
+        <option value="active">Aktiv</option>
+      </select>
+      <input type="search" id="search-input" class="sos-input search-box" placeholder="Suchen...">
+    </div>
+  </div>
+
+  <!-- Offline Notice Banner -->
+  <div id="offline-banner" class="offline-banner" style="display:none;">
+    <div class="banner-msg">
+      <strong>⚠️ Transmission-Daemon nicht erreichbar.</strong>
+      <span>Stellen Sie sicher, dass der Dienst unter <em>Dienste → Autostart</em> oder im Terminal gestartet wurde.</span>
+    </div>
+    <div class="banner-actions">
+      <button id="btn-retry" class="sos-btn sos-btn-sm">Erneut prüfen</button>
+      <button id="btn-cfg-conn" class="sos-btn sos-btn-sm">Verbindung konfigurieren</button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="sos-main">
+    <div class="main-layout">
+      <!-- Torrent List Table -->
+      <div class="torrent-table-wrap">
+        <table class="torrent-table" id="torrent-table">
+          <thead>
+            <tr>
+              <th class="th-sel"><input type="checkbox" id="select-all"></th>
+              <th class="th-status">Status</th>
+              <th class="th-name">Name</th>
+              <th class="th-progress">Fortschritt</th>
+              <th class="th-size">Größe</th>
+              <th class="th-rates">Download / Upload</th>
+              <th class="th-eta">Restzeit</th>
+              <th class="th-peers">Peers</th>
+            </tr>
+          </thead>
+          <tbody id="torrent-rows">
+            <tr>
+              <td colspan="8" class="empty-state">Lade Torrents...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Details Drawer -->
+      <div id="details-drawer" class="details-drawer" style="display:none;">
+        <div class="drawer-header">
+          <div class="drawer-tabs">
+            <button class="d-tab active" data-tab="general">Allgemein</button>
+            <button class="d-tab" data-tab="files">Dateien</button>
+            <button class="d-tab" data-tab="peers">Peers</button>
+            <button class="d-tab" data-tab="trackers">Tracker</button>
+          </div>
+          <button id="btn-close-drawer" class="sos-btn sos-btn-sm" title="Details schließen">✕</button>
+        </div>
+        <div class="drawer-content">
+          <div id="tab-general" class="tab-panel active"></div>
+          <div id="tab-files" class="tab-panel"></div>
+          <div id="tab-peers" class="tab-panel"></div>
+          <div id="tab-trackers" class="tab-panel"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Status Bar -->
+  <div class="sos-statusbar">
+    <div class="sb-left">
+      <span id="sb-count">0 Torrents</span>
+      <span class="sb-sep">|</span>
+      <span id="sb-rates">↓ 0 B/s   ↑ 0 B/s</span>
+    </div>
+    <div class="sb-right">
+      <span id="sb-turtle-status" class="turtle-tag" style="display:none;">🐢 Drosselung aktiv</span>
+      <span class="sb-sep" id="sb-turtle-sep" style="display:none;">|</span>
+      <a href="#" id="link-native-ui" class="sb-link" target="_blank" title="Originale Transmission-Weboberfläche auf Port 9091 aufrufen">Original Web-UI (:9091) ↗</a>
+      <span class="sb-sep">|</span>
+      <span id="sb-status">Bereit</span>
+    </div>
+  </div>
+
+  <!-- Modal: Add Torrent -->
+  <div id="modal-add" class="modal-backdrop" style="display:none;">
+    <div class="sos-dialog modal-card">
+      <div class="modal-header">
+        <h3>Torrent hinzufügen</h3>
+        <button class="modal-close" id="modal-add-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-tabs">
+          <button class="m-tab active" id="mtab-link">Magnet / URL</button>
+          <button class="m-tab" id="mtab-file">Torrent-Datei</button>
+        </div>
+        <div id="mcontent-link" class="tab-content active">
+          <label class="form-label" for="torrent-url">Magnet-Link oder URL zur .torrent-Datei:</label>
+          <textarea id="torrent-url" class="sos-input form-textarea" rows="3" placeholder="magnet:?xt=urn:btih:... oder https://..."></textarea>
+        </div>
+        <div id="mcontent-file" class="tab-content">
+          <label class="form-label">.torrent-Datei vom Computer auswählen:</label>
+          <input type="file" id="torrent-file-input" class="sos-input" accept=".torrent">
+          <div class="or-separator">oder</div>
+          <button type="button" id="btn-pick-box" class="sos-btn">Aus ShareOS-Speicher wählen...</button>
+          <div id="picked-file-name" class="picked-name"></div>
+        </div>
+        <div class="form-group" style="margin-top:16px;">
+          <label class="form-label" for="torrent-dest">Speicherort (Zielordner):</label>
+          <div class="input-with-button">
+            <input type="text" id="torrent-dest" class="sos-input" placeholder="/mnt/storage/downloads">
+            <button type="button" id="btn-browse-dest" class="sos-btn" title="Ordner auf der Box auswählen">Durchsuchen</button>
+          </div>
+        </div>
+        <div class="form-group checkbox-group">
+          <label class="chk-label">
+            <input type="checkbox" id="torrent-start-now" checked>
+            <span>Download sofort starten</span>
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="modal-add-cancel" class="sos-btn">Abbrechen</button>
+        <button id="modal-add-submit" class="sos-btn sos-btn-accent">Hinzufügen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Delete Torrent -->
+  <div id="modal-delete" class="modal-backdrop" style="display:none;">
+    <div class="sos-dialog modal-card modal-sm">
+      <div class="modal-header">
+        <h3>Torrent löschen</h3>
+        <button class="modal-close" id="modal-del-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <p id="del-prompt">Möchten Sie die ausgewählten Torrents wirklich entfernen?</p>
+        <div class="form-group checkbox-group danger-chk">
+          <label class="chk-label">
+            <input type="checkbox" id="del-data-check">
+            <span><strong>Heruntergeladene Dateien</strong> von der Festplatte löschen</span>
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="modal-del-cancel" class="sos-btn">Abbrechen</button>
+        <button id="modal-del-submit" class="sos-btn sos-btn-danger">Löschen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Settings -->
+  <div id="modal-settings" class="modal-backdrop" style="display:none;">
+    <div class="sos-dialog modal-card">
+      <div class="modal-header">
+        <h3>Transmission Einstellungen</h3>
+        <button class="modal-close" id="modal-cfg-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="cfg-section">
+          <h4>Download-Verzeichnis</h4>
+          <div class="input-with-button">
+            <input type="text" id="cfg-download-dir" class="sos-input">
+            <button type="button" id="btn-cfg-browse" class="sos-btn">Durchsuchen</button>
+          </div>
+        </div>
+        <div class="cfg-section">
+          <h4>Geschwindigkeitsbegrenzungen (KB/s)</h4>
+          <div class="grid-2">
+            <div>
+              <label class="chk-label"><input type="checkbox" id="cfg-speed-down-enabled"> <span>Download begrenzen:</span></label>
+              <input type="number" id="cfg-speed-down" class="sos-input" min="0" step="10">
+            </div>
+            <div>
+              <label class="chk-label"><input type="checkbox" id="cfg-speed-up-enabled"> <span>Upload begrenzen:</span></label>
+              <input type="number" id="cfg-speed-up" class="sos-input" min="0" step="10">
+            </div>
+          </div>
+        </div>
+        <div class="cfg-section">
+          <h4>Alternative Begrenzung (Turtle-Modus, KB/s)</h4>
+          <div class="grid-2">
+            <div>
+              <label class="form-label" for="cfg-alt-down">Download (Drossel):</label>
+              <input type="number" id="cfg-alt-down" class="sos-input" min="0" step="10">
+            </div>
+            <div>
+              <label class="form-label" for="cfg-alt-up">Upload (Drossel):</label>
+              <input type="number" id="cfg-alt-up" class="sos-input" min="0" step="10">
+            </div>
+          </div>
+        </div>
+        <div class="cfg-section">
+          <h4>Verbindung & Port</h4>
+          <div class="grid-2">
+            <div>
+              <label class="form-label" for="cfg-peer-port">Peer-Port:</label>
+              <input type="number" id="cfg-peer-port" class="sos-input" min="1024" max="65535">
+            </div>
+            <div>
+              <label class="form-label" for="cfg-rpc-url">RPC-Adresse:</label>
+              <input type="text" id="cfg-rpc-url" class="sos-input" placeholder="/_shareos/cgi/transmission">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="modal-cfg-cancel" class="sos-btn">Abbrechen</button>
+        <button id="modal-cfg-submit" class="sos-btn sos-btn-accent">Speichern</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
