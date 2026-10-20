@@ -78,12 +78,24 @@ const defaultVFS = {
   }
 };
 
-// all apps of the box share one origin: keep our data under our own key
-const VFS_KEY = 'webterm.vfs', THEME_KEY = 'webterm.theme';
+// all apps of the box share one origin: the VFS is shared with ShareCommander
+// on purpose ("shareos.vfs"), everything else has our own key
+const VFS_KEY = 'shareos.vfs', THEME_KEY = 'webterm.theme';
 function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
 let vfs = null;
-try { vfs = JSON.parse(store(VFS_KEY) || store('shareos_vfs') || 'null'); } catch (e) { vfs = null; }
+try { vfs = JSON.parse(store(VFS_KEY) || store('webterm.vfs') || store('shareos_vfs') || 'null'); } catch (e) { vfs = null; }
 if (!vfs || !vfs['/'] || vfs['/'].type !== 'dir') vfs = JSON.parse(JSON.stringify(defaultVFS));
+// ShareCommander (another window) changed the VFS
+addEventListener('storage', (e) => {
+  if (e.key !== VFS_KEY || !e.newValue) return;
+  try {
+    const v = JSON.parse(e.newValue);
+    if (!v || !v['/'] || v['/'].type !== 'dir') return;
+    const box = vfs['/'].children.box;
+    vfs = v;
+    if (box) vfs['/'].children.box = box;
+  } catch (err) { }
+});
 function saveVFS() {
   const copy = { '/': { ...vfs['/'], children: { ...vfs['/'].children } } };
   delete copy['/'].children.box;
@@ -260,6 +272,7 @@ const commands = {
     const node = getNode(target);
     if (!node) return `<span class="text-error">cat: Datei nicht gefunden: ${escapeHTML(args[0])}</span>`;
     if (node.type === 'dir') return `<span class="text-error">cat: ${escapeHTML(args[0])} ist ein Verzeichnis</span>`;
+    if (node.bin) return `<i>Binärdatei (aus ShareCommander) – nicht als Text darstellbar.</i>`;
     return escapeHTML(node.content);
   },
 
@@ -297,6 +310,7 @@ const commands = {
     const target = resolvePath(getActiveSession().cwd, args[1]);
     const node = getNode(target);
     if (!node || node.type !== 'file') return `<span class="text-error">grep: Datei nicht gefunden: ${escapeHTML(args[1])}</span>`;
+    if (node.bin) return `<i>Binärdatei – grep durchsucht nur Text.</i>`;
     const lines = node.content.split('\n');
     const matches = lines
       .map((l, idx) => ({ line: l, num: idx + 1 }))
@@ -357,6 +371,7 @@ const commands = {
     const target = resolvePath(s.cwd, args[0]);
     const node = getNode(target);
     if (node && node.type !== 'file') return `<span class="text-error">webpad: ${escapeHTML(args[0])} ist ein Verzeichnis</span>`;
+    if (node && node.bin) return `<span class="text-error">webpad: ${escapeHTML(args[0])} ist eine Binärdatei</span>`;
     const msg = { type: 'open-file', data: { to: 'webpad', reply: APP, path: target, name: target.split('/').pop(),
       content: node ? node.content : '', readonly: !!node?.ro } };
     if (alive('webpad')) {

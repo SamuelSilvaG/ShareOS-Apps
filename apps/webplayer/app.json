@@ -1,0 +1,22 @@
+{
+	"id": "webplayer",
+	"name": "WinWeb Player",
+	"version": "1.0.0",
+	"publisher": "UniqueDroid",
+	"description": {
+		"de": "Audio- und Videoplayer im Retro-Stil mit 10-Band-Equalizer, Visualizer und Playlist. Spielt Musik und Videos der Box direkt ab.",
+		"en": "Retro style audio and video player with 10-band equalizer, visualizer and playlist. Plays music and videos of the box directly."
+	},
+	"type": "webapp",
+	"entry": "index.html",
+	"icon": "icon.svg",
+	"category": "media",
+	"license": "MIT",
+	"homepage": "https://github.com/UniqueDroid/ShareOS-Apps/tree/main/apps/webplayer",
+	"min_shareos": "0.1.0-beta.1",
+	"permissions": [],
+	"window": { "width": 940, "height": 600 },
+	"opens": [
+		{ "ext": [".mp3", ".wav", ".ogg", ".oga", ".opus", ".flac", ".m4a", ".aac", ".mp4", ".m4v", ".webm"], "mode": "view", "label": { "de": "Abspielen", "en": "Play" } }
+	]
+}

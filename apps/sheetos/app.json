@@ -1,0 +1,22 @@
+{
+	"id": "sheetos",
+	"name": "SheetOS",
+	"version": "1.0.0",
+	"publisher": "UniqueDroid",
+	"description": {
+		"de": "Schlanke Tabellenkalkulation: Formeln (SUM, AVG, IF, …), CSV öffnen und speichern, Kopieren und Einfügen mit anderen Tabellenprogrammen. Öffnet CSV-Dateien der Box direkt.",
+		"en": "Lightweight spreadsheet: formulas (SUM, AVG, IF, …), open and save CSV, copy and paste with other spreadsheets. Opens CSV files of the box directly."
+	},
+	"type": "webapp",
+	"entry": "index.html",
+	"icon": "icon.svg",
+	"category": "office",
+	"license": "MIT",
+	"homepage": "https://github.com/UniqueDroid/ShareOS-Apps/tree/main/apps/sheetos",
+	"min_shareos": "0.1.0-beta.1",
+	"permissions": [],
+	"window": { "width": 1100, "height": 700 },
+	"opens": [
+		{ "ext": [".csv", ".tsv"], "mode": "edit", "label": { "de": "Als Tabelle bearbeiten", "en": "Edit as spreadsheet" } }
+	]
+}

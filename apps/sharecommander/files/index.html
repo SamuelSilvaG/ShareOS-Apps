@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShareCommander – ShareOS</title>
+  <link rel="icon" href="icon.svg">
+  <!-- ShareOS look and SDK; outside ShareOS these are simply missing -->
+  <link rel="stylesheet" href="/_shareos/theme.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="/_shareos/app.js"></script>
+</head>
+<body>
+
+  <!-- Top Bar & Toolbar -->
+  <header class="top-header">
+    <div class="brand">
+      <span class="brand-icon">🗂️</span>
+      <span class="brand-title">SHARECOMMANDER</span>
+      <span class="brand-version">v1.0</span>
+    </div>
+
+    <div class="toolbar">
+      <label class="tool-btn" for="upload-input" title="Lokale Dateien in aktives Panel importieren">📥 Import</label>
+      <input type="file" id="upload-input" multiple hidden>
+      <button class="tool-btn" id="mount-local-btn" title="Einen Ordner deines Rechners in das aktive Panel kopieren (Chrome/Edge)">🖴 Ordner importieren</button>
+      <button class="tool-btn" id="sync-opfs-btn" title="Aktiven Ordner mit dem privaten Browser-Speicher (OPFS) abgleichen: hin und zurück">⚡ OPFS-Abgleich</button>
+      <span class="divider"></span>
+      <button class="tool-btn" id="zip-pack-btn" title="Markierte Dateien als .zip Archiv packen">📦 ZIP Packen</button>
+      <button class="tool-btn" id="zip-unpack-btn" title="Ausgewählte .zip Datei entpacken">📂 ZIP Entpacken</button>
+      <button class="tool-btn" id="bulk-rename-btn" title="Mehrfach-Umbenenn-Tool (Strg+M)">✏️ Multi-Rename</button>
+      <span class="divider"></span>
+      <button class="tool-btn" id="quick-view-btn" title="Schnellvorschau-Panel umschalten (Strg+Q)">👁️ Vorschau (F3)</button>
+      <button class="tool-btn" id="theme-btn" title="Farbschema wechseln (ShareOS / Dark / Norton Blue / Matrix)">🎨 Theme</button>
+    </div>
+  </header>
+
+  <!-- Main Workspace: Left Pane | Right Pane | Optional Preview -->
+  <main class="workspace" id="workspace">
+
+    <!-- LEFT PANE -->
+    <section class="pane active-pane" id="pane-left" data-side="left">
+      <div class="pane-header">
+        <div class="drive-bar">
+          <span class="drive-badge">VFS://</span>
+          <button class="mini-nav-btn" data-action="root" title="Zum Wurzelverzeichnis">/</button>
+          <button class="mini-nav-btn" data-action="home" title="Home-Verzeichnis">~</button>
+          <button class="mini-nav-btn" data-action="up" title="Übergeordneter Ordner (Backspace)">⬆ ..</button>
+        </div>
+        <div class="path-Breadcrumb" id="path-left">/home/user</div>
+        <input type="text" class="filter-input" id="filter-left" placeholder="Filter...">
+      </div>
+
+      <div class="file-table-wrap">
+        <table class="file-table">
+          <thead>
+            <tr>
+              <th style="width: 28px;"><input type="checkbox" class="select-all-cb" data-side="left" title="Alle auswählen"></th>
+              <th class="sortable" data-sort="name">Name</th>
+              <th style="width: 70px;" class="sortable" data-sort="ext">Typ</th>
+              <th style="width: 85px; text-align: right;" class="sortable" data-sort="size">Größe</th>
+              <th style="width: 125px;" class="sortable" data-sort="mtime">Geändert</th>
+            </tr>
+          </thead>
+          <tbody id="list-left"></tbody>
+        </table>
+      </div>
+
+      <div class="pane-footer" id="stats-left">0 markiert / 0 Dateien</div>
+    </section>
+
+    <!-- RIGHT PANE -->
+    <section class="pane" id="pane-right" data-side="right">
+      <div class="pane-header">
+        <div class="drive-bar">
+          <span class="drive-badge">VFS://</span>
+          <button class="mini-nav-btn" data-action="root" title="Zum Wurzelverzeichnis">/</button>
+          <button class="mini-nav-btn" data-action="home" title="Home-Verzeichnis">~</button>
+          <button class="mini-nav-btn" data-action="up" title="Übergeordneter Ordner (Backspace)">⬆ ..</button>
+        </div>
+        <div class="path-Breadcrumb" id="path-right">/etc</div>
+        <input type="text" class="filter-input" id="filter-right" placeholder="Filter...">
+      </div>
+
+      <div class="file-table-wrap">
+        <table class="file-table">
+          <thead>
+            <tr>
+              <th style="width: 28px;"><input type="checkbox" class="select-all-cb" data-side="right" title="Alle auswählen"></th>
+              <th class="sortable" data-sort="name">Name</th>
+              <th style="width: 70px;" class="sortable" data-sort="ext">Typ</th>
+              <th style="width: 85px; text-align: right;" class="sortable" data-sort="size">Größe</th>
+              <th style="width: 125px;" class="sortable" data-sort="mtime">Geändert</th>
+            </tr>
+          </thead>
+          <tbody id="list-right"></tbody>
+        </table>
+      </div>
+
+      <div class="pane-footer" id="stats-right">0 markiert / 0 Dateien</div>
+    </section>
+
+    <!-- QUICK VIEW / PREVIEW PANEL (Collapsible) -->
+    <aside class="preview-pane hidden" id="preview-pane">
+      <div class="preview-header">
+        <span id="preview-title">DATEI-VORSCHAU</span>
+        <button class="close-btn" id="close-preview-btn">×</button>
+      </div>
+      <div class="preview-body" id="preview-body">
+        <div class="preview-placeholder">Wähle eine Datei aus und drücke <b>F3</b> für die Vorschau (Text, Code, Bilder, Audio, Hex-Ansicht).</div>
+      </div>
+      <div class="preview-actions">
+        <button class="tool-btn" id="open-webpad-btn">📝 In WebPad öffnen</button>
+        <button class="tool-btn" id="open-webplayer-btn">🎵 In WinWeb abspielen</button>
+        <button class="tool-btn" id="download-file-btn">💾 Download</button>
+      </div>
+    </aside>
+
+  </main>
+
+  <!-- Total Commander Classic Function Key Bar (F3 - F8) -->
+  <footer class="fn-bar">
+    <button class="fn-btn" id="fn-f2"><b>F2</b> Umbenennen</button>
+    <button class="fn-btn" id="fn-f3"><b>F3</b> Ansicht</button>
+    <button class="fn-btn" id="fn-f4"><b>F4</b> WebPad Edit</button>
+    <button class="fn-btn" id="fn-f5"><b>F5</b> Kopieren ➔</button>
+    <button class="fn-btn" id="fn-f6"><b>F6</b> Bewegen ➔</button>
+    <button class="fn-btn" id="fn-f7"><b>F7</b> +Ordner</button>
+    <button class="fn-btn" id="fn-f8"><b>F8</b> +Datei</button>
+    <button class="fn-btn danger" id="fn-del"><b>Entf</b> Löschen</button>
+  </footer>
+
+  <!-- BULK RENAME MODAL (Total Commander Multi-Rename Tool) -->
+  <div class="modal-backdrop hidden" id="rename-modal">
+    <div class="modal-window">
+      <div class="modal-header">
+        <span>✏️ Mehrfach-Umbenenn-Tool (Bulk Rename)</span>
+        <button class="close-btn" id="close-rename-modal">×</button>
+      </div>
+      <div class="modal-content">
+        <div class="rename-controls">
+          <div class="field-group">
+            <label>Dateinamen-Maske (<code>[N]</code> = alter Name, <code>[C]</code> = Zähler):</label>
+            <input type="text" id="rename-mask" value="[N]_[C]">
+          </div>
+          <div class="field-group">
+            <label>Suchen nach:</label>
+            <input type="text" id="rename-search" placeholder="z.B. Leerzeichen oder Text">
+          </div>
+          <div class="field-group">
+            <label>Ersetzen durch:</label>
+            <input type="text" id="rename-replace" placeholder="Ersatztext">
+          </div>
+          <div class="field-group">
+            <label>Groß-/Kleinschreibung:</label>
+            <select id="rename-case">
+              <option value="keep">Unverändert lassen</option>
+              <option value="lower">alles kleinschreiben</option>
+              <option value="upper">ALLES GROSSSCHREIBEN</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="rename-preview-wrap">
+          <table class="file-table">
+            <thead>
+              <tr>
+                <th>Aktueller Dateiname</th>
+                <th>➔ Neuer Dateiname (Vorschau)</th>
+              </tr>
+            </thead>
+            <tbody id="rename-preview-body"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="tool-btn" id="apply-rename-btn">✅ Umbenennen starten</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Status Message -->
+  <div class="toast hidden" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

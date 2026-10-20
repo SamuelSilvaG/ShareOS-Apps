@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DevBox – ShareOS</title>
+  <link rel="icon" href="icon.svg">
+  <!-- ShareOS look and SDK; outside ShareOS these are simply missing -->
+  <link rel="stylesheet" href="/_shareos/theme.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="/_shareos/app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">🛠️ DEVBOX <span class="badge" id="version-badge">v1.1</span></div>
+    <div class="tool-tabs" id="tool-tabs">
+      <button class="tab-btn active" data-tool="json">JSON Formatter</button>
+      <button class="tab-btn" data-tool="base64">Base64 / URL</button>
+      <button class="tab-btn" data-tool="crypto">Hashes & Crypto</button>
+      <button class="tab-btn" data-tool="regex">Regex Tester</button>
+      <button class="tab-btn" data-tool="diff">Diff-Viewer</button>
+      <button class="tab-btn" data-tool="jwt">JWT Decoder</button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <!-- JSON Formatter Tool -->
+    <div class="tool-view" id="view-json">
+      <div class="pane">
+        <div class="pane-header">
+          <span>Eingabe (Raw JSON)</span>
+          <div class="btn-group">
+            <button class="action-btn" id="json-format-btn">Beautify (2 Spaces)</button>
+            <button class="action-btn secondary" id="json-minify-btn">Minify</button>
+          </div>
+        </div>
+        <textarea id="json-input" placeholder='{"app":"DevBox","features":["json","base64","regex","hash","diff"]}'></textarea>
+      </div>
+      <div class="pane">
+        <div class="pane-header">
+          <span>Ausgabe / Validierung</span>
+          <span id="json-status" class="status-ok">Bereit</span>
+        </div>
+        <textarea id="json-output" readonly placeholder="Formatiertes Ergebnis..."></textarea>
+      </div>
+    </div>
+
+    <!-- Base64 / URL Tool -->
+    <div class="tool-view hidden" id="view-base64">
+      <div class="pane">
+        <div class="pane-header"><span>Eingabetext</span></div>
+        <textarea id="b64-input" placeholder="Text oder kodierten String hier eingeben..."></textarea>
+      </div>
+      <div class="pane">
+        <div class="pane-header"><span>Transformationen</span></div>
+        <div class="btn-grid">
+          <button class="action-btn" id="b64-enc">Base64 Encode</button>
+          <button class="action-btn" id="b64-dec">Base64 Decode</button>
+          <button class="action-btn" id="url-enc">URL Encode</button>
+          <button class="action-btn" id="url-dec">URL Decode</button>
+          <button class="action-btn" id="html-enc">HTML Entities</button>
+          <button class="action-btn" id="html-dec">HTML Entities ➔ Text</button>
+          <button class="action-btn secondary" id="hex-enc">Text ➔ Hex</button>
+          <button class="action-btn secondary" id="hex-dec">Hex ➔ Text</button>
+        </div>
+        <textarea id="b64-output" readonly placeholder="Ergebnis..."></textarea>
+      </div>
+    </div>
+
+    <!-- Crypto / Hashes Tool -->
+    <div class="tool-view hidden" id="view-crypto">
+      <div class="pane">
+        <div class="pane-header">
+          <span>Text für Hash-Berechnung</span>
+          <div class="btn-group">
+            <label class="action-btn secondary" for="hash-file" title="Prüfsumme einer Datei von diesem Rechner">📂 Datei …</label>
+            <input type="file" id="hash-file" hidden>
+            <button class="action-btn" id="gen-uuid-btn">🎲 Neue UUID v4</button>
+          </div>
+        </div>
+        <textarea id="crypto-input" placeholder="Tippe hier Text ein, um Hashes in Echtzeit zu berechnen..."></textarea>
+      </div>
+      <div class="pane">
+        <div class="pane-header"><span>Kryptografische Prüfsummen (Web Crypto API)</span></div>
+        <div class="hash-results">
+          <div class="hash-row"><label>SHA-1:</label><input type="text" id="hash-sha1" readonly></div>
+          <div class="hash-row"><label>SHA-256:</label><input type="text" id="hash-sha256" readonly></div>
+          <div class="hash-row"><label>SHA-384:</label><input type="text" id="hash-sha384" readonly></div>
+          <div class="hash-row"><label>SHA-512:</label><input type="text" id="hash-sha512" readonly></div>
+          <div class="hash-row"><label for="hash-expect">Vergleichen mit (z. B. Inhalt der .sha256-Datei):</label><input type="text" id="hash-expect" spellcheck="false" placeholder="erwartete Prüfsumme einfügen"><span class="hint" id="hash-match"></span></div>
+          <div class="hash-row"><label>UUID v4 Generator:</label><input type="text" id="hash-uuid" readonly></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Regex Tester -->
+    <div class="tool-view hidden" id="view-regex">
+      <div class="pane">
+        <div class="pane-header"><span>Regulärer Ausdruck & Flags</span></div>
+        <div class="regex-controls">
+          <input type="text" id="regex-pattern" value="\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b" placeholder="Regex Pattern...">
+          <div class="flags">
+            <label><input type="checkbox" id="flag-g" checked> g</label>
+            <label><input type="checkbox" id="flag-i" checked> i</label>
+            <label><input type="checkbox" id="flag-m"> m</label>
+          </div>
+        </div>
+        <div class="pane-header" style="margin-top:8px;"><span>Test-String</span></div>
+        <textarea id="regex-testtext">Kontaktiere uns unter info@shareos.local oder dev@uniquedroid.org für Feedback!</textarea>
+      </div>
+      <div class="pane">
+        <div class="pane-header"><span>Treffer & Gruppen (Matches)</span><span class="hint" id="regex-count"></span></div>
+        <textarea id="regex-output" readonly placeholder="Gefundene Treffer..."></textarea>
+      </div>
+    </div>
+
+    <!-- Diff Viewer Tool -->
+    <div class="tool-view hidden" id="view-diff">
+      <div class="pane">
+        <div class="pane-header">
+          <span>Originaltext (Links) & Geänderter Text (Rechts)</span>
+          <button class="action-btn" id="run-diff-btn">🔍 Zeilen vergleichen</button>
+          <span class="hint" id="diff-stats"></span>
+        </div>
+        <div class="diff-inputs">
+          <textarea id="diff-left" placeholder="Originaler Text...">const version = "1.0";
+const debug = true;
+console.log("Start ShareOS");</textarea>
+          <textarea id="diff-right" placeholder="Neuer Text...">const version = "1.1";
+const debug = false;
+const app = "DevBox";
+console.log("Start ShareOS");</textarea>
+        </div>
+      </div>
+      <div class="pane">
+        <div class="pane-header"><span>Diff-Ergebnis (+ Hinzugefügt / - Entfernt)</span></div>
+        <div class="diff-output" id="diff-output"></div>
+      </div>
+    </div>
+
+    <!-- JWT Decoder -->
+    <div class="tool-view hidden" id="view-jwt">
+      <div class="pane">
+        <div class="pane-header"><span>JSON Web Token (JWT) String</span></div>
+        <textarea id="jwt-input" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."></textarea>
+      </div>
+      <div class="pane">
+        <div class="pane-header"><span>Header & Payload Dekodierung</span></div>
+        <textarea id="jwt-output" readonly placeholder="Dekodierter Payload..."></textarea>
+      </div>
+    </div>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

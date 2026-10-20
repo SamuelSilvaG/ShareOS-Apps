@@ -12,6 +12,10 @@ installs them with one click – the same way it offers firmware updates.
 |---|---|
 | [Webpad](apps/webpad) | Text editor in the style of Notepad++; opens and saves text files of the box, takes files from other apps |
 | [WebTerm](apps/webterm) | Terminal with tabs, a virtual file system, a JavaScript sandbox and a bridge to Webpad; views log files of the box |
+| [ShareCommander](apps/sharecommander) | Two-pane file manager in the style of Total Commander for the browser file system (shared with WebTerm): ZIP, multi-rename, preview, bridges to Webpad and WinWeb Player |
+| [WinWeb Player](apps/webplayer) | Audio and video player in retro style with equalizer and visualizer; streams music and videos of the box |
+| [SheetOS](apps/sheetos) | Small spreadsheet with formulas; opens and saves CSV files of the box |
+| [DevBox](apps/devbox) | Developer toolbox: JSON, Base64/URL/hex, checksums (also of files of the box), regex, diff, JWT |
 
 ## How it works
 
@@ -100,8 +104,8 @@ The apps web server serves two files for every app – same address, works offli
 
 - **Look:** CSS variables `--sos-bg`, `--sos-panel`, `--sos-bar`, `--sos-line`, `--sos-accent`, `--sos-text`, `--sos-muted` … for light/dark and the user's accent colour (set on `<html data-theme data-accent>`; ShareOS passes the user's look in the URL and updates it live). Building blocks: `.sos-titlebar`, `.sos-menubar`, `.sos-toolbar`, `.sos-statusbar`, `.sos-btn`, `.sos-input`, `.sos-dialog`, styled scroll bars.
 - **Menu bar** like Notepad++: `ShareOS.menu(document.getElementById('menu'), [{ label: 'Datei', items: [{ label: 'Speichern', kbd: 'Ctrl+S', action: save }, '-', …] }, { label: 'Bearbeiten', items: […] }, { label: 'Ansicht', items: […] }])` – mouse and keyboard, shortcuts included.
-- **Opened file:** when the user opens a file from the ShareOS file browser, `ShareOS.file` is set: `await ShareOS.file.info()` (name, mode), `await ShareOS.file.text()` / `.blob()`, `await ShareOS.file.save(data)` (mode `edit` only). The app gets a ticket for exactly this file and the user's rights – nothing else on the box.
-- **Messages between apps:** `ShareOS.emit(type, data)` / `ShareOS.on(type, fn)` (BroadcastChannel; every app hears them, so no secrets).
+- **Opened file:** when the user opens a file from the ShareOS file browser, `ShareOS.file` is set: `await ShareOS.file.info()` (name, mode), `await ShareOS.file.text()` / `.blob()`, `await ShareOS.file.save(data)` (mode `edit` only), `ShareOS.file.url` (address of the content for `<audio>`/`<video>`; ShareOS 0.1.0-beta.11+; byte ranges for seeking). The app gets a ticket for exactly this file and the user's rights – nothing else on the box.
+- **Messages between apps:** `ShareOS.emit(type, data)` / `ShareOS.on(type, fn)` (BroadcastChannel `shareos`, `{type, data, from}`; every app hears them, so no secrets). Used by the apps here: `open-file` `{to, name, path, content, readonly}` → `file-saved` `{to, path, name, content}` (Webpad), `open-media` `{to, name, blob|url}` (WinWeb Player), `ping`/`pong`/`app-ready` (is an app open?). The browser file system of WebTerm and ShareCommander is shared under the key `shareos.vfs`.
 - `ShareOS.onTheme(fn)`, `ShareOS.embedded` (true inside the ShareOS interface).
 
 Webpad loads the SDK only when ShareOS opened a file, so it still works as a plain HTML file anywhere.

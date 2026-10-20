@@ -1,0 +1,23 @@
+{
+	"id": "devbox",
+	"name": "DevBox",
+	"version": "1.1.0",
+	"publisher": "UniqueDroid",
+	"description": {
+		"de": "Werkzeugkasten für Entwickler: JSON formatieren, Base64/URL/HTML/Hex, Prüfsummen (auch von Dateien der Box), Regex-Tester, Diff und JWT-Decoder. Alles läuft im Browser.",
+		"en": "Toolbox for developers: format JSON, Base64/URL/HTML/hex, checksums (also of files on the box), regex tester, diff and JWT decoder. Everything runs in the browser."
+	},
+	"type": "webapp",
+	"entry": "index.html",
+	"icon": "icon.svg",
+	"category": "tools",
+	"license": "MIT",
+	"homepage": "https://github.com/UniqueDroid/ShareOS-Apps/tree/main/apps/devbox",
+	"min_shareos": "0.1.0-beta.1",
+	"permissions": [],
+	"window": { "width": 960, "height": 600 },
+	"opens": [
+		{ "ext": [".json"], "mode": "view", "label": { "de": "Formatieren", "en": "Format" } },
+		{ "ext": [".iso", ".img", ".zip", ".gz", ".tar", ".7z", ".bin", ".sapp", ".exe", ".msi", ".deb", ".apk"], "mode": "view", "label": { "de": "Prüfsumme berechnen", "en": "Compute checksum" } }
+	]
+}

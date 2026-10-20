@@ -1,0 +1,58 @@
+:root {
+  --bg: #14161a;
+  --panel: #1c2028;
+  --bar: #1a1e26;
+  --field: #121418;
+  --grid: #0e1014;
+  --border: #2d333f;
+  --text: #e5e9f0;
+  --muted: #8b949e;
+  --accent: #22c55e;
+  --on-accent: #0b1a10;
+  --err: #ef4444;
+  --cell-select: rgba(34, 197, 94, 0.15);
+  --cell-border: #384050;
+  --font-mono: 'Cascadia Code', 'Consolas', monospace;
+}
+/* inside ShareOS: the user's look (/_shareos/theme.css), light or dark */
+[data-look="shareos"] {
+  --bg: var(--sos-bg); --panel: var(--sos-panel); --bar: var(--sos-bar); --field: var(--sos-bg); --grid: var(--sos-panel);
+  --border: var(--sos-line); --text: var(--sos-text); --muted: var(--sos-muted); --accent: var(--sos-accent);
+  --on-accent: var(--sos-bg); --err: var(--sos-err); --cell-select: rgba(var(--sos-rgb), .14); --cell-border: var(--sos-line);
+  --font-mono: var(--sos-font);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: system-ui, sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; font-size: 13px; }
+.hidden { display: none !important; }
+.topbar { background: var(--panel); border-bottom: 1px solid var(--border); padding: 6px 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.brand { font-family: var(--font-mono); font-weight: bold; display: flex; align-items: center; gap: 6px; min-width: 0; }
+.file-name { font-weight: normal; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 320px; }
+.file-name.dirty::after { content: " ●"; color: #e6c25a; }
+.badge { background: var(--cell-select); color: var(--accent); padding: 1px 6px; border-radius: 3px; font-size: 10px; }
+.toolbar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.tool-btn { background: var(--bar); color: var(--text); border: 1px solid var(--border); padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-family: inherit; }
+.tool-btn:hover { border-color: var(--accent); }
+.tool-btn.action { color: var(--accent); font-weight: bold; }
+.tool-btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: bold; }
+.sep-label { font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 4px; }
+.sep-label select { background: var(--field); color: var(--text); border: 1px solid var(--border); border-radius: 3px; padding: 2px; }
+.divider { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
+.formula-bar { background: var(--bar); border-bottom: 1px solid var(--border); padding: 6px 12px; display: flex; align-items: center; gap: 10px; }
+.cell-label { font-family: var(--font-mono); font-weight: bold; color: var(--accent); min-width: 48px; }
+#formula-input { flex: 1; background: var(--field); color: var(--text); border: 1px solid var(--border); padding: 4px 8px; border-radius: 3px; font-family: var(--font-mono); outline: none; }
+#formula-input:focus { border-color: var(--accent); }
+.grid-container { flex: 1; overflow: auto; background: var(--grid); position: relative; outline: none; }
+.spreadsheet { border-collapse: separate; border-spacing: 0; font-family: var(--font-mono); font-size: 12px; table-layout: fixed; user-select: none; }
+.spreadsheet th, .spreadsheet td { border-right: 1px solid var(--cell-border); border-bottom: 1px solid var(--cell-border); height: 24px; }
+.spreadsheet th { background: var(--panel); color: var(--muted); text-align: center; font-weight: normal; position: sticky; top: 0; z-index: 2; width: 96px; min-width: 96px; }
+.spreadsheet th.corner { left: 0; z-index: 3; width: 44px; min-width: 44px; }
+.spreadsheet td.row-header { background: var(--panel); color: var(--muted); text-align: center; position: sticky; left: 0; z-index: 1; width: 44px; }
+.spreadsheet td.cell { padding: 0 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 96px; cursor: cell; }
+.spreadsheet td.num { text-align: right; }
+.spreadsheet td.error { color: var(--err); }
+.spreadsheet td.in-range { background: var(--cell-select); }
+.spreadsheet td.active { outline: 2px solid var(--accent); outline-offset: -2px; }
+.spreadsheet th.hl, .spreadsheet td.row-header.hl { color: var(--accent); }
+.cell-editor { position: absolute; z-index: 5; border: 2px solid var(--accent); background: var(--field); color: var(--text); font-family: var(--font-mono); font-size: 12px; padding: 0 4px; outline: none; }
+.statusbar { display: flex; gap: 16px; align-items: center; min-height: 24px; padding: 0 12px; background: var(--bar); border-top: 1px solid var(--border); color: var(--muted); font-size: 12px; font-family: var(--font-mono); }
+.statusbar > :last-child { margin-left: auto; }
