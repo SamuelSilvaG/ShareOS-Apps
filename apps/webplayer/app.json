@@ -15,8 +15,31 @@
 	"homepage": "https://github.com/UniqueDroid/ShareOS-Apps/tree/main/apps/webplayer",
 	"min_shareos": "0.1.0-beta.1",
 	"permissions": [],
-	"window": { "width": 940, "height": 600 },
+	"internet": true,
+	"window": {
+		"width": 940,
+		"height": 600
+	},
 	"opens": [
-		{ "ext": [".mp3", ".wav", ".ogg", ".oga", ".opus", ".flac", ".m4a", ".aac", ".mp4", ".m4v", ".webm"], "mode": "view", "label": { "de": "Abspielen", "en": "Play" } }
+		{
+			"ext": [
+				".mp3",
+				".wav",
+				".ogg",
+				".oga",
+				".opus",
+				".flac",
+				".m4a",
+				".aac",
+				".mp4",
+				".m4v",
+				".webm"
+			],
+			"mode": "view",
+			"label": {
+				"de": "Abspielen",
+				"en": "Play"
+			}
+		}
 	]
 }

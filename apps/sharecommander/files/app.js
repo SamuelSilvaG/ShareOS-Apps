@@ -3,6 +3,8 @@
 // Works on the virtual file system (VFS) in the browser that WebTerm uses too
 // (localStorage "shareos.vfs" on the apps origin of the box). Text files are
 // stored as text, other files as data: URL (node.bin).
+// With the permission "files" (ShareOS 0.1.0-beta.11+) a pane can also show
+// the folders of the box (ShareOS.fs) – with the rights of the signed-in user.
 
 // --- ShareOS app bridge ---------------------------------------------------------
 // Inside ShareOS the app SDK (/_shareos/app.js) is loaded: messages go through
@@ -53,6 +55,14 @@ function sendTo(app, type, data, label) {
 // Webpad saved a file we sent it: write it back into the VFS
 on('file-saved', (d) => {
   if (!d || d.to !== APP || typeof d.path !== 'string') return;
+  const bm = /^box:([^/]+)\/(.*)$/.exec(d.path);
+  if (bm) {              // a file of the box: write it back there
+    const parts = bm[2].split('/'), name = parts.pop();
+    boxWrite(bm[1], parts.join('/'), name, new Blob([String(d.content ?? '')]))
+      .then(() => { refreshBox(); showToast(`Auf der Box gespeichert: ${bm[1]}/${bm[2]}`); })
+      .catch((e) => showToast(`Speichern auf der Box fehlgeschlagen: ${e.message}`));
+    return;
+  }
   const path = resolvePath('/', d.path);
   const name = path.split('/').pop();
   const dir = getNode(parentOf(path));
@@ -170,9 +180,65 @@ function nowStamp() {
 // --- Dual-Pane State ---
 const state = {
   activeSide: 'left',
-  left: { cwd: '/home/user', selected: new Set(), cursor: null, filter: '', sortBy: 'name', sortAsc: true, view: [] },
-  right: { cwd: '/etc', selected: new Set(), cursor: null, filter: '', sortBy: 'name', sortAsc: true, view: [] }
+  left: { drive: 'vfs', cwd: '/home/user', selected: new Set(), cursor: null, filter: '', sortBy: 'name', sortAsc: true, view: [], items: null },
+  right: { drive: 'vfs', cwd: '/etc', selected: new Set(), cursor: null, filter: '', sortBy: 'name', sortAsc: true, view: [], items: null }
 };
+
+// --- folders of the box (ShareOS.fs, permission "files") ---------------------
+// A pane shows either the VFS (drive "vfs") or a folder root of the box; on the
+// box cwd is "/" + the path inside the root.
+const FS = SOS && SOS.fs ? SOS.fs : null;
+let boxRoots = [];
+const isBox = (side) => state[side].drive !== 'vfs';
+const relOf = (cwd) => cwd.replace(/^\/+/, '');
+function stampOf(sec) {
+  const d = new Date(sec * 1000), p = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+async function loadBox(side) {
+  const p = state[side];
+  try {
+    const r = await FS.list(p.drive, relOf(p.cwd));
+    p.items = r.entries.filter((e) => e.type !== 'other').map((e) => ({ name: e.name, isDir: e.type === 'dir' || e.type === 'dirlink', size: e.size, mtime: stampOf(e.mtime) }));
+    p.free = r.free;
+  } catch (e) {
+    showToast(`Box: ${e.message}`);
+    if (p.cwd !== '/') { p.cwd = parentOf(p.cwd); return loadBox(side); }
+    p.items = [];
+  }
+  renderPane(side);
+  if (side === state.activeSide) updatePreviewIfOpen();
+}
+function refreshBox() {
+  return Promise.all(['left', 'right'].filter(isBox).map(loadBox));
+}
+// read / write one file of the box
+async function boxRead(root, rel, name) {
+  const f = await FS.open(root, rel, name);
+  return new Uint8Array(await (await f.blob()).arrayBuffer());
+}
+async function boxWrite(root, rel, name, blob) {
+  const f = await FS.open(root, rel, name, { write: true, create: true });
+  return f.save(blob);
+}
+function setDrive(side, drive) {
+  const p = state[side];
+  p.drive = drive; p.selected.clear(); p.cursor = null; p.items = null; p.filter = '';
+  document.getElementById(`drive-${side}`).value = drive;
+  document.getElementById(`filter-${side}`).value = '';
+  p.cwd = drive === 'vfs' ? '/home/user' : '/';
+  if (drive === 'vfs') renderPane(side); else loadBox(side);
+}
+function fillDrives() {
+  for (const side of ['left', 'right']) {
+    const sel = document.getElementById(`drive-${side}`);
+    sel.innerHTML = '<option value="vfs">VFS:// Browser</option>' +
+      boxRoots.map((r) => `<option value="${escapeHTML(r.name)}">${r.usb ? '🔌' : r.home ? '🏠' : '🗄️'} BOX:// ${escapeHTML(r.name)}</option>`).join('');
+    sel.value = state[side].drive;
+    sel.hidden = !boxRoots.length;
+    document.getElementById(`badge-${side}`).hidden = !!boxRoots.length;
+  }
+}
 
 const themes = ['shareos', 'dark', 'norton', 'matrix'];
 let currentThemeIdx = 0;
@@ -295,24 +361,31 @@ function renderBothPanes() {
 
 function renderPane(side) {
   const pState = state[side];
-  let dirNode = getNode(pState.cwd);
-  while (!dirNode || dirNode.type !== 'dir') {     // the folder is gone (deleted elsewhere)
-    pState.cwd = parentOf(pState.cwd);
+  const box = isBox(side);
+  let dirNode = null;
+  if (!box) {
     dirNode = getNode(pState.cwd);
+    while (!dirNode || dirNode.type !== 'dir') {     // the folder is gone (deleted elsewhere)
+      pState.cwd = parentOf(pState.cwd);
+      dirNode = getNode(pState.cwd);
+    }
   }
 
-  document.getElementById(`path-${side}`).textContent = pState.cwd;
+  document.getElementById(`path-${side}`).textContent = box ? pState.drive + pState.cwd : pState.cwd;
   const tbody = document.getElementById(`list-${side}`);
   tbody.innerHTML = '';
 
-  const children = Object.entries(dirNode.children || {}).map(([name, node]) => ({
-    name,
-    node,
-    isDir: node.type === 'dir',
-    ext: getExtension(name, node.type === 'dir'),
-    size: getByteSize(node),
-    mtime: node.mtime || '–'
-  }));
+  const children = box
+    ? (pState.items || []).map((i) => ({ ...i, node: {}, ext: getExtension(i.name, i.isDir) }))
+    : Object.entries(dirNode.children || {}).map(([name, node]) => ({
+      name,
+      node,
+      isDir: node.type === 'dir',
+      ext: getExtension(name, node.type === 'dir'),
+      size: getByteSize(node),
+      mtime: node.mtime || '–'
+    }));
+  const present = new Set(children.map((c) => c.name));
 
   const filtered = children.filter(item => item.name.toLowerCase().includes(pState.filter.toLowerCase()));
 
@@ -328,7 +401,7 @@ function renderPane(side) {
   });
 
   // forget selections of entries that are gone
-  for (const n of [...pState.selected]) if (!dirNode.children[n]) pState.selected.delete(n);
+  for (const n of [...pState.selected]) if (!present.has(n)) pState.selected.delete(n);
 
   pState.view = (pState.cwd !== '/' ? ['..'] : []).concat(filtered.map((i) => i.name));
   if (!pState.view.includes(pState.cursor)) pState.cursor = pState.view[0] ?? null;
@@ -400,8 +473,8 @@ function renderPane(side) {
   });
 
   const totalBytes = filtered.reduce((acc, i) => acc + i.size, 0);
-  document.getElementById(`stats-${side}`).textContent =
-    `${pState.selected.size} markiert | ${filtered.length} Einträge (${formatBytes(totalBytes)})`;
+  document.getElementById(`stats-${side}`).textContent = (box && pState.items === null) ? 'Lade …' :
+    `${pState.selected.size} markiert | ${filtered.length} Einträge (${formatBytes(totalBytes)})` + (box && pState.free != null ? ` | frei: ${formatBytes(pState.free)}` : '');
   const cur = tbody.querySelector('tr.cursor-row');
   if (cur && side === state.activeSide) cur.scrollIntoView({ block: 'nearest' });
 }
@@ -409,6 +482,17 @@ function renderPane(side) {
 function navigateTo(side, target) {
   const pState = state[side];
   const from = pState.cwd;
+  if (isBox(side)) {
+    const next = target === '~' ? '/' : resolvePath(pState.cwd, target);
+    if (target !== '..' && target !== '/' && target !== '~' && !(pState.items || []).some((i) => i.name === target && i.isDir)) return;
+    pState.cwd = next;
+    pState.selected.clear();
+    pState.cursor = target === '..' ? from.split('/').pop() : null;
+    pState.items = null;
+    renderPane(side);
+    loadBox(side);
+    return;
+  }
   const nextPath = resolvePath(pState.cwd, target);
   const node = getNode(nextPath);
   if (node && node.type === 'dir') {
@@ -422,6 +506,12 @@ function navigateTo(side, target) {
 
 function openEntry(side, name) {
   if (name === '..') { navigateTo(side, '..'); return; }
+  if (isBox(side)) {
+    const it = (state[side].items || []).find((i) => i.name === name);
+    if (!it) return;
+    if (it.isDir) navigateTo(side, name); else handleFileDoubleClick(side, name, null);
+    return;
+  }
   const node = getNode(state[side].cwd).children[name];
   if (!node) return;
   if (node.type === 'dir') navigateTo(side, name);
@@ -436,6 +526,11 @@ function getTargetNames(side) {
 }
 function cursorFile(side) {
   const name = state[side].cursor;
+  if (isBox(side)) {
+    const it = name && name !== '..' ? (state[side].items || []).find((i) => i.name === name) : null;
+    return it ? { name, box: true, root: state[side].drive, rel: relOf(state[side].cwd), size: it.size,
+      node: { type: it.isDir ? 'dir' : 'file', mtime: it.mtime }, path: 'box:' + state[side].drive + joinPath(state[side].cwd, name) } : null;
+  }
   const dir = getNode(state[side].cwd);
   if (!name || name === '..' || !dir.children[name]) return null;
   return { name, node: dir.children[name], path: joinPath(state[side].cwd, name) };
@@ -449,11 +544,87 @@ function canWrite(dirPath) {
 }
 
 // --- Core Operations (F2 - F8, Copy, Move, Delete, Mkdir) ---
+// --- box operations (one or both panes on the box) ---
+// recursive copy from a VFS node into a folder of the box
+async function vfsToBox(node, name, root, rel, stat) {
+  if (node.type === 'dir') {
+    await FS.mkdir(root, rel, name).catch((e) => { if (e.message !== 'already exists') throw e; });
+    const sub = (rel ? rel + '/' : '') + name;
+    for (const [k, v] of Object.entries(node.children || {})) await vfsToBox(v, k, root, sub, stat);
+  } else {
+    await boxWrite(root, rel, name, new Blob([nodeBytes(node)]));
+    stat.files++;
+  }
+}
+// recursive copy from the box into a VFS folder node; too large files are skipped
+async function boxToVfs(root, rel, name, isDir, dirNode, stat) {
+  if (isDir) {
+    const d = dirNode.children[name] && dirNode.children[name].type === 'dir' ? dirNode.children[name] : { type: 'dir', mtime: nowStamp(), children: {} };
+    dirNode.children[name] = d;
+    const sub = (rel ? rel + '/' : '') + name;
+    const r = await FS.list(root, sub);
+    for (const e of r.entries) if (e.type === 'dir' || e.type === 'file') await boxToVfs(root, sub, e.name, e.type === 'dir', d, stat);
+  } else {
+    const it = await FS.open(root, rel, name);
+    if (it.size > MAX_BIN) { stat.skipped++; return; }
+    const node = await fileToNode(name, new Uint8Array(await (await it.blob()).arrayBuffer()));
+    if (node) { dirNode.children[name] = node; stat.files++; } else stat.skipped++;
+  }
+}
+
+async function copyOrMoveBox(isMove, srcSide, dstSide, names) {
+  const S = state[srcSide], D = state[dstSide];
+  const sBox = isBox(srcSide), dBox = isBox(dstSide);
+  const dstNames = dBox ? (D.items || []).map((i) => i.name) : Object.keys(getNode(D.cwd).children);
+  const clash = names.filter((n) => dstNames.includes(n));
+  if (clash.length && !confirm(`Im Ziel gibt es schon: ${clash.join(', ')}\n\nÜberschreiben?`)) return;
+  const label = isMove ? 'verschoben' : 'kopiert';
+  showToast(`${names.length} Element(e) werden ${label} …`);
+  const stat = { files: 0, skipped: 0 };
+  try {
+    if (sBox && dBox) {
+      if (clash.length) await FS.remove(D.drive, relOf(D.cwd), clash);
+      await (isMove ? FS.move : FS.copy)(S.drive, relOf(S.cwd), names, D.drive, relOf(D.cwd));
+    } else if (!sBox && dBox) {
+      const srcDir = getNode(S.cwd);
+      if (clash.length) await FS.remove(D.drive, relOf(D.cwd), clash);
+      for (const n of names) if (srcDir.children[n]) await vfsToBox(srcDir.children[n], n, D.drive, relOf(D.cwd), stat);
+      if (isMove) { names.forEach((n) => delete srcDir.children[n]); saveVFS(); }
+    } else {
+      const dstDir = getNode(D.cwd);
+      for (const n of names) {
+        const it = (S.items || []).find((i) => i.name === n);
+        if (it) await boxToVfs(S.drive, relOf(S.cwd), n, it.isDir, dstDir, stat);
+      }
+      if (!saveVFS()) { vfs = loadVFS(); throw new Error('Browser-Speicher voll'); }
+      if (isMove && !stat.skipped) await FS.remove(S.drive, relOf(S.cwd), names);
+    }
+    S.selected.clear();
+    showToast(`${names.length} Element(e) ${label}` + (stat.skipped ? ` – ${stat.skipped} Datei(en) zu groß für den Browser-Speicher (über 1 MB) übersprungen${isMove ? ', Quelle bleibt' : ''}` : '') + '.');
+  } catch (e) {
+    showToast(`${isMove ? 'Verschieben' : 'Kopieren'} fehlgeschlagen: ${e.message}`);
+  }
+  await refreshBox();
+  renderBothPanes();
+}
+
 function copyOrMove(isMove = false) {
   const srcSide = state.activeSide;
   const dstSide = srcSide === 'left' ? 'right' : 'left';
   const srcPath = state[srcSide].cwd;
   const dstPath = state[dstSide].cwd;
+  if (isBox(srcSide) || isBox(dstSide)) {
+    const names = getTargetNames(srcSide);
+    if (!names.length) { showToast('Keine Dateien oder Ordner ausgewählt.'); return; }
+    if (state[srcSide].drive === state[dstSide].drive && srcPath === dstPath) { showToast('Quell- und Zielverzeichnis sind identisch!'); return; }
+    if (!isBox(dstSide) && !canWrite(dstPath)) { showToast(`${dstPath} ist schreibgeschützt.`); return; }
+    if (state[srcSide].drive === state[dstSide].drive) {
+      const inside = names.find((n) => dstPath === joinPath(srcPath, n) || dstPath.startsWith(joinPath(srcPath, n) + '/'));
+      if (inside) { showToast(`'${inside}' kann nicht in sich selbst ${isMove ? 'verschoben' : 'kopiert'} werden.`); return; }
+    }
+    copyOrMoveBox(isMove, srcSide, dstSide, names);
+    return;
+  }
 
   if (srcPath === dstPath) { showToast('Quell- und Zielverzeichnis sind identisch!'); return; }
   const names = getTargetNames(srcSide);
@@ -497,6 +668,14 @@ function askName(text, value) {
 
 function createFolder() {
   const side = state.activeSide;
+  if (isBox(side)) {
+    const n = askName('Neuer Ordnername:');
+    if (!n) return;
+    FS.mkdir(state[side].drive, relOf(state[side].cwd), n)
+      .then(() => { state[side].cursor = n; showToast(`Ordner '${n}' erstellt.`); return refreshBox(); })
+      .catch((e) => showToast(`Ordner: ${e.message}`));
+    return;
+  }
   if (!canWrite(state[side].cwd)) { showToast('Dieser Ordner ist schreibgeschützt.'); return; }
   const clean = askName('Neuer Ordnername:');
   if (!clean) return;
@@ -511,6 +690,15 @@ function createFolder() {
 
 function createNewFile() {
   const side = state.activeSide;
+  if (isBox(side)) {
+    const n = askName('Neuer Dateiname (z. B. notiz.txt):');
+    if (!n) return;
+    if ((state[side].items || []).some((i) => i.name === n)) { showToast('Existiert bereits!'); return; }
+    boxWrite(state[side].drive, relOf(state[side].cwd), n, new Blob([]))
+      .then(() => { state[side].cursor = n; showToast(`Datei '${n}' angelegt.`); return refreshBox(); })
+      .catch((e) => showToast(`Datei: ${e.message}`));
+    return;
+  }
   if (!canWrite(state[side].cwd)) { showToast('Dieser Ordner ist schreibgeschützt.'); return; }
   const clean = askName('Neuer Dateiname (z. B. notiz.txt):');
   if (!clean) return;
@@ -527,6 +715,14 @@ function renameEntry() {
   const side = state.activeSide;
   const f = cursorFile(side);
   if (!f) return;
+  if (f.box) {
+    const n = askName('Neuer Name:', f.name);
+    if (!n || n === f.name) return;
+    FS.rename(f.root, f.rel, f.name, n)
+      .then(() => { state[side].selected.delete(f.name); state[side].cursor = n; return refreshBox(); })
+      .catch((e) => showToast(`Umbenennen: ${e.message}`));
+    return;
+  }
   if (!canWrite(state[side].cwd) || f.node.ro) { showToast('Schreibgeschützt.'); return; }
   const clean = askName('Neuer Name:', f.name);
   if (!clean || clean === f.name) return;
@@ -545,6 +741,13 @@ function deleteSelected() {
   const side = state.activeSide;
   const names = getTargetNames(side);
   if (!names.length) return;
+  if (isBox(side)) {
+    if (!confirm(`Wirklich ${names.length} Element(e) AUF DER BOX löschen? (${names.join(', ')})\n\nDas lässt sich nicht rückgängig machen.`)) return;
+    FS.remove(state[side].drive, relOf(state[side].cwd), names)
+      .then(() => { state[side].selected.clear(); showToast(`${names.length} Element(e) gelöscht.`); return refreshBox(); })
+      .catch((e) => showToast(`Löschen: ${e.message}`));
+    return;
+  }
   if (!canWrite(state[side].cwd)) { showToast('Dieser Ordner ist schreibgeschützt.'); return; }
   if (!confirm(`Wirklich ${names.length} Element(e) löschen? (${names.join(', ')})`)) return;
 
@@ -671,6 +874,7 @@ async function createZipArchive() {
   const zipName = askName('Name des ZIP-Archivs:', names.length === 1 ? names[0].replace(/\.[^.]+$/, '') + '.zip' : 'archiv.zip');
   if (!zipName) return;
   const finalZipName = /\.zip$/i.test(zipName) ? zipName : zipName + '.zip';
+  if (isBox(side)) { packOnBox(side, names, finalZipName); return; }
 
   const dirNode = getNode(state[side].cwd);
   const entries = [];
@@ -699,10 +903,76 @@ async function createZipArchive() {
   showToast(inVfs ? `ZIP '${finalZipName}' im VFS gespeichert und heruntergeladen.` : `ZIP '${finalZipName}' heruntergeladen (für den Browser-Speicher zu groß).`);
 }
 
+const BOX_ZIP_MAX = 200 * 1024 * 1024;     // packed in the browser's memory
+async function packOnBox(side, names, zipName) {
+  const p = state[side], root = p.drive, base = relOf(p.cwd);
+  if ((p.items || []).some((i) => i.name === zipName) && !confirm(`'${zipName}' überschreiben?`)) return;
+  showToast('Packe …');
+  try {
+    const entries = [];
+    let total = 0;
+    const collect = async (rel, name, isDir, prefix) => {
+      if (isDir) {
+        const sub = (rel ? rel + '/' : '') + name;
+        for (const e of (await FS.list(root, sub, true)).entries)
+          if (e.type === 'dir' || e.type === 'file') await collect(sub, e.name, e.type === 'dir', prefix + name + '/');
+      } else {
+        const f = await FS.open(root, rel, name);
+        total += f.size;
+        if (total > BOX_ZIP_MAX) throw new Error('zusammen über 200 MB – dafür ist der Browser nicht gedacht');
+        entries.push({ name: prefix + name, data: new Uint8Array(await (await f.blob()).arrayBuffer()), mtime: nowStamp() });
+      }
+    };
+    for (const n of names) {
+      const it = (p.items || []).find((i) => i.name === n);
+      if (it) await collect(base, n, it.isDir, '');
+    }
+    if (!entries.length) { showToast('Keine packbaren Dateien gefunden.'); return; }
+    await boxWrite(root, base, zipName, buildZip(entries));
+    p.cursor = zipName;
+    await refreshBox();
+    showToast(`ZIP '${zipName}' auf der Box angelegt (${entries.length} Datei(en)).`);
+  } catch (e) { showToast('Packen fehlgeschlagen: ' + e.message); }
+}
+async function unpackOnBox(side, f) {
+  const p = state[side];
+  if (f.size > BOX_ZIP_MAX) { showToast('Das Archiv ist zum Entpacken im Browser zu groß (über 200 MB).'); return; }
+  let target = f.name.replace(/\.zip$/i, '');
+  const names = (p.items || []).map((i) => i.name);
+  for (let i = 2; names.includes(target); i++) target = f.name.replace(/\.zip$/i, '') + '_' + i;
+  showToast('Entpacke …');
+  try {
+    const files = await readZip(await boxRead(f.root, f.rel, f.name));
+    await FS.mkdir(f.root, f.rel, target);
+    const base = (f.rel ? f.rel + '/' : '') + target, made = new Set();
+    const ensure = async (parts) => {
+      for (let i = 1; i <= parts.length; i++) {
+        const key = parts.slice(0, i).join('/');
+        if (made.has(key)) continue;
+        await FS.mkdir(f.root, [base, ...parts.slice(0, i - 1)].join('/'), parts[i - 1]).catch((e) => { if (e.message !== 'already exists') throw e; });
+        made.add(key);
+      }
+    };
+    let n = 0, skipped = 0;
+    for (const z of files) {
+      const parts = z.path.split('/').filter((x) => x && x !== '.' && x !== '..');
+      if (!parts.length || !parts.every(validName)) { skipped++; continue; }
+      if (z.dir) { await ensure(parts); continue; }
+      await ensure(parts.slice(0, -1));
+      await boxWrite(f.root, [base, ...parts.slice(0, -1)].join('/'), parts[parts.length - 1], new Blob([z.data]));
+      n++;
+    }
+    p.cursor = target;
+    await refreshBox();
+    showToast(`${n} Datei(en) entpackt nach '${target}/'` + (skipped ? ` – ${skipped} übersprungen (ungültiger Name)` : ''));
+  } catch (e) { showToast('Entpacken fehlgeschlagen: ' + e.message); await refreshBox(); }
+}
+
 async function unpackZipArchive() {
   const side = state.activeSide;
   const f = cursorFile(side);
   if (!f || f.node.type !== 'file' || !/\.zip$/i.test(f.name)) { showToast('Bitte wähle zuerst eine .zip-Datei aus!'); return; }
+  if (f.box) { unpackOnBox(side, f); return; }
   if (!canWrite(state[side].cwd)) { showToast('Dieser Ordner ist schreibgeschützt.'); return; }
   const dirNode = getNode(state[side].cwd);
   let target = f.name.replace(/\.zip$/i, '');
@@ -749,6 +1019,7 @@ async function unpackZipArchive() {
 async function syncWithOPFS() {
   if (!navigator.storage || !navigator.storage.getDirectory) { showToast('OPFS wird von diesem Browser nicht unterstützt.'); return; }
   const side = state.activeSide;
+  if (isBox(side)) { showToast('Der OPFS-Abgleich gilt für das Browser-Dateisystem (VFS).'); return; }
   const vfsDir = getNode(state[side].cwd);
   try {
     let dir = await navigator.storage.getDirectory();
@@ -780,6 +1051,23 @@ async function syncWithOPFS() {
 async function mountLocalDirectory() {
   if (!window.showDirectoryPicker) { showToast('Ordner-Auswahl nur in Chrome/Edge – nutze stattdessen „Import“.'); return; }
   const side = state.activeSide;
+  if (isBox(side)) {
+    try {
+      const dirHandle = await window.showDirectoryPicker();
+      const p = state[side];
+      await FS.mkdir(p.drive, relOf(p.cwd), dirHandle.name).catch((e) => { if (e.message !== 'already exists') throw e; });
+      const sub = (relOf(p.cwd) ? relOf(p.cwd) + '/' : '') + dirHandle.name;
+      let n = 0;
+      for await (const [fname, handle] of dirHandle.entries()) {
+        if (handle.kind !== 'file' || !validName(fname)) continue;
+        await boxWrite(p.drive, sub, fname, await handle.getFile());
+        n++;
+      }
+      await refreshBox();
+      showToast(`Ordner '${dirHandle.name}' auf die Box kopiert: ${n} Datei(en).`);
+    } catch (err) { if (err.name !== 'AbortError') showToast('Ordner: ' + err.message); }
+    return;
+  }
   if (!canWrite(state[side].cwd)) { showToast('Dieser Ordner ist schreibgeschützt.'); return; }
   try {
     const dirHandle = await window.showDirectoryPicker();
@@ -835,6 +1123,7 @@ function updatePreviewIfOpen() {
     return;
   }
   previewTitle.textContent = `VORSCHAU: ${f.name}`;
+  if (f.box) { previewBox(f); return; }
   const item = f.node;
   if (item.type === 'dir') {
     const count = Object.keys(item.children || {}).length;
@@ -872,9 +1161,49 @@ function updatePreviewIfOpen() {
   }
 }
 
+// preview of a file of the box: pictures and media straight from the box,
+// text up to 256 KB, otherwise the first KB as hex
+let previewSeq = 0;
+async function previewBox(f) {
+  const seq = ++previewSeq;
+  if (f.node.type === 'dir') { previewBody.innerHTML = `📁 <b>Verzeichnis: ${escapeHTML(f.name)}</b>\n\nGeändert: ${escapeHTML(f.node.mtime || '--')}`; return; }
+  previewBody.innerHTML = '<div class="preview-placeholder">Lade …</div>';
+  try {
+    const file = await FS.open(f.root, f.rel, f.name);
+    if (seq !== previewSeq) return;
+    const ext = getExtension(f.name, false);
+    previewBody.innerHTML = '';
+    if (IMAGE_EXT.includes(ext) && ext !== 'svg') {
+      const img = document.createElement('img'); img.src = file.url; previewBody.appendChild(img);
+    } else if (MEDIA_EXT.includes(ext)) {
+      const m = document.createElement(/^(mp4|m4v|webm)$/.test(ext) ? 'video' : 'audio');
+      m.controls = true; m.preload = 'metadata'; m.src = file.url; previewBody.appendChild(m);
+    } else {
+      const bytes = new Uint8Array(await (await fetch(file.url, { headers: { Range: 'bytes=0-262143' } })).arrayBuffer()).subarray(0, 262144);
+      if (seq !== previewSeq) return;
+      let text = null;
+      if (!bytes.subarray(0, 8192).includes(0)) { try { text = new TextDecoder('utf-8', { fatal: true }).decode(bytes); } catch (e) { text = f.size > bytes.length ? new TextDecoder().decode(bytes) : null; } }
+      if (text !== null) previewBody.textContent = (text || '(Leere Datei)') + (f.size > bytes.length ? `\n… (gekürzt, ${formatBytes(f.size)})` : '');
+      else {
+        const pre = document.createElement('div'); pre.className = 'hex';
+        pre.textContent = hexDump(bytes.subarray(0, 1024)) + (f.size > 1024 ? `\n… (${formatBytes(f.size)})` : '');
+        previewBody.appendChild(pre);
+      }
+    }
+  } catch (e) { if (seq === previewSeq) previewBody.textContent = 'Vorschau nicht möglich: ' + e.message; }
+}
+
 function sendSelectedToWebPad() {
   const side = state.activeSide;
   const f = cursorFile(side);
+  if (f && f.box && f.node.type === 'file') {
+    if (f.size > 5 * 1024 * 1024) { showToast('Für Webpad zu groß (über 5 MB).'); return; }
+    FS.open(f.root, f.rel, f.name).then((file) => file.text()).then((content) => {
+      sendTo('webpad', 'open-file', { to: 'webpad', reply: APP, path: f.path, name: f.name, content, readonly: false }, 'Webpad');
+      showToast(`📝 '${f.name}' von der Box an Webpad gesendet – Speichern dort schreibt auf die Box.`);
+    }).catch((e) => showToast('Webpad: ' + e.message));
+    return;
+  }
   if (!f || f.node.type !== 'file' || f.node.bin) { showToast('Bitte wähle eine Textdatei für Webpad aus.'); return; }
   sendTo('webpad', 'open-file', {
     to: 'webpad', reply: APP, path: f.path, name: f.name, content: f.node.content || '',
@@ -887,6 +1216,13 @@ function sendSelectedToWebPlayer() {
   const f = cursorFile(state.activeSide);
   if (!f || f.node.type !== 'file') return;
   const ext = getExtension(f.name, false);
+  if (f.box && MEDIA_EXT.includes(ext)) {     // streamed from the box, no copy
+    FS.open(f.root, f.rel, f.name).then((file) => {
+      sendTo('webplayer', 'open-media', { to: 'webplayer', name: f.name, url: new URL(file.url, location.href).href }, 'WinWeb Player');
+      showToast(`🎵 '${f.name}' an WinWeb Player gesendet.`);
+    }).catch((e) => showToast('Player: ' + e.message));
+    return;
+  }
   if (!MEDIA_EXT.includes(ext) || !f.node.bin) { showToast('Bitte eine Audio- oder Videodatei wählen.'); return; }
   const blob = new Blob([nodeBytes(f.node)], { type: MIME[ext] || nodeMime(f.node) });
   sendTo('webplayer', 'open-media', { to: 'webplayer', name: f.name, blob }, 'WinWeb Player');
@@ -903,12 +1239,18 @@ function downloadBlob(blob, name) {
 function downloadSelectedFile() {
   const f = cursorFile(state.activeSide);
   if (!f || f.node.type !== 'file') return;
+  if (f.box) {
+    FS.open(f.root, f.rel, f.name).then((file) => {
+      const a = document.createElement('a'); a.href = file.url; a.download = f.name; a.click();
+    }).catch((e) => showToast('Download: ' + e.message));
+    return;
+  }
   downloadBlob(new Blob([nodeBytes(f.node)], { type: nodeMime(f.node) }), f.name);
 }
 
 function handleFileDoubleClick(side, name, node) {
   const ext = getExtension(name, false);
-  if (MEDIA_EXT.includes(ext) && node.bin) sendSelectedToWebPlayer();
+  if (MEDIA_EXT.includes(ext) && (!node || node.bin)) sendSelectedToWebPlayer();
   else if (ext === 'zip') unpackZipArchive();
   else if (previewPane.classList.contains('hidden')) togglePreviewPane();
   else updatePreviewIfOpen();
@@ -945,7 +1287,8 @@ function computeNewName(oldName, index) {
   return full;
 }
 function renamePlan() {
-  const side = state.activeSide, names = getTargetNames(side), dirNode = getNode(state[side].cwd);
+  const side = state.activeSide, names = getTargetNames(side);
+  const dirNode = isBox(side) ? { children: Object.fromEntries((state[side].items || []).map((i) => [i.name, 1])) } : getNode(state[side].cwd);
   const plan = names.map((oldName, idx) => ({ oldName, newName: computeNewName(oldName, idx) }));
   const targets = new Map();
   for (const p of plan) {
@@ -972,6 +1315,7 @@ document.getElementById('apply-rename-btn').addEventListener('click', () => {
   const side = state.activeSide;
   const plan = renamePlan();
   if (plan.some((p) => p.error)) { showToast('Bitte erst die markierten Konflikte lösen.'); return; }
+  if (isBox(side)) { renameOnBox(side, plan.filter((p) => p.newName !== p.oldName)); return; }
   if (!canWrite(state[side].cwd)) { showToast('Dieser Ordner ist schreibgeschützt.'); return; }
   const dirNode = getNode(state[side].cwd);
   // two steps, so "a" -> "b" and "b" -> "a" work
@@ -984,6 +1328,25 @@ document.getElementById('apply-rename-btn').addEventListener('click', () => {
   renderBothPanes();
   showToast(`${moved.length} Element(e) umbenannt.`);
 });
+
+// on the box: two steps over temporary names when names are swapped
+async function renameOnBox(side, moved) {
+  const root = state[side].drive, rel = relOf(state[side].cwd);
+  const olds = new Set(moved.map((p) => p.oldName));
+  const swap = moved.some((p) => olds.has(p.newName));
+  try {
+    if (swap) {
+      for (const [i, p] of moved.entries()) { p.tmp = `.sc-rename-${Date.now()}-${i}`; await FS.rename(root, rel, p.oldName, p.tmp); }
+      for (const p of moved) await FS.rename(root, rel, p.tmp, p.newName);
+    } else {
+      for (const p of moved) await FS.rename(root, rel, p.oldName, p.newName);
+    }
+    showToast(`${moved.length} Element(e) umbenannt.`);
+  } catch (e) { showToast('Umbenennen: ' + e.message); }
+  state[side].selected.clear();
+  renameModal.classList.add('hidden');
+  await refreshBox();
+}
 
 document.getElementById('close-rename-modal').addEventListener('click', () => renameModal.classList.add('hidden'));
 
@@ -1002,6 +1365,8 @@ document.getElementById('close-rename-modal').addEventListener('click', () => re
       if (act === 'up') navigateTo(side, '..');
     });
   });
+
+  document.getElementById(`drive-${side}`).addEventListener('change', (e) => { setActivePane(side); setDrive(side, e.target.value); });
 
   document.getElementById(`filter-${side}`).addEventListener('input', (e) => {
     state[side].filter = e.target.value;
@@ -1029,6 +1394,22 @@ document.getElementById('upload-input').addEventListener('change', async (e) => 
   const files = Array.from(e.target.files);
   e.target.value = '';
   const side = state.activeSide;
+  if (isBox(side)) {
+    const p = state[side];
+    let n = 0;
+    try {
+      for (const file of files) {
+        if (!validName(file.name)) continue;
+        if ((p.items || []).some((i) => i.name === file.name) && !confirm(`'${file.name}' überschreiben?`)) continue;
+        showToast(`Lade ${file.name} hoch …`);
+        await boxWrite(p.drive, relOf(p.cwd), file.name, file);
+        n++;
+      }
+      showToast(`${n} Datei(en) auf die Box geladen.`);
+    } catch (err) { showToast('Hochladen: ' + err.message); }
+    await refreshBox();
+    return;
+  }
   if (!canWrite(state[side].cwd)) { showToast('Dieser Ordner ist schreibgeschützt.'); return; }
   const dirNode = getNode(state[side].cwd);
   let n = 0;
@@ -1142,3 +1523,11 @@ function escapeHTML(str) {
 
 // --- Initialize ---
 renderBothPanes();
+if (FS) {
+  FS.roots().then((roots) => {
+    boxRoots = roots || [];
+    fillDrives();
+    // inside ShareOS with access to the box: the right pane starts on the box
+    if (boxRoots.length) setDrive('right', (boxRoots.find((r) => r.home) || boxRoots[0]).name);
+  }).catch((e) => showToast('Box: ' + e.message));
+}
