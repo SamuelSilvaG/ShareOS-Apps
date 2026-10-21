@@ -2,7 +2,9 @@
 // NetTunnel – the box as an OpenVPN client, through the ShareOS app SDK:
 //   ShareOS.vpn  profiles, connect/disconnect, state, log (permission "vpn",
 //                admin accounts only, ShareOS 0.2.0-beta.6+, system app "openvpn")
-//   ShareOS.fs   pick an .ovpn file on the box (permission "files")
+//   ShareOS.vpn.server  the box as an OpenVPN server: own CA, one certificate
+//                per device, ready-made .ovpn profiles for phones and laptops
+//   ShareOS.fs   pick an .ovpn file on the box / save a device profile (permission "files")
 // The box cleans every profile on import (no scripts, plugins, file
 // references) and runs OpenVPN itself; this page only steers it.
 
@@ -21,12 +23,20 @@ const ERRORS = [
   [/^server profiles/, 'Das ist ein Server-Profil – NetTunnel verbindet die Box nur als Client.'],
   [/must be inside the profile/, 'Das Profil verweist auf Dateien (Zertifikate, Schlüssel). Sie müssen im Profil selbst stehen (<ca>…</ca>).'],
   [/^no "remote"/, 'Im Profil steht kein Server („remote“).'],
+  [/device with this name exists/, 'Ein Gerät mit diesem Namen gibt es schon.'],
   [/exists$/, 'Ein Profil mit diesem Namen gibt es schon.'],
   [/^invalid name/, 'Ungültiger Name (Buchstaben, Ziffern, Leerzeichen, - _ .).'],
   [/needs a user name and password/, 'Das Profil braucht Benutzername und Passwort – unter „Bearbeiten“ eintragen.'],
   [/^profile too big/, 'Das Profil ist zu groß.'],
   [/^empty profile/, 'Die Datei ist leer.'],
-  [/did not start/, 'OpenVPN ist nicht gestartet – siehe Protokoll.']
+  [/did not start/, 'OpenVPN ist nicht gestartet – siehe Protokoll.'],
+  [/^invalid VPN network/, 'Ungültiges VPN-Netz – z. B. 10.8.0.0 (privates Netz, letzte Zahl 0).'],
+  [/is the home network/, 'Das VPN-Netz ist das Heimnetz – bitte ein anderes wählen (z. B. 10.8.0.0).'],
+  [/^invalid port/, 'Ungültiger Port (1–65535).'],
+  [/^invalid address/, 'Ungültige Adresse – DynDNS-Name oder IP-Adresse eintragen.'],
+  [/^invalid device name/, 'Ungültiger Gerätename (Buchstaben, Ziffern, - _ ., ohne Leerzeichen).'],
+  [/^unknown device/, 'Dieses Gerät gibt es nicht (mehr).'],
+  [/could not be made/, 'Die Zertifikate konnten nicht erstellt werden – siehe Server-Protokoll.']
 ];
 function de(msg) {
   msg = String(msg || '');
@@ -196,15 +206,149 @@ $('add-file').addEventListener('change', async (e) => {
 });
 $('log-refresh').addEventListener('click', loadLog);
 
+// --- server: the box as VPN server ---------------------------------------------------------
+let mode = 'client', srv = null, srvTimer = 0, srvDirty = false;
+
+function setMode(m) {
+  mode = m;
+  document.querySelectorAll('.mode').forEach((b) => b.classList.toggle('on', b.dataset.mode === m));
+  $('view-client').classList.toggle('hidden', m !== 'client');
+  $('view-server').classList.toggle('hidden', m !== 'server');
+  try { localStorage.setItem('nettunnel.mode', m); } catch (e) { /* private window */ }
+  if (m === 'server') { loadSrv(); loadSrvLog(); }
+}
+
+function fillSrvForm() {
+  if (srvDirty || !srv) return;
+  const f = $('srv-form');
+  f.enabled.checked = !!srv.enabled; f.host.value = srv.host || ''; f.port.value = srv.port || 1194;
+  f.proto.value = srv.proto || 'udp'; f.net.value = srv.net || '10.8.0.0'; f.lan.checked = !!srv.lan;
+}
+
+function srvHint() {
+  const h = $('srv-hint'); h.textContent = '';
+  if (!srv) return;
+  const add = (html) => { const p = el('span'); p.innerHTML = html; h.appendChild(p); h.appendChild(el('br')); };
+  const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  const proto = (srv.proto || 'udp').toUpperCase(), ip = srv.box_ip || 'IP der Box';
+  add('Im Router eine <b>Portfreigabe</b> einrichten: ' + proto + ' ' + esc(srv.port) + ' → ' + esc(ip) + ' (Port ' + esc(srv.port) + ').');
+  if (!srv.host) add('Ohne Adresse im Internet nutzen die Profile die Heimnetz-Adresse ' + esc(ip) + ' – das klappt nur zu Hause. Ein DynDNS-Name (z. B. vom Router) ist besser.');
+  if (srv.lan) add('Heimnetz: im Router eine <b>statische Route</b> ' + esc(srv.net) + '/24 → ' + esc(ip) + ' eintragen, damit Antworten zurückfinden.');
+  add('Hinweis: Mit DS-Lite (nur IPv6 von außen, z. B. bei manchen Kabelanschlüssen) ist die Box über IPv4 nicht erreichbar.');
+}
+
+function renderSrv() {
+  const b = $('srv-state');
+  if (!srv) { b.className = 'badge'; b.textContent = '–'; return; }
+  b.className = 'badge' + (srv.running ? ' ok' : srv.enabled ? ' warn' : '');
+  b.textContent = srv.running ? 'läuft' + (srv.online ? ' · ' + srv.online + (srv.online === 1 ? ' Gerät' : ' Geräte') + ' verbunden' : '') : srv.enabled ? 'nicht gestartet' : 'aus';
+  fillSrvForm(); srvHint();
+  const box = $('devices'); box.textContent = '';
+  if (!srv.devices.length) {
+    box.appendChild(el('div', 'empty muted', 'Noch kein Gerät. Für jedes Handy oder Notebook einen Namen eintragen und „Gerät hinzufügen“ – es gibt dann ein fertiges .ovpn-Profil für die OpenVPN-App.'));
+    return;
+  }
+  for (const d of srv.devices) {
+    const c = el('div', 'prof' + (d.online ? ' on' : ''));
+    const top = el('div', 'top');
+    top.appendChild(el('span', 'name', d.name));
+    top.appendChild(el('span', 'badge' + (d.online ? ' ok' : ''), d.online ? 'verbunden' : 'offline'));
+    c.appendChild(top);
+    if (d.online) {
+      c.appendChild(el('div', 'sub', 'VPN-Adresse ' + (d.ip || '–') + ' · von ' + (d.real || '–').replace(/:\d+$/, '')));
+      c.appendChild(el('div', 'sub', '↓ ' + fmtBytes(d.bytes_out) + ' · ↑ ' + fmtBytes(d.bytes_in) + (d.since ? ' · seit ' + new Date(d.since * 1000).toLocaleString('de-DE') : '')));
+    } else if (d.created) c.appendChild(el('div', 'sub', 'angelegt ' + new Date(d.created * 1000).toLocaleDateString('de-DE')));
+    const acts = el('div', 'acts');
+    const btn = (label, fn, cls) => { const x = el('button', 'sos-btn small' + (cls ? ' ' + cls : ''), label); x.addEventListener('click', fn); acts.appendChild(x); };
+    btn('Profil herunterladen', async () => { try { download((await SOS.vpn.server.profile(d.name)).profile, d.name); } catch (e) { toast(de(e.message)); } });
+    btn('Auf der Box speichern', async () => { try { await saveOnBox((await SOS.vpn.server.profile(d.name)).profile, d.name); } catch (e) { toast(de(e.message)); } });
+    btn('Entfernen', async () => {
+      if (!confirm('Gerät „' + d.name + '“ entfernen? Sein Profil funktioniert danach nicht mehr.' + (d.online ? ' Die Verbindung wird getrennt.' : ''))) return;
+      try { srv = await SOS.vpn.server.removeDevice(d.name); toast('Gerät entfernt.'); } catch (e) { toast(de(e.message)); }
+      loadSrv();
+    }, 'danger');
+    c.appendChild(acts);
+    box.appendChild(c);
+  }
+}
+
+function fileName(name) { return 'ShareOS-' + name + '.ovpn'; }
+function download(text, name) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], { type: 'application/x-openvpn-profile' }));
+  a.download = fileName(name);
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  toast('Profil „' + fileName(name) + '“ heruntergeladen – in der OpenVPN-App des Geräts importieren.');
+}
+async function saveOnBox(text, name) {
+  const r = await SOS.fs.pick({ title: 'Profil auf der Box speichern', save: true, name: fileName(name), ext: ['.ovpn'] });
+  if (!r || !r[0]) return;
+  const f = await SOS.fs.open(r[0].root, r[0].path || '', r[0].name, { write: true, create: true });
+  await f.save(text);
+  toast('Gespeichert: ' + r[0].name + ' – das Profil enthält den Schlüssel des Geräts, nicht freigeben.');
+}
+
+async function loadSrv() {
+  clearTimeout(srvTimer);
+  if (mode !== 'server') return;
+  try { srv = await SOS.vpn.server.status(); } catch (e) { srv = null; toast(de(e.message)); }
+  renderSrv();
+  srvTimer = setTimeout(loadSrv, 10000);
+}
+async function loadSrvLog() {
+  try { const l = (await SOS.vpn.server.log()).log; const p = $('srv-log'); p.textContent = l || '(leer)'; p.scrollTop = p.scrollHeight; }
+  catch (e) { $('srv-log').textContent = de(e.message); }
+}
+
+$('srv-form').addEventListener('input', () => { srvDirty = true; });
+$('srv-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const f = e.target, btn = f.querySelector('button[type=submit]');
+  if (f.enabled.checked && !f.host.value.trim() && !confirm('Ohne Adresse im Internet funktionieren die Profile nur im Heimnetz. Trotzdem speichern?')) return;
+  btn.disabled = true;
+  if (f.enabled.checked && !(srv && srv.ready)) toast('Erstelle die Zertifikate der Box … (beim ersten Mal bis zu einer Minute)');
+  try {
+    srv = await SOS.vpn.server.set({ enabled: f.enabled.checked, host: f.host.value.trim(), port: +f.port.value, proto: f.proto.value, net: f.net.value.trim(), lan: f.lan.checked });
+    srvDirty = false;
+    toast(srv.running ? 'Gespeichert – der VPN-Server läuft.' : 'Gespeichert.');
+  } catch (err) { toast(de(err.message)); }
+  btn.disabled = false;
+  renderSrv(); loadSrvLog();
+});
+$('dev-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const f = e.target, name = f.name.value.trim(), btn = f.querySelector('button');
+  btn.disabled = true;
+  if (!(srv && srv.ready)) toast('Erstelle die Zertifikate der Box … (beim ersten Mal bis zu einer Minute)');
+  try {
+    const r = await SOS.vpn.server.addDevice(name);
+    f.name.value = '';
+    download(r.profile, r.name);
+  } catch (err) { toast(de(err.message)); }
+  btn.disabled = false;
+  loadSrv();
+});
+$('srv-log-refresh').addEventListener('click', loadSrvLog);
+document.querySelectorAll('.mode').forEach((b) => b.addEventListener('click', () => setMode(b.dataset.mode)));
+
 // --- start ---------------------------------------------------------------------------------
 if (!SOS || !SOS.vpn) {
   banner(!SOS || !SOS.fs ? 'NetTunnel läuft nur auf einer ShareOS-Box, geöffnet aus der ShareOS-Oberfläche.' : 'NetTunnel braucht ShareOS 0.2.0-beta.6 oder neuer.');
   $('add-box').disabled = true;
   $('profiles').textContent = '';
   $('state').textContent = 'nicht verfügbar';
+  document.querySelector('.modes').classList.add('hidden');
+} else if (!SOS.vpn.server) {
+  // ShareOS without server mode: client only
+  document.querySelector('.modes').classList.add('hidden');
+  load(); loadLog(); setInterval(loadLog, 15000);
 } else {
+  let m = 'client';
+  try { m = localStorage.getItem('nettunnel.mode') === 'server' ? 'server' : 'client'; } catch (e) { /* private window */ }
+  if (m === 'server') setMode('server');
   load();
   loadLog();
   setInterval(loadLog, 15000);
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) load(); });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) { load(); loadSrv(); } });
 }

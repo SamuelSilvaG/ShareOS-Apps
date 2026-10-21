@@ -4,8 +4,8 @@
 	"version": "1.0.0",
 	"publisher": "UniqueDroid",
 	"description": {
-		"de": "VPN-Client für die Box: OpenVPN-Profile (.ovpn) einspielen, verbinden und trennen, Status mit Tunnel-Adresse und Datenmenge, Protokoll, Verbindung beim Start der Box. Gefährliche Zeilen (Skripte, Plugins) entfernt die Box beim Einspielen. Nur für Administratoren; braucht die System-App „openvpn“.",
-		"en": "VPN client for the box: import OpenVPN profiles (.ovpn), connect and disconnect, state with tunnel address and traffic, log, connect when the box starts. The box removes dangerous lines (scripts, plugins) on import. Admins only; needs the system app “openvpn”."
+		"de": "VPN für die Box, in beide Richtungen. Als Client: OpenVPN-Profile (.ovpn) einspielen, verbinden, Status, Verbindung beim Start. Als Server: von unterwegs ins Heimnetz – eigene Zertifikate der Box, pro Gerät ein fertiges .ovpn-Profil, verbundene Geräte mit Datenmenge. Nur für Administratoren; braucht die System-App „openvpn“.",
+		"en": "VPN for the box, both ways. As client: import OpenVPN profiles (.ovpn), connect, state, connect at start. As server: reach home from anywhere – the box's own certificates, a ready-made .ovpn profile per device, connected devices with traffic. Admins only; needs the system app “openvpn”."
 	},
 	"type": "webapp",
 	"entry": "index.html",

@@ -21,7 +21,12 @@
 
   <div id="banner" class="banner hidden"></div>
 
-  <main class="workspace">
+  <nav class="modes" role="tablist">
+    <button class="mode on" data-mode="client" role="tab">Box als Client</button>
+    <button class="mode" data-mode="server" role="tab">Box als Server</button>
+  </nav>
+
+  <main class="workspace" id="view-client">
     <section class="pane">
       <div class="pane-head">
         <span>VPN-Profile</span>
@@ -42,6 +47,35 @@
         <button class="sos-btn small" id="log-refresh">Aktualisieren</button>
       </div>
       <pre id="log" class="log">–</pre>
+    </section>
+  </main>
+
+  <main class="workspace hidden" id="view-server">
+    <section class="pane">
+      <div class="pane-head"><span>VPN-Server</span><span id="srv-state" class="badge">…</span></div>
+      <form id="srv-form" class="form">
+        <label class="chk"><input type="checkbox" name="enabled"> Server eingeschaltet (startet auch nach einem Neustart)</label>
+        <label class="fld"><span>Adresse der Box im Internet (DynDNS-Name oder feste IP)</span><input class="sos-input" name="host" placeholder="meinnas.dyndns.org" spellcheck="false"></label>
+        <div class="two">
+          <label class="fld"><span>Port</span><input class="sos-input" name="port" type="number" min="1" max="65535" value="1194"></label>
+          <label class="fld"><span>Protokoll</span><select class="sos-input" name="proto"><option value="udp">UDP (empfohlen)</option><option value="tcp">TCP</option></select></label>
+        </div>
+        <label class="fld"><span>VPN-Netz</span><input class="sos-input" name="net" value="10.8.0.0" spellcheck="false"></label>
+        <label class="chk"><input type="checkbox" name="lan"> Auch das Heimnetz erreichbar machen (nicht nur die Box)</label>
+        <p class="hint" id="srv-hint"></p>
+        <div class="dlg-acts"><button class="sos-btn primary" type="submit">Speichern</button></div>
+      </form>
+    </section>
+
+    <section class="pane">
+      <div class="pane-head"><span>Geräte</span></div>
+      <form id="dev-form" class="dev-add">
+        <input class="sos-input" name="name" placeholder="Name, z. B. handy-jan" maxlength="32" pattern="[A-Za-z0-9][A-Za-z0-9_.\-]{0,31}" required spellcheck="false">
+        <button class="sos-btn primary small" type="submit">Gerät hinzufügen</button>
+      </form>
+      <div id="devices" class="profiles"></div>
+      <div class="pane-head"><span>Server-Protokoll</span><button class="sos-btn small" id="srv-log-refresh">Aktualisieren</button></div>
+      <pre id="srv-log" class="log">–</pre>
     </section>
   </main>
 

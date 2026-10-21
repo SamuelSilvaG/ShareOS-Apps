@@ -53,3 +53,13 @@ html, body { height: 100%; }
 
 .toast { position: fixed; left: 50%; bottom: 16px; transform: translate(-50%, 20px); max-width: 90vw; padding: 8px 14px; border-radius: var(--sos-radius); border: 1px solid var(--sos-line); background: var(--sos-bar); color: var(--sos-text); font-size: 12px; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 50; }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+.modes { display: flex; gap: 6px; padding: 8px 10px 0; }
+.mode { min-height: 30px; padding: 0 14px; border: 1px solid var(--sos-line); border-radius: var(--sos-radius); background: var(--sos-panel); color: var(--sos-muted); font: 600 12px var(--sos-font); cursor: pointer; }
+.mode.on { background: var(--sos-accent); border-color: var(--sos-accent); color: var(--sos-bg); }
+.form { padding: 12px; overflow-y: auto; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.dev-add { display: flex; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--sos-line); }
+.dev-add .sos-input { flex: 1; min-width: 0; }
+.badge.ok { color: var(--sos-ok); border-color: var(--sos-ok); }
+.hint b { color: var(--sos-text); }
