@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2a3040"/>
+      <stop offset="100%" stop-color="#181c26"/>
+    </linearGradient>
+    <radialGradient id="knob" cx="35%" cy="30%" r="65%">
+      <stop offset="0%" stop-color="#ff5555"/>
+      <stop offset="60%" stop-color="#d71920"/>
+      <stop offset="100%" stop-color="#8a0f14"/>
+    </radialGradient>
+    <linearGradient id="lever" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#cfd4dc"/>
+      <stop offset="50%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#9aa0ac"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="56" height="56" rx="12" fill="url(#bg)"/>
+  <ellipse cx="32" cy="48" rx="8" ry="3" fill="#10131a"/>
+  <path d="M28 48 L36 48 L34 32 L30 32 Z" fill="url(#lever)"/>
+  <circle cx="32" cy="24" r="16" fill="url(#knob)"/>
+  <path d="M25 18 L25 30 M32 18 L32 30 M39 18 L39 30 M25 24 L39 24" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" opacity="0.9"/>
+  <circle cx="25" cy="18" r="1.2" fill="#ffffff"/>
+  <circle cx="32" cy="18" r="1.2" fill="#ffffff"/>
+  <circle cx="39" cy="18" r="1.2" fill="#ffffff"/>
+  <circle cx="25" cy="30" r="1.2" fill="#ffffff"/>
+  <circle cx="32" cy="30" r="1.2" fill="#ffffff"/>
+  <circle cx="39" cy="30" r="1.2" fill="#ffffff"/>
+</svg>
