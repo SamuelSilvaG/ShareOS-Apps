@@ -506,31 +506,6 @@
     $('btn-admin-console').addEventListener('click', () => {
       window.open('https://login.tailscale.com/admin/machines', '_blank');
     });
-
-    // Exit Node Toggle Button
-    $('btn-toggle-exitnode').addEventListener('click', async () => {
-      const active = $('btn-toggle-exitnode').classList.contains('active');
-      if (isDemoMode) {
-        $('btn-toggle-exitnode').classList.toggle('active', !active);
-        $('btn-toggle-exitnode').textContent = !active ? t('adv.exitnode.active') : t('adv.exitnode.btn');
-        toast(!active ? 'Exit Node anunciado com sucesso!' : 'Exit Node desativado');
-        return;
-      }
-      try {
-        await api('/localapi/v0/prefs', { method: 'PATCH', body: { AdvertiseExitNode: !active } });
-        refresh();
-      } catch (err) {
-        toast(err.message, true);
-      }
-    });
-
-    // Subnet Router Setup
-    $('btn-setup-subnet').addEventListener('click', () => {
-      const routes = prompt('Informe a faixa IP da sua rede local (ex: 192.168.1.0/24):', '192.168.1.0/24');
-      if (routes) {
-        toast('Subnet anunciada: ' + routes);
-      }
-    });
   }
 
   function openLoginModal() {
@@ -616,7 +591,14 @@
   setupMenu();
   refresh();
 
+  // Smart low-CPU polling (20s, paused when backgrounded)
   if (autoRefresh) {
-    refreshTimer = setInterval(refresh, 5000);
+    refreshTimer = setInterval(() => {
+      if (!document.hidden) refresh();
+    }, 20000);
   }
+
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && autoRefresh) refresh();
+  });
 })();

@@ -31,8 +31,7 @@
       // Abas
       'tab.overview': 'Visão Geral',
       'tab.peers': 'Dispositivos na Rede',
-      'tab.access': 'Como Acessar Remoto',
-      'tab.advanced': 'Recursos da Box',
+      'tab.access': 'Acesso Remoto aos Serviços',
 
       // Visão Geral - Cartões
       'card.status.title': 'Estado da Conexão',
@@ -40,8 +39,8 @@
       'card.status.disconnected': 'Desconectado',
       'card.status.needsLogin': 'Autenticação Necessária',
       'card.status.offline': 'Serviço Parado ou Não Instalado',
-      'card.ip4.title': 'Endereço Tailscale (IPv4)',
-      'card.ip6.title': 'Endereço Tailscale (IPv6)',
+      'card.ip4.title': 'Tailscale IPv4 (IP da Box)',
+      'card.ip6.title': 'Tailscale IPv6',
       'card.device.title': 'Nome do Dispositivo',
       'card.tailnet.title': 'Sua Rede (Tailnet)',
       'card.magicdns.title': 'Domínio MagicDNS',
@@ -49,7 +48,7 @@
 
       // Banner offline / erro
       'banner.offline.title': '⚠️ Tailscale daemon (tailscaled) não respondeu.',
-      'banner.offline.desc': 'Certifique-se de que o pacote Tailscale está em execução na box. Você pode iniciar o serviço no terminal ou configurar a URL da API.',
+      'banner.offline.desc': 'Certifique-se de que o Tailscale está rodando na box. Você pode iniciar o serviço pelo terminal ou configurar o endpoint da API.',
       'banner.offline.retry': 'Tentar Novamente',
       'banner.offline.cfg': 'Configurar Endpoint',
       'banner.offline.demo': 'Modo Demonstração',
@@ -82,39 +81,34 @@
       'peers.thisDevice': 'Esta Box (Você)',
 
       // Guia de Acesso Remoto
-      'access.hero.title': 'Como acessar sua box ShareOS de qualquer lugar do mundo',
-      'access.hero.desc': 'Com o Tailscale ativo, sua box possui um IP privado (100.x.y.z) e um nome seguro criptografado de ponta a ponta sem precisar de portas abertas no roteador.',
+      'access.hero.title': 'Como acessar seus serviços ShareOS remotamente',
+      'access.hero.desc': 'Com o Tailscale, sua box ganha um endereço IP privado seguro (100.x.y.z) acessível de qualquer lugar sem precisar abrir portas no roteador.',
       
       'access.step1.badge': 'Passo 1',
-      'access.step1.title': 'Conecte seus outros aparelhos',
-      'access.step1.desc': 'Instale o aplicativo do Tailscale no seu computador, celular ou tablet (Windows, macOS, Linux, Android ou iOS) e faça login com a mesma conta.',
+      'access.step1.title': 'Instale o Tailscale no seu celular ou computador',
+      'access.step1.desc': 'Instale o app oficial do Tailscale (Windows, Mac, iOS, Android ou Linux) e faça login na mesma conta conectada nesta box.',
       
-      'access.step2.badge': 'Passo 2',
+      'access.step2.badge': 'Serviço 1',
       'access.step2.title': 'Interface Web do ShareOS',
-      'access.step2.desc': 'Abra o navegador em qualquer rede (Wi-Fi externo, 4G/5G) e acesse diretamente pelo IP da box:',
+      'access.step2.desc': 'Acesse o painel completo do ShareOS de qualquer rede externa via navegador:',
       
-      'access.step3.badge': 'Passo 3',
-      'access.step3.title': 'Arquivos em Rede (SMB / Windows / Mac)',
-      'access.step3.desc': 'Abra o Explorador de Arquivos do Windows ou o Finder do Mac e conecte à pasta da box pela VPN:',
-      'access.step3.win': 'No Windows: digite na barra de endereços:',
-      'access.step3.mac': 'No Mac: Finder → Conectar ao Servidor (Cmd+K):',
+      'access.step3.badge': 'Serviço 2',
+      'access.step3.title': 'Transmission (Torrents e Downloads)',
+      'access.step3.desc': 'Adicione novos downloads ou acompanhe o progresso do Transmission pelo navegador:',
 
-      'access.step4.badge': 'Passo 4',
-      'access.step4.title': 'Transmission e Downloads',
-      'access.step4.desc': 'Acompanhe seus downloads do Transmission remotamente pelo navegador:',
+      'access.step4.badge': 'Serviço 3',
+      'access.step4.title': 'Terminal SSH Leve',
+      'access.step4.desc': 'Acesso administrativo direto ao terminal sem expor a porta 22 para a internet pública:',
 
-      'access.step5.badge': 'Passo 5',
-      'access.step5.title': 'Terminal SSH Seguro',
-      'access.step5.desc': 'Conecte-se ao terminal da sua NAS sem expor a porta 22 para a internet pública:',
+      'access.step5.badge': 'Aviso',
+      'access.step5.title': 'Acesso a Arquivos (SMB / Rede)',
+      'access.step5.desc': 'Você pode conectar a pasta de rede pelo IP:',
+      'access.step5.win': 'No Windows Explorer:',
+      'access.step5.mac': 'No Mac Finder (Cmd+K):',
 
-      // Recursos Avançados
-      'adv.exitnode.title': 'Usar esta Box como Exit Node (Roteador VPN)',
-      'adv.exitnode.desc': 'Permite que todo o tráfego de internet do seu celular ou notebook passe pela sua casa através da sua box ShareOS enquanto você estiver viajando.',
-      'adv.exitnode.btn': 'Ativar Exit Node',
-      'adv.exitnode.active': 'Exit Node Anunciado',
-      'adv.subnet.title': 'Subnet Router (Acesso a toda a sua rede local)',
-      'adv.subnet.desc': 'Permite acessar outros aparelhos da sua rede local (roteador, impressoras, outras máquinas) remotamente através da box.',
-      'adv.subnet.btn': 'Configurar Rotas',
+      // Alerta de desempenho DNS-320L
+      'access.warn.title': '⚠️ Atenção: Limitação de Hardware do DNS-320L',
+      'access.warn.desc': 'O processador do DNS-320L (ARM 1.0 GHz Single-Core) não possui aceleração de criptografia por hardware. Copiar arquivos grandes pela VPN consumirá 100% da CPU, a velocidade será baixa (~1 a 3 MB/s) e transferências pesadas podem causar lentidão severa ou travamento temporário da box. Para arquivos grandes, prefira a rede local (LAN) ou envie o download diretamente para o Transmission.',
 
       // Modal Login
       'modal.login.title': 'Conectar esta Box ao Tailscale',
@@ -129,7 +123,7 @@
       'modal.cfg.title': 'Configurações de Conexão do Tailscale',
       'modal.cfg.api.label': 'Endereço da API do Tailscale (daemon local ou proxy):',
       'modal.cfg.api.help': 'Padrão: /_shareos/cgi/tailscale ou http://127.0.0.1:5252',
-      'modal.cfg.auto.label': 'Atualizar status da rede automaticamente a cada 5 segundos',
+      'modal.cfg.auto.label': 'Atualizar status da rede automaticamente a cada 20 segundos (economiza CPU)',
 
       // Barra de Status
       'sb.network': 'Tailnet: {name}',
@@ -180,8 +174,7 @@
       // Tabs
       'tab.overview': 'Overview',
       'tab.peers': 'Network Devices',
-      'tab.access': 'Remote Access Guide',
-      'tab.advanced': 'Box Features',
+      'tab.access': 'Remote Service Access',
 
       // Overview Cards
       'card.status.title': 'Connection State',
@@ -189,8 +182,8 @@
       'card.status.disconnected': 'Disconnected',
       'card.status.needsLogin': 'Authentication Required',
       'card.status.offline': 'Daemon Stopped or Not Installed',
-      'card.ip4.title': 'Tailscale IPv4 Address',
-      'card.ip6.title': 'Tailscale IPv6 Address',
+      'card.ip4.title': 'Tailscale IPv4 (Box IP)',
+      'card.ip6.title': 'Tailscale IPv6',
       'card.device.title': 'Device Name',
       'card.tailnet.title': 'Your Tailnet',
       'card.magicdns.title': 'MagicDNS Domain',
@@ -198,7 +191,7 @@
 
       // Banner offline
       'banner.offline.title': '⚠️ Tailscale daemon (tailscaled) is unreachable.',
-      'banner.offline.desc': 'Ensure the Tailscale package is running on the box. You can launch the daemon in the terminal or configure the API URL.',
+      'banner.offline.desc': 'Ensure Tailscale is running on the box. You can launch the daemon in the terminal or configure the API URL.',
       'banner.offline.retry': 'Retry',
       'banner.offline.cfg': 'Configure Endpoint',
       'banner.offline.demo': 'Demo Mode',
@@ -231,39 +224,34 @@
       'peers.thisDevice': 'This Box (You)',
 
       // Remote Access Guide
-      'access.hero.title': 'How to access your ShareOS box from anywhere in the world',
-      'access.hero.desc': 'With Tailscale active, your box receives a dedicated private IP (100.x.y.z) and a secure end-to-end encrypted name without opening any ports on your router.',
+      'access.hero.title': 'How to access your ShareOS services from anywhere',
+      'access.hero.desc': 'With Tailscale active, your box receives a dedicated private IP (100.x.y.z) accessible securely from anywhere without opening any ports on your router.',
 
       'access.step1.badge': 'Step 1',
-      'access.step1.title': 'Connect your other devices',
-      'access.step1.desc': 'Install the official Tailscale app on your computer, phone, or tablet (Windows, macOS, Linux, Android, iOS) and sign in with the same account.',
+      'access.step1.title': 'Install Tailscale on your devices',
+      'access.step1.desc': 'Install the official Tailscale app on your computer or phone (Windows, Mac, iOS, Android, Linux) and sign in with the same account.',
 
-      'access.step2.badge': 'Step 2',
+      'access.step2.badge': 'Service 1',
       'access.step2.title': 'ShareOS Web Interface',
-      'access.step2.desc': 'Open your web browser on any network (external Wi-Fi, cellular 4G/5G) and navigate to the box IP:',
+      'access.step2.desc': 'Access the full ShareOS desktop dashboard from any remote network in your browser:',
 
-      'access.step3.badge': 'Step 3',
-      'access.step3.title': 'Network File Sharing (SMB / Windows / Mac)',
-      'access.step3.desc': 'Connect your network drive in Windows File Explorer or Mac Finder over the VPN:',
-      'access.step3.win': 'On Windows: enter in File Explorer address bar:',
-      'access.step3.mac': 'On Mac: Finder → Connect to Server (Cmd+K):',
+      'access.step3.badge': 'Service 2',
+      'access.step3.title': 'Transmission & Downloads',
+      'access.step3.desc': 'Add torrents or monitor your downloads remotely in the browser:',
 
-      'access.step4.badge': 'Step 4',
-      'access.step4.title': 'Transmission & Downloads',
-      'access.step4.desc': 'Monitor and manage your Transmission torrent downloads remotely in the browser:',
+      'access.step4.badge': 'Service 3',
+      'access.step4.title': 'Lightweight SSH Terminal',
+      'access.step4.desc': 'Direct administrative terminal access without exposing port 22 to the public internet:',
 
-      'access.step5.badge': 'Step 5',
-      'access.step5.title': 'Secure SSH Terminal',
-      'access.step5.desc': 'Open a secure SSH shell without exposing port 22 to the public internet:',
+      'access.step5.badge': 'Notice',
+      'access.step5.title': 'File Access (SMB / Network Drive)',
+      'access.step5.desc': 'You can connect to the shared folder via IP:',
+      'access.step5.win': 'In Windows Explorer:',
+      'access.step5.mac': 'In Mac Finder (Cmd+K):',
 
-      // Advanced
-      'adv.exitnode.title': 'Use this Box as an Exit Node (VPN Gateway)',
-      'adv.exitnode.desc': 'Route all internet traffic from your phone or laptop through your home box while traveling.',
-      'adv.exitnode.btn': 'Enable Exit Node',
-      'adv.exitnode.active': 'Exit Node Announced',
-      'adv.subnet.title': 'Subnet Router (Access local home network)',
-      'adv.subnet.desc': 'Access other devices on your home LAN (router, printers, local servers) remotely through this box.',
-      'adv.subnet.btn': 'Configure Routes',
+      // Hardware warning
+      'access.warn.title': '⚠️ Performance Notice: DNS-320L Hardware Limits',
+      'access.warn.desc': 'The DNS-320L CPU (ARM 1.0 GHz Single-Core) processes VPN encryption entirely in software without hardware crypto acceleration. Copying large files over the VPN will saturate the CPU at 100%, transfer speeds will be low (~1 to 3 MB/s), and heavy transfers can cause severe slowdowns or temporary box freezing. For large files, use local network (LAN) or download directly with Transmission.',
 
       // Modal Login
       'modal.login.title': 'Connect this Box to Tailscale',
@@ -278,7 +266,7 @@
       'modal.cfg.title': 'Tailscale Connection Settings',
       'modal.cfg.api.label': 'Tailscale API Endpoint (local daemon or proxy):',
       'modal.cfg.api.help': 'Default: /_shareos/cgi/tailscale or http://127.0.0.1:5252',
-      'modal.cfg.auto.label': 'Automatically refresh network state every 5 seconds',
+      'modal.cfg.auto.label': 'Automatically refresh network state every 20 seconds (saves CPU)',
 
       // Status Bar
       'sb.network': 'Tailnet: {name}',
@@ -329,8 +317,7 @@
       // Reiter
       'tab.overview': 'Übersicht',
       'tab.peers': 'Netzwerkgeräte',
-      'tab.access': 'Fernzugriff-Anleitung',
-      'tab.advanced': 'Box-Funktionen',
+      'tab.access': 'Fernzugriff auf Dienste',
 
       // Übersicht - Karten
       'card.status.title': 'Verbindungsstatus',
@@ -338,8 +325,8 @@
       'card.status.disconnected': 'Getrennt',
       'card.status.needsLogin': 'Authentifizierung erforderlich',
       'card.status.offline': 'Dienst gestoppt oder nicht installiert',
-      'card.ip4.title': 'Tailscale IPv4-Adresse',
-      'card.ip6.title': 'Tailscale IPv6-Adresse',
+      'card.ip4.title': 'Tailscale IPv4 (Box-IP)',
+      'card.ip6.title': 'Tailscale IPv6',
       'card.device.title': 'Gerätename',
       'card.tailnet.title': 'Ihre Tailnet-Domain',
       'card.magicdns.title': 'MagicDNS-Domain',
@@ -347,7 +334,7 @@
 
       // Banner offline
       'banner.offline.title': '⚠️ Tailscale-Daemon (tailscaled) nicht erreichbar.',
-      'banner.offline.desc': 'Stellen Sie sicher, dass Tailscale auf der Box ausgeführt wird. Sie können den Dienst im Terminal starten oder den API-Endpunkt anpassen.',
+      'banner.offline.desc': 'Stellen Sie sicher, dass Tailscale auf der Box läuft. Sie können den Dienst im Terminal starten oder den API-Endpunkt anpassen.',
       'banner.offline.retry': 'Erneut versuchen',
       'banner.offline.cfg': 'Endpunkt konfigurieren',
       'banner.offline.demo': 'Demo-Modus',
@@ -380,39 +367,34 @@
       'peers.thisDevice': 'Diese Box (Sie)',
 
       // Fernzugriff
-      'access.hero.title': 'So greifen Sie weltweit sicher auf Ihre ShareOS-Box zu',
-      'access.hero.desc': 'Mit aktivem Tailscale erhält Ihre Box eine feste private IP (100.x.y.z) und einen verschlüsselten Namen ohne offene Ports am Router.',
+      'access.hero.title': 'So greifen Sie sicher auf ShareOS-Dienste zu',
+      'access.hero.desc': 'Mit aktivem Tailscale erhält Ihre Box eine feste private IP (100.x.y.z), erreichbar von überall ohne offene Router-Ports.',
 
       'access.step1.badge': 'Schritt 1',
-      'access.step1.title': 'Andere Geräte verbinden',
-      'access.step1.desc': 'Installieren Sie die offizielle Tailscale-App auf Computer, Smartphone oder Tablet (Windows, macOS, Linux, Android, iOS) mit demselben Konto.',
+      'access.step1.title': 'Tailscale auf Geräten installieren',
+      'access.step1.desc': 'Installieren Sie die offizielle Tailscale-App (Windows, Mac, iOS, Android, Linux) und melden Sie sich mit demselben Konto an.',
 
-      'access.step2.badge': 'Schritt 2',
+      'access.step2.badge': 'Dienst 1',
       'access.step2.title': 'ShareOS Weboberfläche',
-      'access.step2.desc': 'Öffnen Sie einen Browser von unterwegs (fremdes WLAN, Mobilfunk) und rufen Sie die Box-IP auf:',
+      'access.step2.desc': 'Rufen Sie die Weboberfläche von unterwegs sicher im Browser auf:',
 
-      'access.step3.badge': 'Schritt 3',
-      'access.step3.title': 'Netzlaufwerk & Dateien (SMB / Windows / Mac)',
-      'access.step3.desc': 'Binden Sie Ihre Freigaben im Windows Explorer oder Mac Finder über das VPN ein:',
-      'access.step3.win': 'Unter Windows im Explorer-Adressfeld eingeben:',
-      'access.step3.mac': 'Auf dem Mac: Finder → Mit Server verbinden (Cmd+K):',
+      'access.step3.badge': 'Dienst 2',
+      'access.step3.title': 'Transmission & Downloads',
+      'access.step3.desc': 'Torrents von unterwegs überwachen und Downloads starten:',
 
-      'access.step4.badge': 'Schritt 4',
-      'access.step4.title': 'Transmission & Downloads',
-      'access.step4.desc': 'Steuern Sie Ihre Torrents im Browser von überall aus:',
+      'access.step4.badge': 'Dienst 3',
+      'access.step4.title': 'Schlankes SSH-Terminal',
+      'access.step4.desc': 'Sicherer Terminalzugriff ohne Portweiterleitung von Port 22:',
 
-      'access.step5.badge': 'Schritt 5',
-      'access.step5.title': 'Sicheres SSH-Terminal',
-      'access.step5.desc': 'Bauen Sie eine sichere Terminalverbindung ohne Portweiterleitung auf:',
+      'access.step5.badge': 'Hinweis',
+      'access.step5.title': 'Dateifreigabe (SMB / Netzlaufwerk)',
+      'access.step5.desc': 'Netzlaufwerk über die Tailscale-IP einbinden:',
+      'access.step5.win': 'Im Windows Explorer:',
+      'access.step5.mac': 'Im Mac Finder (Cmd+K):',
 
-      // Erweitert
-      'adv.exitnode.title': 'Diese Box als Exit-Node nutzen (VPN-Gateway)',
-      'adv.exitnode.desc': 'Leiten Sie den gesamten Internetverkehr Ihres Laptops oder Handys von unterwegs verschlüsselt über Ihren heimischen Anschluss um.',
-      'adv.exitnode.btn': 'Exit-Node aktivieren',
-      'adv.exitnode.active': 'Exit-Node angekündigt',
-      'adv.subnet.title': 'Subnet-Router (Zugriff auf das gesamte Heimnetz)',
-      'adv.subnet.desc': 'Erreichen Sie andere Geräte im Heimnetz (Router, Drucker, Heimserver) aus der Ferne über diese Box.',
-      'adv.subnet.btn': 'Routen konfigurieren',
+      // Hardwarewarnung
+      'access.warn.title': '⚠️ Leistungshinweis: Hardwaregrenzen des DNS-320L',
+      'access.warn.desc': 'Der Prozessor des DNS-320L (ARM 1.0 GHz Single-Core) berechnet VPN-Verschlüsselung vollständig per Software ohne Hardware-Kryptobeschleunigung. Das Kopieren großer Dateien über das VPN lastet die CPU zu 100% aus, ist langsam (~1 bis 3 MB/s) und kann die Box vorübergehend einfrieren. Für große Dateien bitte das lokale Netzwerk (LAN) oder Transmission nutzen.',
 
       // Modal Login
       'modal.login.title': 'Diese Box mit Tailscale verbinden',
@@ -427,7 +409,7 @@
       'modal.cfg.title': 'Tailscale Verbindungseinstellungen',
       'modal.cfg.api.label': 'Tailscale API-Endpunkt (lokaler Daemon oder Proxy):',
       'modal.cfg.api.help': 'Standard: /_shareos/cgi/tailscale oder http://127.0.0.1:5252',
-      'modal.cfg.auto.label': 'Netzwerkstatus alle 5 Sekunden automatisch aktualisieren',
+      'modal.cfg.auto.label': 'Netzwerkstatus alle 20 Sekunden automatisch aktualisieren (schont die CPU)',
 
       // Statusleiste
       'sb.network': 'Tailnet: {name}',

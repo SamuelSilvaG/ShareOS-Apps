@@ -77,14 +77,11 @@
       <button class="nav-tab active" data-tab="tab-overview">
         <span>📊</span> <span data-i18n="tab.overview">Overview</span>
       </button>
+      <button class="nav-tab" data-tab="tab-access">
+        <span>🚀</span> <span data-i18n="tab.access">Remote Service Access</span>
+      </button>
       <button class="nav-tab" data-tab="tab-peers">
         <span>💻</span> <span data-i18n="tab.peers">Network Devices</span>
-      </button>
-      <button class="nav-tab" data-tab="tab-access">
-        <span>🚀</span> <span data-i18n="tab.access">Remote Access Guide</span>
-      </button>
-      <button class="nav-tab" data-tab="tab-advanced">
-        <span>⚡</span> <span data-i18n="tab.advanced">Box Features</span>
       </button>
     </div>
 
@@ -108,7 +105,7 @@
           <!-- Card 2: IPv4 -->
           <div class="stat-card">
             <div class="card-header">
-              <span data-i18n="card.ip4.title">Tailscale IPv4 Address</span>
+              <span data-i18n="card.ip4.title">Tailscale IPv4 (Box IP)</span>
               <span>🌐</span>
             </div>
             <div class="card-value-wrap">
@@ -155,7 +152,7 @@
           <!-- Card 6: IPv6 -->
           <div class="stat-card">
             <div class="card-header">
-              <span data-i18n="card.ip6.title">Tailscale IPv6 Address</span>
+              <span data-i18n="card.ip6.title">Tailscale IPv6</span>
               <span>🔒</span>
             </div>
             <div class="card-value-wrap">
@@ -167,12 +164,107 @@
 
         <!-- Quick Access Preview on Overview -->
         <div class="hero-box">
-          <h2 data-i18n="access.hero.title">How to access your ShareOS box from anywhere</h2>
-          <p data-i18n="access.hero.desc">With Tailscale active, your box receives a dedicated private IP (100.x.y.z) and a secure end-to-end encrypted name without opening any ports on your router.</p>
+          <h2 data-i18n="access.hero.title">How to access your ShareOS services from anywhere</h2>
+          <p data-i18n="access.hero.desc">With Tailscale active, your box receives a dedicated private IP (100.x.y.z) accessible securely from anywhere without opening any ports on your router.</p>
         </div>
       </div>
 
-      <!-- ================= Tab 2: Peers ================= -->
+      <!-- ================= Tab 2: Remote Access Guide ================= -->
+      <div id="tab-access" class="tab-pane">
+        <!-- Hardware Performance Warning Box -->
+        <div class="warning-box">
+          <div class="warning-header">
+            <span class="warning-icon">⚠️</span>
+            <strong data-i18n="access.warn.title">Attention: Hardware limitation of the DNS-320L</strong>
+          </div>
+          <p data-i18n="access.warn.desc">
+            The DNS-320L CPU (ARM 1.0 GHz Single-Core) processes VPN encryption entirely in software without hardware crypto acceleration. Copying large files over the VPN will saturate the CPU at 100%, transfer speeds will be low (~1 to 3 MB/s), and heavy transfers can cause severe slowdowns or temporary box freezing. For large files, use local network (LAN) or download directly with Transmission.
+          </p>
+        </div>
+
+        <div class="access-steps">
+
+          <!-- Step 1 -->
+          <div class="step-card">
+            <div class="step-header">
+              <span class="step-badge" data-i18n="access.step1.badge">Step 1</span>
+              <span class="step-title" data-i18n="access.step1.title">Install Tailscale on your devices</span>
+            </div>
+            <div class="step-desc" data-i18n="access.step1.desc">
+              Install the official Tailscale app on your computer or phone (Windows, Mac, iOS, Android, Linux) and sign in with the same account.
+            </div>
+          </div>
+
+          <!-- Service 1: ShareOS Web UI -->
+          <div class="step-card">
+            <div class="step-header">
+              <span class="step-badge" data-i18n="access.step2.badge">Service 1</span>
+              <span class="step-title" data-i18n="access.step2.title">ShareOS Web Interface</span>
+            </div>
+            <div class="step-desc" data-i18n="access.step2.desc">
+              Access the full ShareOS desktop dashboard from any remote network in your browser:
+            </div>
+            <div class="code-box">
+              <span id="guide-web-url" class="code-text">http://100.86.14.92:80/</span>
+              <button id="btn-copy-web" class="sos-btn sos-btn-sm" data-i18n="btn.copy">Copy</button>
+            </div>
+          </div>
+
+          <!-- Service 2: Transmission -->
+          <div class="step-card">
+            <div class="step-header">
+              <span class="step-badge" data-i18n="access.step3.badge">Service 2</span>
+              <span class="step-title" data-i18n="access.step3.title">Transmission &amp; Downloads</span>
+            </div>
+            <div class="step-desc" data-i18n="access.step3.desc">
+              Add torrents or monitor your downloads remotely in the browser:
+            </div>
+            <div class="code-box">
+              <span id="guide-trans-url" class="code-text">http://100.86.14.92:8081/apps/transmission/</span>
+              <button id="btn-copy-trans" class="sos-btn sos-btn-sm" data-i18n="btn.copy">Copy</button>
+            </div>
+          </div>
+
+          <!-- Service 3: SSH -->
+          <div class="step-card">
+            <div class="step-header">
+              <span class="step-badge" data-i18n="access.step4.badge">Service 3</span>
+              <span class="step-title" data-i18n="access.step4.title">Lightweight SSH Terminal</span>
+            </div>
+            <div class="step-desc" data-i18n="access.step4.desc">
+              Direct administrative terminal access without exposing port 22 to the public internet:
+            </div>
+            <div class="code-box">
+              <span id="guide-ssh-cmd" class="code-text">ssh root@100.86.14.92</span>
+              <button id="btn-copy-ssh" class="sos-btn sos-btn-sm" data-i18n="btn.copy">Copy</button>
+            </div>
+          </div>
+
+          <!-- Service 4: SMB Notice -->
+          <div class="step-card">
+            <div class="step-header">
+              <span class="step-badge" data-i18n="access.step5.badge">Notice</span>
+              <span class="step-title" data-i18n="access.step5.title">File Access (SMB / Network Drive)</span>
+            </div>
+            <div class="step-desc" data-i18n="access.step5.desc">
+              You can connect to the shared folder via IP (recommended only for small documents):
+            </div>
+            <div style="font-size:12px; font-weight:600; color:var(--sos-muted);" data-i18n="access.step5.win">In Windows Explorer:</div>
+            <div class="code-box">
+              <span id="guide-smb-win" class="code-text">\\100.86.14.92\</span>
+              <button id="btn-copy-smb-win" class="sos-btn sos-btn-sm" data-i18n="btn.copy">Copy</button>
+            </div>
+            <div style="font-size:12px; font-weight:600; color:var(--sos-muted); margin-top:4px;" data-i18n="access.step5.mac">In Mac Finder (Cmd+K):</div>
+            <div class="code-box">
+              <span id="guide-smb-mac" class="code-text">smb://100.86.14.92</span>
+              <button id="btn-copy-smb-mac" class="sos-btn sos-btn-sm" data-i18n="btn.copy">Copy</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ================= Tab 3: Peers ================= -->
       <div id="tab-peers" class="tab-pane">
         <div class="peer-toolbar">
           <input type="text" id="peer-search-input" class="search-input" data-i18n-placeholder="peers.search.placeholder" placeholder="Search devices by name or IP...">
@@ -197,113 +289,6 @@
               <!-- Rendered via app.js -->
             </tbody>
           </table>
-        </div>
-      </div>
-
-      <!-- ================= Tab 3: Access Guide ================= -->
-      <div id="tab-access" class="tab-pane">
-        <div class="access-steps">
-
-          <!-- Step 1 -->
-          <div class="step-card">
-            <div class="step-header">
-              <span class="step-badge" data-i18n="access.step1.badge">Step 1</span>
-              <span class="step-title" data-i18n="access.step1.title">Connect your other devices</span>
-            </div>
-            <div class="step-desc" data-i18n="access.step1.desc">
-              Install the official Tailscale app on your computer, phone, or tablet (Windows, macOS, Linux, Android, iOS) and sign in with the same account.
-            </div>
-          </div>
-
-          <!-- Step 2 -->
-          <div class="step-card">
-            <div class="step-header">
-              <span class="step-badge" data-i18n="access.step2.badge">Step 2</span>
-              <span class="step-title" data-i18n="access.step2.title">ShareOS Web Interface</span>
-            </div>
-            <div class="step-desc" data-i18n="access.step2.desc">
-              Open your web browser on any network (external Wi-Fi, cellular 4G/5G) and navigate to the box IP:
-            </div>
-            <div class="code-box">
-              <span id="guide-web-url" class="code-text">http://100.86.14.92:80/</span>
-              <button id="btn-copy-web" class="sos-btn sos-btn-sm" data-i18n="btn.copy">Copy</button>
-            </div>
-          </div>
-
-          <!-- Step 3 -->
-          <div class="step-card">
-            <div class="step-header">
-              <span class="step-badge" data-i18n="access.step3.badge">Step 3</span>
-              <span class="step-title" data-i18n="access.step3.title">Network File Sharing (SMB / Windows / Mac)</span>
-            </div>
-            <div class="step-desc" data-i18n="access.step3.desc">
-              Connect your network drive in Windows File Explorer or Mac Finder over the VPN:
-            </div>
-            <div style="font-size:12px; font-weight:600; color:var(--sos-muted);" data-i18n="access.step3.win">On Windows: enter in File Explorer address bar:</div>
-            <div class="code-box">
-              <span id="guide-smb-win" class="code-text">\\100.86.14.92\</span>
-              <button id="btn-copy-smb-win" class="sos-btn sos-btn-sm" data-i18n="btn.copy">Copy</button>
-            </div>
-            <div style="font-size:12px; font-weight:600; color:var(--sos-muted); margin-top:4px;" data-i18n="access.step3.mac">On Mac: Finder → Connect to Server (Cmd+K):</div>
-            <div class="code-box">
-              <span id="guide-smb-mac" class="code-text">smb://100.86.14.92</span>
-              <button id="btn-copy-smb-mac" class="sos-btn sos-btn-sm" data-i18n="btn.copy">Copy</button>
-            </div>
-          </div>
-
-          <!-- Step 4 -->
-          <div class="step-card">
-            <div class="step-header">
-              <span class="step-badge" data-i18n="access.step4.badge">Step 4</span>
-              <span class="step-title" data-i18n="access.step4.title">Transmission &amp; Downloads</span>
-            </div>
-            <div class="step-desc" data-i18n="access.step4.desc">
-              Monitor and manage your Transmission torrent downloads remotely in the browser:
-            </div>
-            <div class="code-box">
-              <span id="guide-trans-url" class="code-text">http://100.86.14.92:8081/apps/transmission/</span>
-              <button id="btn-copy-trans" class="sos-btn sos-btn-sm" data-i18n="btn.copy">Copy</button>
-            </div>
-          </div>
-
-          <!-- Step 5 -->
-          <div class="step-card">
-            <div class="step-header">
-              <span class="step-badge" data-i18n="access.step5.badge">Step 5</span>
-              <span class="step-title" data-i18n="access.step5.title">Secure SSH Terminal</span>
-            </div>
-            <div class="step-desc" data-i18n="access.step5.desc">
-              Open a secure SSH shell without exposing port 22 to the public internet:
-            </div>
-            <div class="code-box">
-              <span id="guide-ssh-cmd" class="code-text">ssh root@100.86.14.92</span>
-              <button id="btn-copy-ssh" class="sos-btn sos-btn-sm" data-i18n="btn.copy">Copy</button>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- ================= Tab 4: Advanced Features ================= -->
-      <div id="tab-advanced" class="tab-pane">
-        <div class="feature-card">
-          <div class="feature-info">
-            <h3 data-i18n="adv.exitnode.title">Use this Box as an Exit Node (VPN Gateway)</h3>
-            <p data-i18n="adv.exitnode.desc">Route all internet traffic from your phone or laptop through your home box while traveling.</p>
-          </div>
-          <button id="btn-toggle-exitnode" class="sos-btn sos-btn-accent" data-i18n="adv.exitnode.btn">
-            Enable Exit Node
-          </button>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-info">
-            <h3 data-i18n="adv.subnet.title">Subnet Router (Access local home network)</h3>
-            <p data-i18n="adv.subnet.desc">Access other devices on your home LAN (router, printers, local servers) remotely through this box.</p>
-          </div>
-          <button id="btn-setup-subnet" class="sos-btn" data-i18n="adv.subnet.btn">
-            Configure Routes
-          </button>
         </div>
       </div>
 
@@ -369,7 +354,7 @@
         </div>
         <div class="form-group" style="flex-direction:row; align-items:center; gap:8px;">
           <input type="checkbox" id="cfg-auto-refresh" checked>
-          <label for="cfg-auto-refresh" style="font-size:12px;" data-i18n="modal.cfg.auto.label">Automatically refresh network state every 5 seconds</label>
+          <label for="cfg-auto-refresh" style="font-size:12px;" data-i18n="modal.cfg.auto.label">Automatically refresh network state every 20 seconds (saves CPU)</label>
         </div>
       </div>
       <div class="modal-footer">

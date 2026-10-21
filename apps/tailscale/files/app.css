@@ -524,30 +524,33 @@ html, body {
   background: #64748b;
 }
 
-/* Advanced Features Tab */
-.feature-card {
-  background: var(--sos-panel, #1e242d);
-  border: 1px solid var(--sos-line, #2b3340);
+/* Hardware Performance Warning Box */
+.warning-box {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.35);
   border-radius: 10px;
-  padding: 20px;
-  margin-bottom: 16px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+}
+
+.warning-header {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 20px;
+  align-items: center;
+  gap: 8px;
+  color: #fbbf24;
+  font-size: 14px;
+  margin-bottom: 6px;
 }
 
-.feature-info h3 {
-  margin: 0 0 6px 0;
-  font-size: 15px;
-  font-weight: 600;
+.warning-icon {
+  font-size: 16px;
 }
 
-.feature-info p {
+.warning-box p {
   margin: 0;
-  font-size: 13px;
-  color: var(--sos-muted, #94a3b8);
-  line-height: 1.4;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #fef3c7;
 }
 
 /* Modals */
