@@ -1,11 +1,11 @@
 {
 	"id": "transmission",
 	"name": "Transmission",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"publisher": "SamuelSilvaG",
 	"description": {
-		"de": "Schneller, schlanker BitTorrent-Client für ShareOS. Lädt Torrents direkt auf den Speicher der Box herunter.",
-		"en": "Fast, lightweight BitTorrent client for ShareOS. Downloads torrents directly to the storage of the box."
+		"de": "BitTorrent-Client für ShareOS: Jeder Benutzer hat seinen eigenen Transmission-Dienst mit eigenen Torrents; Downloads landen mit seinen Rechten in seinen Ordnern. Braucht die System-App „transmission-daemon“.",
+		"en": "BitTorrent client for ShareOS: every user has their own Transmission service with their own torrents; downloads go into their folders with their rights. Needs the system app “transmission-daemon”."
 	},
 	"type": "webapp",
 	"entry": "index.html",
@@ -13,9 +13,10 @@
 	"category": "network",
 	"license": "GPL-2.0-or-later",
 	"homepage": "https://transmissionbt.com/",
-	"min_shareos": "0.2.0-beta.1",
+	"min_shareos": "0.2.0-beta.4",
 	"permissions": [
-		"files"
+		"files",
+		"torrent"
 	],
 	"internet": true,
 	"window": {

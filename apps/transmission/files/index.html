@@ -70,12 +70,11 @@
   <!-- Offline Notice Banner -->
   <div id="offline-banner" class="offline-banner" style="display:none;">
     <div class="banner-msg">
-      <strong>⚠️ Transmission-Daemon nicht erreichbar.</strong>
-      <span>Stellen Sie sicher, dass der Dienst unter <em>Dienste → Autostart</em> oder im Terminal gestartet wurde.</span>
+      <strong>⚠️ Transmission nicht erreichbar.</strong>
+      <span id="banner-why"></span>
     </div>
     <div class="banner-actions">
       <button id="btn-retry" class="sos-btn sos-btn-sm">Erneut prüfen</button>
-      <button id="btn-cfg-conn" class="sos-btn sos-btn-sm">Verbindung konfigurieren</button>
     </div>
   </div>
 
@@ -136,8 +135,6 @@
     <div class="sb-right">
       <span id="sb-turtle-status" class="turtle-tag" style="display:none;">🐢 Drosselung aktiv</span>
       <span class="sb-sep" id="sb-turtle-sep" style="display:none;">|</span>
-      <a href="#" id="link-native-ui" class="sb-link" target="_blank" title="Originale Transmission-Weboberfläche auf Port 9091 aufrufen">Original Web-UI (:9091) ↗</a>
-      <span class="sb-sep">|</span>
       <span id="sb-status">Bereit</span>
     </div>
   </div>
@@ -168,7 +165,7 @@
         <div class="form-group" style="margin-top:16px;">
           <label class="form-label" for="torrent-dest">Speicherort (Zielordner):</label>
           <div class="input-with-button">
-            <input type="text" id="torrent-dest" class="sos-input" placeholder="/mnt/storage/downloads">
+            <input type="text" id="torrent-dest" class="sos-input" placeholder="leer = Standard-Ordner">
             <button type="button" id="btn-browse-dest" class="sos-btn" title="Ordner auf der Box auswählen">Durchsuchen</button>
           </div>
         </div>
@@ -254,12 +251,8 @@
           <h4>Verbindung & Port</h4>
           <div class="grid-2">
             <div>
-              <label class="form-label" for="cfg-peer-port">Peer-Port:</label>
-              <input type="number" id="cfg-peer-port" class="sos-input" min="1024" max="65535">
-            </div>
-            <div>
-              <label class="form-label" for="cfg-rpc-url">RPC-Adresse:</label>
-              <input type="text" id="cfg-rpc-url" class="sos-input" placeholder="/_shareos/cgi/transmission">
+              <label class="form-label" for="cfg-peer-port">Peer-Port (für Portweiterleitung im Router):</label>
+              <input type="number" id="cfg-peer-port" class="sos-input" readonly>
             </div>
           </div>
         </div>
