@@ -65,6 +65,7 @@ brings the Transmission daemon (see `examples/transmission`).
   "homepage": "https://…",
   "min_shareos": "0.1.0",              // also met by the betas of 0.1.0; name a beta if you need one ("0.1.0-beta.7")
   "permissions": ["cron"],             // see below; ShareOS refuses unknown ones
+  "requires": ["transmission-daemon"], // apps it needs: installed from the store first (ShareOS 0.2.0-beta.4+)
   "jobs": [                            // scheduled tasks, need "cron" (ShareOS 0.1.0-beta.7+)
     { "id": "cleanup",                 // a-z, 0-9, -; max. 24 characters
       "name": "Clean up",
@@ -128,6 +129,23 @@ internet. Apps **may use the internet** when they need it (online services,
 streams, maps, sync …): then set `"internet": true` in `app.json`; the store
 shows "uses the internet" (ShareOS 0.1.0-beta.12+, older versions ignore it).
 No symbolic links, at most 40 MB.
+
+## System apps and services
+
+System apps (`"type": "system"`) are native programs for the box – nano,
+htop, strace, iperf3, the Transmission daemon. They need the firmware's
+toolchain, so they are built in the [ShareOS repository](https://github.com/UniqueDroid/ShareOS/tree/main/sysapps)
+and attached to its releases as `.sapp`. The catalog lists them too (every
+version once, from the newest firmware release that has it; refreshed every
+3 hours), so the store installs them like any other app.
+
+An app that needs one names it in `"requires"`: installing the app installs
+the system app first, and the store warns before removing a system app an
+installed app needs. **Services** (daemons that keep running) come only with
+the firmware: the system app brings the program, ShareOS starts and stops it
+(e.g. one Transmission daemon per user) – a package never starts a service by
+itself. If your app needs a service, open an issue in ShareOS; the web app
+stays here.
 
 ## Own apps
 
