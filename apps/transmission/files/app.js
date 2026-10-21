@@ -7,6 +7,7 @@
 
 (function () {
   const $ = (id) => document.getElementById(id);
+  const t = (key, vars) => (window.I18N ? I18N.t(key, vars) : key);
 
   // State
   const TOR = window.ShareOS && ShareOS.torrent;
@@ -20,15 +21,20 @@
   let pendingFileMetainfo = null;
 
   // Status mapping
-  const STATUS_LABELS = {
-    0: { key: 'paused', text: 'Angehalten' },
-    1: { key: 'checking', text: 'Wartet auf Prüfung' },
-    2: { key: 'checking', text: 'Prüft Daten...' },
-    3: { key: 'downloading', text: 'Wartet auf DL' },
-    4: { key: 'downloading', text: 'Lädt herunter' },
-    5: { key: 'seeding', text: 'Wartet auf Seed' },
-    6: { key: 'seeding', text: 'Verteilt (Seeding)' }
+  const STATUS_KEYS = {
+    0: 'paused',
+    1: 'checking',
+    2: 'checking',
+    3: 'downloading',
+    4: 'downloading',
+    5: 'seeding',
+    6: 'seeding'
   };
+
+  function statusInfo(status) {
+    if (!(status in STATUS_KEYS)) return { key: 'unknown', text: t('status.unknown') };
+    return { key: STATUS_KEYS[status], text: t(`status.${status}`) };
+  }
 
   function fmtBytes(bytes) {
     if (bytes == null || isNaN(bytes)) return '0 B';
@@ -45,7 +51,7 @@
 
   function fmtEta(seconds) {
     if (seconds == null || seconds < 0 || seconds > 3600 * 24 * 365) return '–';
-    if (seconds === 0) return 'Fertig';
+    if (seconds === 0) return t('eta.done');
     const d = Math.floor(seconds / 86400);
     const h = Math.floor((seconds % 86400) / 3600);
     const m = Math.floor((seconds % 3600) / 60);
@@ -70,14 +76,14 @@
 
   // JSON-RPC through ShareOS (the box starts the account's daemon on the first call)
   async function rpc(method, args = {}) {
-    if (!TOR) throw new Error('Nur in ShareOS 0.2.0-beta.4 oder neuer verfügbar');
+    if (!TOR) throw new Error(t('err.noShareOS'));
     return TOR.rpc(method, args);
   }
 
   // "<root>/<path>" for display: the personal folder is "home"
   function boxPath(p) {
     if (!p) return '–';
-    return p.replace(/^home(\/|$)/, 'Mein Ordner$1');
+    return p.replace(/^home(\/|$)/, t('path.home') + '$1');
   }
 
   // Refresh Torrent list and server state
@@ -112,17 +118,17 @@
     const badge = $('conn-badge');
     const banner = $('offline-banner');
     if (online) {
-      badge.textContent = '● Verbunden';
+      badge.textContent = t('conn.online');
       badge.className = 'conn-badge online';
       banner.style.display = 'none';
     } else {
-      badge.textContent = '○ Nicht erreichbar';
+      badge.textContent = t('conn.offline');
       badge.className = 'conn-badge offline';
       banner.style.display = 'flex';
-      const why = /not installed/.test(lastError) ? 'Der Transmission-Dienst ist nicht installiert: APPS → Store → „transmission-daemon“.'
-        : /no drive|no personal folder/.test(lastError) ? 'Kein Laufwerk bzw. kein persönlicher Ordner auf einem Laufwerk – Downloads brauchen ein Laufwerk.'
-        : /no access/.test(lastError) ? 'Keine Berechtigung – die App bitte aus ShareOS heraus öffnen.'
-        : 'Transmission antwortet nicht' + (lastError ? ' (' + lastError + ')' : '') + '.';
+      const why = /not installed/.test(lastError) ? t('why.notInstalled')
+        : /no drive|no personal folder/.test(lastError) ? t('why.noDrive')
+        : /no access/.test(lastError) ? t('why.noAccess')
+        : t('why.noResponse', { detail: lastError ? ' (' + lastError + ')' : '' });
       $('banner-why').textContent = why;
       $('torrent-rows').innerHTML = '';
       const tr = document.createElement('tr'), td = document.createElement('td');
@@ -147,7 +153,7 @@
     });
 
     if (filtered.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="8" class="empty-state">${torrents.length === 0 ? 'Keine Torrents vorhanden. Klicken Sie auf „+ Torrent“ um einen Download zu starten.' : 'Keine Treffer für den aktuellen Filter.'}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" class="empty-state">${torrents.length === 0 ? t('list.empty') : t('list.nomatch')}</td></tr>`;
       updateActionButtons();
       return;
     }
@@ -155,7 +161,7 @@
     tbody.innerHTML = filtered.map((t) => {
       const isSel = selectedIds.has(t.id);
       const pct = (t.percentDone * 100).toFixed(1);
-      const st = STATUS_LABELS[t.status] || { key: 'unknown', text: 'Unbekannt' };
+      const st = statusInfo(t.status);
       const isSeed = t.status === 5 || t.status === 6;
       const isPaused = t.status === 0;
       const pbarCls = isSeed ? 'seeding' : (isPaused ? 'paused' : '');
@@ -192,7 +198,7 @@
   }
 
   function updateStatusbar() {
-    $('sb-count').textContent = `${torrents.length} Torrents`;
+    $('sb-count').textContent = t('sb.torrents', { n: torrents.length });
     let totalDown = 0, totalUp = 0;
     torrents.forEach((t) => { totalDown += t.rateDownload; totalUp += t.rateUpload; });
     $('sb-rates').textContent = `↓ ${fmtRate(totalDown)}   ↑ ${fmtRate(totalUp)}`;
@@ -212,8 +218,8 @@
       return;
     }
     const id = Array.from(selectedIds)[0];
-    const t = torrents.find((x) => x.id === id);
-    if (!t) { drawer.style.display = 'none'; return; }
+    const tor = torrents.find((x) => x.id === id);
+    if (!tor) { drawer.style.display = 'none'; return; }
 
     drawer.style.display = 'flex';
 
@@ -221,26 +227,26 @@
     $('tab-general').innerHTML = `
       <div class="grid-2">
         <div>
-          <div><strong>Speicherort:</strong> ${escapeHtml(boxPath(t.downloadDir))}</div>
-          <div><strong>Gesamtgröße:</strong> ${fmtBytes(t.totalSize)}</div>
-          <div><strong>Hash:</strong> <code>${t.hashString}</code></div>
+          <div><strong>${t('det.location')}</strong> ${escapeHtml(boxPath(tor.downloadDir))}</div>
+          <div><strong>${t('det.totalSize')}</strong> ${fmtBytes(tor.totalSize)}</div>
+          <div><strong>${t('det.hash')}</strong> <code>${tor.hashString}</code></div>
         </div>
         <div>
-          <div><strong>Status:</strong> ${STATUS_LABELS[t.status]?.text || ''}</div>
-          <div><strong>Download-Rate:</strong> ↓ ${fmtRate(t.rateDownload)}</div>
-          <div><strong>Upload-Rate:</strong> ↑ ${fmtRate(t.rateUpload)}</div>
-          <div><strong>Upload-Verhältnis:</strong> ${t.uploadRatio.toFixed(2)}</div>
+          <div><strong>${t('det.status')}</strong> ${statusInfo(tor.status).text}</div>
+          <div><strong>${t('det.dlRate')}</strong> ↓ ${fmtRate(tor.rateDownload)}</div>
+          <div><strong>${t('det.ulRate')}</strong> ↑ ${fmtRate(tor.rateUpload)}</div>
+          <div><strong>${t('det.ratio')}</strong> ${tor.uploadRatio.toFixed(2)}</div>
         </div>
       </div>
     `;
 
     // Tab Files
-    if (t.files && t.files.length) {
+    if (tor.files && tor.files.length) {
       $('tab-files').innerHTML = `
         <table class="torrent-table" style="font-size:11px;">
-          <thead><tr><th>Datei</th><th style="width:100px;">Größe</th><th style="width:100px;">Fortschritt</th></tr></thead>
+          <thead><tr><th>${t('det.file')}</th><th style="width:100px;">${t('det.size')}</th><th style="width:100px;">${t('det.progress')}</th></tr></thead>
           <tbody>
-            ${t.files.map((f) => `
+            ${tor.files.map((f) => `
               <tr>
                 <td>${escapeHtml(f.name)}</td>
                 <td>${fmtBytes(f.length)}</td>
@@ -251,16 +257,16 @@
         </table>
       `;
     } else {
-      $('tab-files').innerHTML = '<div style="color:var(--sos-muted)">Keine Dateiinformationen vorhanden.</div>';
+      $('tab-files').innerHTML = `<div style="color:var(--sos-muted)">${t('det.noFiles')}</div>`;
     }
 
     // Tab Peers
-    if (t.peers && t.peers.length) {
+    if (tor.peers && tor.peers.length) {
       $('tab-peers').innerHTML = `
         <table class="torrent-table" style="font-size:11px;">
-          <thead><tr><th>IP / Host</th><th>Client</th><th>Download</th><th>Upload</th></tr></thead>
+          <thead><tr><th>${t('det.ip')}</th><th>${t('det.client')}</th><th>Download</th><th>Upload</th></tr></thead>
           <tbody>
-            ${t.peers.map((p) => `
+            ${tor.peers.map((p) => `
               <tr>
                 <td>${escapeHtml(p.address)}</td>
                 <td>${escapeHtml(p.clientName || '–')}</td>
@@ -272,18 +278,18 @@
         </table>
       `;
     } else {
-      $('tab-peers').innerHTML = '<div style="color:var(--sos-muted)">Keine Peers verbunden.</div>';
+      $('tab-peers').innerHTML = `<div style="color:var(--sos-muted)">${t('det.noPeers')}</div>`;
     }
 
     // Tab Trackers
-    if (t.trackers && t.trackers.length) {
+    if (tor.trackers && tor.trackers.length) {
       $('tab-trackers').innerHTML = `
         <ul>
-          ${t.trackers.map((tr) => `<li>${escapeHtml(tr.announce)}</li>`).join('')}
+          ${tor.trackers.map((tr) => `<li>${escapeHtml(tr.announce)}</li>`).join('')}
         </ul>
       `;
     } else {
-      $('tab-trackers').innerHTML = '<div style="color:var(--sos-muted)">Keine Tracker eingetragen.</div>';
+      $('tab-trackers').innerHTML = `<div style="color:var(--sos-muted)">${t('det.noTrackers')}</div>`;
     }
   }
 
@@ -339,7 +345,7 @@
     if (!selectedIds.size) return;
     try {
       await rpc('torrent-start', { ids: Array.from(selectedIds) });
-      toast('Torrents gestartet');
+      toast(t('toast.started'));
       refresh();
     } catch (e) { toast(e.message, true); }
   });
@@ -348,7 +354,7 @@
     if (!selectedIds.size) return;
     try {
       await rpc('torrent-stop', { ids: Array.from(selectedIds) });
-      toast('Torrents angehalten');
+      toast(t('toast.paused'));
       refresh();
     } catch (e) { toast(e.message, true); }
   });
@@ -366,7 +372,7 @@
       await rpc('torrent-remove', { ids: Array.from(selectedIds), 'delete-local-data': deleteData });
       $('modal-delete').style.display = 'none';
       selectedIds.clear();
-      toast('Torrent(s) erfolgreich gelöscht');
+      toast(t('toast.deleted'));
       refresh();
     } catch (e) { toast(e.message, true); }
   });
@@ -377,7 +383,7 @@
     const current = serverSession['alt-speed-enabled'];
     try {
       await rpc('session-set', { 'alt-speed-enabled': !current });
-      toast(!current ? 'Drosselung (Turtle) aktiviert' : 'Drosselung deaktiviert');
+      toast(!current ? t('toast.turtleOn') : t('toast.turtleOff'));
       refresh();
     } catch (e) { toast(e.message, true); }
   });
@@ -408,9 +414,9 @@
 
   // choose a download folder of the box ("<root>/<path>")
   async function pickFolder(input) {
-    if (!(window.ShareOS && ShareOS.fs && ShareOS.fs.pick)) { toast('Ordnerwahl über ShareOS nicht verfügbar', true); return; }
+    if (!(window.ShareOS && ShareOS.fs && ShareOS.fs.pick)) { toast(t('toast.noFolderPicker'), true); return; }
     try {
-      const picked = await ShareOS.fs.pick({ title: 'Ordner für Downloads', folder: true });
+      const picked = await ShareOS.fs.pick({ title: t('pick.destTitle'), folder: true });
       if (picked && picked.length) input.value = picked[0].path ? picked[0].root + '/' + picked[0].path : picked[0].root;
     } catch (e) { toast(e.message, true); }
   }
@@ -421,7 +427,7 @@
   $('btn-pick-box').addEventListener('click', async () => {
     if (window.ShareOS && ShareOS.fs && ShareOS.fs.pick) {
       try {
-        const picked = await ShareOS.fs.pick({ title: '.torrent-Datei auswählen', ext: ['.torrent'] });
+        const picked = await ShareOS.fs.pick({ title: t('pick.fileTitle'), ext: ['.torrent'] });
         if (picked && picked.length) {
           const item = picked[0];
           const fileRef = await ShareOS.fs.open(item.root, item.path, item.name);
@@ -429,13 +435,13 @@
           const reader = new FileReader();
           reader.onload = () => {
             pendingFileMetainfo = reader.result.split(',')[1];
-            $('picked-file-name').textContent = `Ausgewählt: ${item.name}`;
+            $('picked-file-name').textContent = t('pick.selected', { name: item.name });
           };
           reader.readAsDataURL(blob);
         }
       } catch (e) { toast(e.message, true); }
     } else {
-      toast('Dateiauswahl über ShareOS nicht verfügbar', true);
+      toast(t('toast.noPicker'), true);
     }
   });
 
@@ -445,7 +451,7 @@
       const reader = new FileReader();
       reader.onload = () => {
         pendingFileMetainfo = reader.result.split(',')[1];
-        $('picked-file-name').textContent = `Ausgewählt: ${file.name}`;
+        $('picked-file-name').textContent = t('pick.selected', { name: file.name });
       };
       reader.readAsDataURL(file);
     }
@@ -460,10 +466,10 @@
 
     if (isLinkTab) {
       const url = $('torrent-url').value.trim();
-      if (!url) { toast('Bitte geben Sie einen Magnet-Link oder eine URL ein', true); return; }
+      if (!url) { toast(t('toast.needUrl'), true); return; }
       addArgs.filename = url;
     } else {
-      if (!pendingFileMetainfo) { toast('Bitte wählen Sie eine .torrent-Datei aus', true); return; }
+      if (!pendingFileMetainfo) { toast(t('toast.needFile'), true); return; }
       addArgs.metainfo = pendingFileMetainfo;
     }
 
@@ -474,10 +480,10 @@
       $('torrent-file-input').value = '';
       pendingFileMetainfo = null;
       $('picked-file-name').textContent = '';
-      toast('Torrent hinzugefügt');
+      toast(t('toast.added'));
       refresh();
     } catch (e) {
-      toast('Fehler beim Hinzufügen: ' + e.message, true);
+      toast(t('toast.addError') + e.message, true);
     }
   });
 
@@ -513,52 +519,70 @@
     try {
       await rpc('session-set', setArgs);
       $('modal-settings').style.display = 'none';
-      toast('Einstellungen gespeichert');
+      toast(t('toast.saved'));
       refresh();
     } catch (e) {
-      toast('Fehler beim Speichern: ' + e.message, true);
+      toast(t('toast.saveError') + e.message, true);
     }
   });
 
   $('btn-retry').addEventListener('click', refresh);
 
   // ShareOS Menu Bar
+  // Language switch: persist choice and reload so menu + all views are rebuilt
+  function switchLang(code) {
+    if (!window.I18N || I18N.lang === code) return;
+    I18N.setLang(code);
+    location.reload();
+  }
+
   if (window.ShareOS && ShareOS.menu) {
+    const langItems = window.I18N
+      ? I18N.supported.map((code) => ({
+          label: (I18N.lang === code ? '✓ ' : '   ') + I18N.names[code],
+          action: () => switchLang(code)
+        }))
+      : [];
+
     ShareOS.menu($('menu'), [
       {
-        label: 'Torrent',
+        label: t('menu.torrent'),
         items: [
-          { label: 'Torrent hinzufügen...', kbd: 'Ctrl+O', action: () => $('btn-add').click() },
+          { label: t('menu.add'), kbd: 'Ctrl+O', action: () => $('btn-add').click() },
           '-',
-          { label: 'Alle anhalten', action: async () => { await rpc('torrent-stop'); refresh(); } },
-          { label: 'Alle fortsetzen', action: async () => { await rpc('torrent-start'); refresh(); } },
+          { label: t('menu.pauseAll'), action: async () => { await rpc('torrent-stop'); refresh(); } },
+          { label: t('menu.resumeAll'), action: async () => { await rpc('torrent-start'); refresh(); } },
           '-',
-          { label: 'Schließen', action: () => window.close() }
+          { label: t('menu.close'), action: () => window.close() }
         ]
       },
       {
-        label: 'Bearbeiten',
+        label: t('menu.edit'),
         items: [
-          { label: 'Starten', action: () => $('btn-start').click() },
-          { label: 'Anhalten', action: () => $('btn-pause').click() },
-          { label: 'Löschen...', kbd: 'Entf', action: () => $('btn-remove').click() },
+          { label: t('menu.start'), action: () => $('btn-start').click() },
+          { label: t('menu.pause'), action: () => $('btn-pause').click() },
+          { label: t('menu.remove'), kbd: t('menu.removeKbd'), action: () => $('btn-remove').click() },
           '-',
-          { label: 'Alle auswählen', kbd: 'Ctrl+A', action: () => { torrents.forEach((t) => selectedIds.add(t.id)); renderTorrents(); } }
+          { label: t('menu.selectAll'), kbd: 'Ctrl+A', action: () => { torrents.forEach((x) => selectedIds.add(x.id)); renderTorrents(); } }
         ]
       },
       {
-        label: 'Ansicht',
+        label: t('menu.view'),
         items: [
-          { label: 'Aktualisieren', kbd: 'F5', action: refresh },
+          { label: t('menu.refresh'), kbd: 'F5', action: refresh },
           '-',
-          { label: 'Hell', action: () => document.documentElement.setAttribute('data-theme', 'light') },
-          { label: 'Dunkel', action: () => document.documentElement.setAttribute('data-theme', 'dark') }
+          { label: t('menu.light'), action: () => document.documentElement.setAttribute('data-theme', 'light') },
+          { label: t('menu.dark'), action: () => document.documentElement.setAttribute('data-theme', 'dark') }
         ]
       },
       {
-        label: 'Hilfe',
+        label: t('menu.language'),
+        items: langItems
+      },
+      {
+        label: t('menu.help'),
         items: [
-          { label: 'Über Transmission', action: () => toast('Transmission für ShareOS 1.1 – jeder Benutzer hat seinen eigenen Dienst') }
+          { label: t('menu.about'), action: () => toast(t('toast.about')) }
         ]
       }
     ]);
@@ -591,13 +615,13 @@
         const reader = new FileReader();
         reader.onload = async () => {
           const b64 = reader.result.split(',')[1];
-          if (confirm(`Möchten Sie die Datei „${ShareOS.file.name}“ jetzt zu Transmission hinzufügen?`)) {
+          if (confirm(t('confirm.openFile', { name: ShareOS.file.name }))) {
             try {
               await rpc('torrent-add', { metainfo: b64 });
-              toast(`Torrent „${ShareOS.file.name}“ hinzugefügt!`);
+              toast(t('toast.addedName', { name: ShareOS.file.name }));
               refresh();
             } catch (err) {
-              toast('Fehler beim Hinzufügen: ' + err.message, true);
+              toast(t('toast.addError') + err.message, true);
             }
           }
         };

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="de">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="/_shareos/theme.css">
 <link rel="stylesheet" href="app.css">
 <script src="/_shareos/app.js"></script>
+<script src="i18n.js"></script>
 </head>
 <body class="sos-app">
 
@@ -15,10 +16,10 @@
     <div class="titlebar-left">
       <img src="icon.svg" class="app-icon" alt="Transmission Logo">
       <span class="app-title">Transmission</span>
-      <span class="version-tag">1.1.0</span>
+      <span class="version-tag">1.2.0</span>
     </div>
     <div class="titlebar-right">
-      <span id="conn-badge" class="conn-badge checking">Prüfe Verbindung...</span>
+      <span id="conn-badge" class="conn-badge checking" data-i18n="conn.checking">Checking connection...</span>
     </div>
   </div>
 
@@ -28,28 +29,28 @@
   <!-- Toolbar -->
   <div class="sos-toolbar">
     <div class="tb-group">
-      <button id="btn-add" class="sos-btn sos-btn-accent" title="Torrent hinzufügen (Ctrl+O)">
+      <button id="btn-add" class="sos-btn sos-btn-accent" data-i18n-title="tb.add.title">
         <span class="btn-icon">＋</span> Torrent
       </button>
-      <button id="btn-start" class="sos-btn" title="Ausgewählte starten" disabled>
-        <span class="btn-icon">▶</span> Starten
+      <button id="btn-start" class="sos-btn" data-i18n-title="tb.start.title" disabled>
+        <span class="btn-icon">▶</span> <span data-i18n="tb.start">Start</span>
       </button>
-      <button id="btn-pause" class="sos-btn" title="Ausgewählte anhalten" disabled>
-        <span class="btn-icon">⏸</span> Anhalten
+      <button id="btn-pause" class="sos-btn" data-i18n-title="tb.pause.title" disabled>
+        <span class="btn-icon">⏸</span> <span data-i18n="tb.pause">Pause</span>
       </button>
-      <button id="btn-remove" class="sos-btn sos-btn-danger" title="Ausgewählte löschen (Entf)" disabled>
-        <span class="btn-icon">✕</span> Löschen
+      <button id="btn-remove" class="sos-btn sos-btn-danger" data-i18n-title="tb.remove.title" disabled>
+        <span class="btn-icon">✕</span> <span data-i18n="tb.remove">Delete</span>
       </button>
     </div>
 
     <div class="tb-divider"></div>
 
     <div class="tb-group">
-      <button id="btn-turtle" class="sos-btn" title="Alternative Geschwindigkeitsbegrenzung (Turtle-Modus)">
-        <span class="btn-icon">🐢</span> Drosselung
+      <button id="btn-turtle" class="sos-btn" data-i18n-title="tb.turtle.title">
+        <span class="btn-icon">🐢</span> <span data-i18n="tb.turtle">Throttle</span>
       </button>
-      <button id="btn-settings" class="sos-btn" title="Einstellungen">
-        <span class="btn-icon">⚙</span> Einstellungen
+      <button id="btn-settings" class="sos-btn" data-i18n-title="tb.settings">
+        <span class="btn-icon">⚙</span> <span data-i18n="tb.settings">Settings</span>
       </button>
     </div>
 
@@ -57,24 +58,24 @@
 
     <div class="tb-group">
       <select id="filter-status" class="sos-input filter-select">
-        <option value="all">Alle Torrents</option>
-        <option value="downloading">Herunterladen</option>
-        <option value="seeding">Verteilen (Seeding)</option>
-        <option value="paused">Angehalten</option>
-        <option value="active">Aktiv</option>
+        <option value="all" data-i18n="filter.all">All torrents</option>
+        <option value="downloading" data-i18n="filter.downloading">Downloading</option>
+        <option value="seeding" data-i18n="filter.seeding">Seeding</option>
+        <option value="paused" data-i18n="filter.paused">Paused</option>
+        <option value="active" data-i18n="filter.active">Active</option>
       </select>
-      <input type="search" id="search-input" class="sos-input search-box" placeholder="Suchen...">
+      <input type="search" id="search-input" class="sos-input search-box" data-i18n-placeholder="search.placeholder" placeholder="Search...">
     </div>
   </div>
 
   <!-- Offline Notice Banner -->
   <div id="offline-banner" class="offline-banner" style="display:none;">
     <div class="banner-msg">
-      <strong>⚠️ Transmission nicht erreichbar.</strong>
+      <strong data-i18n="banner.title">⚠️ Transmission unreachable.</strong>
       <span id="banner-why"></span>
     </div>
     <div class="banner-actions">
-      <button id="btn-retry" class="sos-btn sos-btn-sm">Erneut prüfen</button>
+      <button id="btn-retry" class="sos-btn sos-btn-sm" data-i18n="banner.retry">Retry</button>
     </div>
   </div>
 
@@ -87,18 +88,18 @@
           <thead>
             <tr>
               <th class="th-sel"><input type="checkbox" id="select-all"></th>
-              <th class="th-status">Status</th>
-              <th class="th-name">Name</th>
-              <th class="th-progress">Fortschritt</th>
-              <th class="th-size">Größe</th>
-              <th class="th-rates">Download / Upload</th>
-              <th class="th-eta">Restzeit</th>
-              <th class="th-peers">Peers</th>
+              <th class="th-status" data-i18n="col.status">Status</th>
+              <th class="th-name" data-i18n="col.name">Name</th>
+              <th class="th-progress" data-i18n="col.progress">Progress</th>
+              <th class="th-size" data-i18n="col.size">Size</th>
+              <th class="th-rates" data-i18n="col.rates">Download / Upload</th>
+              <th class="th-eta" data-i18n="col.eta">Remaining</th>
+              <th class="th-peers" data-i18n="col.peers">Peers</th>
             </tr>
           </thead>
           <tbody id="torrent-rows">
             <tr>
-              <td colspan="8" class="empty-state">Lade Torrents...</td>
+              <td colspan="8" class="empty-state" data-i18n="list.loading">Loading torrents...</td>
             </tr>
           </tbody>
         </table>
@@ -108,12 +109,12 @@
       <div id="details-drawer" class="details-drawer" style="display:none;">
         <div class="drawer-header">
           <div class="drawer-tabs">
-            <button class="d-tab active" data-tab="general">Allgemein</button>
-            <button class="d-tab" data-tab="files">Dateien</button>
-            <button class="d-tab" data-tab="peers">Peers</button>
-            <button class="d-tab" data-tab="trackers">Tracker</button>
+            <button class="d-tab active" data-tab="general" data-i18n="tab.general">General</button>
+            <button class="d-tab" data-tab="files" data-i18n="tab.files">Files</button>
+            <button class="d-tab" data-tab="peers" data-i18n="tab.peers">Peers</button>
+            <button class="d-tab" data-tab="trackers" data-i18n="tab.trackers">Trackers</button>
           </div>
-          <button id="btn-close-drawer" class="sos-btn sos-btn-sm" title="Details schließen">✕</button>
+          <button id="btn-close-drawer" class="sos-btn sos-btn-sm" data-i18n-title="drawer.close">✕</button>
         </div>
         <div class="drawer-content">
           <div id="tab-general" class="tab-panel active"></div>
@@ -133,9 +134,9 @@
       <span id="sb-rates">↓ 0 B/s   ↑ 0 B/s</span>
     </div>
     <div class="sb-right">
-      <span id="sb-turtle-status" class="turtle-tag" style="display:none;">🐢 Drosselung aktiv</span>
+      <span id="sb-turtle-status" class="turtle-tag" style="display:none;" data-i18n="sb.turtle">🐢 Throttling active</span>
       <span class="sb-sep" id="sb-turtle-sep" style="display:none;">|</span>
-      <span id="sb-status">Bereit</span>
+      <span id="sb-status" data-i18n="sb.ready">Ready</span>
     </div>
   </div>
 
@@ -143,42 +144,42 @@
   <div id="modal-add" class="modal-backdrop" style="display:none;">
     <div class="sos-dialog modal-card">
       <div class="modal-header">
-        <h3>Torrent hinzufügen</h3>
+        <h3 data-i18n="add.title">Add torrent</h3>
         <button class="modal-close" id="modal-add-close">✕</button>
       </div>
       <div class="modal-body">
         <div class="modal-tabs">
           <button class="m-tab active" id="mtab-link">Magnet / URL</button>
-          <button class="m-tab" id="mtab-file">Torrent-Datei</button>
+          <button class="m-tab" id="mtab-file" data-i18n="add.tabFile">Torrent file</button>
         </div>
         <div id="mcontent-link" class="tab-content active">
-          <label class="form-label" for="torrent-url">Magnet-Link oder URL zur .torrent-Datei:</label>
-          <textarea id="torrent-url" class="sos-input form-textarea" rows="3" placeholder="magnet:?xt=urn:btih:... oder https://..."></textarea>
+          <label class="form-label" for="torrent-url" data-i18n="add.urlLabel">Magnet link or URL to the .torrent file:</label>
+          <textarea id="torrent-url" class="sos-input form-textarea" rows="3" data-i18n-placeholder="add.urlPlaceholder" placeholder="magnet:?xt=urn:btih:... or https://..."></textarea>
         </div>
         <div id="mcontent-file" class="tab-content">
-          <label class="form-label">.torrent-Datei vom Computer auswählen:</label>
+          <label class="form-label" data-i18n="add.fileLabel">Select a .torrent file from your computer:</label>
           <input type="file" id="torrent-file-input" class="sos-input" accept=".torrent">
-          <div class="or-separator">oder</div>
-          <button type="button" id="btn-pick-box" class="sos-btn">Aus ShareOS-Speicher wählen...</button>
+          <div class="or-separator" data-i18n="add.or">or</div>
+          <button type="button" id="btn-pick-box" class="sos-btn" data-i18n="add.pickBox">Choose from ShareOS storage...</button>
           <div id="picked-file-name" class="picked-name"></div>
         </div>
         <div class="form-group" style="margin-top:16px;">
-          <label class="form-label" for="torrent-dest">Speicherort (Zielordner):</label>
+          <label class="form-label" for="torrent-dest" data-i18n="add.dest">Save location (destination folder):</label>
           <div class="input-with-button">
-            <input type="text" id="torrent-dest" class="sos-input" placeholder="leer = Standard-Ordner">
-            <button type="button" id="btn-browse-dest" class="sos-btn" title="Ordner auf der Box auswählen">Durchsuchen</button>
+            <input type="text" id="torrent-dest" class="sos-input" data-i18n-placeholder="add.destPlaceholder" placeholder="empty = default folder">
+            <button type="button" id="btn-browse-dest" class="sos-btn" data-i18n-title="add.browse.title" data-i18n="add.browse">Browse</button>
           </div>
         </div>
         <div class="form-group checkbox-group">
           <label class="chk-label">
             <input type="checkbox" id="torrent-start-now" checked>
-            <span>Download sofort starten</span>
+            <span data-i18n="add.startNow">Start download immediately</span>
           </label>
         </div>
       </div>
       <div class="modal-footer">
-        <button id="modal-add-cancel" class="sos-btn">Abbrechen</button>
-        <button id="modal-add-submit" class="sos-btn sos-btn-accent">Hinzufügen</button>
+        <button id="modal-add-cancel" class="sos-btn" data-i18n="btn.cancel">Cancel</button>
+        <button id="modal-add-submit" class="sos-btn sos-btn-accent" data-i18n="add.submit">Add</button>
       </div>
     </div>
   </div>
@@ -187,21 +188,21 @@
   <div id="modal-delete" class="modal-backdrop" style="display:none;">
     <div class="sos-dialog modal-card modal-sm">
       <div class="modal-header">
-        <h3>Torrent löschen</h3>
+        <h3 data-i18n="del.title">Delete torrent</h3>
         <button class="modal-close" id="modal-del-close">✕</button>
       </div>
       <div class="modal-body">
-        <p id="del-prompt">Möchten Sie die ausgewählten Torrents wirklich entfernen?</p>
+        <p id="del-prompt" data-i18n="del.prompt">Do you really want to remove the selected torrents?</p>
         <div class="form-group checkbox-group danger-chk">
           <label class="chk-label">
             <input type="checkbox" id="del-data-check">
-            <span><strong>Heruntergeladene Dateien</strong> von der Festplatte löschen</span>
+            <span data-i18n-html="del.data"></span>
           </label>
         </div>
       </div>
       <div class="modal-footer">
-        <button id="modal-del-cancel" class="sos-btn">Abbrechen</button>
-        <button id="modal-del-submit" class="sos-btn sos-btn-danger">Löschen</button>
+        <button id="modal-del-cancel" class="sos-btn" data-i18n="btn.cancel">Cancel</button>
+        <button id="modal-del-submit" class="sos-btn sos-btn-danger" data-i18n="del.submit">Delete</button>
       </div>
     </div>
   </div>
@@ -210,56 +211,56 @@
   <div id="modal-settings" class="modal-backdrop" style="display:none;">
     <div class="sos-dialog modal-card">
       <div class="modal-header">
-        <h3>Transmission Einstellungen</h3>
+        <h3 data-i18n="cfg.title">Transmission settings</h3>
         <button class="modal-close" id="modal-cfg-close">✕</button>
       </div>
       <div class="modal-body">
         <div class="cfg-section">
-          <h4>Download-Verzeichnis</h4>
+          <h4 data-i18n="cfg.downloadDir">Download directory</h4>
           <div class="input-with-button">
             <input type="text" id="cfg-download-dir" class="sos-input">
-            <button type="button" id="btn-cfg-browse" class="sos-btn">Durchsuchen</button>
+            <button type="button" id="btn-cfg-browse" class="sos-btn" data-i18n="add.browse">Browse</button>
           </div>
         </div>
         <div class="cfg-section">
-          <h4>Geschwindigkeitsbegrenzungen (KB/s)</h4>
+          <h4 data-i18n="cfg.limits">Speed limits (KB/s)</h4>
           <div class="grid-2">
             <div>
-              <label class="chk-label"><input type="checkbox" id="cfg-speed-down-enabled"> <span>Download begrenzen:</span></label>
+              <label class="chk-label"><input type="checkbox" id="cfg-speed-down-enabled"> <span data-i18n="cfg.limitDown">Limit download:</span></label>
               <input type="number" id="cfg-speed-down" class="sos-input" min="0" step="10">
             </div>
             <div>
-              <label class="chk-label"><input type="checkbox" id="cfg-speed-up-enabled"> <span>Upload begrenzen:</span></label>
+              <label class="chk-label"><input type="checkbox" id="cfg-speed-up-enabled"> <span data-i18n="cfg.limitUp">Limit upload:</span></label>
               <input type="number" id="cfg-speed-up" class="sos-input" min="0" step="10">
             </div>
           </div>
         </div>
         <div class="cfg-section">
-          <h4>Alternative Begrenzung (Turtle-Modus, KB/s)</h4>
+          <h4 data-i18n="cfg.alt">Alternative limits (turtle mode, KB/s)</h4>
           <div class="grid-2">
             <div>
-              <label class="form-label" for="cfg-alt-down">Download (Drossel):</label>
+              <label class="form-label" for="cfg-alt-down" data-i18n="cfg.altDown">Download (throttled):</label>
               <input type="number" id="cfg-alt-down" class="sos-input" min="0" step="10">
             </div>
             <div>
-              <label class="form-label" for="cfg-alt-up">Upload (Drossel):</label>
+              <label class="form-label" for="cfg-alt-up" data-i18n="cfg.altUp">Upload (throttled):</label>
               <input type="number" id="cfg-alt-up" class="sos-input" min="0" step="10">
             </div>
           </div>
         </div>
         <div class="cfg-section">
-          <h4>Verbindung & Port</h4>
+          <h4 data-i18n="cfg.conn">Connection &amp; port</h4>
           <div class="grid-2">
             <div>
-              <label class="form-label" for="cfg-peer-port">Peer-Port (für Portweiterleitung im Router):</label>
+              <label class="form-label" for="cfg-peer-port" data-i18n="cfg.peerPort">Peer port (for port forwarding in the router):</label>
               <input type="number" id="cfg-peer-port" class="sos-input" readonly>
             </div>
           </div>
         </div>
       </div>
       <div class="modal-footer">
-        <button id="modal-cfg-cancel" class="sos-btn">Abbrechen</button>
-        <button id="modal-cfg-submit" class="sos-btn sos-btn-accent">Speichern</button>
+        <button id="modal-cfg-cancel" class="sos-btn" data-i18n="btn.cancel">Cancel</button>
+        <button id="modal-cfg-submit" class="sos-btn sos-btn-accent" data-i18n="btn.save">Save</button>
       </div>
     </div>
   </div>
