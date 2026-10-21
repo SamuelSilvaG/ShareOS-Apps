@@ -18,6 +18,9 @@
 		"files",
 		"torrent"
 	],
+	"requires": [
+		"transmission-daemon"
+	],
 	"internet": true,
 	"window": {
 		"width": 1050,
