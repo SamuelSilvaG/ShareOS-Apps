@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NetTunnel</title>
+<link rel="stylesheet" href="/_shareos/theme.css">
+<link rel="stylesheet" href="app.css">
+<script src="/_shareos/app.js"></script>
+</head>
+<body class="sos-app">
+
+  <header class="sos-titlebar">
+    <div class="tb-left">
+      <img src="icon.svg" class="app-icon" alt="">
+      <span>NetTunnel</span>
+      <span class="tag">1.0.0</span>
+    </div>
+    <span id="state" class="state">…</span>
+  </header>
+
+  <div id="banner" class="banner hidden"></div>
+
+  <main class="workspace">
+    <section class="pane">
+      <div class="pane-head">
+        <span>VPN-Profile</span>
+        <span class="acts">
+          <button class="sos-btn small" id="add-box">Von der Box …</button>
+          <label class="sos-btn small" for="add-file">Vom Computer …</label>
+          <input type="file" id="add-file" accept=".ovpn,.conf" hidden>
+        </span>
+      </div>
+      <div id="profiles" class="profiles"><div class="empty muted">Lade …</div></div>
+    </section>
+
+    <section class="pane">
+      <div class="pane-head"><span>Verbindung</span></div>
+      <div id="status" class="status"></div>
+      <div class="pane-head">
+        <span>Protokoll</span>
+        <button class="sos-btn small" id="log-refresh">Aktualisieren</button>
+      </div>
+      <pre id="log" class="log">–</pre>
+    </section>
+  </main>
+
+  <dialog id="dlg" class="sos-dialog">
+    <form method="dialog" id="dlg-form">
+      <h2 id="dlg-title">Profil einspielen</h2>
+      <label class="fld"><span>Name</span><input class="sos-input" name="name" maxlength="40" required pattern="[A-Za-z0-9][A-Za-z0-9 _.\-]{0,39}"></label>
+      <div id="dlg-auth">
+        <p class="hint" id="dlg-auth-hint">Das Profil verlangt Benutzername und Passwort des VPN.</p>
+        <label class="fld"><span>Benutzername</span><input class="sos-input" name="user" autocomplete="off"></label>
+        <label class="fld"><span>Passwort</span><input class="sos-input" name="pass" type="password" autocomplete="new-password"></label>
+      </div>
+      <label class="chk"><input type="checkbox" name="full" checked> Gesamten Verkehr der Box durch den Tunnel</label>
+      <p class="hint">Aus: nur die Netze des VPN (z. B. das Büronetz) gehen durch den Tunnel, alles andere wie bisher.</p>
+      <label class="chk" id="dlg-auto-row"><input type="checkbox" name="autostart"> Beim Start der Box verbinden</label>
+      <div class="dlg-acts">
+        <button class="sos-btn" value="cancel" formnovalidate>Abbrechen</button>
+        <button class="sos-btn primary" value="ok" id="dlg-ok">Einspielen</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast"></div>
+<script src="app.js"></script>
+</body>
+</html>

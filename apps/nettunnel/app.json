@@ -1,0 +1,25 @@
+{
+	"id": "nettunnel",
+	"name": "NetTunnel",
+	"version": "1.0.0",
+	"publisher": "UniqueDroid",
+	"description": {
+		"de": "VPN-Client für die Box: OpenVPN-Profile (.ovpn) einspielen, verbinden und trennen, Status mit Tunnel-Adresse und Datenmenge, Protokoll, Verbindung beim Start der Box. Gefährliche Zeilen (Skripte, Plugins) entfernt die Box beim Einspielen. Nur für Administratoren; braucht die System-App „openvpn“.",
+		"en": "VPN client for the box: import OpenVPN profiles (.ovpn), connect and disconnect, state with tunnel address and traffic, log, connect when the box starts. The box removes dangerous lines (scripts, plugins) on import. Admins only; needs the system app “openvpn”."
+	},
+	"type": "webapp",
+	"entry": "index.html",
+	"icon": "icon.svg",
+	"category": "network",
+	"license": "MIT",
+	"homepage": "https://github.com/UniqueDroid/ShareOS-Apps/tree/main/apps/nettunnel",
+	"min_shareos": "0.2.0-beta.6",
+	"permissions": [
+		"files",
+		"vpn",
+		"embed"
+	],
+	"requires": [
+		"openvpn"
+	]
+}
