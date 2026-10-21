@@ -19,6 +19,8 @@ installs them with one click – the same way it offers firmware updates.
 | [API-Pilot](apps/apipilot) | REST and GraphQL client in the style of Postman: headers, auth, JSON/GraphQL/form bodies, history, cURL/fetch code; saves responses on the box or opens them in Webpad |
 | [BeatBox Studio](apps/beatbox) | 16-step drum sequencer with synthesizer; projects (`.beatbox`) and WAV loops on the box, sends loops to WinWeb Player |
 | [Transmission](apps/transmission) | BitTorrent client by @SamuelSilvaG: every user has their own Transmission service (system app `transmission-daemon`), downloads into their folders |
+| [NetTunnel](apps/nettunnel) | VPN for the box (OpenVPN, system app `openvpn`): as client import profiles and connect; as server reach home from anywhere with a ready-made profile per device; admins only, shown inside ShareOS |
+| [MediaTranscoder](apps/mediatranscoder) | Converts media on the box with FFmpeg (system app `ffmpeg`): audio to MP3/M4A/Opus/FLAC/WAV, videos into another container without re-encoding, cut out parts; jobs run in the background |
 | [Tailscale](apps/tailscale) | WireGuard-based mesh VPN client by @SamuelSilvaG: secure zero-config remote access to your box, files (SMB) and web apps from anywhere |
 
 ## How it works
@@ -89,6 +91,7 @@ releases stay on GitHub.
 |---|---|
 | `embed` | Be shown as a page inside the ShareOS interface instead of its own window – for apps that only have settings (ShareOS 0.1.0-beta.9+). |
 | `torrent` | Control the signed-in user's own Transmission service through `ShareOS.torrent.rpc(method, args)` (needs `files`; ShareOS 0.2.0-beta.4+ with the system app `transmission-daemon`). Every user has their own service; folders are `<root>/<path>` like `ShareOS.fs`, and the box passes only what a remote control needs (no scripts, no other places). |
+| `media` | Media jobs of the signed-in user with FFmpeg on the box through `ShareOS.media` (`probe`, `start`, `jobs`, `cancel`, `remove`; needs `files`; ShareOS 0.2.0-beta.5+ with the system app `ffmpeg`). The box builds the FFmpeg arguments from fixed choices (`audio`: MP3, M4A, Opus, FLAC, WAV or copy; `remux`: MP4, MKV, MOV, TS, WebM; start/length), runs them with the user's rights and never overwrites a file; no video re-encoding. |
 | `files` | Read, change and delete the files the signed-in user reaches in the file browser (his personal folder; admins: all volumes and USB drives), with his rights, while the app is open – through `ShareOS.fs` (ShareOS 0.1.0-beta.11+). For file managers and editors that save on the box. |
 | `cron` | Run its `jobs` on a schedule (at most 5, at most every 5 minutes). Each job runs as the app's own user `app-<id>` (no login, no access to the users' files) in the app's data folder, with `nice` and the time limit; the output (max. 64 KB) appears under APPS → Tasks. The admin can change or switch off every schedule there; a changed schedule stays across updates. |
 

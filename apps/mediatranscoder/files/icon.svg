@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#9b6cff"/>
+      <stop offset="100%" stop-color="#5b2fc9"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="56" height="56" rx="13" fill="url(#bg)"/>
+  <!-- film strip -->
+  <rect x="12" y="16" width="22" height="32" rx="3" fill="#1b1430"/>
+  <g fill="#cbb8ff">
+    <rect x="14" y="19" width="3" height="3" rx="0.8"/><rect x="14" y="26" width="3" height="3" rx="0.8"/>
+    <rect x="14" y="33" width="3" height="3" rx="0.8"/><rect x="14" y="40" width="3" height="3" rx="0.8"/>
+    <rect x="29" y="19" width="3" height="3" rx="0.8"/><rect x="29" y="26" width="3" height="3" rx="0.8"/>
+    <rect x="29" y="33" width="3" height="3" rx="0.8"/><rect x="29" y="40" width="3" height="3" rx="0.8"/>
+  </g>
+  <path d="M20 26 L27 32 L20 38 Z" fill="#fff"/>
+  <!-- arrow -->
+  <path d="M36 32 h7 v-5 l8 8 l-8 8 v-5 h-7 z" fill="#fff" opacity="0.95" transform="translate(0,-3)"/>
+  <!-- note -->
+  <g fill="#fff">
+    <rect x="48" y="40" width="2.4" height="10" rx="1"/>
+    <ellipse cx="46" cy="50" rx="3.6" ry="2.8"/>
+  </g>
+</svg>

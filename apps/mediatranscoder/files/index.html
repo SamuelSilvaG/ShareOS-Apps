@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MediaTranscoder</title>
+<link rel="stylesheet" href="/_shareos/theme.css">
+<link rel="stylesheet" href="app.css">
+<script src="/_shareos/app.js"></script>
+</head>
+<body class="sos-app">
+
+  <header class="sos-titlebar">
+    <div class="tb-left">
+      <img src="icon.svg" class="app-icon" alt="">
+      <span class="app-title">MediaTranscoder</span>
+      <span class="tag">1.0.0</span>
+    </div>
+    <span id="status" class="status checking">Prüfe FFmpeg …</span>
+  </header>
+
+  <div id="banner" class="banner hidden"></div>
+
+  <main class="workspace">
+    <!-- left: source and settings -->
+    <section class="pane">
+      <div class="pane-head">1 · Quelldatei</div>
+      <div class="source">
+        <button class="sos-btn" id="pick-src">Datei wählen …</button>
+        <div id="src-info" class="src-info muted">Noch keine Datei gewählt.</div>
+      </div>
+
+      <div class="pane-head">2 · Was soll passieren?</div>
+      <div class="form">
+        <div class="seg" role="radiogroup" id="action">
+          <label><input type="radio" name="action" value="audio" checked><span>Audio umwandeln / herausholen</span></label>
+          <label><input type="radio" name="action" value="remux"><span>Container wechseln</span></label>
+        </div>
+        <p class="hint" id="action-hint"></p>
+
+        <div class="row">
+          <label for="format">Zielformat</label>
+          <select class="sos-input" id="format"></select>
+        </div>
+        <div class="row" id="row-bitrate">
+          <label for="bitrate">Bitrate</label>
+          <select class="sos-input" id="bitrate">
+            <option value="64k">64 kbit/s (Sprache)</option>
+            <option value="96k">96 kbit/s</option>
+            <option value="128k">128 kbit/s</option>
+            <option value="160k">160 kbit/s</option>
+            <option value="192k" selected>192 kbit/s (Standard)</option>
+            <option value="256k">256 kbit/s</option>
+            <option value="320k">320 kbit/s (beste)</option>
+          </select>
+        </div>
+        <div class="row" id="row-stream">
+          <label for="stream">Audiospur</label>
+          <select class="sos-input" id="stream"><option value="0">–</option></select>
+        </div>
+
+        <div class="row check">
+          <label><input type="checkbox" id="trim"> Ausschnitt</label>
+          <div class="trim">
+            <span>ab</span><input type="text" class="sos-input" id="t-start" value="00:00:00" disabled spellcheck="false">
+            <span>Länge</span><input type="text" class="sos-input" id="t-dur" value="" placeholder="bis Ende" disabled spellcheck="false">
+          </div>
+        </div>
+
+        <div class="row">
+          <label>Zielordner</label>
+          <div class="dest">
+            <span id="dest" class="dest-name muted">wie die Quelldatei</span>
+            <button class="sos-btn small" id="pick-dest">Ändern …</button>
+          </div>
+        </div>
+        <div class="row">
+          <label for="outname">Dateiname</label>
+          <div class="outname"><input type="text" class="sos-input" id="outname" spellcheck="false"><span id="outext" class="ext"></span></div>
+        </div>
+      </div>
+      <div class="pane-foot">
+        <button class="sos-btn primary" id="start" disabled>Umwandeln starten</button>
+      </div>
+    </section>
+
+    <!-- right: preview and jobs -->
+    <section class="pane">
+      <div class="pane-head">FFmpeg auf der Box</div>
+      <pre id="preview" class="preview">ffmpeg -i …</pre>
+
+      <div class="pane-head jobs-head">
+        <span>3 · Aufträge</span>
+        <button class="sos-btn small" id="clear-done" disabled>Erledigte entfernen</button>
+      </div>
+      <div id="jobs" class="jobs"><div class="empty muted">Noch keine Aufträge.</div></div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
