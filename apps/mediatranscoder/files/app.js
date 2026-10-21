@@ -299,7 +299,7 @@ $('start').addEventListener('click', async () => {
 });
 
 // --- jobs ----------------------------------------------------------------------------
-const STATE = { queued: 'wartet', running: 'läuft', done: 'fertig', error: 'Fehler', cancelled: 'abgebrochen' };
+const STATE = { queued: 'wartet', running: 'läuft', stopping: 'bricht ab …', done: 'fertig', error: 'Fehler', cancelled: 'abgebrochen' };
 let pollTimer = 0, lastJobs = [];
 
 function jobView(j) {
@@ -315,7 +315,7 @@ function jobView(j) {
   if (j.state === 'done' && j.size != null) sub.push(fmtSize(j.size));
   if (j.state === 'done' && j.started && j.finished) sub.push('in ' + fmtTime(j.finished - j.started));
   d.appendChild(el('div', 'sub', sub.join(' · ')));
-  if (j.state === 'running' || j.state === 'queued') {
+  if (['running', 'queued', 'stopping'].includes(j.state)) {
     const bar = el('div', 'bar' + (j.state === 'queued' || !(j.duration > 0) ? ' wait' : ''));
     const fill = el('div');
     if (j.state === 'running' && j.duration > 0) fill.style.width = Math.max(1, Math.min(100, (j.progress || 0) * 100)) + '%';
@@ -325,7 +325,7 @@ function jobView(j) {
   if (j.state === 'error' && j.error) d.appendChild(el('div', 'err', de(j.error)));
   const acts = el('div', 'acts');
   const btn = (label, fn, primary) => { const b = el('button', 'sos-btn small' + (primary ? ' primary' : ''), label); b.addEventListener('click', fn); acts.appendChild(b); };
-  if (j.state === 'running' || j.state === 'queued') {
+  if (['running', 'queued', 'stopping'].includes(j.state)) {
     btn('Abbrechen', () => SOS.media.cancel(j.id).then(loadJobs).catch((e) => toast(de(e.message))));
   } else {
     if (j.state === 'done' && j.output) {
@@ -350,8 +350,8 @@ function renderJobs(list) {
   box.textContent = '';
   if (!list.length) box.appendChild(el('div', 'empty muted', 'Noch keine Aufträge.'));
   for (const j of list) box.appendChild(jobView(j));
-  $('clear-done').disabled = !list.some((j) => j.state !== 'running' && j.state !== 'queued');
-  const busy = list.filter((j) => j.state === 'running' || j.state === 'queued').length;
+  $('clear-done').disabled = !list.some((j) => !['running', 'queued', 'stopping'].includes(j.state));
+  const busy = list.filter((j) => ['running', 'queued', 'stopping'].includes(j.state)).length;
   setStatus(busy ? 'busy' : 'ok', busy ? busy + (busy === 1 ? ' Auftrag läuft' : ' Aufträge laufen') : 'FFmpeg bereit');
 }
 
@@ -372,7 +372,7 @@ async function loadJobs() {
     lastJobs = r.jobs;
     renderJobs(r.jobs);
     if (!r.installed) setStatus('bad', 'FFmpeg fehlt');
-    busy = r.jobs.some((j) => j.state === 'running' || j.state === 'queued');
+    busy = r.jobs.some((j) => ['running', 'queued', 'stopping'].includes(j.state));
   } catch (e) {
     setStatus('bad', 'Keine Verbindung');
   }
@@ -381,7 +381,7 @@ async function loadJobs() {
 }
 
 $('clear-done').addEventListener('click', async () => {
-  for (const j of lastJobs) if (j.state !== 'running' && j.state !== 'queued') await SOS.media.remove(j.id).catch(() => { });
+  for (const j of lastJobs) if (!['running', 'queued', 'stopping'].includes(j.state)) await SOS.media.remove(j.id).catch(() => { });
   loadJobs();
 });
 
