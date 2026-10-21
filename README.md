@@ -18,6 +18,7 @@ installs them with one click – the same way it offers firmware updates.
 | [DevBox](apps/devbox) | Developer toolbox: JSON, Base64/URL/hex, checksums (also of files of the box), regex, diff, JWT |
 | [API-Pilot](apps/apipilot) | REST and GraphQL client in the style of Postman: headers, auth, JSON/GraphQL/form bodies, history, cURL/fetch code; saves responses on the box or opens them in Webpad |
 | [BeatBox Studio](apps/beatbox) | 16-step drum sequencer with synthesizer; projects (`.beatbox`) and WAV loops on the box, sends loops to WinWeb Player |
+| [Transmission](apps/transmission) | BitTorrent client by @SamuelSilvaG: every user has their own Transmission service (system app `transmission-daemon`), downloads into their folders |
 
 ## How it works
 
@@ -45,8 +46,7 @@ section to `CHANGELOG.md`, push.
 
 To withdraw an app from the store, move its folder out of `apps/` (e.g. to
 `examples/`): the catalog lists only apps that have a folder in `apps/`; its
-releases stay on GitHub. Transmission is withdrawn this way until ShareOS
-brings the Transmission daemon (see `examples/transmission`).
+releases stay on GitHub.
 
 ## app.json
 
@@ -87,6 +87,7 @@ brings the Transmission daemon (see `examples/transmission`).
 | Permission | What the app may do |
 |---|---|
 | `embed` | Be shown as a page inside the ShareOS interface instead of its own window – for apps that only have settings (ShareOS 0.1.0-beta.9+). |
+| `torrent` | Control the signed-in user's own Transmission service through `ShareOS.torrent.rpc(method, args)` (needs `files`; ShareOS 0.2.0-beta.4+ with the system app `transmission-daemon`). Every user has their own service; folders are `<root>/<path>` like `ShareOS.fs`, and the box passes only what a remote control needs (no scripts, no other places). |
 | `files` | Read, change and delete the files the signed-in user reaches in the file browser (his personal folder; admins: all volumes and USB drives), with his rights, while the app is open – through `ShareOS.fs` (ShareOS 0.1.0-beta.11+). For file managers and editors that save on the box. |
 | `cron` | Run its `jobs` on a schedule (at most 5, at most every 5 minutes). Each job runs as the app's own user `app-<id>` (no login, no access to the users' files) in the app's data folder, with `nice` and the time limit; the output (max. 64 KB) appears under APPS → Tasks. The admin can change or switch off every schedule there; a changed schedule stays across updates. |
 

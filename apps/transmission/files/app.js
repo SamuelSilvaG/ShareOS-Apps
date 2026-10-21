@@ -1,13 +1,16 @@
 // Transmission ShareOS Web Client
-// Communicates with transmission-daemon via JSON-RPC
+// Remote control for the account's own transmission-daemon (system app
+// "transmission-daemon"); ShareOS.torrent.rpc() goes through the box's proxy
+// /_shareos/cgi/transmission (permissions "files" + "torrent", ShareOS
+// 0.2.0-beta.4+). Folders are "<root>/<path>" like ShareOS.fs.
 'use strict';
 
 (function () {
   const $ = (id) => document.getElementById(id);
 
   // State
-  let rpcUrl = localStorage.getItem('transmission_rpc_url') || '/_shareos/cgi/transmission';
-  let sessionId = '';
+  const TOR = window.ShareOS && ShareOS.torrent;
+  let lastError = '';
   let torrents = [];
   let selectedIds = new Set();
   let sessionStats = null;
@@ -65,48 +68,16 @@
     }, 3200);
   }
 
-  // JSON-RPC Transport
+  // JSON-RPC through ShareOS (the box starts the account's daemon on the first call)
   async function rpc(method, args = {}) {
-    const payload = JSON.stringify({ method, arguments: args, tag: Date.now() });
-    const headers = { 'Content-Type': 'application/json' };
-    if (sessionId) headers['X-Transmission-Session-Id'] = sessionId;
+    if (!TOR) throw new Error('Nur in ShareOS 0.2.0-beta.4 oder neuer verfügbar');
+    return TOR.rpc(method, args);
+  }
 
-    let res;
-    try {
-      res = await fetch(rpcUrl, { method: 'POST', headers, body: payload });
-    } catch (err) {
-      // If default cgi proxy fails, try direct :9091 port fallback
-      if (rpcUrl.includes('_shareos/cgi')) {
-        const directUrl = `http://${location.hostname || '127.0.0.1'}:9091/transmission/rpc`;
-        try {
-          res = await fetch(directUrl, { method: 'POST', headers, body: payload });
-          rpcUrl = directUrl;
-        } catch {
-          throw err;
-        }
-      } else {
-        throw err;
-      }
-    }
-
-    // Transmission CSRF session token negotiation (409 Conflict)
-    if (res.status === 409) {
-      const token = res.headers.get('X-Transmission-Session-Id');
-      if (token) {
-        sessionId = token;
-        return rpc(method, args);
-      }
-    }
-
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-    }
-
-    const data = await res.json();
-    if (data.result !== 'success') {
-      throw new Error(data.result || 'Transmission RPC Fehler');
-    }
-    return data.arguments;
+  // "<root>/<path>" for display: the personal folder is "home"
+  function boxPath(p) {
+    if (!p) return '–';
+    return p.replace(/^home(\/|$)/, 'Mein Ordner$1');
   }
 
   // Refresh Torrent list and server state
@@ -131,6 +102,7 @@
       updateStatusbar();
       renderDetails();
     } catch (err) {
+      lastError = err.message;
       setConnected(false);
     }
   }
@@ -147,7 +119,15 @@
       badge.textContent = '○ Nicht erreichbar';
       badge.className = 'conn-badge offline';
       banner.style.display = 'flex';
-      $('torrent-rows').innerHTML = `<tr><td colspan="8" class="empty-state">Transmission-Daemon antwortet nicht. Prüfen Sie den Dienst in ShareOS.</td></tr>`;
+      const why = /not installed/.test(lastError) ? 'Der Transmission-Dienst ist nicht installiert: APPS → Store → „transmission-daemon“.'
+        : /no drive|no personal folder/.test(lastError) ? 'Kein Laufwerk bzw. kein persönlicher Ordner auf einem Laufwerk – Downloads brauchen ein Laufwerk.'
+        : /no access/.test(lastError) ? 'Keine Berechtigung – die App bitte aus ShareOS heraus öffnen.'
+        : 'Transmission antwortet nicht' + (lastError ? ' (' + lastError + ')' : '') + '.';
+      $('banner-why').textContent = why;
+      $('torrent-rows').innerHTML = '';
+      const tr = document.createElement('tr'), td = document.createElement('td');
+      td.colSpan = 8; td.className = 'empty-state'; td.textContent = why;
+      tr.appendChild(td); $('torrent-rows').appendChild(tr);
     }
   }
 
@@ -241,7 +221,7 @@
     $('tab-general').innerHTML = `
       <div class="grid-2">
         <div>
-          <div><strong>Speicherort:</strong> ${escapeHtml(t.downloadDir)}</div>
+          <div><strong>Speicherort:</strong> ${escapeHtml(boxPath(t.downloadDir))}</div>
           <div><strong>Gesamtgröße:</strong> ${fmtBytes(t.totalSize)}</div>
           <div><strong>Hash:</strong> <code>${t.hashString}</code></div>
         </div>
@@ -426,17 +406,16 @@
     $('mcontent-link').classList.remove('active');
   });
 
-  // Browse destination using ShareOS.fs.pick if available
-  $('btn-browse-dest').addEventListener('click', async () => {
-    if (window.ShareOS && ShareOS.fs && ShareOS.fs.pick) {
-      try {
-        const picked = await ShareOS.fs.pick({ title: 'Zielordner für Downloads auswählen', save: true });
-        if (picked && picked.path) {
-          $('torrent-dest').value = `/mnt/${picked.root}/${picked.path}`.replace(/\/+/g, '/');
-        }
-      } catch (e) { console.error(e); }
-    }
-  });
+  // choose a download folder of the box ("<root>/<path>")
+  async function pickFolder(input) {
+    if (!(window.ShareOS && ShareOS.fs && ShareOS.fs.pick)) { toast('Ordnerwahl über ShareOS nicht verfügbar', true); return; }
+    try {
+      const picked = await ShareOS.fs.pick({ title: 'Ordner für Downloads', folder: true });
+      if (picked && picked.length) input.value = picked[0].path ? picked[0].root + '/' + picked[0].path : picked[0].root;
+    } catch (e) { toast(e.message, true); }
+  }
+  $('btn-browse-dest').addEventListener('click', () => pickFolder($('torrent-dest')));
+  $('btn-cfg-browse').addEventListener('click', () => pickFolder($('cfg-download-dir')));
 
   // Pick file on box using ShareOS.fs.pick
   $('btn-pick-box').addEventListener('click', async () => {
@@ -512,22 +491,14 @@
     $('cfg-speed-up').value = serverSession['speed-limit-up'] || 0;
     $('cfg-alt-down').value = serverSession['alt-speed-down'] || 50;
     $('cfg-alt-up').value = serverSession['alt-speed-up'] || 50;
-    $('cfg-peer-port').value = serverSession['peer-port'] || 51413;
-    $('cfg-rpc-url').value = rpcUrl;
+    $('cfg-peer-port').value = serverSession['peer-port'] || '';
     $('modal-settings').style.display = 'flex';
   });
 
-  $('btn-cfg-conn').addEventListener('click', () => $('btn-settings').click());
   $('modal-cfg-close').addEventListener('click', () => $('modal-settings').style.display = 'none');
   $('modal-cfg-cancel').addEventListener('click', () => $('modal-settings').style.display = 'none');
 
   $('modal-cfg-submit').addEventListener('click', async () => {
-    const newRpc = $('cfg-rpc-url').value.trim();
-    if (newRpc) {
-      rpcUrl = newRpc;
-      localStorage.setItem('transmission_rpc_url', rpcUrl);
-    }
-
     const setArgs = {
       'download-dir': $('cfg-download-dir').value.trim(),
       'speed-limit-down-enabled': $('cfg-speed-down-enabled').checked,
@@ -535,9 +506,9 @@
       'speed-limit-up-enabled': $('cfg-speed-up-enabled').checked,
       'speed-limit-up': parseInt($('cfg-speed-up').value, 10) || 0,
       'alt-speed-down': parseInt($('cfg-alt-down').value, 10) || 50,
-      'alt-speed-up': parseInt($('cfg-alt-up').value, 10) || 50,
-      'peer-port': parseInt($('cfg-peer-port').value, 10) || 51413
+      'alt-speed-up': parseInt($('cfg-alt-up').value, 10) || 50
     };
+    if (!setArgs['download-dir']) delete setArgs['download-dir'];
 
     try {
       await rpc('session-set', setArgs);
@@ -549,9 +520,6 @@
     }
   });
 
-  // Native UI Link
-  const host = location.hostname || '127.0.0.1';
-  $('link-native-ui').href = `http://${host}:9091/transmission/web/`;
   $('btn-retry').addEventListener('click', refresh);
 
   // ShareOS Menu Bar
@@ -590,8 +558,7 @@
       {
         label: 'Hilfe',
         items: [
-          { label: 'Original Web-Interface öffnen (:9091)', action: () => window.open(`http://${host}:9091/transmission/web/`, '_blank') },
-          { label: 'Über Transmission', action: () => toast('Transmission BitTorrent Client v1.0.0 für ShareOS') }
+          { label: 'Über Transmission', action: () => toast('Transmission für ShareOS 1.1 – jeder Benutzer hat seinen eigenen Dienst') }
         ]
       }
     ]);

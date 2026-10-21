@@ -1,0 +1,41 @@
+{
+	"id": "transmission",
+	"name": "Transmission",
+	"version": "1.1.0",
+	"publisher": "SamuelSilvaG",
+	"description": {
+		"de": "BitTorrent-Client für ShareOS: Jeder Benutzer hat seinen eigenen Transmission-Dienst mit eigenen Torrents; Downloads landen mit seinen Rechten in seinen Ordnern. Braucht die System-App „transmission-daemon“.",
+		"en": "BitTorrent client for ShareOS: every user has their own Transmission service with their own torrents; downloads go into their folders with their rights. Needs the system app “transmission-daemon”."
+	},
+	"type": "webapp",
+	"entry": "index.html",
+	"icon": "icon.svg",
+	"category": "network",
+	"license": "GPL-2.0-or-later",
+	"homepage": "https://transmissionbt.com/",
+	"min_shareos": "0.2.0-beta.4",
+	"permissions": [
+		"files",
+		"torrent"
+	],
+	"requires": [
+		"transmission-daemon"
+	],
+	"internet": true,
+	"window": {
+		"width": 1050,
+		"height": 720
+	},
+	"opens": [
+		{
+			"ext": [
+				".torrent"
+			],
+			"mode": "view",
+			"label": {
+				"de": "Mit Transmission öffnen",
+				"en": "Open with Transmission"
+			}
+		}
+	]
+}

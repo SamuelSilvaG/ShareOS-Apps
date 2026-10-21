@@ -17,7 +17,7 @@ ID_RE = re.compile(r'^[a-z][a-z0-9-]{1,31}$')
 VER_RE = re.compile(r'^v?\d+\.\d+(\.\d+)?(-[A-Za-z0-9.]+)?$')
 TYPES = {'webapp'}
 MAX_FILES = 40 * 1048576
-PERMISSIONS = {'cron', 'embed', 'files'}   # what ShareOS knows (cron: beta.7+, embed: beta.9+, files: beta.11+)
+PERMISSIONS = {'cron', 'embed', 'files', 'torrent'}   # what ShareOS knows (cron: beta.7+, embed: beta.9+, files: beta.11+, torrent: 0.2.0-beta.4+)
 JOB_RE = re.compile(r'^[a-z][a-z0-9-]{0,23}$')
 CRON_RE = re.compile(r'^[0-9*/,-]+( [0-9*/,-]+){4}$')
 MAX_JOBS = 5
@@ -58,6 +58,7 @@ def check_jobs(a, files):
     if 'internet' in a and not isinstance(a['internet'], bool): err.append('internet: true or false')
     if not isinstance(perms, list): return ['permissions: a list, e.g. ["cron"]']
     err += ['unknown permission: %s (known: %s)' % (p, ', '.join(sorted(PERMISSIONS))) for p in perms if p not in PERMISSIONS]
+    if 'torrent' in perms and 'files' not in perms: err.append('the permission "torrent" needs "files"')
     jobs = a.get('jobs')
     if jobs is None: return err
     if not isinstance(jobs, list) or len(jobs) > MAX_JOBS: return err + ['jobs: a list, at most %d' % MAX_JOBS]

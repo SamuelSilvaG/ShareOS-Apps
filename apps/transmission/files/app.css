@@ -111,14 +111,14 @@ html, body {
   font-size: 13px;
   border-radius: 6px;
   border: 1px solid var(--sos-line, #384252);
-  background: var(--sos-btn-bg, #28303f);
+  background: var(--sos-panel, #28303f);
   color: var(--sos-text, #ffffff);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .sos-btn:hover:not(:disabled) {
-  background: var(--sos-btn-hover, #333d4f);
+  background: var(--sos-bar, #333d4f);
   border-color: var(--sos-accent, #3a7bd5);
 }
 
@@ -130,7 +130,7 @@ html, body {
 .sos-btn-accent {
   background: var(--sos-accent, #3a7bd5);
   border-color: var(--sos-accent, #3a7bd5);
-  color: #ffffff;
+  color: var(--sos-bg, #ffffff);
 }
 
 .sos-btn-accent:hover:not(:disabled) {
@@ -477,7 +477,7 @@ html, body {
 }
 
 .m-tab.active {
-  background: var(--sos-btn-bg, #28303f);
+  background: var(--sos-panel, #28303f);
   color: var(--sos-text, #fff);
   border-color: var(--sos-accent, #3a7bd5);
   font-weight: 500;
