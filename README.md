@@ -19,6 +19,7 @@ installs them with one click – the same way it offers firmware updates.
 | [API-Pilot](apps/apipilot) | REST and GraphQL client in the style of Postman: headers, auth, JSON/GraphQL/form bodies, history, cURL/fetch code; saves responses on the box or opens them in Webpad |
 | [BeatBox Studio](apps/beatbox) | 16-step drum sequencer with synthesizer; projects (`.beatbox`) and WAV loops on the box, sends loops to WinWeb Player |
 | [Transmission](apps/transmission) | BitTorrent client by @SamuelSilvaG: every user has their own Transmission service (system app `transmission-daemon`), downloads into their folders |
+| [Tailscale](apps/tailscale) | WireGuard-based mesh VPN client by @SamuelSilvaG: secure zero-config remote access to your box, files (SMB) and web apps from anywhere |
 
 ## How it works
 

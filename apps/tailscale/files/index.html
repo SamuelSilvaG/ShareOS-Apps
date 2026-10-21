@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tailscale VPN</title>
+<link rel="stylesheet" href="/_shareos/theme.css">
+<link rel="stylesheet" href="app.css">
+<script src="/_shareos/app.js"></script>
+<script src="i18n.js"></script>
+</head>
+<body class="sos-app">
+
+  <!-- Title bar -->
+  <div class="sos-titlebar">
+    <div class="titlebar-left">
+      <img src="icon.svg" class="app-icon" alt="Tailscale Logo">
+      <span class="app-title" data-i18n="app.title">Tailscale VPN</span>
+      <span class="version-tag">1.0.0</span>
+    </div>
+    <div class="titlebar-right">
+      <span id="conn-badge" class="conn-badge checking" data-i18n="conn.checking">Checking connection...</span>
+    </div>
+  </div>
+
+  <!-- Menu bar -->
+  <nav id="menu" class="sos-menubar"></nav>
+
+  <!-- Toolbar -->
+  <div class="sos-toolbar">
+    <div class="tb-group">
+      <button id="btn-tb-connect" class="sos-btn sos-btn-accent" style="display:none;">
+        <span class="btn-icon">▶</span> <span data-i18n="tb.connect">Connect</span>
+      </button>
+      <button id="btn-tb-disconnect" class="sos-btn sos-btn-danger" style="display:none;">
+        <span class="btn-icon">⏹</span> <span data-i18n="tb.disconnect">Disconnect</span>
+      </button>
+      <button id="btn-tb-login" class="sos-btn sos-btn-accent" style="display:none;">
+        <span class="btn-icon">🔑</span> <span data-i18n="tb.login">Log In</span>
+      </button>
+      <button id="btn-admin-console" class="sos-btn">
+        <span class="btn-icon">🌐</span> <span data-i18n="tb.admin">Admin Console ↗</span>
+      </button>
+    </div>
+
+    <div class="tb-divider"></div>
+
+    <div class="tb-group">
+      <button id="btn-tb-refresh" class="sos-btn" onclick="location.reload()">
+        <span class="btn-icon">🔄</span> <span data-i18n="tb.refresh">Refresh</span>
+      </button>
+      <button id="btn-tb-settings" class="sos-btn">
+        <span class="btn-icon">⚙</span> <span data-i18n="tb.settings">Settings</span>
+      </button>
+    </div>
+
+    <div class="tb-spacer"></div>
+  </div>
+
+  <!-- Offline Notice Banner -->
+  <div id="offline-banner" class="offline-banner" style="display:none;">
+    <div class="banner-msg">
+      <strong data-i18n="banner.offline.title">⚠️ Tailscale daemon (tailscaled) is unreachable.</strong>
+      <span data-i18n="banner.offline.desc">Ensure Tailscale is running on the box or configure the API URL.</span>
+    </div>
+    <div class="banner-actions">
+      <button id="btn-offline-retry" class="sos-btn sos-btn-sm" data-i18n="banner.offline.retry">Retry</button>
+      <button id="btn-offline-cfg" class="sos-btn sos-btn-sm" data-i18n="banner.offline.cfg">Configure Endpoint</button>
+      <button id="btn-offline-demo" class="sos-btn sos-btn-sm sos-btn-accent" data-i18n="banner.offline.demo">Demo Mode</button>
+    </div>
+  </div>
+
+  <!-- Main Content Area -->
+  <main class="sos-main">
+    <!-- Tabs Header -->
+    <div class="app-tabs-header">
+      <button class="nav-tab active" data-tab="tab-overview">
+        <span>📊</span> <span data-i18n="tab.overview">Overview</span>
+      </button>
+      <button class="nav-tab" data-tab="tab-peers">
+        <span>💻</span> <span data-i18n="tab.peers">Network Devices</span>
+      </button>
+      <button class="nav-tab" data-tab="tab-access">
+        <span>🚀</span> <span data-i18n="tab.access">Remote Access Guide</span>
+      </button>
+      <button class="nav-tab" data-tab="tab-advanced">
+        <span>⚡</span> <span data-i18n="tab.advanced">Box Features</span>
+      </button>
+    </div>
+
+    <!-- Content Area -->
+    <div class="app-content">
+
+      <!-- ================= Tab 1: Overview ================= -->
+      <div id="tab-overview" class="tab-pane active">
+        <div class="cards-grid">
+          <!-- Card 1: Status -->
+          <div class="stat-card">
+            <div class="card-header">
+              <span data-i18n="card.status.title">Connection State</span>
+              <span>🛡️</span>
+            </div>
+            <div class="card-value-wrap">
+              <span id="val-status" class="card-value" style="font-size:16px;">–</span>
+            </div>
+          </div>
+
+          <!-- Card 2: IPv4 -->
+          <div class="stat-card">
+            <div class="card-header">
+              <span data-i18n="card.ip4.title">Tailscale IPv4 Address</span>
+              <span>🌐</span>
+            </div>
+            <div class="card-value-wrap">
+              <span id="val-ip4" class="card-value">–</span>
+              <button id="btn-copy-ip4" class="sos-btn sos-btn-sm" data-i18n="btn.copy">Copy</button>
+            </div>
+          </div>
+
+          <!-- Card 3: MagicDNS -->
+          <div class="stat-card">
+            <div class="card-header">
+              <span data-i18n="card.magicdns.title">MagicDNS Domain</span>
+              <span>🔗</span>
+            </div>
+            <div class="card-value-wrap">
+              <span id="val-magicdns" class="card-value" style="font-size:13px;">–</span>
+              <button id="btn-copy-magicdns" class="sos-btn sos-btn-sm" data-i18n="btn.copy">Copy</button>
+            </div>
+          </div>
+
+          <!-- Card 4: Device Name -->
+          <div class="stat-card">
+            <div class="card-header">
+              <span data-i18n="card.device.title">Device Name</span>
+              <span>📦</span>
+            </div>
+            <div class="card-value-wrap">
+              <span id="val-device" class="card-value">–</span>
+              <button id="btn-copy-device" class="sos-btn sos-btn-sm" data-i18n="btn.copy">Copy</button>
+            </div>
+          </div>
+
+          <!-- Card 5: Tailnet -->
+          <div class="stat-card">
+            <div class="card-header">
+              <span data-i18n="card.tailnet.title">Your Tailnet</span>
+              <span>👥</span>
+            </div>
+            <div class="card-value-wrap">
+              <span id="val-tailnet" class="card-value" style="font-size:14px;">–</span>
+            </div>
+          </div>
+
+          <!-- Card 6: IPv6 -->
+          <div class="stat-card">
+            <div class="card-header">
+              <span data-i18n="card.ip6.title">Tailscale IPv6 Address</span>
+              <span>🔒</span>
+            </div>
+            <div class="card-value-wrap">
+              <span id="val-ip6" class="card-value" style="font-size:11px;">–</span>
+              <button id="btn-copy-ip6" class="sos-btn sos-btn-sm" data-i18n="btn.copy">Copy</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Access Preview on Overview -->
+        <div class="hero-box">
+          <h2 data-i18n="access.hero.title">How to access your ShareOS box from anywhere</h2>
+          <p data-i18n="access.hero.desc">With Tailscale active, your box receives a dedicated private IP (100.x.y.z) and a secure end-to-end encrypted name without opening any ports on your router.</p>
+        </div>
+      </div>
+
+      <!-- ================= Tab 2: Peers ================= -->
+      <div id="tab-peers" class="tab-pane">
+        <div class="peer-toolbar">
+          <input type="text" id="peer-search-input" class="search-input" data-i18n-placeholder="peers.search.placeholder" placeholder="Search devices by name or IP...">
+          <select id="peer-filter" class="sos-input" style="width: auto; padding: 4px 10px;">
+            <option value="all" data-i18n="peers.filter.all">All devices</option>
+            <option value="online" data-i18n="peers.filter.online">Online only</option>
+          </select>
+        </div>
+
+        <div class="peer-table-wrap">
+          <table class="peer-table">
+            <thead>
+              <tr>
+                <th data-i18n="peers.th.device">Device</th>
+                <th data-i18n="peers.th.os">OS</th>
+                <th data-i18n="peers.th.ip">Tailscale IP</th>
+                <th data-i18n="peers.th.status">Status</th>
+                <th data-i18n="peers.th.actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="peer-table-body">
+              <!-- Rendered via app.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ================= Tab 3: Access Guide ================= -->
+      <div id="tab-access" class="tab-pane">
+        <div class="access-steps">
+
+          <!-- Step 1 -->
+          <div class="step-card">
+            <div class="step-header">
+              <span class="step-badge" data-i18n="access.step1.badge">Step 1</span>
+              <span class="step-title" data-i18n="access.step1.title">Connect your other devices</span>
+            </div>
+            <div class="step-desc" data-i18n="access.step1.desc">
+              Install the official Tailscale app on your computer, phone, or tablet (Windows, macOS, Linux, Android, iOS) and sign in with the same account.
+            </div>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="step-card">
+            <div class="step-header">
+              <span class="step-badge" data-i18n="access.step2.badge">Step 2</span>
+              <span class="step-title" data-i18n="access.step2.title">ShareOS Web Interface</span>
+            </div>
+            <div class="step-desc" data-i18n="access.step2.desc">
+              Open your web browser on any network (external Wi-Fi, cellular 4G/5G) and navigate to the box IP:
+            </div>
+            <div class="code-box">
+              <span id="guide-web-url" class="code-text">http://100.86.14.92:80/</span>
+              <button id="btn-copy-web" class="sos-btn sos-btn-sm" data-i18n="btn.copy">Copy</button>
+            </div>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="step-card">
+            <div class="step-header">
+              <span class="step-badge" data-i18n="access.step3.badge">Step 3</span>
+              <span class="step-title" data-i18n="access.step3.title">Network File Sharing (SMB / Windows / Mac)</span>
+            </div>
+            <div class="step-desc" data-i18n="access.step3.desc">
+              Connect your network drive in Windows File Explorer or Mac Finder over the VPN:
+            </div>
+            <div style="font-size:12px; font-weight:600; color:var(--sos-muted);" data-i18n="access.step3.win">On Windows: enter in File Explorer address bar:</div>
+            <div class="code-box">
+              <span id="guide-smb-win" class="code-text">\\100.86.14.92\</span>
+              <button id="btn-copy-smb-win" class="sos-btn sos-btn-sm" data-i18n="btn.copy">Copy</button>
+            </div>
+            <div style="font-size:12px; font-weight:600; color:var(--sos-muted); margin-top:4px;" data-i18n="access.step3.mac">On Mac: Finder → Connect to Server (Cmd+K):</div>
+            <div class="code-box">
+              <span id="guide-smb-mac" class="code-text">smb://100.86.14.92</span>
+              <button id="btn-copy-smb-mac" class="sos-btn sos-btn-sm" data-i18n="btn.copy">Copy</button>
+            </div>
+          </div>
+
+          <!-- Step 4 -->
+          <div class="step-card">
+            <div class="step-header">
+              <span class="step-badge" data-i18n="access.step4.badge">Step 4</span>
+              <span class="step-title" data-i18n="access.step4.title">Transmission &amp; Downloads</span>
+            </div>
+            <div class="step-desc" data-i18n="access.step4.desc">
+              Monitor and manage your Transmission torrent downloads remotely in the browser:
+            </div>
+            <div class="code-box">
+              <span id="guide-trans-url" class="code-text">http://100.86.14.92:8081/apps/transmission/</span>
+              <button id="btn-copy-trans" class="sos-btn sos-btn-sm" data-i18n="btn.copy">Copy</button>
+            </div>
+          </div>
+
+          <!-- Step 5 -->
+          <div class="step-card">
+            <div class="step-header">
+              <span class="step-badge" data-i18n="access.step5.badge">Step 5</span>
+              <span class="step-title" data-i18n="access.step5.title">Secure SSH Terminal</span>
+            </div>
+            <div class="step-desc" data-i18n="access.step5.desc">
+              Open a secure SSH shell without exposing port 22 to the public internet:
+            </div>
+            <div class="code-box">
+              <span id="guide-ssh-cmd" class="code-text">ssh root@100.86.14.92</span>
+              <button id="btn-copy-ssh" class="sos-btn sos-btn-sm" data-i18n="btn.copy">Copy</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ================= Tab 4: Advanced Features ================= -->
+      <div id="tab-advanced" class="tab-pane">
+        <div class="feature-card">
+          <div class="feature-info">
+            <h3 data-i18n="adv.exitnode.title">Use this Box as an Exit Node (VPN Gateway)</h3>
+            <p data-i18n="adv.exitnode.desc">Route all internet traffic from your phone or laptop through your home box while traveling.</p>
+          </div>
+          <button id="btn-toggle-exitnode" class="sos-btn sos-btn-accent" data-i18n="adv.exitnode.btn">
+            Enable Exit Node
+          </button>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-info">
+            <h3 data-i18n="adv.subnet.title">Subnet Router (Access local home network)</h3>
+            <p data-i18n="adv.subnet.desc">Access other devices on your home LAN (router, printers, local servers) remotely through this box.</p>
+          </div>
+          <button id="btn-setup-subnet" class="sos-btn" data-i18n="adv.subnet.btn">
+            Configure Routes
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Status Bar -->
+  <div class="sos-statusbar">
+    <div class="sb-left">
+      <span id="sb-network">Tailnet: –</span>
+      <span class="sb-sep">|</span>
+      <span id="sb-peers">0 devices</span>
+    </div>
+    <div class="sb-right">
+      <span id="sb-status" data-i18n="sb.ready">Ready</span>
+    </div>
+  </div>
+
+  <!-- Modal: Login -->
+  <div id="modal-login" class="modal-backdrop" style="display:none;">
+    <div class="sos-dialog modal-card">
+      <div class="modal-header">
+        <h3 data-i18n="modal.login.title">Connect this Box to Tailscale</h3>
+        <button class="modal-close" id="modal-login-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div>
+          <h4 style="margin:0 0 6px 0;" data-i18n="modal.login.qr.title">Option 1: Scan QR Code with Phone or Open Link</h4>
+          <p style="margin:0; font-size:12px; color:var(--sos-muted);" data-i18n="modal.login.qr.desc">Open the authentication URL in your browser or scan the QR Code below with your mobile camera:</p>
+          <div class="qr-container">
+            <canvas id="login-qr-canvas" width="180" height="180"></canvas>
+          </div>
+          <div style="text-align:center;">
+            <a id="login-auth-url-link" href="#" target="_blank" class="sos-btn sos-btn-accent" data-i18n="modal.login.btn.open">Open Login Page ↗</a>
+          </div>
+        </div>
+
+        <div style="border-top:1px solid var(--sos-line); margin-top:8px; padding-top:14px;">
+          <h4 style="margin:0 0 6px 0;" data-i18n="modal.login.key.title">Option 2: Sign in with Auth Key</h4>
+          <p style="margin:0 0 8px 0; font-size:12px; color:var(--sos-muted);" data-i18n="modal.login.key.desc">Generate a key at tailscale.com/admin/settings/keys and paste it below:</p>
+          <input type="text" id="login-authkey-input" class="sos-input" style="width:100%; box-sizing:border-box;" data-i18n-placeholder="modal.login.key.placeholder" placeholder="tskey-auth-kXXXXX-XXXXXXXXXXXX...">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="modal-login-cancel" class="sos-btn" data-i18n="btn.cancel">Cancel</button>
+        <button id="btn-login-authkey" class="sos-btn sos-btn-accent" data-i18n="btn.login.now">Connect with Auth Key</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Settings -->
+  <div id="modal-settings" class="modal-backdrop" style="display:none;">
+    <div class="sos-dialog modal-card">
+      <div class="modal-header">
+        <h3 data-i18n="modal.cfg.title">Tailscale Connection Settings</h3>
+        <button class="modal-close" id="modal-cfg-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label" for="cfg-api-url" data-i18n="modal.cfg.api.label">Tailscale API Endpoint (local daemon or proxy):</label>
+          <input type="text" id="cfg-api-url" class="sos-input" placeholder="/_shareos/cgi/tailscale">
+          <small style="color:var(--sos-muted); font-size:11px;" data-i18n="modal.cfg.api.help">Default: /_shareos/cgi/tailscale or http://127.0.0.1:5252</small>
+        </div>
+        <div class="form-group" style="flex-direction:row; align-items:center; gap:8px;">
+          <input type="checkbox" id="cfg-auto-refresh" checked>
+          <label for="cfg-auto-refresh" style="font-size:12px;" data-i18n="modal.cfg.auto.label">Automatically refresh network state every 5 seconds</label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="modal-cfg-cancel" class="sos-btn" data-i18n="btn.cancel">Cancel</button>
+        <button id="modal-cfg-save" class="sos-btn sos-btn-accent" data-i18n="btn.save">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
