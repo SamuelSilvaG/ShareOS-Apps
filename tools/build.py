@@ -101,6 +101,9 @@ def check(app_dir):
             total += os.path.getsize(os.path.join(root, n))
     if total > MAX_FILES: err.append('more than 40 MB')
     err += check_jobs(a, files) + check_ui(a)
+    req = a.get('requires', [])
+    if not isinstance(req, list) or len(req) > 5: err.append('requires: a list of at most 5 app ids')
+    else: err += ['requires: invalid app id %r' % r for r in req if not isinstance(r, str) or not ID_RE.match(r) or r == a.get('id')]
     return a, err
 
 

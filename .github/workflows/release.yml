@@ -10,6 +10,9 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  # the catalog also lists the system apps of the ShareOS releases: pick up new ones
+  schedule:
+    - cron: '17 */3 * * *'
 
 permissions:
   contents: write
