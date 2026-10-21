@@ -120,21 +120,6 @@ const defaultVFS = {
             }
           }
         }
-      },
-      'etc': {
-        type: 'dir',
-        mtime: '2026-01-19 09:30',
-        children: {
-          'os-release': { type: 'file', mtime: '2026-01-19 09:30', content: 'NAME="ShareOS"\nVERSION="1.0.0 (Web)"\nID=shareos' },
-          'hosts': { type: 'file', mtime: '2026-01-19 09:32', content: '127.0.0.1   localhost\n::1         localhost\n10.0.0.1    shareos.local' }
-        }
-      },
-      'media': {
-        type: 'dir',
-        mtime: '2026-01-19 11:00',
-        children: {
-          'playlist_info.txt': { type: 'file', mtime: '2026-01-19 11:00', content: 'Lege hier Audio- oder Videodateien ab und öffne sie per Doppelklick im WinWeb Player!' }
-        }
       }
     }
   }
@@ -241,8 +226,8 @@ function setDrive(side, drive) {
 function fillDrives() {
   for (const side of ['left', 'right']) {
     const sel = document.getElementById(`drive-${side}`);
-    sel.innerHTML = '<option value="vfs">VFS:// Browser</option>' +
-      boxRoots.map((r) => `<option value="${escapeHTML(r.name)}">${r.usb ? '🔌' : r.home ? '🏠' : '🗄️'} BOX:// ${escapeHTML(r.name)}</option>`).join('');
+    sel.innerHTML = boxRoots.map((r) => `<option value="${escapeHTML(r.name)}">${r.usb ? '🔌' : r.home ? '🏠' : r.ro ? '🔒' : '🗄️'} ${r.home ? 'Persönlicher Ordner' : escapeHTML(r.name)}${r.ro ? ' (nur lesen)' : ''}</option>`).join('') +
+      '<option value="vfs">💻 Browser-Speicher (nur dieser Browser)</option>';
     sel.value = state[side].drive;
     sel.hidden = !boxRoots.length;
     document.getElementById(`badge-${side}`).hidden = !!boxRoots.length;
@@ -1518,8 +1503,13 @@ window.addEventListener('keydown', (e) => {
 
 // Toast Helper
 let toastTimer = null;
+// messages of the box in German
+const BOX_ERR = [[/read only/g, 'nur lesen – hier darfst du nichts ändern'], [/permission denied/g, 'keine Berechtigung'],
+  [/already exists/g, 'gibt es schon'], [/not found/g, 'nicht gefunden'], [/no space left on the drive/g, 'das Laufwerk ist voll'],
+  [/storage limit reached/g, 'dein Speicherlimit ist erreicht'], [/unknown folder/g, 'unbekannter Ordner']];
 function showToast(msg) {
   const t = document.getElementById('toast');
+  for (const [re, de] of BOX_ERR) msg = String(msg).replace(re, de);
   t.textContent = msg;
   t.classList.remove('hidden');
   clearTimeout(toastTimer);
@@ -1536,7 +1526,19 @@ if (FS) {
   FS.roots().then((roots) => {
     boxRoots = roots || [];
     fillDrives();
-    // inside ShareOS with access to the box: the right pane starts on the box
-    if (boxRoots.length) setDrive('right', (boxRoots.find((r) => r.home) || boxRoots[0]).name);
+    // inside ShareOS with access to the box: both panes start on the box –
+    // left the personal folder, right the next folder (a share) if there is one
+    if (boxRoots.length) {
+      const first = boxRoots.find((r) => r.home) || boxRoots[0];
+      setDrive('left', first.name);
+      setDrive('right', (boxRoots.find((r) => r !== first) || first).name);
+    } else banner('Für dein Konto gibt es auf der Box weder einen persönlichen Ordner noch eine Freigabe. Bis dahin zeigt ShareCommander nur den Speicher dieses Browsers.');
   }).catch((e) => showToast('Box: ' + e.message));
+} else if (SOS && SOS.user && SOS.user !== 'guest') {
+  // opened from ShareOS, but the account may not use the folders of the box
+  banner('Kein Zugriff auf die Ordner der Box: Der Administrator kann ihn unter Benutzer → „Dateien“ für dein Konto einschalten. Bis dahin zeigt ShareCommander nur den Speicher dieses Browsers.');
+}
+function banner(text) {
+  const b = document.getElementById('banner');
+  b.textContent = text; b.hidden = false;
 }

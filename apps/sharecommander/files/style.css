@@ -507,3 +507,6 @@ body {
   .workspace, .workspace.with-preview { grid-template-columns: 1fr; grid-auto-rows: minmax(200px, 1fr); overflow: auto; }
   .fn-bar { grid-template-columns: repeat(4, 1fr); }
 }
+
+/* hint when the folders of the box are not available */
+.banner { margin: 8px 12px 0; padding: 8px 12px; border: 1px solid var(--sos-warn, #e6c25a); border-radius: 6px; color: var(--sos-warn, #e6c25a); background: rgba(230, 194, 90, .08); font-size: 12.5px; line-height: 1.5; }
