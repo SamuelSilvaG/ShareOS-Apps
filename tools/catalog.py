@@ -89,7 +89,12 @@ def system_apps(apps):
                 'type': 'system', 'homepage': meta.get('homepage', ''), 'license': meta.get('license', ''),
                 'icon_url': '%s/%s/%s/sysapps/%s/%s' % (RAW, SYSAPPS_REPO, rel['tag_name'], app_id, meta['icon']) if meta.get('icon') else None,
                 'versions': []})
-            a['versions'].append(version_entry(meta, version, rel, pkg, asset_text(sumf).split()[0]))
+            v = version_entry(meta, version, rel, pkg, asset_text(sumf).split()[0])
+            # the firmware releases are test versions, the programs in them are not:
+            # a system app is a pre-release only by its own version (e.g. 1.2.0-rc1);
+            # min_shareos keeps it from boxes that are too old
+            v['prerelease'] = '-' in version
+            a['versions'].append(v)
 
 
 def main():
