@@ -49,7 +49,8 @@ def main():
         if not pkg or not sumf: continue
         sha = asset_text(sumf).split()[0]
         manifest = os.path.join(TOP, 'apps', app_id, 'app.json')
-        meta = json.load(open(manifest, encoding='utf-8')) if os.path.isfile(manifest) else {}
+        if not os.path.isfile(manifest): continue      # app withdrawn from the store (folder removed)
+        meta = json.load(open(manifest, encoding='utf-8'))
         a = apps.setdefault(app_id, {
             'id': app_id, 'name': meta.get('name', app_id), 'publisher': meta.get('publisher', ''),
             'description': meta.get('description', ''), 'category': meta.get('category', ''),

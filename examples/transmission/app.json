@@ -2,7 +2,7 @@
 	"id": "transmission",
 	"name": "Transmission",
 	"version": "1.0.0",
-	"publisher": "UniqueDroid",
+	"publisher": "SamuelSilvaG",
 	"description": {
 		"de": "Schneller, schlanker BitTorrent-Client für ShareOS. Lädt Torrents direkt auf den Speicher der Box herunter.",
 		"en": "Fast, lightweight BitTorrent client for ShareOS. Downloads torrents directly to the storage of the box."

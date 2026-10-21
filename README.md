@@ -43,6 +43,11 @@ admin login.
 To release a new version: change the app, raise `version` in `app.json`, add a
 section to `CHANGELOG.md`, push.
 
+To withdraw an app from the store, move its folder out of `apps/` (e.g. to
+`examples/`): the catalog lists only apps that have a folder in `apps/`; its
+releases stay on GitHub. Transmission is withdrawn this way until ShareOS
+brings the Transmission daemon (see `examples/transmission`).
+
 ## app.json
 
 ```json
