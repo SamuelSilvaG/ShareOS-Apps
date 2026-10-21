@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.0
+
+- Multilingual user interface: Portuguese, English, and German (`pt`, `en`, `de`).
+- Automatic language detection (saved choice → `ShareOS.lang` → browser locale, fallback to English).
+- New "Language" / "Sprache" / "Idioma" menu in the menu bar to manually switch and persist language in `localStorage`.
+- Portuguese description and "Open with" label in `app.json`.
+
 ## 1.1.0
 
 - Works with ShareOS 0.2.0-beta.4+: talks to the account's own Transmission daemon through `ShareOS.torrent` (permission `torrent`); the daemon is the system app `transmission-daemon`. The direct `:9091` fallback and the RPC address setting are gone (the browser blocked them).
