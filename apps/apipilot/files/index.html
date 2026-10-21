@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API-Pilot – ShareOS</title>
+  <link rel="icon" href="icon.svg">
+  <!-- ShareOS look and SDK (load first: storage per account); outside ShareOS simply missing -->
+  <link rel="stylesheet" href="/_shareos/theme.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="/_shareos/app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">⚡ API-PILOT <span class="badge">v1.0</span></div>
+
+    <div class="request-bar">
+      <select id="req-method" class="select-box method-select" title="HTTP-Methode">
+        <option>GET</option>
+        <option>POST</option>
+        <option>PUT</option>
+        <option>PATCH</option>
+        <option>DELETE</option>
+        <option>HEAD</option>
+        <option>OPTIONS</option>
+      </select>
+      <input type="text" id="req-url" class="field" value="https://jsonplaceholder.typicode.com/todos/1" placeholder="https://… (Strg+Enter sendet)" spellcheck="false">
+      <button class="action-btn send-btn" id="send-btn">🚀 SENDEN</button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <!-- request: params, headers, auth, body, history -->
+    <section class="pane">
+      <div class="pane-tabs">
+        <button class="sub-tab active" data-sub="params">Query-Parameter</button>
+        <button class="sub-tab" data-sub="headers">Header (<span id="header-count">0</span>)</button>
+        <button class="sub-tab" data-sub="auth">Auth</button>
+        <button class="sub-tab" data-sub="body">Body</button>
+        <button class="sub-tab" data-sub="history">Verlauf</button>
+      </div>
+
+      <div class="sub-view" id="sub-params">
+        <textarea id="req-params-input" spellcheck="false" placeholder="Ein Parameter pro Zeile: Schlüssel=Wert
+userId=1
+q=hallo welt"></textarea>
+      </div>
+
+      <div class="sub-view hidden" id="sub-headers">
+        <textarea id="req-headers-input" spellcheck="false" placeholder="Ein Header pro Zeile: Name: Wert
+Accept: application/json"></textarea>
+      </div>
+
+      <div class="sub-view hidden" id="sub-auth">
+        <div class="auth-box">
+          <label for="auth-type">Authorization:</label>
+          <select id="auth-type" class="select-box">
+            <option value="none">Keine</option>
+            <option value="bearer">Bearer-Token</option>
+            <option value="basic">Basic (Benutzer + Passwort)</option>
+          </select>
+          <input type="text" id="auth-token" class="field" placeholder="Token / API-Key" spellcheck="false" hidden>
+          <input type="text" id="auth-user" class="field" placeholder="Benutzer" spellcheck="false" hidden>
+          <input type="password" id="auth-pass" class="field" placeholder="Passwort" hidden>
+          <p class="note">Token und Passwort werden nicht im Verlauf gespeichert.</p>
+        </div>
+      </div>
+
+      <div class="sub-view hidden" id="sub-body">
+        <div class="opt-row">
+          <label for="body-mode">Art:</label>
+          <select id="body-mode" class="select-box">
+            <option value="json">JSON</option>
+            <option value="graphql">GraphQL</option>
+            <option value="form">Formular (x-www-form-urlencoded)</option>
+            <option value="text">Text</option>
+          </select>
+          <span class="hint" id="body-hint"></span>
+        </div>
+        <textarea id="req-body-input" spellcheck="false" placeholder='{
+  "title": "ShareOS API-Pilot",
+  "completed": false
+}'></textarea>
+        <textarea id="req-vars-input" class="vars" spellcheck="false" placeholder='GraphQL-Variablen (JSON, optional): { "id": 1 }' hidden></textarea>
+      </div>
+
+      <div class="sub-view hidden" id="sub-history">
+        <div class="opt-row"><span>Die letzten 30 Anfragen (in diesem Browser, je Konto)</span><button class="mini-btn hint" id="history-clear">Leeren</button></div>
+        <div class="history" id="history-list"></div>
+      </div>
+
+      <div class="presets-row">
+        <span class="preset-label">Beispiele:</span>
+        <button class="preset-btn" data-preset="jsonplaceholder">JSONPlaceholder</button>
+        <button class="preset-btn" data-preset="post">POST-Test</button>
+        <button class="preset-btn" data-preset="graphql">GraphQL (Länder)</button>
+        <button class="preset-btn" data-preset="ipify">Meine IP</button>
+      </div>
+    </section>
+
+    <!-- response -->
+    <section class="pane">
+      <div class="response-header">
+        <div class="res-status-badges">
+          <span class="res-badge" id="res-status">Status: –</span>
+          <span class="res-badge" id="res-time">Zeit: – ms</span>
+          <span class="res-badge" id="res-size">Größe: –</span>
+        </div>
+        <div class="res-actions">
+          <button class="mini-btn" id="copy-res-btn" title="Antwort in die Zwischenablage">📋 Kopieren</button>
+          <button class="mini-btn" id="save-box-btn" title="Antwort als Datei auf der Box speichern" hidden>💾 Auf der Box</button>
+          <button class="mini-btn" id="download-btn" title="Antwort herunterladen">⬇ Download</button>
+          <button class="mini-btn" id="webpad-btn" title="Antwort in Webpad öffnen">📝 In Webpad</button>
+        </div>
+      </div>
+
+      <div class="response-tabs">
+        <button class="res-tab active" data-restab="body">Antwort</button>
+        <button class="res-tab" data-restab="headers">Antwort-Header</button>
+        <button class="res-tab" data-restab="code">Code (cURL / fetch)</button>
+      </div>
+
+      <div class="res-view" id="resview-body">
+        <textarea id="res-body-output" readonly placeholder="Hier erscheint die Antwort …"></textarea>
+      </div>
+      <div class="res-view hidden" id="resview-headers">
+        <textarea id="res-headers-output" readonly placeholder="Antwort-Header …"></textarea>
+      </div>
+      <div class="res-view hidden" id="resview-code">
+        <textarea id="res-code-output" readonly placeholder="cURL und fetch für die aktuelle Anfrage …"></textarea>
+      </div>
+    </section>
+  </main>
+
+  <footer class="statusbar">
+    <span id="pilot-status">Bereit</span>
+    <span>REST & GraphQL</span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
