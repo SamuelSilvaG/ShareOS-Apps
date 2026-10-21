@@ -169,6 +169,7 @@ function buildEqualizerUI() {
   preampSlider.addEventListener('input', (e) => {
     preampGain = parseFloat(e.target.value);
     preampVal.textContent = `${preampGain > 0 ? '+' : ''}${preampGain}dB`;
+    saveState();
     if (preampNode) {
       preampNode.gain.value = Math.pow(10, preampGain / 20);
     }
@@ -205,6 +206,7 @@ function setBandGain(idx, dbValue) {
   if (eqFilters[idx]) {
     eqFilters[idx].gain.value = eqEnabled ? dbValue : 0;
   }
+  saveState();
 }
 
 function applyPreset(presetName) {
@@ -219,9 +221,10 @@ eqPowerBtn.addEventListener('click', () => {
   eqFilters.forEach((f, idx) => {
     f.gain.value = eqEnabled ? eqGains[idx] : 0;
   });
+  saveState();
 });
 
-eqPresetSelect.addEventListener('change', (e) => applyPreset(e.target.value));
+eqPresetSelect.addEventListener('change', (e) => { applyPreset(e.target.value); saveState(); });
 eqResetBtn.addEventListener('click', () => {
   eqPresetSelect.value = 'flat';
   applyPreset('flat');
@@ -343,9 +346,12 @@ function addTrackToPlaylist(trackObj, autoPlay = false) {
     url: trackObj.url,
     type: trackObj.type || 'audio',
     own: !!trackObj.own,          // our object URL: released when removed
+    box: trackObj.box || null,    // {root, path, name}: a file of the box, kept in the playlist
     duration: trackObj.duration || '--:--'
   };
   playlist.push(item);
+  saveState();
+  if (!item.url) { renderPlaylist(); return; }   // restored: the address is fetched when it plays
 
   // Probe duration in background (streams have none)
   const tempMedia = document.createElement('audio');
@@ -406,6 +412,7 @@ function renderPlaylist() {
 
 function removeTrack(idx) {
   const [gone] = playlist.splice(idx, 1);
+  saveState();
   if (gone && gone.own) setTimeout(() => URL.revokeObjectURL(gone.url), 1000);
   if (idx === currentIndex) {
     stopPlayback();
@@ -416,14 +423,21 @@ function removeTrack(idx) {
   renderPlaylist();
 }
 
-function playTrack(idx) {
+async function playTrack(idx) {
   if (idx < 0 || idx >= playlist.length) return;
+  const t = playlist[idx];
+  // a file of the box from the saved playlist: a fresh ticket (they expire)
+  if (t.box && (!t.url || t.stale)) {
+    try { t.url = (await SOS.fs.open(t.box.root, t.box.path, t.box.name)).url; t.stale = false; }
+    catch (e) { flash('*** ' + t.name.toUpperCase() + ': ' + String(e.message).toUpperCase() + ' ***'); return; }
+  }
   initAudioGraph();
   if (audioCtx && audioCtx.state === 'suspended') {
     audioCtx.resume();
   }
 
   currentIndex = idx;
+  saveState();
   const track = playlist[currentIndex];
   // other web servers: only with CORS, otherwise equalizer and visualizer get silence
   const foreign = /^https?:/i.test(track.url) && new URL(track.url).origin !== location.origin;
@@ -493,7 +507,8 @@ playBtn.addEventListener('click', () => {
   initAudioGraph();
   if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
   if (currentIndex === -1 && playlist.length > 0) {
-    playTrack(0);
+    playTrack(restoredIndex >= 0 && restoredIndex < playlist.length ? restoredIndex : 0);
+    restoredIndex = -1;
   } else if (mediaEl.src) {
     mediaEl.play();
     stateIndicator.textContent = 'PLAY';
@@ -517,15 +532,18 @@ nextBtn.addEventListener('click', nextTrack);
 shuffleBtn.addEventListener('click', () => {
   isShuffle = !isShuffle;
   shuffleBtn.classList.toggle('active', isShuffle);
+  saveState();
 });
 
 repeatBtn.addEventListener('click', () => {
   isRepeat = !isRepeat;
   repeatBtn.classList.toggle('active', isRepeat);
+  saveState();
 });
 
 volumeSlider.addEventListener('input', (e) => {
   mediaEl.volume = parseFloat(e.target.value);
+  saveState();
 });
 
 panSlider.addEventListener('input', (e) => {
@@ -570,22 +588,84 @@ fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
 // --- music and videos of the box (permission "files", ShareOS 0.2.0-beta.1+) ---
 // streamed with a ticket of the box: starts at once, seeking works
 const MEDIA_EXT = ['.mp3', '.wav', '.ogg', '.oga', '.opus', '.flac', '.m4a', '.aac', '.mp4', '.m4v', '.webm'];
-const boxBtn = document.getElementById('box-btn');
-if (SOS && SOS.fs && SOS.fs.pick) {
-  boxBtn.hidden = false;
-  boxBtn.addEventListener('click', async () => {
-    const picked = await SOS.fs.pick({ title: 'Musik & Videos von der Box', ext: MEDIA_EXT, multiple: true });
-    if (!picked) return;
-    let first = currentIndex === -1;
-    for (const p of picked) {
-      try {
-        const f = await SOS.fs.open(p.root, p.path, p.name);
-        addTrackToPlaylist({ name: p.name, url: f.url, type: typeOf(p.name) }, first);
-        first = false;
-      } catch (e) { flash('*** ' + p.name + ': ' + String(e.message).toUpperCase() + ' ***'); }
-    }
-  });
+const boxBtn = document.getElementById('box-btn'), boxDirBtn = document.getElementById('box-dir-btn');
+const isMedia = (n) => MEDIA_EXT.some((x) => n.toLowerCase().endsWith(x));
+async function addFromBox(files) {
+  let first = currentIndex === -1;
+  for (const p of files) {
+    try {
+      const f = await SOS.fs.open(p.root, p.path || '', p.name);
+      addTrackToPlaylist({ name: p.name, url: f.url, type: typeOf(p.name), box: { root: p.root, path: p.path || '', name: p.name } }, first);
+      first = false;
+    } catch (e) { flash('*** ' + p.name + ': ' + String(e.message).toUpperCase() + ' ***'); }
+  }
 }
+if (SOS && SOS.fs && SOS.fs.pick) {
+  boxBtn.hidden = false; boxDirBtn.hidden = false;
+  boxBtn.addEventListener('click', async () => {
+    const picked = await SOS.fs.pick({ title: 'Musik & Videos von der Box', ext: MEDIA_EXT, multiple: true }).catch(() => null);
+    if (picked) addFromBox(picked);
+  });
+  // a whole folder (an album, a series): its music and videos in name order
+  boxDirBtn.addEventListener('click', async () => {
+    const picked = await SOS.fs.pick({ title: 'Ordner von der Box abspielen', folder: true }).catch(() => null);
+    if (!picked || !picked[0]) return;
+    const { root, path } = picked[0];
+    try {
+      const l = await SOS.fs.list(root, path || '');
+      const names = l.entries.filter((e) => e.type === 'file' && isMedia(e.name)).map((e) => e.name)
+        .sort((a, b) => a.localeCompare(b, 'de', { numeric: true }));
+      if (!names.length) { flash('*** KEINE MUSIK ODER VIDEOS IN DIESEM ORDNER ***'); return; }
+      addFromBox(names.map((name) => ({ root, path: path || '', name })));
+    } catch (e) { flash('*** ' + String(e.message).toUpperCase() + ' ***'); }
+  });
+} else if (SOS && SOS.user && SOS.user !== 'guest') {
+  // opened from ShareOS, but the account may not use the folders of the box
+  const h = document.getElementById('box-hint');
+  h.textContent = 'Kein Zugriff auf die Ordner der Box – der Administrator kann ihn unter Benutzer → „Dateien“ einschalten.';
+  h.hidden = false;
+}
+
+// --- kept for the next time (per account: ShareOS keeps the browser storage of
+// the accounts apart): volume, equalizer, shuffle/repeat, the playlist of box files
+let restoring = true;
+function saveState() {
+  if (restoring) return;
+  store('webplayer.state', JSON.stringify({
+    volume: mediaEl.volume, shuffle: isShuffle, repeat: isRepeat,
+    eq: { on: eqEnabled, gains: eqGains, preamp: preampGain, preset: eqPresetSelect.value },
+    current: currentIndex >= 0 && playlist[currentIndex] && playlist[currentIndex].box ? playlist.filter((t) => t.box).indexOf(playlist[currentIndex]) : -1,
+    tracks: playlist.filter((t) => t.box).slice(0, 500).map((t) => ({ name: t.name, type: t.type, box: t.box, duration: t.duration }))
+  }));
+}
+function restoreState() {
+  let st = null;
+  try { st = JSON.parse(store('webplayer.state') || 'null'); } catch (e) { st = null; }
+  if (st && typeof st === 'object') {
+    if (typeof st.volume === 'number') { mediaEl.volume = Math.min(1, Math.max(0, st.volume)); volumeSlider.value = mediaEl.volume; }
+    if (st.shuffle) { isShuffle = true; shuffleBtn.classList.add('active'); }
+    if (st.repeat) { isRepeat = true; repeatBtn.classList.add('active'); }
+    const eq = st.eq || {};
+    if (Array.isArray(eq.gains)) eq.gains.slice(0, eqGains.length).forEach((v, i) => setBandGain(i, +v || 0));
+    if (typeof eq.preamp === 'number') {
+      preampGain = eq.preamp;
+      const ps = document.getElementById('preamp-slider'); if (ps) { ps.value = preampGain; ps.dispatchEvent(new Event('input')); }
+    }
+    if (eq.preset && [...eqPresetSelect.options].some((o) => o.value === eq.preset)) eqPresetSelect.value = eq.preset;
+    if (eq.on === false && eqEnabled) eqPowerBtn.click();
+    // box files only where the account still has the box (the tickets are fetched when a track plays)
+    if (SOS && SOS.fs && Array.isArray(st.tracks)) {
+      st.tracks.forEach((t) => { if (t && t.box && t.name) addTrackToPlaylist({ name: t.name, url: null, type: t.type, box: t.box, duration: t.duration }); });
+      if (playlist.length) {
+        const c = st.current >= 0 && st.current < playlist.length ? st.current : 0;
+        trackMarquee.textContent = `*** ${playlist.length} TITEL AUS DER LETZTEN SITZUNG – ▶ ZUM ABSPIELEN ***`;
+        currentIndex = -1; restoredIndex = c;
+      }
+    }
+  }
+  restoring = false;
+}
+let restoredIndex = -1;
 
 dropZone.addEventListener('dragover', (e) => {
   e.preventDefault();
@@ -621,6 +701,7 @@ clearPlaylistBtn.addEventListener('click', () => {
   playlist.forEach(t => { if (t.own) URL.revokeObjectURL(t.url); });
   playlist = [];
   currentIndex = -1;
+  saveState();
   trackMarquee.textContent = '*** PLAYLIST GELEERT ***';
   renderPlaylist();
 });
@@ -716,6 +797,7 @@ window.addEventListener('keydown', (e) => {
 
 // --- Initialize ---
 buildEqualizerUI();
+restoreState();
 renderPlaylist();
 renderVisualizer();
 

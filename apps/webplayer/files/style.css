@@ -578,3 +578,6 @@ body {
   font-size: 12px;
   line-height: 1.5;
 }
+
+/* no access to the folders of the box */
+.box-hint { margin: 6px 8px 0; padding: 6px 10px; border: 1px solid #e6c25a; border-radius: 4px; color: #e6c25a; font-size: 11.5px; line-height: 1.45; }
