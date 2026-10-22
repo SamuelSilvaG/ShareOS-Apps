@@ -1,3 +1,11 @@
+## 1.3.0
+
+- Inside ShareOS **both panes start on the box**: left the personal folder, right the next folder (a share). The browser storage (VFS) is still in the drive list, now named "Browser-Speicher (nur dieser Browser)" and listed last.
+- **Shares by rights** (with ShareOS 0.2.0-beta.6): users see their personal folder and the shares they may use; read-only shares are marked with 🔒 "(nur lesen)", and the box refuses changes there.
+- Clear hint instead of a silent fallback: when the account has no access to the folders of the box (the admin switches it on under Users → "Dateien"), or when there is neither a personal folder nor a share.
+- A new browser storage no longer gets the example folders `/etc` and `/media` (they looked like system files of the box).
+- Messages of the box in German (read only, no permission, already exists, drive full, storage limit).
+
 ## 1.2.0
 
 - F4 (Webpad) and media (WinWeb Player) open a closed app in its **own window** instead of a browser tab (with ShareOS 0.2.0-beta.2 through `ShareOS.openApp`, with look, language and account); a blocked pop-up is reported.
