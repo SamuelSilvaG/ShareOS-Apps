@@ -1,7 +1,7 @@
 {
 	"id": "webplayer",
 	"name": "WinWeb Player",
-	"version": "1.1.0",
+	"version": "1.2.0",
 	"publisher": "UniqueDroid",
 	"description": {
 		"de": "Audio- und Videoplayer im Retro-Stil mit 10-Band-Equalizer, Visualizer und Playlist. Spielt Musik und Videos aus deinem Bereich auf der Box (mit Spulen) oder von deinem Rechner.",

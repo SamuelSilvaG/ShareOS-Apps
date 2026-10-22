@@ -1,3 +1,9 @@
+## 1.2.0
+
+- **Keeps what you set:** volume, equalizer (bands, preamp, preset, on/off), shuffle and repeat, and the **playlist of box files** with the last track – per account (ShareOS keeps the browser storage of the accounts apart). The box files get a fresh address when they play, so the playlist still works the next day.
+- **"+ Ordner der Box":** all music and videos of a folder of the box (e.g. an album) into the playlist, in number order (1, 2, … 10).
+- Clear hint when the account has no access to the folders of the box (the admin switches it on under Users → "Dateien") instead of a missing button.
+
 ## 1.1.0
 
 - **"+ Von der Box":** music and videos from your own area on the box (personal folder; admins: all volumes and USB drives) go into the playlist – streamed, starts at once, seeking works. Uses the file dialog of the ShareOS app SDK (ShareOS 0.2.0-beta.1; the button stays hidden on older versions).
