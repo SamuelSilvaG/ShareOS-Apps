@@ -1,0 +1,24 @@
+{
+	"id": "tailscale",
+	"name": "Tailscale",
+	"version": "1.0.0",
+	"publisher": "SamuelSilvaG",
+	"description": {
+		"de": "Sicherer VPN-Fernzugriff auf Ihre ShareOS-Box über Tailscale (WireGuard-Mesh-Netzwerk). Zugriff auf Dateien, Dienste und Weboberfläche von überall ohne Portfreigabe.",
+		"en": "Secure remote VPN access to your ShareOS box via Tailscale (WireGuard mesh network). Access your files, services, and web dashboard from anywhere without port forwarding.",
+		"pt": "Acesso remoto seguro por VPN à sua box ShareOS via Tailscale (rede WireGuard mesh). Acesse seus arquivos, serviços e painel de qualquer lugar sem abrir portas no roteador."
+	},
+	"type": "webapp",
+	"entry": "index.html",
+	"icon": "icon.svg",
+	"category": "network",
+	"license": "BSD-3-Clause",
+	"homepage": "https://tailscale.com/",
+	"min_shareos": "0.2.0-beta.1",
+	"permissions": [],
+	"internet": true,
+	"window": {
+		"width": 1020,
+		"height": 680
+	}
+}
