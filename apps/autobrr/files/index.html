@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>autobrr</title>
+<link rel="stylesheet" href="/_shareos/theme.css">
+<link rel="stylesheet" href="app.css">
+<script src="/_shareos/app.js"></script>
+<script src="i18n.js"></script>
+</head>
+<body class="sos-app">
+
+  <!-- Title bar -->
+  <div class="sos-titlebar">
+    <div class="titlebar-left">
+      <img src="icon.svg" class="app-icon" alt="autobrr Logo">
+      <span class="app-title" data-i18n="app.title">autobrr</span>
+      <span class="version-tag">1.0.0</span>
+    </div>
+    <div class="titlebar-right">
+      <span id="conn-badge" class="conn-badge checking" data-i18n="conn.checking">Checking service...</span>
+    </div>
+  </div>
+
+  <!-- Menu bar -->
+  <nav id="menu" class="sos-menubar"></nav>
+
+  <!-- Toolbar -->
+  <div class="sos-toolbar">
+    <div class="tb-group">
+      <button id="btn-refresh" class="sos-btn" data-i18n-title="tb.refresh">
+        <span class="btn-icon">↻</span> <span data-i18n="tb.refresh">Refresh</span>
+      </button>
+      <button id="btn-add-filter" class="sos-btn sos-btn-accent" data-i18n-title="tb.add_filter">
+        <span class="btn-icon">＋</span> <span data-i18n="tb.add_filter">New Filter</span>
+      </button>
+      <button id="btn-open-transmission" class="sos-btn" data-i18n-title="menu.transmission">
+        <span class="btn-icon">⚡</span> <span data-i18n="menu.transmission">Transmission</span>
+      </button>
+    </div>
+
+    <div class="tb-divider"></div>
+
+    <div class="tb-spacer"></div>
+
+    <div class="tb-group">
+      <input type="search" id="search-input" class="sos-input search-box" data-i18n-placeholder="tb.search_placeholder" placeholder="Search releases, filters...">
+    </div>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <div class="tabs-nav">
+    <button class="tab-btn active" data-tab="tab-releases">
+      <span>📥</span> <span data-i18n="tab.releases">Releases</span>
+    </button>
+    <button class="tab-btn" data-tab="tab-filters">
+      <span>⚙️</span> <span data-i18n="tab.filters">Filters</span>
+    </button>
+    <button class="tab-btn" data-tab="tab-irc">
+      <span>💬</span> <span data-i18n="tab.irc">IRC & Indexers</span>
+    </button>
+    <button class="tab-btn" data-tab="tab-clients">
+      <span>💾</span> <span data-i18n="tab.clients">Clients</span>
+    </button>
+    <button class="tab-btn" data-tab="tab-settings">
+      <span>🛠️</span> <span data-i18n="tab.settings">Settings</span>
+    </button>
+  </div>
+
+  <!-- Offline Banner -->
+  <div id="offline-banner" class="offline-banner" style="display:none;">
+    <div class="banner-msg">
+      <strong data-i18n="banner.offline_title">⚠️ autobrr-daemon unreachable.</strong>
+      <span data-i18n="banner.offline_desc">Operating in standalone demo mode.</span>
+    </div>
+    <div class="banner-actions">
+      <button id="btn-banner-retry" class="sos-btn sos-btn-sm" data-i18n="btn.retry">Retry</button>
+    </div>
+  </div>
+
+  <!-- Main Content Panels -->
+  <main class="sos-main">
+
+    <!-- Tab 1: Releases -->
+    <section id="tab-releases" class="tab-panel active">
+      <div class="table-wrap">
+        <table class="data-table" id="table-releases">
+          <thead>
+            <tr>
+              <th style="width: 130px;" data-i18n="col.time">Time</th>
+              <th style="width: 140px;" data-i18n="col.indexer">Indexer</th>
+              <th data-i18n="col.release">Release Name</th>
+              <th style="width: 130px;" data-i18n="col.status">Status</th>
+              <th style="width: 140px;" data-i18n="col.action">Client Action</th>
+              <th style="width: 120px;" data-i18n="col.actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="releases-rows">
+            <!-- Populated dynamically -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Tab 2: Filters -->
+    <section id="tab-filters" class="tab-panel">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 style="margin: 0; font-size: 15px;" data-i18n="filters.title">Active Filter Rules</h3>
+        <button id="btn-new-filter-panel" class="sos-btn sos-btn-accent">
+          <span>＋</span> <span data-i18n="tb.add_filter">New Filter</span>
+        </button>
+      </div>
+      <div id="filters-container" class="cards-grid">
+        <!-- Populated dynamically -->
+      </div>
+    </section>
+
+    <!-- Tab 3: IRC & Indexers -->
+    <section id="tab-irc" class="tab-panel">
+      <h3 style="margin-top: 0; font-size: 15px;" data-i18n="irc.title">Monitored Networks & IRC Channels</h3>
+      <div class="table-wrap">
+        <table class="data-table" id="table-irc">
+          <thead>
+            <tr>
+              <th data-i18n="irc.server">Network / Server</th>
+              <th data-i18n="irc.channel">Announce Channel</th>
+              <th data-i18n="irc.bot">Announce Bot</th>
+              <th data-i18n="irc.nick">Nick</th>
+              <th data-i18n="irc.status">IRC Status</th>
+            </tr>
+          </thead>
+          <tbody id="irc-rows">
+            <!-- Populated dynamically -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Tab 4: Clients -->
+    <section id="tab-clients" class="tab-panel">
+      <h3 style="margin-top: 0; font-size: 15px;" data-i18n="clients.title">Download Clients</h3>
+      <div class="cards-grid" id="clients-container">
+        <!-- Transmission Client Card -->
+        <div class="card">
+          <div class="card-header">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size: 20px;">⚡</span>
+              <div>
+                <div class="card-title">Transmission (ShareOS Native)</div>
+                <div class="card-desc" data-i18n="clients.transmission_desc">Direct socket & RPC to local user transmission-daemon</div>
+              </div>
+            </div>
+            <span class="status-pill status-PUSH_APPROVED" id="client-trans-badge">Active</span>
+          </div>
+          <div class="card-meta">
+            <span><strong>Target:</strong> ShareOS.torrent RPC</span>
+            <span><strong>Type:</strong> BitTorrent</span>
+          </div>
+          <div style="margin-top: 8px;">
+            <button id="btn-test-transmission" class="sos-btn sos-btn-sm" data-i18n="tb.test_client">Test Transmission</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab 5: Settings -->
+    <section id="tab-settings" class="tab-panel">
+      <div style="max-width: 640px;">
+        <h3 style="margin-top: 0; font-size: 15px;" data-i18n="settings.title">autobrr Service Connection</h3>
+
+        <div class="form-group">
+          <label for="cfg-endpoint" data-i18n="settings.api_endpoint">API Endpoint URL</label>
+          <input type="text" id="cfg-endpoint" class="sos-input" value="/_shareos/cgi/autobrr">
+          <span class="form-hint" data-i18n="settings.api_endpoint_hint">Default local proxy: /_shareos/cgi/autobrr or http://127.0.0.1:7474</span>
+        </div>
+
+        <div class="form-group">
+          <label for="cfg-apikey" data-i18n="settings.api_key">API Key (Optional)</label>
+          <input type="password" id="cfg-apikey" class="sos-input" placeholder="Optional API token">
+        </div>
+
+        <div class="form-group">
+          <label for="cfg-interval" data-i18n="settings.poll_interval">Auto-refresh Interval (seconds)</label>
+          <input type="number" id="cfg-interval" class="sos-input" min="3" max="300" value="10">
+        </div>
+
+        <div style="margin-top: 14px; padding: 12px; background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 6px; font-size: 12px; color: #bae6fd;" data-i18n="settings.dns320l_notice">
+          DNS-320L Notice: autobrr runs as a native lightweight background daemon (autobrr-daemon) with limited memory overhead (~30-40 MB).
+        </div>
+
+        <div style="margin-top: 16px;">
+          <button id="btn-save-settings" class="sos-btn sos-btn-accent" data-i18n="btn.save">Save Changes</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Filter Modal Dialog -->
+  <div id="filter-modal" class="modal-overlay" style="display:none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <span id="modal-title" data-i18n="filters.new_title">Create New Filter</span>
+        <button id="modal-close-btn" class="sos-btn sos-btn-sm" style="border:none; background:transparent;">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="filter-name" data-i18n="filters.name">Filter Name</label>
+          <input type="text" id="filter-name" class="sos-input" placeholder="e.g. Movies-1080p-Freeleech">
+        </div>
+        <div class="form-group">
+          <label for="filter-indexers" data-i18n="filters.indexers">Indexers / Trackers</label>
+          <input type="text" id="filter-indexers" class="sos-input" placeholder="Leave empty for all indexers">
+        </div>
+        <div class="form-group">
+          <label for="filter-match" data-i18n="filters.match_releases">Match Pattern</label>
+          <input type="text" id="filter-match" class="sos-input" placeholder="*1080p*, *BluRay*">
+        </div>
+        <div class="form-group">
+          <label for="filter-except" data-i18n="filters.except_releases">Exceptions</label>
+          <input type="text" id="filter-except" class="sos-input" placeholder="*CAM*, *TS*, *HDCAM*">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="filter-min-size" data-i18n="filters.min_size">Min Size (MB)</label>
+            <input type="number" id="filter-min-size" class="sos-input" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label for="filter-max-size" data-i18n="filters.max_size">Max Size (MB)</label>
+            <input type="number" id="filter-max-size" class="sos-input" placeholder="15000">
+          </div>
+        </div>
+        <div class="form-group" style="flex-direction: row; align-items: center; gap: 8px;">
+          <input type="checkbox" id="filter-freeleech">
+          <label for="filter-freeleech" style="margin: 0; cursor: pointer;" data-i18n="filters.freeleech">Only Freeleech</label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="modal-cancel-btn" class="sos-btn" data-i18n="btn.cancel">Cancel</button>
+        <button id="modal-save-btn" class="sos-btn sos-btn-accent" data-i18n="btn.save">Save Filter</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statusbar -->
+  <div class="sos-statusbar">
+    <span id="sb-releases">0 releases monitored</span>
+    <span id="sb-filters">0 active filters</span>
+    <span id="sb-updated">Updated: --</span>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

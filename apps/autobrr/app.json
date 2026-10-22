@@ -1,0 +1,31 @@
+{
+	"id": "autobrr",
+	"name": "autobrr",
+	"version": "1.0.0",
+	"publisher": "SamuelSilvaG",
+	"description": {
+		"de": "Automatisierung von Downloads für IRC-Ankündigungen und RSS-Feeds: Filtert Releases in Echtzeit und übergibt Torrents direkt an Transmission. Braucht den Dienst „autobrr-daemon“.",
+		"en": "Download automation for IRC announces and RSS feeds: filters releases in real time and sends torrents directly to Transmission. Needs the service “autobrr-daemon”.",
+		"pt": "Automação de downloads para anúncios IRC e feeds RSS: filtra releases em tempo real e envia torrents diretamente ao Transmission. Requer o serviço “autobrr-daemon”."
+	},
+	"type": "webapp",
+	"entry": "index.html",
+	"icon": "icon.svg",
+	"category": "network",
+	"license": "GPL-2.0-or-later",
+	"homepage": "https://autobrr.com/",
+	"min_shareos": "0.2.0-beta.4",
+	"permissions": [
+		"files",
+		"torrent"
+	],
+	"requires": [
+		"autobrr-daemon",
+		"transmission-daemon"
+	],
+	"internet": true,
+	"window": {
+		"width": 1080,
+		"height": 720
+	}
+}

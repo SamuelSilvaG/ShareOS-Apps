@@ -22,6 +22,7 @@ installs them with one click – the same way it offers firmware updates.
 | [NetTunnel](apps/nettunnel) | VPN for the box (OpenVPN, system app `openvpn`): as client import profiles and connect; as server reach home from anywhere with a ready-made profile per device; admins only, shown inside ShareOS |
 | [MediaTranscoder](apps/mediatranscoder) | Converts media on the box with FFmpeg (system app `ffmpeg`): audio to MP3/M4A/Opus/FLAC/WAV, videos into another container without re-encoding, cut out parts; jobs run in the background |
 | [Tailscale](apps/tailscale) | WireGuard-based mesh VPN client by @SamuelSilvaG: secure zero-config remote access to your box, files (SMB) and web apps from anywhere |
+| [autobrr](apps/autobrr) | Download automation for IRC announces and RSS feeds by @SamuelSilvaG: filters releases in real time and sends torrents directly to Transmission |
 
 ## How it works
 
