@@ -1,0 +1,31 @@
+{
+  "id": "packlist",
+  "name": "PackList",
+  "version": "1.0.0",
+  "publisher": "UniqueDroid",
+  "description": {
+    "de": "Smarte Reise-, Camping- & Einkaufs-Packlisten mit Fortschrittsanzeige und ShareOS.fs Speicherung.",
+    "en": "Smart travel, camping & shopping packing lists with progress tracking and ShareOS.fs storage."
+  },
+  "type": "webapp",
+  "entry": "index.html",
+  "icon": "icon.svg",
+  "category": "tools",
+  "license": "MIT",
+  "min_shareos": "0.2.0-beta.1",
+  "permissions": ["files"],
+  "window": {
+    "width": 980,
+    "height": 700
+  },
+  "opens": [
+    {
+      "ext": [".json"],
+      "mode": "edit",
+      "label": {
+        "de": "In PackList öffnen",
+        "en": "Open in PackList"
+      }
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <rect width="48" height="48" rx="10" fill="#dc2626"/>
+  <!-- PDF Dokument Dokumentenform -->
+  <path d="M14 10h14l8 8v20a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2z" fill="#ffffff"/>
+  <path d="M28 10v8h8" fill="#fca5a5"/>
+  <!-- Stift / Unterschrift Symbol -->
+  <path d="M18 31l10-10 3 3-10 10h-3v-3z" fill="#dc2626"/>
+  <path d="M17 34l3-1" fill="#dc2626"/>
+</svg>

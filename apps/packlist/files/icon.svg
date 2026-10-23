@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <rect width="48" height="48" rx="10" fill="#f59e0b"/>
+  <!-- Koffer Griff -->
+  <path d="M19 14V11a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v3" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+  <!-- Koffer Body -->
+  <rect x="10" y="14" width="28" height="24" rx="4" fill="#ffffff"/>
+  <!-- Bänder / Streifen -->
+  <line x1="18" y1="14" x2="18" y2="38" stroke="#f59e0b" stroke-width="2.5"/>
+  <line x1="30" y1="14" x2="30" y2="38" stroke="#f59e0b" stroke-width="2.5"/>
+  <!-- Schloss -->
+  <rect x="22" y="24" width="4" height="4" rx="1" fill="#d97706"/>
+</svg>

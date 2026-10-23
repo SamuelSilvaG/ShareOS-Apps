@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <rect width="48" height="48" rx="10" fill="#3b82f6"/>
+  <!-- Auto Silhouette / Kontur -->
+  <path d="M12 28l2.5-8.5a3 3 0 0 1 2.8-2h13.4a3 3 0 0 1 2.8 2L36 28v7a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-2H16v2a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-7z" fill="#ffffff"/>
+  <!-- Räder -->
+  <circle cx="16" cy="30" r="3" fill="#3b82f6"/>
+  <circle cx="32" cy="30" r="3" fill="#3b82f6"/>
+  <!-- Frontscheibe -->
+  <path d="M16 25l1.6-5.5h12.8L32 25H16z" fill="#1e40af"/>
+</svg>

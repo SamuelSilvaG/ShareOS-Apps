@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ShareSnippets - Code- & Textbausteine</title>
+  <link rel="stylesheet" href="/_shareos/theme.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="sos-app snip-body">
+  <header class="snip-header">
+    <div class="brand">
+      <span class="brand-icon">⚡</span>
+      <span class="brand-title">ShareSnippets</span>
+      <span class="version-badge">v1.0.0</span>
+    </div>
+
+    <div class="header-center">
+      <input type="text" id="search-input" placeholder="Snippets, Tags & Befehle suchen...">
+      <button class="add-snip-btn" id="open-add-btn">➕ Neues Snippet</button>
+    </div>
+
+    <div class="header-right">
+      <button class="icon-nav-btn" id="refresh-btn" title="Aktualisieren">🔄</button>
+      <div class="account-pill" id="user-display">Account: ...</div>
+    </div>
+  </header>
+
+  <!-- Horizontale Filterleiste direkt unter dem Header -->
+  <nav class="sub-header-filter">
+    <div class="filter-pills" id="lang-filter-bar">
+      <button class="filter-pill active" data-lang="all">Alle</button>
+      <button class="filter-pill" data-lang="bash">🐚 Bash / Shell</button>
+      <button class="filter-pill" data-lang="docker">🐳 Docker</button>
+      <button class="filter-pill" data-lang="git">🐙 Git</button>
+      <button class="filter-pill" data-lang="yaml">📄 YAML / Config</button>
+      <button class="filter-pill" data-lang="sql">🗄️ SQL</button>
+      <button class="filter-pill" data-lang="text">📝 Text / Notiz</button>
+    </div>
+  </nav>
+
+  <div id="banner" class="banner hidden"></div>
+
+  <!-- Main Stage: Snippets Grid -->
+  <main class="snip-workspace">
+    <div class="snippets-grid" id="snippets-grid"></div>
+
+    <div class="empty-state hidden" id="empty-state">
+      <span class="empty-icon">💡</span>
+      <span class="empty-title">Keine Snippets gefunden</span>
+      <span class="empty-sub">Klicke oben auf „Neues Snippet“, um wichtige Befehle, Skripte oder Textbausteine zu sichern!</span>
+    </div>
+  </main>
+
+  <!-- Add / Edit Modal -->
+  <div class="modal-backdrop hidden" id="snippet-modal">
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <h2 id="modal-heading">Neues Snippet erstellen</h2>
+        <button class="close-x-btn" id="close-modal-x">✕</button>
+      </div>
+      <form id="snippet-form" class="modal-form" onsubmit="return false;">
+        <div class="form-row">
+          <div class="form-group flex-2">
+            <label for="f-title">Titel / Verwendungszweck</label>
+            <input type="text" id="f-title" placeholder="z. B. Docker Compose Nginx Proxy, Git Undo Commit" required>
+          </div>
+          <div class="form-group flex-1">
+            <label for="f-lang">Sprache / Typ</label>
+            <select id="f-lang">
+              <option value="bash">Bash / Shell</option>
+              <option value="docker">Docker</option>
+              <option value="git">Git</option>
+              <option value="yaml">YAML / Compose</option>
+              <option value="sql">SQL</option>
+              <option value="json">JSON</option>
+              <option value="python">Python</option>
+              <option value="text">Klartext</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="f-tags">Tags (kommagetrennt)</label>
+          <input type="text" id="f-tags" placeholder="server, setup, backup, dev">
+        </div>
+
+        <div class="form-group">
+          <label for="f-code">Code / Befehl</label>
+          <textarea id="f-code" rows="7" placeholder="# Befehl oder Konfiguration hier einfügen..." required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="f-desc">Erklärung / Notiz (optional)</label>
+          <input type="text" id="f-desc" placeholder="Kurze Notiz zu Parametern oder Anwendung...">
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="del-btn hidden" id="modal-delete-btn">Löschen</button>
+          <button type="button" class="cancel-btn" id="modal-cancel-btn">Abbrechen</button>
+          <button type="submit" class="save-btn" id="modal-save-btn">Speichern</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <footer class="snip-footer">
+    <span id="storage-status">Verbinde mit Box-Dateisystem...</span>
+    <span id="snippets-count">0 Bausteine</span>
+  </footer>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/_shareos/app.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

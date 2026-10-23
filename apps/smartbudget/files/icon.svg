@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <rect width="48" height="48" rx="10" fill="#f59e0b"/>
+  <!-- Energie / Blitz in Glühbirne oder Haus -->
+  <path d="M24 10a10 10 0 0 1 10 10c0 4-3 7-5 9v3h-10v-3c-2-2-5-5-5-9a10 10 0 0 1 10-10z" fill="#ffffff" opacity="0.9"/>
+  <!-- Blitz Symbol -->
+  <path d="M25 15l-6 8h5l-2 8 8-10h-5l2-6z" fill="#f59e0b"/>
+  <rect x="20" y="34" width="8" height="3" rx="1" fill="#ffffff"/>
+</svg>

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <rect width="48" height="48" rx="10" fill="#0284c7"/>
+  <!-- Radar / Signal / Ping Wellen -->
+  <path d="M24 35a2 2 0 1 1 0-4 2 2 0 0 1 0 4z" fill="#ffffff"/>
+  <path d="M18 29a8 8 0 0 1 12 0" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+  <path d="M13 24a14 14 0 0 1 22 0" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+  <path d="M8 19a20 20 0 0 1 32 0" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+</svg>

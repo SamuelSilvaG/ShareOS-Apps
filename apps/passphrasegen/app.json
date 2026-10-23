@@ -1,0 +1,31 @@
+{
+  "id": "passphrasegen",
+  "name": "PassphraseGen",
+  "version": "1.0.0",
+  "publisher": "UniqueDroid",
+  "description": {
+    "de": "Kryptografischer Diceware-Passphrase-Generator mit WebCrypto und ShareOS.fs Historie.",
+    "en": "Cryptographic Diceware passphrase generator with WebCrypto and ShareOS.fs history."
+  },
+  "type": "webapp",
+  "entry": "index.html",
+  "icon": "icon.svg",
+  "category": "tools",
+  "license": "MIT",
+  "min_shareos": "0.2.0-beta.1",
+  "permissions": ["files"],
+  "window": {
+    "width": 920,
+    "height": 640
+  },
+  "opens": [
+    {
+      "ext": [".json", ".txt"],
+      "mode": "view",
+      "label": {
+        "de": "In PassphraseGen anzeigen",
+        "en": "View in PassphraseGen"
+      }
+    }
+  ]
+}

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>SysMon - System & Task Manager</title>
+  <link rel="stylesheet" href="/_shareos/theme.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="sos-app sys-body">
+  <header class="sys-header">
+    <div class="brand">
+      <span class="brand-icon">📈</span>
+      <span class="brand-title">SysMon</span>
+      <span class="version-badge">v1.0.0</span>
+    </div>
+
+    <div class="header-center">
+      <input type="text" id="proc-search" placeholder="Prozesse & Apps filtern...">
+      <button class="sys-btn" id="refresh-now-btn">🔄 Jetzt prüfen</button>
+    </div>
+
+    <div class="header-right">
+      <button class="sys-btn danger-outline" id="kill-stale-btn" title="Inaktive Tabs/Worker beenden">⚡ Aufräumen</button>
+      <div class="account-pill" id="user-display">Account: ...</div>
+    </div>
+  </header>
+
+  <!-- Horizontale Sub-Header Leiste mit Ansichts-Filtern -->
+  <nav class="sub-header-filter">
+    <div class="filter-pills" id="view-filter-bar">
+      <button class="filter-pill active" data-tab="all">Alle Tasks (<span id="count-all">0</span>)</button>
+      <button class="filter-pill" data-tab="apps">📱 WebApps (<span id="count-apps">0</span>)</button>
+      <button class="filter-pill" data-tab="system">⚙️ ShareOS Core (<span id="count-sys">0</span>)</button>
+      <button class="filter-pill" data-tab="workers">⚡ Background Worker (<span id="count-workers">0</span>)</button>
+    </div>
+  </nav>
+
+  <div id="banner" class="banner hidden"></div>
+
+  <main class="sys-workspace">
+    <!-- Top Hardware Vitals Cards -->
+    <section class="vitals-cards">
+      <div class="vital-card">
+        <div class="vital-head">
+          <span class="vital-label">CPU-Auslastung</span>
+          <span class="vital-val" id="val-cpu">-- %</span>
+        </div>
+        <div class="meter-bar">
+          <div class="meter-fill" id="fill-cpu"></div>
+        </div>
+        <span class="vital-sub" id="sub-cpu">Berechne Taktung...</span>
+      </div>
+
+      <div class="vital-card">
+        <div class="vital-head">
+          <span class="vital-label">Arbeitsspeicher (RAM)</span>
+          <span class="vital-val" id="val-ram">-- MB</span>
+        </div>
+        <div class="meter-bar">
+          <div class="meter-fill" id="fill-ram"></div>
+        </div>
+        <span class="vital-sub" id="sub-ram">JS Heap & Shared Memory</span>
+      </div>
+
+      <div class="vital-card">
+        <div class="vital-head">
+          <span class="vital-label">ShareOS.fs I/O</span>
+          <span class="vital-val" id="val-io">Bereit</span>
+        </div>
+        <div class="meter-bar">
+          <div class="meter-fill ok" id="fill-io" style="width: 100%;"></div>
+        </div>
+        <span class="vital-sub" id="sub-io">Lokale Box-Speicherkanäle</span>
+      </div>
+
+      <div class="vital-card">
+        <div class="vital-head">
+          <span class="vital-label">Uptime & Client</span>
+          <span class="vital-val" id="val-uptime">00:00:00</span>
+        </div>
+        <div class="meter-bar">
+          <div class="meter-fill ok" style="width: 100%;"></div>
+        </div>
+        <span class="vital-sub" id="sub-client">ShareOS WebTask Daemon</span>
+      </div>
+    </section>
+
+    <!-- Activity Graph (Canvas) -->
+    <section class="graph-card">
+      <div class="section-head">
+        <span>RESSOURCENVERLAUF (ECHTZEIT-STREAM)</span>
+        <span class="pulse-indicator">● LIVE (2s Intervall)</span>
+      </div>
+      <div class="canvas-wrap">
+        <canvas id="sys-canvas" width="840" height="130"></canvas>
+      </div>
+    </section>
+
+    <!-- Process / Task Table -->
+    <section class="tasks-card">
+      <div class="section-head">
+        <span>AKTIVE AUFGABEN & PROZESSE</span>
+        <button class="small-btn" id="save-snapshot-btn">💾 Snapshot sichern</button>
+      </div>
+
+      <div class="proc-table-wrap">
+        <table class="proc-table">
+          <thead>
+            <tr>
+              <th>Prozess / App</th>
+              <th>Typ</th>
+              <th>Status</th>
+              <th>CPU</th>
+              <th>Speicher</th>
+              <th style="text-align: right;">Aktion</th>
+            </tr>
+          </thead>
+          <tbody id="proc-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="sys-footer">
+    <span id="storage-status">Verbinde mit Box-Dateisystem...</span>
+    <span id="sys-stats">0 Tasks registriert</span>
+  </footer>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/_shareos/app.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

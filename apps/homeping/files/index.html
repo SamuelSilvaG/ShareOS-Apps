@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>HomePing - Homelab Status Monitor</title>
+  <link rel="stylesheet" href="/_shareos/theme.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="sos-app ping-body">
+  <header class="p-header">
+    <div class="brand">
+      <span class="brand-icon">📡</span>
+      <span class="brand-title">HomePing</span>
+      <span class="version-badge">v1.0.0</span>
+    </div>
+
+    <div class="header-center">
+      <input type="text" id="node-search" placeholder="Dienste, IPs & Nodes filtern...">
+      <button class="p-btn add-btn" id="open-add-btn">➕ Neuer Dienst</button>
+    </div>
+
+    <div class="header-right">
+      <button class="p-btn secondary-btn" id="ping-all-btn" title="Alle Dienste jetzt anpinnen">⚡ Ping All</button>
+      <div class="account-pill" id="user-display">Account: ...</div>
+    </div>
+  </header>
+
+  <!-- Horizontale Sub-Header Filterleiste -->
+  <nav class="sub-header-filter">
+    <div class="filter-pills" id="status-filter-bar">
+      <button class="filter-pill active" data-status="all">Alle Nodes (<span id="count-all">0</span>)</button>
+      <button class="filter-pill" data-status="online">🟢 Online (<span id="count-online">0</span>)</button>
+      <button class="filter-pill" data-status="offline">🔴 Offline (<span id="count-offline">0</span>)</button>
+      <button class="filter-pill" data-cat="server">🖥️ Server & NAS</button>
+      <button class="filter-pill" data-cat="docker">🐳 Docker Stacks</button>
+      <button class="filter-pill" data-cat="network">🌐 Netzwerk</button>
+    </div>
+  </nav>
+
+  <div id="banner" class="banner hidden"></div>
+
+  <main class="p-workspace">
+    <!-- Vitals Top Overview -->
+    <section class="overview-vitals">
+      <div class="vital-box">
+        <span class="v-label">Gesamte Dienste</span>
+        <span class="v-val" id="stat-total">0</span>
+      </div>
+      <div class="vital-box success-box">
+        <span class="v-label">Erreichbar (Online)</span>
+        <span class="v-val" id="stat-online">0</span>
+      </div>
+      <div class="vital-box danger-box">
+        <span class="v-label">Ausfälle (Offline)</span>
+        <span class="v-val" id="stat-offline">0</span>
+      </div>
+      <div class="vital-box">
+        <span class="v-label">Durchschn. Latenz</span>
+        <span class="v-val" id="stat-latency">-- ms</span>
+      </div>
+    </section>
+
+    <!-- Nodes Grid -->
+    <section class="nodes-card">
+      <div class="section-head">
+        <span>HOMELAB NODE-ÜBERSICHT</span>
+        <span class="pulse-indicator">● LIVE POLLING (10s)</span>
+      </div>
+
+      <div class="nodes-grid" id="nodes-grid"></div>
+
+      <div class="empty-state hidden" id="empty-state">
+        <span class="empty-icon">🔌</span>
+        <span class="empty-title">Keine Nodes konfiguriert</span>
+        <span class="empty-sub">Füge deine Homelab-Server, Docker-Container oder Router über „Neuer Dienst“ hinzu!</span>
+      </div>
+    </section>
+  </main>
+
+  <!-- Add / Edit Modal -->
+  <div class="modal-backdrop hidden" id="node-modal">
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <h2 id="modal-heading">Neuen Dienst hinzufügen</h2>
+        <button class="close-x-btn" id="close-modal-x">✕</button>
+      </div>
+      <form id="node-form" class="modal-form" onsubmit="return false;">
+        <div class="form-row">
+          <div class="form-group flex-2">
+            <label for="f-name">Dienst- / Node-Name</label>
+            <input type="text" id="f-name" placeholder="z. B. Proxmox VE, TrueNAS Core, Home Assistant" required>
+          </div>
+          <div class="form-group flex-1">
+            <label for="f-cat">Kategorie</label>
+            <select id="f-cat">
+              <option value="server">🖥️ Server & NAS</option>
+              <option value="docker">🐳 Docker Stack</option>
+              <option value="network">🌐 Netzwerk</option>
+              <option value="smarthome">🏠 Smart Home</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-2">
+            <label for="f-url">URL / IP-Adresse / Hostname</label>
+            <input type="text" id="f-url" placeholder="z. B. https://192.168.1.100:8006 oder 1.1.1.1" required>
+          </div>
+          <div class="form-group flex-1">
+            <label for="f-icon">Icon / Emoji</label>
+            <input type="text" id="f-icon" value="🖥️" maxlength="4" style="text-align: center;">
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="del-btn hidden" id="modal-delete-btn">Löschen</button>
+          <button type="button" class="cancel-btn" id="modal-cancel-btn">Abbrechen</button>
+          <button type="submit" class="save-btn" id="modal-save-btn">Speichern</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <footer class="p-footer">
+    <span id="storage-status">Verbinde mit Box-Dateisystem...</span>
+    <span>HomePing (system/homeping_nodes.json via ShareOS.fs)</span>
+  </footer>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/_shareos/app.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

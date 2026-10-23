@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <rect width="48" height="48" rx="10" fill="#6366f1"/>
+  <!-- Die / Würfel -->
+  <rect x="11" y="11" width="26" height="26" rx="5" fill="#ffffff"/>
+  <circle cx="18" cy="18" r="2.5" fill="#6366f1"/>
+  <circle cx="30" cy="18" r="2.5" fill="#6366f1"/>
+  <circle cx="24" cy="24" r="2.5" fill="#6366f1"/>
+  <circle cx="18" cy="30" r="2.5" fill="#6366f1"/>
+  <circle cx="30" cy="30" r="2.5" fill="#6366f1"/>
+</svg>

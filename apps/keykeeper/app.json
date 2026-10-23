@@ -1,0 +1,31 @@
+{
+  "id": "keykeeper",
+  "name": "KeyKeeper",
+  "version": "1.0.0",
+  "publisher": "UniqueDroid",
+  "description": {
+    "de": "Sicherer SSH-Key-, Token- & SSL-Zertifikats-Manager für Homelab-Infrastruktur mit ShareOS.fs Speicherung.",
+    "en": "Secure SSH key, token & SSL certificate manager for homelab infrastructure with ShareOS.fs storage."
+  },
+  "type": "webapp",
+  "entry": "index.html",
+  "icon": "icon.svg",
+  "category": "security",
+  "license": "MIT",
+  "min_shareos": "0.2.0-beta.1",
+  "permissions": ["files"],
+  "window": {
+    "width": 1040,
+    "height": 720
+  },
+  "opens": [
+    {
+      "ext": [".json"],
+      "mode": "edit",
+      "label": {
+        "de": "In KeyKeeper öffnen",
+        "en": "Open in KeyKeeper"
+      }
+    }
+  ]
+}
