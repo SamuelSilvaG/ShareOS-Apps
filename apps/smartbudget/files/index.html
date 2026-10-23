@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>SmartBudget - Energie- & Zähler-Tracker</title>
+  <link rel="stylesheet" href="/_shareos/theme.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="sos-app budget-body">
+  <header class="b-header">
+    <div class="brand">
+      <span class="brand-icon">⚡</span>
+      <span class="brand-title">SmartBudget</span>
+      <span class="version-badge">v1.0.0</span>
+    </div>
+
+    <div class="header-center">
+      <input type="text" id="entry-search" placeholder="Zählerstände & Notizen durchsuchen...">
+      <button class="b-btn add-btn" id="open-add-btn">➕ Zählerstand erfassen</button>
+    </div>
+
+    <div class="header-right">
+      <button class="b-btn secondary-btn" id="export-csv-btn" title="Als CSV exportieren">📥 CSV Export</button>
+      <div class="account-pill" id="user-display">Account: ...</div>
+    </div>
+  </header>
+
+  <!-- Horizontale Sub-Header Filterleiste -->
+  <nav class="sub-header-filter">
+    <div class="filter-pills" id="type-filter-bar">
+      <button class="filter-pill active" data-type="all">Alle Zähler (<span id="count-all">0</span>)</button>
+      <button class="filter-pill" data-type="electricity">⚡ Strom (<span id="count-elec">0</span>)</button>
+      <button class="filter-pill" data-type="gas">🔥 Gas (<span id="count-gas">0</span>)</button>
+      <button class="filter-pill" data-type="water">💧 Wasser (<span id="count-water">0</span>)</button>
+    </div>
+  </nav>
+
+  <div id="banner" class="banner hidden"></div>
+
+  <main class="b-workspace">
+    <!-- Vitals Dashboard -->
+    <section class="budget-dashboard">
+      <div class="stat-card">
+        <span class="stat-label">Gesamtkosten (Erfasst)</span>
+        <span class="stat-val" id="val-total-cost">0,00 €</span>
+        <span class="stat-sub">Alle Zählerperioden</span>
+      </div>
+
+      <div class="stat-card">
+        <span class="stat-label">Strom-Verbrauch</span>
+        <span class="stat-val" id="val-elec-kwh">0 kWh</span>
+        <span class="stat-sub" id="sub-elec-cost">0,00 €</span>
+      </div>
+
+      <div class="stat-card">
+        <span class="stat-label">Gas-Verbrauch</span>
+        <span class="stat-val" id="val-gas-m3">0 m³</span>
+        <span class="stat-sub" id="sub-gas-cost">0,00 €</span>
+      </div>
+
+      <div class="stat-card">
+        <span class="stat-label">Wasser-Verbrauch</span>
+        <span class="stat-val" id="val-water-m3">0 m³</span>
+        <span class="stat-sub" id="sub-water-cost">0,00 €</span>
+      </div>
+    </section>
+
+    <!-- Zählerstände Liste -->
+    <section class="readings-card">
+      <div class="section-head">
+        <span>ZÄHLERSTAND-CHRONIK & ABLESUNGEN</span>
+        <span id="readings-count-label">0 Ablesungen</span>
+      </div>
+
+      <div class="readings-list" id="readings-list"></div>
+
+      <div class="empty-state hidden" id="empty-state">
+        <span class="empty-icon">📊</span>
+        <span class="empty-title">Keine Zählerstände erfasst</span>
+        <span class="empty-sub">Füge deinen ersten Strom-, Gas- oder Wasserstand über „Zählerstand erfassen“ hinzu!</span>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal: Zählerstand erfassen / bearbeiten -->
+  <div class="modal-backdrop hidden" id="reading-modal">
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <h2 id="modal-heading">Zählerstand erfassen</h2>
+        <button class="close-x-btn" id="close-modal-x">✕</button>
+      </div>
+      <form id="reading-form" class="modal-form" onsubmit="return false;">
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="f-type">Zähler-Typ</label>
+            <select id="f-type">
+              <option value="electricity">⚡ Stromzähler</option>
+              <option value="gas">🔥 Gaszähler</option>
+              <option value="water">💧 Wasserzähler</option>
+            </select>
+          </div>
+          <div class="form-group flex-1">
+            <label for="f-date">Ablesedatum</label>
+            <input type="date" id="f-date" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="f-reading" id="label-reading">Zählerstand (kWh)</label>
+            <input type="number" id="f-reading" placeholder="z. B. 24850" step="0.01" required min="0">
+          </div>
+          <div class="form-group flex-1">
+            <label for="f-price">Arbeitspreis / Einheit (€)</label>
+            <input type="number" id="f-price" placeholder="z. B. 0.32 (pro kWh/m³)" step="0.001" value="0.32" required min="0">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="f-notes">Notizen & Ablesegrund (optional)</label>
+          <input type="text" id="f-notes" placeholder="z. B. Jahresablesung, Zwischenstand Mai">
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="del-btn hidden" id="modal-delete-btn">Löschen</button>
+          <button type="button" class="cancel-btn" id="modal-cancel-btn">Abbrechen</button>
+          <button type="submit" class="save-btn" id="modal-save-btn">Speichern</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <footer class="b-footer">
+    <span id="storage-status">Verbinde mit Box-Dateisystem...</span>
+    <span>SmartBudget (energy/meter_readings.json via ShareOS.fs)</span>
+  </footer>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/_shareos/app.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
