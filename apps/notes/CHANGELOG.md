@@ -1,3 +1,7 @@
+## 1.0.4
+
+- On phones the header wraps instead of scrolling sideways: search in a line of its own, account name shortened, version hidden.
+
 ## 1.0.3
 
 - First version in the ShareOS app store.

@@ -1,7 +1,7 @@
 {
   "id": "sharevault",
   "name": "ShareVault",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "UniqueDroid",
   "description": {
     "de": "Verschlüsselter Passwort- & 2FA-Manager mit WebCrypto (AES-GCM-256) und ShareOS.fs Speicherung.",

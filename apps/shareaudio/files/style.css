@@ -291,3 +291,36 @@ audio {
   z-index: 2000;
 }
 .hidden { display: none !important; }
+
+/* ================= phones: the header wraps instead of scrolling ================= */
+@media (max-width: 640px) {
+  .audio-header {
+    flex-wrap: wrap;
+    padding: 8px 12px;
+    gap: 8px;
+    height: auto;
+  }
+  .audio-header .brand { font-size: 16px; }
+  .audio-header .brand-title { font-size: 15px; }
+  .audio-header .version-badge { display: none; }
+  .audio-header .account-pill {
+    max-width: 110px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+  /* search / middle part: full width in a line of its own */
+  .audio-header .header-center, .audio-header .search-wrap, .audio-header .search-box {
+    order: 3;
+    width: 100%;
+    max-width: 100%;
+    margin-top: 2px;
+  }
+  .audio-header .refresh-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+}

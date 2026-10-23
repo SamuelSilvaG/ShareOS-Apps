@@ -315,3 +315,31 @@ body.keep-body {
   border-radius: 4px;
   padding: 0 5px;
 }
+
+/* ================= phones: the header wraps instead of scrolling ================= */
+@media (max-width: 640px) {
+  .keep-header {
+    flex-wrap: wrap;
+    padding: 8px 12px;
+    gap: 8px;
+    height: auto;
+  }
+  .keep-header .brand { font-size: 16px; }
+  .keep-header .brand-title { font-size: 15px; }
+  .keep-header .tag { display: none; }
+  .keep-header .account-pill {
+    max-width: 110px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+  /* search / middle part: full width in a line of its own */
+  .keep-header .header-center, .keep-header .search-wrap, .keep-header .search-box {
+    order: 3;
+    width: 100%;
+    max-width: 100%;
+    margin-top: 2px;
+  }
+}

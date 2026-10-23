@@ -1,7 +1,7 @@
 {
 	"id": "notes",
 	"name": "ShareNotes",
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"publisher": "UniqueDroid",
 	"description": {
 		"de": "Notizen-App mit Bearbeitungs-Modal, Multi-User-Trennung und nativer ShareOS.fs Anbindung.",
