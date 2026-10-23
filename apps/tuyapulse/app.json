@@ -1,0 +1,31 @@
+{
+  "id": "tuyapulse",
+  "name": "TuyaPulse",
+  "version": "1.3.0",
+  "publisher": "UniqueDroid",
+  "description": {
+    "de": "Lokales Smart-Home Dashboard mit Auto-Discovery (IP-Scanner), Raum-Manager und Automatisierungs-Szenen.",
+    "en": "Local smart home dashboard with auto-discovery (IP scanner), room manager and automation scenes."
+  },
+  "type": "webapp",
+  "entry": "index.html",
+  "icon": "icon.svg",
+  "category": "smarthome",
+  "license": "MIT",
+  "min_shareos": "0.2.0-beta.1",
+  "permissions": ["files"],
+  "window": {
+    "width": 1120,
+    "height": 760
+  },
+  "opens": [
+    {
+      "ext": [".json"],
+      "mode": "edit",
+      "label": {
+        "de": "In TuyaPulse öffnen",
+        "en": "Open in TuyaPulse"
+      }
+    }
+  ]
+}
