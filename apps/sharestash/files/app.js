@@ -1,8 +1,8 @@
 'use strict';
 
 /**
- * ShareStash - Pocket / Raindrop Bookmark- & Read-Later Manager
- * Persistiert Lesezeichen auf der Box unter bookmarks/ via ShareOS.fs
+ * ShareStash v1.0.1 - Pocket / Raindrop Bookmark- & Read-Later Manager
+ * Mit horizontaler Sub-Header Filterleiste und ShareOS.fs Anbindung
  */
 
 const SOS = window.ShareOS || null;
@@ -67,7 +67,7 @@ async function initStorage() {
   if (!FS) {
     storageStatus.textContent = `Speicher: Browser (LocalStorage: ${user})`;
     if (SOS && SOS.user && SOS.user !== 'guest') {
-      showBanner('Kein Zugriff auf die Ordner der Box: Der Administrator kann ihn unter Benutzer → „Dateien“ für dein Konto aktivieren.');
+      showBanner('Kein Zugriff auf die Ordner der Box. Administrator kann „Dateien“ unter Benutzer aktivieren.');
     }
     loadFallbackBookmarks();
     return;
@@ -92,7 +92,6 @@ async function initStorage() {
   }
 }
 
-// 2. Lesezeichen von der Box laden
 async function loadBoxBookmarks() {
   if (!FS || !boxRootName) return;
 
@@ -101,7 +100,6 @@ async function loadBoxBookmarks() {
     const text = await (await handle.blob()).text();
     bookmarks = JSON.parse(text);
   } catch (_) {
-    // Noch keine Datei vorhanden -> Default-Einträge
     bookmarks = [
       {
         id: Date.now(),
@@ -157,7 +155,7 @@ function loadFallbackBookmarks() {
   renderAll();
 }
 
-// 3. UI Rendern
+// 2. UI Rendern
 function renderAll() {
   renderCounts();
   renderTags();
@@ -181,7 +179,7 @@ function renderTags() {
 
   tagsCloud.innerHTML = '';
   if (!tagsMap.size) {
-    tagsCloud.innerHTML = '<span style="font-size:11px; color:var(--sos-muted);">Keine Tags vergeben</span>';
+    tagsCloud.innerHTML = '<span style="font-size:11px; color:var(--sos-muted); padding:4px;">Keine Tags vergeben</span>';
     return;
   }
 
@@ -202,15 +200,12 @@ function renderLinks() {
   linksList.innerHTML = '';
 
   const filtered = bookmarks.filter(b => {
-    // Status Filter
     if (activeFilter === 'unread' && (!b.unread || b.archived)) return false;
     if (activeFilter === 'archive' && !b.archived) return false;
     if (activeFilter === 'all' && b.archived) return false;
 
-    // Tag Filter
     if (activeTag && !(b.tags || []).map(t => t.toLowerCase()).includes(activeTag)) return false;
 
-    // Textsuche
     if (query) {
       const matchTitle = (b.title || '').toLowerCase().includes(query);
       const matchUrl = (b.url || '').toLowerCase().includes(query);
@@ -256,7 +251,6 @@ function renderLinks() {
       </div>
     `;
 
-    // Aktionen
     card.querySelector('.toggle-read-btn').addEventListener('click', async () => {
       b.unread = !b.unread;
       await saveBoxBookmarks();
@@ -278,7 +272,7 @@ function renderLinks() {
   });
 }
 
-// 4. Modal Handhabung
+// 3. Modal Handhabung
 function openModal(item = null) {
   editingId = item ? item.id : null;
   modalTitle.textContent = item ? 'Lesezeichen bearbeiten' : 'Neues Lesezeichen';
@@ -361,10 +355,10 @@ modalDeleteBtn.addEventListener('click', async () => {
   showToast('Gelöscht.');
 });
 
-// Sidebar Filter Klicks
-document.querySelectorAll('.filter-item').forEach(btn => {
+// Filter Pill Klicks in Sub-Header
+document.querySelectorAll('.filter-pill').forEach(btn => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('.filter-item').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     activeFilter = btn.dataset.filter;
     renderLinks();

@@ -4,8 +4,8 @@
   "version": "1.0.1",
   "publisher": "UniqueDroid",
   "description": {
-    "de": "Pocket / Raindrop Lesezeichen- & Read-Later-Manager mit Tags und ShareOS.fs Speicherung.",
-    "en": "Pocket / Raindrop style bookmark & read-later manager with tags and ShareOS.fs storage."
+    "de": "Pocket / Raindrop Lesezeichen- & Read-Later-Manager mit Filterleiste unter dem Header und ShareOS.fs Speicherung.",
+    "en": "Pocket / Raindrop style bookmark & read-later manager with sub-header filter bar and ShareOS.fs storage."
   },
   "type": "webapp",
   "entry": "index.html",
@@ -16,7 +16,7 @@
   "permissions": ["files"],
   "window": {
     "width": 1040,
-    "height": 700
+    "height": 720
   },
   "opens": [
     {

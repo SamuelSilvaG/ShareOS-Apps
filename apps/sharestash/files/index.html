@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>ShareStash</title>
   <link rel="stylesheet" href="/_shareos/theme.css">
   <link rel="stylesheet" href="style.css">
@@ -23,34 +23,27 @@
     </div>
   </header>
 
+  <!-- Horizontale Filterleiste direkt unter dem Header -->
+  <nav class="sub-header-filter">
+    <div class="filter-pills">
+      <button class="filter-pill active" data-filter="all">📚 Alle (<span id="count-all">0</span>)</button>
+      <button class="filter-pill" data-filter="unread">📖 Ungelesen (<span id="count-unread">0</span>)</button>
+      <button class="filter-pill" data-filter="archive">✅ Archiv (<span id="count-archive">0</span>)</button>
+    </div>
+    <div class="tags-scroll-row" id="tags-cloud"></div>
+  </nav>
+
   <div id="banner" class="banner hidden"></div>
 
-  <div class="stash-workspace">
-    <!-- Filter Sidebar -->
-    <aside class="stash-sidebar">
-      <div class="sidebar-section">
-        <span class="section-title">Filter</span>
-        <button class="filter-item active" data-filter="all">📚 Alle Lesezeichen (<span id="count-all">0</span>)</button>
-        <button class="filter-item" data-filter="unread">📖 Ungelesen (<span id="count-unread">0</span>)</button>
-        <button class="filter-item" data-filter="archive">✅ Archiviert (<span id="count-archive">0</span>)</button>
-      </div>
-
-      <div class="sidebar-section">
-        <span class="section-title">Tags</span>
-        <div class="tags-cloud" id="tags-cloud"></div>
-      </div>
-    </aside>
-
-    <!-- Main Links List -->
-    <main class="stash-stage">
-      <div class="links-list" id="links-list"></div>
-      <div class="empty-state hidden" id="empty-state">
-        <span class="empty-icon">📭</span>
-        <span class="empty-title">Keine Links in diesem Bereich</span>
-        <span class="empty-sub">Klicke oben auf „Link speichern“, um interessante Artikel und Lesezeichen zu sichern!</span>
-      </div>
-    </main>
-  </div>
+  <!-- Volle Hauptansicht ohne vertikale linke Sidebar -->
+  <main class="stash-stage">
+    <div class="links-list" id="links-list"></div>
+    <div class="empty-state hidden" id="empty-state">
+      <span class="empty-icon">📭</span>
+      <span class="empty-title">Keine Links in diesem Bereich</span>
+      <span class="empty-sub">Klicke oben auf „Link speichern“, um interessante Artikel und Lesezeichen zu sichern!</span>
+    </div>
+  </main>
 
   <!-- Add / Edit Modal -->
   <div class="modal-backdrop hidden" id="modal-backdrop">
