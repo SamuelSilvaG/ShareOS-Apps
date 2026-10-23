@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShareNotes</title>
+  <link rel="stylesheet" href="/_shareos/theme.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="/_shareos/app.js"></script>
+</head>
+<body class="sos-app keep-body">
+  <header class="keep-header">
+    <div class="brand">
+      <span class="brand-icon">💡</span>
+      <span class="brand-title">ShareNotes</span>
+      <span class="tag">1.0.3</span>
+    </div>
+    <div class="search-wrap">
+      <input type="text" id="search-input" placeholder="Notizen durchsuchen...">
+    </div>
+    <div class="account-pill" id="user-display">Account: ...</div>
+  </header>
+
+  <div id="banner" class="banner hidden"></div>
+
+  <main class="keep-stage">
+    <!-- new note -->
+    <div class="creator-wrapper">
+      <div class="keep-creator" id="note-creator">
+        <input type="text" id="new-title" class="hidden" placeholder="Titel">
+        <textarea id="new-content" placeholder="Notiz erfassen..." rows="1"></textarea>
+        <div class="creator-bottom hidden" id="creator-footer">
+          <div class="palette" id="creator-palette">
+            <span class="palette-dot active" data-color="#202124" style="background:#202124;" title="Standard"></span>
+            <span class="palette-dot" data-color="#5c2b29" style="background:#5c2b29;" title="Koralle"></span>
+            <span class="palette-dot" data-color="#614a19" style="background:#614a19;" title="Pfirsich"></span>
+            <span class="palette-dot" data-color="#635d19" style="background:#635d19;" title="Sand"></span>
+            <span class="palette-dot" data-color="#345920" style="background:#345920;" title="Salbei"></span>
+            <span class="palette-dot" data-color="#16504b" style="background:#16504b;" title="Nebel"></span>
+            <span class="palette-dot" data-color="#2d555e" style="background:#2d555e;" title="Sturm"></span>
+            <span class="palette-dot" data-color="#42275e" style="background:#42275e;" title="Lavendel"></span>
+          </div>
+          <button class="keep-btn" id="add-note-btn">Schließen</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- cards -->
+    <div class="keep-grid" id="notes-grid"></div>
+  </main>
+
+  <!-- edit dialog -->
+  <div class="modal-backdrop hidden" id="edit-modal">
+    <div class="modal-dialog" id="modal-dialog">
+      <input type="text" id="edit-title" class="modal-title-input" placeholder="Titel">
+      <textarea id="edit-content" class="modal-content-input" placeholder="Notiz..."></textarea>
+      <div class="modal-bottom">
+        <div class="palette" id="edit-palette">
+          <span class="palette-dot" data-color="#202124" style="background:#202124;" title="Standard"></span>
+          <span class="palette-dot" data-color="#5c2b29" style="background:#5c2b29;" title="Koralle"></span>
+          <span class="palette-dot" data-color="#614a19" style="background:#614a19;" title="Pfirsich"></span>
+          <span class="palette-dot" data-color="#635d19" style="background:#635d19;" title="Sand"></span>
+          <span class="palette-dot" data-color="#345920" style="background:#345920;" title="Salbei"></span>
+          <span class="palette-dot" data-color="#16504b" style="background:#16504b;" title="Nebel"></span>
+          <span class="palette-dot" data-color="#2d555e" style="background:#2d555e;" title="Sturm"></span>
+          <span class="palette-dot" data-color="#42275e" style="background:#42275e;" title="Lavendel"></span>
+        </div>
+        <div class="modal-actions">
+          <button class="keep-btn danger-text" id="modal-delete-btn">Löschen</button>
+          <button class="keep-btn" id="modal-save-btn">Schließen</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="keep-footer">
+    <span id="notes-count">0 Notizen</span>
+    <span id="storage-status">Verbinde mit Box-Dateisystem...</span>
+  </footer>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
