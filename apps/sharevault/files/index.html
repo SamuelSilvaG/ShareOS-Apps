@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShareVault</title>
+  <link rel="stylesheet" href="/_shareos/theme.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="sos-app vault-body">
+  <!-- UNLOCKED VIEW -->
+  <div id="vault-view" class="vault-container hidden">
+    <header class="vault-header">
+      <div class="brand">
+        <span class="brand-icon">🛡️</span>
+        <span class="brand-title">ShareVault</span>
+        <span class="version-badge">v1.0.0</span>
+      </div>
+      <div class="search-box">
+        <input type="text" id="search-input" placeholder="Einträge durchsuchen (Titel, Benutzer, URL, Notiz)...">
+      </div>
+      <div class="header-actions">
+        <button class="lock-btn" id="lock-vault-btn" title="Tresor sperren">
+          <span class="lock-btn-icon">🔒</span>
+          <span>Sperren</span>
+        </button>
+        <div class="account-pill" id="user-display">Account: ...</div>
+      </div>
+    </header>
+
+    <div id="banner" class="banner hidden"></div>
+
+    <div class="vault-workspace">
+      <!-- SIDEBAR: ENTRIES LIST -->
+      <aside class="vault-sidebar">
+        <div class="sidebar-top">
+          <button class="add-entry-btn" id="add-entry-btn">➕ Neuer Eintrag</button>
+        </div>
+        <div class="entries-list" id="entries-list"></div>
+      </aside>
+
+      <!-- MAIN PANE: ENTRY DETAILS -->
+      <main class="entry-detail" id="entry-detail">
+        <div class="detail-empty" id="detail-empty">
+          <span>Wähle einen Eintrag aus oder erstelle einen neuen</span>
+        </div>
+
+        <div class="detail-form hidden" id="detail-form">
+          <div class="detail-header">
+            <h2 id="detail-heading">Eintrag bearbeiten</h2>
+            <div class="detail-header-actions">
+              <button class="del-btn" id="delete-entry-btn" title="Eintrag löschen">🗑 Löschen</button>
+              <button class="save-btn" id="save-entry-btn">💾 Speichern</button>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="f-title">Titel / Dienst</label>
+              <input type="text" id="f-title" placeholder="z. B. GitHub, Nextcloud, WLAN Heimnetz">
+            </div>
+
+            <div class="form-group">
+              <label for="f-username">Benutzername / E-Mail</label>
+              <div class="input-with-action">
+                <input type="text" id="f-username" placeholder="name@beispiel.de">
+                <button class="icon-btn copy-btn" data-target="f-username" title="Kopieren">📋</button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="f-password">Passwort</label>
+              <div class="input-with-action">
+                <input type="password" id="f-password" placeholder="Passwort...">
+                <button class="icon-btn" id="toggle-pw-btn" title="Passwort anzeigen">👁️</button>
+                <button class="icon-btn copy-btn" data-target="f-password" title="Kopieren">📋</button>
+                <button class="icon-btn" id="gen-pw-btn" title="Sicheres Passwort generieren">🎲</button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="f-url">URL / Adresse</label>
+              <div class="input-with-action">
+                <input type="text" id="f-url" placeholder="https://...">
+                <button class="icon-btn" id="open-url-btn" title="URL öffnen">🔗</button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="f-totp">2FA / TOTP Secret (Base32)</label>
+              <div class="input-with-action">
+                <input type="text" id="f-totp" placeholder="JBSWY3DPEHPK3PXP...">
+                <button class="icon-btn copy-btn" data-target="totp-code-display" title="2FA Code kopieren">📋</button>
+              </div>
+              <div class="totp-display hidden" id="totp-container">
+                <span class="totp-code" id="totp-code-display">------</span>
+                <span class="totp-timer" id="totp-timer">30s</span>
+              </div>
+            </div>
+
+            <div class="form-group full-width">
+              <label for="f-notes">Sichere Notizen / Wiederherstellungsschlüssel</label>
+              <textarea id="f-notes" rows="4" placeholder="Zusätzliche geheime Informationen..."></textarea>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <footer class="vault-footer">
+      <span id="entries-count">0 Einträge</span>
+      <span id="storage-status">Verbinde mit Box-Dateisystem...</span>
+    </footer>
+  </div>
+
+  <!-- LOCKED OVERLAY VIEW -->
+  <div id="lock-view" class="lock-overlay">
+    <div class="lock-card">
+      <div class="lock-icon">🔒</div>
+      <div style="display:flex; align-items:center; gap:8px; justify-content:center;">
+        <h1 class="lock-title">ShareVault</h1>
+        <span class="version-badge">v1.0.0</span>
+      </div>
+      <p class="lock-sub" id="lock-sub">Gib dein Master-Passwort ein, um den Tresor zu entschlüsseln.</p>
+
+      <form id="unlock-form" class="lock-form" onsubmit="return false;">
+        <input type="password" id="master-pw" class="master-input" placeholder="Master-Passwort" autofocus required autocomplete="current-password">
+        <button type="submit" id="unlock-btn" class="unlock-btn">Entschlüsseln</button>
+      </form>
+
+      <div class="lock-hint">
+        <span>Verschlüsselung: AES-GCM-256 via WebCrypto API.</span>
+        <span>Datei: <code id="lock-filepath">vault.enc</code> auf deiner Box.</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/_shareos/app.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

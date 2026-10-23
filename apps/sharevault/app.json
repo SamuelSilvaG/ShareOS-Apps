@@ -1,0 +1,31 @@
+{
+  "id": "sharevault",
+  "name": "ShareVault",
+  "version": "1.0.0",
+  "publisher": "UniqueDroid",
+  "description": {
+    "de": "Verschlüsselter Passwort- & 2FA-Manager mit WebCrypto (AES-GCM-256) und ShareOS.fs Speicherung.",
+    "en": "Encrypted password & 2FA manager with WebCrypto (AES-GCM-256) and ShareOS.fs storage."
+  },
+  "type": "webapp",
+  "entry": "index.html",
+  "icon": "icon.svg",
+  "category": "tools",
+  "license": "MIT",
+  "min_shareos": "0.2.0-beta.1",
+  "permissions": ["files"],
+  "window": {
+    "width": 1020,
+    "height": 700
+  },
+  "opens": [
+    {
+      "ext": [".enc", ".json"],
+      "mode": "edit",
+      "label": {
+        "de": "In ShareVault öffnen",
+        "en": "Open in ShareVault"
+      }
+    }
+  ]
+}

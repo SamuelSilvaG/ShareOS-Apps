@@ -1,0 +1,31 @@
+{
+  "id": "sharestash",
+  "name": "ShareStash",
+  "version": "1.0.0",
+  "publisher": "UniqueDroid",
+  "description": {
+    "de": "Pocket / Raindrop Lesezeichen- & Read-Later-Manager mit Tags und ShareOS.fs Speicherung.",
+    "en": "Pocket / Raindrop style bookmark & read-later manager with tags and ShareOS.fs storage."
+  },
+  "type": "webapp",
+  "entry": "index.html",
+  "icon": "icon.svg",
+  "category": "tools",
+  "license": "MIT",
+  "min_shareos": "0.2.0-beta.1",
+  "permissions": ["files"],
+  "window": {
+    "width": 1040,
+    "height": 700
+  },
+  "opens": [
+    {
+      "ext": [".json", ".md", ".url"],
+      "mode": "edit",
+      "label": {
+        "de": "In ShareStash importieren",
+        "en": "Import into ShareStash"
+      }
+    }
+  ]
+}

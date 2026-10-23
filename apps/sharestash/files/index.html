@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShareStash</title>
+  <link rel="stylesheet" href="/_shareos/theme.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="sos-app stash-body">
+  <header class="stash-header">
+    <div class="brand">
+      <span class="brand-icon">🔖</span>
+      <span class="brand-title">ShareStash</span>
+      <span class="version-badge">v1.0.0</span>
+    </div>
+    <div class="search-wrap">
+      <input type="text" id="search-input" placeholder="Lesezeichen & Notizen durchsuchen...">
+    </div>
+    <div class="header-right">
+      <button class="add-btn" id="open-add-modal-btn">➕ Link speichern</button>
+      <div class="account-pill" id="user-display">Account: ...</div>
+    </div>
+  </header>
+
+  <div id="banner" class="banner hidden"></div>
+
+  <div class="stash-workspace">
+    <!-- Filter Sidebar -->
+    <aside class="stash-sidebar">
+      <div class="sidebar-section">
+        <span class="section-title">Filter</span>
+        <button class="filter-item active" data-filter="all">📚 Alle Lesezeichen (<span id="count-all">0</span>)</button>
+        <button class="filter-item" data-filter="unread">📖 Ungelesen (<span id="count-unread">0</span>)</button>
+        <button class="filter-item" data-filter="archive">✅ Archiviert (<span id="count-archive">0</span>)</button>
+      </div>
+
+      <div class="sidebar-section">
+        <span class="section-title">Tags</span>
+        <div class="tags-cloud" id="tags-cloud"></div>
+      </div>
+    </aside>
+
+    <!-- Main Links List -->
+    <main class="stash-stage">
+      <div class="links-list" id="links-list"></div>
+      <div class="empty-state hidden" id="empty-state">
+        <span class="empty-icon">📭</span>
+        <span class="empty-title">Keine Links in diesem Bereich</span>
+        <span class="empty-sub">Klicke oben auf „Link speichern“, um interessante Artikel und Lesezeichen zu sichern!</span>
+      </div>
+    </main>
+  </div>
+
+  <!-- Add / Edit Modal -->
+  <div class="modal-backdrop hidden" id="modal-backdrop">
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <h2 id="modal-title">Neues Lesezeichen</h2>
+        <button class="close-x-btn" id="close-modal-x">✕</button>
+      </div>
+      <form id="link-form" class="modal-form" onsubmit="return false;">
+        <div class="form-group">
+          <label for="f-url">URL / Web-Adresse</label>
+          <input type="url" id="f-url" placeholder="https://beispiel.de/artikel" required>
+        </div>
+        <div class="form-group">
+          <label for="f-title">Titel</label>
+          <input type="text" id="f-title" placeholder="Artikel-Überschrift oder Webseiten-Name">
+        </div>
+        <div class="form-group">
+          <label for="f-tags">Tags (kommagetrennt)</label>
+          <input type="text" id="f-tags" placeholder="linux, hardware, rezepte, dev">
+        </div>
+        <div class="form-group">
+          <label for="f-notes">Notiz / Zusammenfassung</label>
+          <textarea id="f-notes" rows="4" placeholder="Worum geht es in dem Link? Wichtigste Kernpunkte..."></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="del-btn hidden" id="modal-delete-btn">Löschen</button>
+          <button type="button" class="cancel-btn" id="modal-cancel-btn">Abbrechen</button>
+          <button type="submit" class="save-btn" id="modal-save-btn">Speichern</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <footer class="stash-footer">
+    <span id="storage-status">Verbinde mit Box-Dateisystem...</span>
+    <span>ShareStash (Pocket / Raindrop Klon)</span>
+  </footer>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/_shareos/app.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
