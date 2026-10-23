@@ -6,6 +6,12 @@ installs them with one click – the same way it offers firmware updates.
 
 *Deutsch weiter unten.*
 
+> **This repository takes web apps only** (HTML/CSS/JS that run in the
+> browser and use the app SDK). **System apps** – native programs and
+> services (daemons) for the box – are submitted to the
+> [ShareOS repository, folder `sysapps/`](https://github.com/UniqueDroid/ShareOS/tree/main/sysapps),
+> which has an example of each kind. See [System apps and services](#system-apps-and-services).
+
 ## Apps
 
 | App | What it does |
@@ -140,20 +146,34 @@ No symbolic links, at most 40 MB.
 
 ## System apps and services
 
+**Not here – in the [ShareOS repository](https://github.com/UniqueDroid/ShareOS/tree/main/sysapps).**
 System apps (`"type": "system"`) are native programs for the box – nano,
-htop, strace, iperf3, the Transmission daemon. They need the firmware's
-toolchain, so they are built in the [ShareOS repository](https://github.com/UniqueDroid/ShareOS/tree/main/sysapps)
-and attached to its releases as `.sapp`. The catalog lists them too (every
-version once, from the newest firmware release that has it; refreshed every
-3 hours), so the store installs them like any other app.
+htop, strace, iperf3, FFmpeg – and services (daemons) such as Tailscale,
+OpenVPN, Transmission or the media server. They need the firmware's
+toolchain, so they are built in ShareOS (`sysapps/<id>/`) and attached to its
+releases as `.sapp`. The catalog lists them too (every version once, from the
+newest firmware release that has it; refreshed every 3 hours), so the store
+installs them like any other app. `tools/build.py` refuses `"type": "system"`.
 
-An app that needs one names it in `"requires"`: installing the app installs
+[`sysapps/README.md`](https://github.com/UniqueDroid/ShareOS/blob/main/sysapps/README.md)
+in ShareOS explains both kinds with an example each:
+
+- a **program** (`tree`): buildroot package + `sysapps/<id>/` (`app.json`,
+  `pack.json`, `icon.svg`);
+- a **service** (`mosquitto`): the same plus `"service": { "control": … }` in
+  `app.json` and the controller `/usr/sbin/shareos-<control>` in the firmware,
+  which ShareOS uses to start the daemon at boot and stop it on removal
+  (ShareOS 0.2.0-beta.9+). A package never starts a service by itself.
+
+A web app that needs one names it in `"requires"`: installing the app installs
 the system app first, and the store warns before removing a system app an
-installed app needs. **Services** (daemons that keep running) come only with
-the firmware: the system app brings the program, ShareOS starts and stops it
-(e.g. one Transmission daemon per user) – a package never starts a service by
-itself. If your app needs a service, open an issue in ShareOS; the web app
-stays here.
+installed app needs. A web app for a service (e.g. Tailscale, NetTunnel,
+Transmission) talks to it only through the app SDK and a permission of
+ShareOS (`tailscale`, `vpn`, `torrent` …) – not through its own ports or
+interfaces on the box. **Plan a new service?** Open an issue or pull request
+in ShareOS for the system app and its controller first; the web app comes
+here once ShareOS has it. A web app whose service does not exist yet cannot be
+installed (its `"requires"` is not in the store) and is not merged.
 
 ## Own apps
 
@@ -177,6 +197,7 @@ Klick installiert – genauso wie Firmware-Updates angeboten werden.
 - **Speicher je Konto** (ab ShareOS 0.2.0-beta.1): Das SDK trennt `localStorage` und IndexedDB der Apps nach Konto – dafür `/_shareos/app.js` vor den eigenen Skripten laden. Private Daten gehören auf die Box (`ShareOS.fs`, Dateidialog `ShareOS.fs.pick`).
 - Web-Apps bringen ihren eigenen Code mit (kein CDN für Skripte, Styles, Schriften), damit sie auch auf einer Box ohne Internet starten. **Internet nutzen dürfen sie**, wenn sie es brauchen (Online-Dienste, Streams, Karten, Sync …): dann `"internet": true` in `app.json` setzen – der Store zeigt „Nutzt das Internet“ (ab ShareOS 0.1.0-beta.12, ältere Versionen ignorieren das Feld).
 - **Eigene Apps:** `.sapp` unter APPS → Store hochladen (gilt als „eigene/ungeprüft“) oder einen eigenen Katalog unter APPS → Quellen eintragen.
+- **Hier nur Web-Apps.** System-Apps (Programme und Dienste für die Box, z. B. Tailscale, OpenVPN, Transmission) werden im [ShareOS-Repository unter `sysapps/`](https://github.com/UniqueDroid/ShareOS/tree/main/sysapps) eingereicht – dort gibt es je ein Beispiel für ein Programm (`tree`) und einen Dienst (`mosquitto`, mit `"service"` in `app.json` und der Steuerung `shareos-<control>` in der Firmware). Eine Web-App für einen Dienst kommt erst hierher, wenn ShareOS den Dienst hat; sie spricht ihn nur über das SDK und eine Berechtigung an.
 
 ## Example
 
