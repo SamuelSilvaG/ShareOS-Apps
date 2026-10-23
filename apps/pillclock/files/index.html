@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PillClock - Meds & Vitals</title>
+  <link rel="stylesheet" href="/_shareos/theme.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="sos-app pill-body">
+  <header class="p-header">
+    <div class="brand">
+      <span class="brand-icon">💊</span>
+      <span class="brand-title">PillClock</span>
+      <span class="version-badge">v1.0.0</span>
+    </div>
+
+    <div class="header-center">
+      <button class="p-btn add-btn" id="open-add-med-btn">➕ Neues Medikament</button>
+      <button class="p-btn secondary-btn" id="open-add-vital-btn">❤️ Vitalwert eintragen</button>
+    </div>
+
+    <div class="header-right">
+      <button class="icon-nav-btn" id="refresh-btn" title="Aktualisieren">🔄</button>
+      <div class="account-pill" id="user-display">Account: ...</div>
+    </div>
+  </header>
+
+  <!-- Sub-Header Filter / Ansichten -->
+  <nav class="sub-header-filter">
+    <div class="filter-pills" id="view-filter-bar">
+      <button class="filter-pill active" data-view="meds">💊 Medikamente & Einnahmen (<span id="count-meds">0</span>)</button>
+      <button class="filter-pill" data-view="vitals">❤️ Vitalwerte & Blutdruck (<span id="count-vitals">0</span>)</button>
+    </div>
+  </nav>
+
+  <div id="banner" class="banner hidden"></div>
+
+  <main class="p-workspace">
+    <!-- View 1: Medikamente -->
+    <section class="view-section" id="section-meds">
+      <div class="section-head">
+        <span>HEUTIGE EINNAHMEN & MEDIKAMENTENPLAN</span>
+        <span id="meds-stats">0 von 0 eingenommen</span>
+      </div>
+      <div class="cards-grid" id="meds-grid"></div>
+
+      <div class="empty-state hidden" id="empty-meds-empty">
+        <span class="empty-icon">💊</span>
+        <span class="empty-title">Keine Medikamente hinterlegt</span>
+        <span class="empty-sub">Füge deine Medikamente und Dosierungen über „Neues Medikament“ hinzu.</span>
+      </div>
+    </section>
+
+    <!-- View 2: Vitalwerte (Blutdruck, Puls, Gewicht) -->
+    <section class="view-section hidden" id="section-vitals">
+      <div class="section-head">
+        <span>VITALWERTE CHRONIK & MESSUNGEN</span>
+        <span id="vitals-stats">0 Messungen</span>
+      </div>
+      <div class="vitals-table-wrap">
+        <table class="vitals-table">
+          <thead>
+            <tr>
+              <th>Datum & Zeit</th>
+              <th>Typ</th>
+              <th>Wert / Messung</th>
+              <th>Notiz</th>
+              <th style="text-align: right;">Aktion</th>
+            </tr>
+          </thead>
+          <tbody id="vitals-tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="empty-state hidden" id="empty-vitals-empty">
+        <span class="empty-icon">📈</span>
+        <span class="empty-title">Keine Vitalwerte aufgezeichnet</span>
+        <span class="empty-sub">Erfasse deinen Blutdruck, Puls oder das Gewicht über „Vitalwert eintragen“.</span>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal: Medikament anlegen/bearbeiten -->
+  <div class="modal-backdrop hidden" id="med-modal">
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <h2 id="med-modal-heading">Medikament hinzufügen</h2>
+        <button class="close-x-btn" id="close-med-x">✕</button>
+      </div>
+      <form id="med-form" class="modal-form" onsubmit="return false;">
+        <div class="form-row">
+          <div class="form-group flex-2">
+            <label for="m-name">Medikamenten-Name</label>
+            <input type="text" id="m-name" placeholder="z. B. Aspirin Cardio, Vitamin D3" required>
+          </div>
+          <div class="form-group flex-1">
+            <label for="m-dose">Dosis / Stärke</label>
+            <input type="text" id="m-dose" placeholder="z. B. 100 mg, 1 Stk" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="m-time">Uhrzeit</label>
+            <input type="time" id="m-time" value="08:00" required>
+          </div>
+          <div class="form-group flex-1">
+            <label for="m-frequency">Intervall</label>
+            <select id="m-frequency">
+              <option value="daily">Täglich</option>
+              <option value="morning">Morgens</option>
+              <option value="evening">Abends</option>
+              <option value="bedarf">Nach Bedarf</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="m-notes">Hinweise (optional)</label>
+          <input type="text" id="m-notes" placeholder="z. B. Nach dem Essen einnehmen">
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="del-btn hidden" id="med-delete-btn">Löschen</button>
+          <button type="button" class="cancel-btn" id="med-cancel-btn">Abbrechen</button>
+          <button type="submit" class="save-btn" id="med-save-btn">Speichern</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Vitalwert eintragen -->
+  <div class="modal-backdrop hidden" id="vital-modal">
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <h2>Vitalwert eintragen</h2>
+        <button class="close-x-btn" id="close-vital-x">✕</button>
+      </div>
+      <form id="vital-form" class="modal-form" onsubmit="return false;">
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="v-type">Messwert-Typ</label>
+            <select id="v-type">
+              <option value="blood_pressure">🩸 Blutdruck & Puls</option>
+              <option value="weight">⚖️ Körpergewicht</option>
+              <option value="glucose">🍬 Blutzucker</option>
+              <option value="temperature">🌡️ Temperatur</option>
+            </select>
+          </div>
+          <div class="form-group flex-1">
+            <label for="v-date">Datum & Uhrzeit</label>
+            <input type="datetime-local" id="v-date" required>
+          </div>
+        </div>
+
+        <div class="form-row" id="v-inputs-row">
+          <div class="form-group flex-1" id="group-v1">
+            <label for="v-val1" id="label-v1">Systole (mmHg)</label>
+            <input type="number" id="v-val1" placeholder="z. B. 120" required>
+          </div>
+          <div class="form-group flex-1" id="group-v2">
+            <label for="v-val2" id="label-v2">Diastole (mmHg)</label>
+            <input type="number" id="v-val2" placeholder="z. B. 80">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="v-notes">Notiz (optional)</label>
+          <input type="text" id="v-notes" placeholder="z. B. Nach dem Sport, morgens nüchtern">
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="cancel-btn" id="vital-cancel-btn">Abbrechen</button>
+          <button type="submit" class="save-btn" id="vital-save-btn">Speichern</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <footer class="p-footer">
+    <span id="storage-status">Verbinde mit Box-Dateisystem...</span>
+    <span>PillClock (health/meds_vitals.json via ShareOS.fs)</span>
+  </footer>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/_shareos/app.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
