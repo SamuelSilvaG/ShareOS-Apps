@@ -1,7 +1,7 @@
 {
   "id": "expensetracker",
   "name": "ExpenseTracker",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "UniqueDroid",
   "description": {
     "de": "Mobiles Haushaltsbuch & Ausgaben-Tracker für unterwegs mit CSV-Export und ShareOS.fs Speicherung.",

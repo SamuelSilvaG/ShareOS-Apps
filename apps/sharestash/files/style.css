@@ -391,3 +391,42 @@ body.stash-body {
   z-index: 2000;
 }
 .hidden { display: none !important; }
+
+/* ================= phones: the header wraps instead of scrolling ================= */
+@media (max-width: 640px) {
+  .stash-header {
+    flex-wrap: wrap;
+    padding: 8px 12px;
+    gap: 8px;
+    height: auto;
+  }
+  .stash-header .brand { font-size: 16px; }
+  .stash-header .brand-title { font-size: 15px; }
+  .stash-header .version-badge { display: none; }
+  .stash-header .account-pill {
+    max-width: 110px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+  /* search / middle part: full width in a line of its own */
+  .stash-header .header-center, .stash-header .search-wrap, .stash-header .search-box {
+    order: 3;
+    width: 100%;
+    max-width: 100%;
+    margin-top: 2px;
+  }
+  .stash-header .add-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  /* filters above the links, as a scrolling row; the links get the whole width */
+  .stash-workspace { flex-direction: column; overflow-y: auto; }
+  .stash-sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--sos-line, #374151); padding: 10px 12px; flex-direction: row; gap: 16px; overflow-x: auto; flex-shrink: 0; }
+  .stash-sidebar .sidebar-section { flex-shrink: 0; }
+  .stash-stage { padding: 14px 12px; overflow: visible; }
+  .link-actions { flex-wrap: wrap; }
+}
