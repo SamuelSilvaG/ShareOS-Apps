@@ -1,0 +1,31 @@
+{
+  "id": "dockerdeck",
+  "name": "DockerDeck",
+  "version": "1.0.0",
+  "publisher": "UniqueDroid",
+  "description": {
+    "de": "Leichtgewichtiger Docker-Container und Stack-Verwalter für Homelab-Server mit ShareOS.fs VFS Anbindung.",
+    "en": "Lightweight Docker container and stack manager for homelab servers with ShareOS.fs VFS integration."
+  },
+  "type": "webapp",
+  "entry": "index.html",
+  "icon": "icon.svg",
+  "category": "development",
+  "license": "MIT",
+  "min_shareos": "0.2.0-beta.1",
+  "permissions": ["files"],
+  "window": {
+    "width": 1060,
+    "height": 720
+  },
+  "opens": [
+    {
+      "ext": [".json", ".yml", ".yaml"],
+      "mode": "edit",
+      "label": {
+        "de": "In DockerDeck öffnen",
+        "en": "Open in DockerDeck"
+      }
+    }
+  ]
+}

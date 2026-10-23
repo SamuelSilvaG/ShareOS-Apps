@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <rect width="48" height="48" rx="10" fill="#2496ed"/>
+  <!-- Docker Wal / Container Boxen -->
+  <rect x="10" y="24" width="6" height="6" rx="1" fill="#ffffff"/>
+  <rect x="18" y="24" width="6" height="6" rx="1" fill="#ffffff"/>
+  <rect x="26" y="24" width="6" height="6" rx="1" fill="#ffffff"/>
+  <rect x="18" y="16" width="6" height="6" rx="1" fill="#ffffff"/>
+  <rect x="26" y="16" width="6" height="6" rx="1" fill="#ffffff"/>
+  <rect x="34" y="24" width="6" height="6" rx="1" fill="#ffffff"/>
+  <!-- Wal Kontur Welle -->
+  <path d="M8 34c8 3 24 3 32 0-2-4-6-6-16-6s-14 2-16 6z" fill="#ffffff"/>
+</svg>
