@@ -16,7 +16,7 @@ body.board-body {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-x: hidden;
   font-size: 14px;
 }
 
@@ -29,6 +29,7 @@ body.board-body {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  flex-shrink: 0;
 }
 .brand {
   display: flex;
@@ -112,7 +113,7 @@ body.board-body {
   border-bottom: 1px solid #92400e;
 }
 
-/* Kanban Columns Stage */
+/* Kanban Columns Stage - Desktop */
 .board-stage {
   flex: 1;
   padding: 16px;
@@ -121,17 +122,6 @@ body.board-body {
   gap: 14px;
   overflow-x: auto;
   overflow-y: hidden;
-}
-@media (max-width: 900px) {
-  .board-stage {
-    display: flex;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-  }
-  .kanban-column {
-    min-width: 280px;
-    scroll-snap-align: start;
-  }
 }
 
 .kanban-column {
@@ -150,6 +140,7 @@ body.board-body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-shrink: 0;
 }
 .col-title-wrap {
   display: flex;
@@ -277,6 +268,7 @@ body.board-body {
   cursor: pointer;
   text-align: center;
   transition: all 0.15s;
+  flex-shrink: 0;
 }
 .quick-add-btn:hover { background: rgba(255, 255, 255, 0.04); color: #fff; }
 
@@ -339,6 +331,7 @@ body.board-body {
   font-family: monospace;
   font-size: 11px;
   color: var(--sos-muted);
+  flex-shrink: 0;
 }
 .toast {
   position: fixed;
@@ -356,35 +349,50 @@ body.board-body {
 }
 .hidden { display: none !important; }
 
-/* ================= phones: the header wraps instead of scrolling ================= */
+/* Responsive Layout */
+@media (max-width: 768px) {
+  .board-stage {
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 12px;
+    gap: 16px;
+  }
+
+  .kanban-column {
+    width: 100%;
+    min-height: auto;
+    height: auto;
+    flex-shrink: 0;
+  }
+
+  .cards-container {
+    max-height: 420px;
+    overflow-y: auto;
+  }
+}
+
 @media (max-width: 640px) {
   .board-header {
     flex-wrap: wrap;
     padding: 8px 12px;
     gap: 8px;
-    height: auto;
   }
-  .board-header .brand { font-size: 16px; }
-  .board-header .brand-title { font-size: 15px; }
-  .board-header .version-badge { display: none; }
-  .board-header .account-pill {
-    max-width: 110px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    padding: 4px 8px;
-    font-size: 10px;
+  .version-badge, .account-pill {
+    display: none;
   }
-  /* search / middle part: full width in a line of its own */
-  .board-header .header-center, .board-header .search-wrap, .board-header .search-box {
+  .header-center {
     order: 3;
-    width: 100%;
     max-width: 100%;
+    width: 100%;
     margin-top: 2px;
   }
-  .board-header .add-task-btn, .board-header .icon-nav-btn {
+  .add-task-btn {
     padding: 6px 10px;
     font-size: 12px;
-    white-space: nowrap;
+  }
+  .form-row {
+    grid-template-columns: 1fr;
   }
 }

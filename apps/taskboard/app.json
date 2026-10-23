@@ -4,8 +4,8 @@
   "version": "1.0.1",
   "publisher": "UniqueDroid",
   "description": {
-    "de": "Kanban- & Aufgaben-Board für Projekte unterwegs mit Drag & Drop und ShareOS.fs Speicherung.",
-    "en": "Kanban & task board for projects on the go with drag & drop and ShareOS.fs storage."
+    "de": "Kanban- & Aufgaben-Board mit responsivem Layout (untereinander auf schmalen Screens) und ShareOS.fs Speicherung.",
+    "en": "Kanban & task board with responsive stacked mobile layout and ShareOS.fs storage."
   },
   "type": "webapp",
   "entry": "index.html",
