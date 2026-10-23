@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DailyLog - Tagebuch & Bullet Journal</title>
+  <link rel="stylesheet" href="/_shareos/theme.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="sos-app log-body">
+  <header class="log-header">
+    <div class="brand">
+      <span class="brand-icon">📖</span>
+      <span class="brand-title">DailyLog</span>
+      <span class="version-badge">v1.0.0</span>
+    </div>
+    <div class="header-center">
+      <button class="nav-date-btn" id="prev-day-btn" title="Vorheriger Tag">◀</button>
+      <div class="current-date-badge" id="current-date-display">Heute, 23. Oktober 2026</div>
+      <button class="nav-date-btn" id="next-day-btn" title="Nächster Tag">▶</button>
+      <button class="today-btn" id="today-btn">Heute</button>
+    </div>
+    <div class="header-right">
+      <button class="save-status-indicator" id="save-indicator">Gespeichert</button>
+      <div class="account-pill" id="user-display">Account: ...</div>
+    </div>
+  </header>
+
+  <div id="banner" class="banner hidden"></div>
+
+  <div class="log-workspace">
+    <!-- Sidebar: Calendar & Fast Navigation -->
+    <aside class="log-sidebar">
+      <div class="calendar-container">
+        <div class="cal-header">
+          <button class="cal-nav-btn" id="cal-prev-month">◀</button>
+          <span class="cal-title" id="cal-month-title">Oktober 2026</span>
+          <button class="cal-nav-btn" id="cal-next-month">▶</button>
+        </div>
+        <div class="cal-weekdays">
+          <span>Mo</span><span>Di</span><span>Mi</span><span>Do</span><span>Fr</span><span>Sa</span><span>So</span>
+        </div>
+        <div class="cal-days-grid" id="cal-days-grid"></div>
+      </div>
+
+      <!-- Quick Snippets / Templates -->
+      <div class="snippets-section">
+        <span class="section-title">Schnellbausteine</span>
+        <button class="snippet-btn" data-snippet="\n### 🎯 Tagesziele\n- [ ] Ziel 1\n- [ ] Ziel 2\n">🎯 Ziele</button>
+        <button class="snippet-btn" data-snippet="\n### 🌟 Wofür ich heute dankbar bin\n1. \n2. \n3. \n">🌟 Dankbarkeit</button>
+        <button class="snippet-btn" data-snippet="\n### 💡 Erkenntnis des Tages\n> \n">💡 Erkenntnis</button>
+        <button class="snippet-btn" data-snippet="\n### 📝 Notizen & Gedanken\n- \n">📝 Notizen</button>
+      </div>
+
+      <!-- Past Logs List -->
+      <div class="history-section">
+        <span class="section-title">Letzte Einträge</span>
+        <div class="history-list" id="history-list"></div>
+      </div>
+    </aside>
+
+    <!-- Editor Stage -->
+    <main class="editor-stage">
+      <div class="editor-toolbar">
+        <button class="tb-btn" data-format="h1" title="Überschrift 1">H1</button>
+        <button class="tb-btn" data-format="h2" title="Überschrift 2">H2</button>
+        <button class="tb-btn" data-format="bold" title="Fett"><b>B</b></button>
+        <button class="tb-btn" data-format="italic" title="Kursiv"><i>I</i></button>
+        <button class="tb-btn" data-format="task" title="To-Do Kästchen">☑️ Aufgabe</button>
+        <button class="tb-btn" data-format="bullet" title="Aufzählung">• Liste</button>
+        <button class="tb-btn" data-format="quote" title="Zitat">❝ Zitat</button>
+        <div class="mood-picker">
+          <span class="mood-label">Stimmung:</span>
+          <button class="mood-btn" data-mood="😄" title="Sehr gut">😄</button>
+          <button class="mood-btn" data-mood="🙂" title="Gut">🙂</button>
+          <button class="mood-btn" data-mood="😐" title="Neutral">😐</button>
+          <button class="mood-btn" data-mood="😔" title="Nachdenklich">😔</button>
+          <button class="mood-btn" data-mood="🚀" title="Produktiv">🚀</button>
+        </div>
+      </div>
+
+      <textarea id="entry-editor" placeholder="Wie war dein Tag? Halte deine Gedanken, Aufgaben und Erfolge fest..."></textarea>
+    </main>
+  </div>
+
+  <footer class="log-footer">
+    <span id="storage-status">Verbinde mit Box-Dateisystem...</span>
+    <span id="word-count">0 Wörter • 0 Zeichen</span>
+  </footer>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/_shareos/app.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

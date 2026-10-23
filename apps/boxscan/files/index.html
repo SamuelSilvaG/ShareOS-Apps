@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>BoxScan - Dokumenten-Scanner</title>
+  <link rel="stylesheet" href="/_shareos/theme.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="sos-app scan-body">
+  <header class="scan-header">
+    <div class="brand">
+      <span class="brand-icon">📄</span>
+      <span class="brand-title">BoxScan</span>
+      <span class="version-badge">v1.0.0</span>
+    </div>
+
+    <div class="header-center">
+      <label class="scan-btn" for="camera-input">
+        <span>📸 Beleg scannen</span>
+      </label>
+      <input type="file" id="camera-input" accept="image/*" capture="environment" hidden>
+
+      <label class="scan-btn btn-secondary" for="file-input">
+        <span>📁 Datei wählen</span>
+      </label>
+      <input type="file" id="file-input" accept="image/*" hidden>
+    </div>
+
+    <div class="header-right">
+      <button class="icon-btn" id="refresh-docs-btn" title="Aktualisieren">🔄</button>
+      <div class="account-pill" id="user-display">Account: ...</div>
+    </div>
+  </header>
+
+  <div id="banner" class="banner hidden"></div>
+
+  <!-- Workspace: Editor or Archives -->
+  <main class="scan-workspace">
+    <!-- Scanner / Image Processing Stage (Hidden if no active scan) -->
+    <section class="editor-section hidden" id="editor-section">
+      <div class="editor-toolbar">
+        <div class="filter-controls">
+          <span class="control-label">Modus:</span>
+          <button class="filter-btn active" data-filter="bw">Dokument (S/W)</button>
+          <button class="filter-btn" data-filter="gray">Graustufen</button>
+          <button class="filter-btn" data-filter="color">Farbe</button>
+        </div>
+        <div class="rotate-controls">
+          <button class="tool-btn" id="rotate-left-btn" title="Links drehen">↺ 90°</button>
+          <button class="tool-btn" id="rotate-right-btn" title="Rechts drehen">↻ 90°</button>
+        </div>
+      </div>
+
+      <div class="preview-area">
+        <canvas id="scan-canvas"></canvas>
+      </div>
+
+      <div class="editor-save-bar">
+        <input type="text" id="doc-name" placeholder="Dokumenten-Name (z.B. Rechnung_Telekom)">
+        <div class="save-actions">
+          <button class="cancel-btn" id="cancel-scan-btn">Verwerfen</button>
+          <button class="save-btn" id="save-doc-btn">💾 Auf Box speichern</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Documents Archive Grid -->
+    <section class="archive-section" id="archive-section">
+      <div class="archive-header">
+        <span class="archive-title">GESPEICHERTE BELEGE & SCANS</span>
+        <span class="archive-count" id="docs-count">0 Dokumente</span>
+      </div>
+
+      <div class="docs-grid" id="docs-grid"></div>
+
+      <div class="empty-state hidden" id="empty-state">
+        <span class="empty-icon">🗂️</span>
+        <span class="empty-title">Noch keine Belege archiviert</span>
+        <span class="empty-sub">Tippe oben auf „Beleg scannen“, um Rechnungen oder Briefe direkt per Kamera zu erfassen!</span>
+      </div>
+    </section>
+  </main>
+
+  <!-- Lightbox Modal -->
+  <div class="lightbox-backdrop hidden" id="lightbox">
+    <div class="lightbox-modal">
+      <button class="lightbox-close" id="lightbox-close">✕</button>
+      <img id="lightbox-img" src="" alt="Scan">
+      <div class="lightbox-footer">
+        <span id="lightbox-name">scan.jpg</span>
+        <div class="lightbox-actions">
+          <a href="#" download="" id="lightbox-download" class="action-btn">💾 Herunterladen</a>
+          <button class="action-btn del-btn" id="lightbox-del-btn">🗑 Löschen</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="scan-footer">
+    <span id="storage-status">Verbinde mit Box-Dateisystem...</span>
+    <span>Ordner: documents/YYYY/</span>
+  </footer>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/_shareos/app.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
