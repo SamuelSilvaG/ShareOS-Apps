@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>KeyKeeper - SSH Keys & Zertifikate</title>
+  <link rel="stylesheet" href="/_shareos/theme.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="sos-app key-body">
+  <header class="k-header">
+    <div class="brand">
+      <span class="brand-icon">🔐</span>
+      <span class="brand-title">KeyKeeper</span>
+      <span class="version-badge">v1.0.0</span>
+    </div>
+
+    <div class="header-center">
+      <input type="text" id="credential-search" placeholder="SSH Keys, Tokens & Zertifikate durchsuchen...">
+      <button class="k-btn add-btn" id="open-add-btn">➕ Neuer Eintrag</button>
+    </div>
+
+    <div class="header-right">
+      <button class="icon-nav-btn" id="refresh-btn" title="Aktualisieren">🔄</button>
+      <div class="account-pill" id="user-display">Account: ...</div>
+    </div>
+  </header>
+
+  <!-- Horizontale Sub-Header Filterleiste -->
+  <nav class="sub-header-filter">
+    <div class="filter-pills" id="type-filter-bar">
+      <button class="filter-pill active" data-type="all">Alle Einträge (<span id="count-all">0</span>)</button>
+      <button class="filter-pill" data-type="ssh">🔑 SSH Keys (<span id="count-ssh">0</span>)</button>
+      <button class="filter-pill" data-type="token">🎫 API Token (<span id="count-token">0</span>)</button>
+      <button class="filter-pill" data-type="ssl">📜 SSL Zertifikate (<span id="count-ssl">0</span>)</button>
+    </div>
+  </nav>
+
+  <div id="banner" class="banner hidden"></div>
+
+  <main class="k-workspace">
+    <!-- Credential Cards Grid -->
+    <section class="credentials-card">
+      <div class="section-head">
+        <span>INFRASTRUKTUR CREDENTIALS & KEYS</span>
+        <span id="credentials-count-label">0 Einträge gesamt</span>
+      </div>
+
+      <div class="credentials-grid" id="credentials-grid"></div>
+
+      <div class="empty-state hidden" id="empty-state">
+        <span class="empty-icon">🛡️</span>
+        <span class="empty-title">Keine Credentials gespeichert</span>
+        <span class="empty-sub">Füge deinen ersten privaten SSH-Schlüssel, API-Token oder ein SSL-Zertifikat hinzu.</span>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal: Credential anlegen/bearbeiten -->
+  <div class="modal-backdrop hidden" id="credential-modal">
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <h2 id="modal-heading">Credential hinzufügen</h2>
+        <button class="close-x-btn" id="close-modal-x">✕</button>
+      </div>
+      <form id="credential-form" class="modal-form" onsubmit="return false;">
+        <div class="form-row">
+          <div class="form-group flex-2">
+            <label for="f-title">Titel / Bezeichnung</label>
+            <input type="text" id="f-title" placeholder="z. B. Proxmox Root SSH, Cloudflare API Token" required>
+          </div>
+          <div class="form-group flex-1">
+            <label for="f-type">Typ</label>
+            <select id="f-type">
+              <option value="ssh">🔑 SSH Private Key</option>
+              <option value="token">🎫 API Token / Secret</option>
+              <option value="ssl">📜 SSL Zertifikat</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group" id="group-secret">
+          <label for="f-secret" id="label-secret">Geheimnis / Key / Token / Zertifikat</label>
+          <textarea id="f-secret" rows="5" placeholder="-----BEGIN OPENSSH PRIVATE KEY-----..." required style="font-family:monospace; font-size:12px;"></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="f-expiry">Ablaufdatum (optional bei SSL)</label>
+            <input type="date" id="f-expiry">
+          </div>
+          <div class="form-group flex-1">
+            <label for="f-target">Ziel / Host / Dienst</label>
+            <input type="text" id="f-target" placeholder="z. B. 192.168.1.10, *.homelab.local">
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="del-btn hidden" id="modal-delete-btn">Löschen</button>
+          <button type="button" class="cancel-btn" id="modal-cancel-btn">Abbrechen</button>
+          <button type="submit" class="save-btn" id="modal-save-btn">Speichern</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <footer class="k-footer">
+    <span id="storage-status">Verbinde mit Box-Dateisystem...</span>
+    <span>KeyKeeper (security/credentials.json via ShareOS.fs)</span>
+  </footer>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/_shareos/app.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
