@@ -1,0 +1,31 @@
+{
+  "id": "shareaudio",
+  "name": "ShareAudio",
+  "version": "1.0.0",
+  "publisher": "UniqueDroid",
+  "description": {
+    "de": "Diktiergerät & Sprachnotizen unterwegs aufnehmen und direkt auf der Box speichern via ShareOS.fs.",
+    "en": "Voice memos & audio recorder saved directly to your box via ShareOS.fs."
+  },
+  "type": "webapp",
+  "entry": "index.html",
+  "icon": "icon.svg",
+  "category": "media",
+  "license": "MIT",
+  "min_shareos": "0.2.0-beta.1",
+  "permissions": ["files"],
+  "window": {
+    "width": 960,
+    "height": 680
+  },
+  "opens": [
+    {
+      "ext": [".webm", ".ogg", ".wav", ".mp3", ".m4a"],
+      "mode": "view",
+      "label": {
+        "de": "In ShareAudio anhören",
+        "en": "Play in ShareAudio"
+      }
+    }
+  ]
+}

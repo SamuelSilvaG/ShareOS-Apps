@@ -1,0 +1,31 @@
+{
+  "id": "taskboard",
+  "name": "TaskBoard",
+  "version": "1.0.0",
+  "publisher": "UniqueDroid",
+  "description": {
+    "de": "Kanban- & Aufgaben-Board für Projekte unterwegs mit Drag & Drop und ShareOS.fs Speicherung.",
+    "en": "Kanban & task board for projects on the go with drag & drop and ShareOS.fs storage."
+  },
+  "type": "webapp",
+  "entry": "index.html",
+  "icon": "icon.svg",
+  "category": "office",
+  "license": "MIT",
+  "min_shareos": "0.2.0-beta.1",
+  "permissions": ["files"],
+  "window": {
+    "width": 1100,
+    "height": 720
+  },
+  "opens": [
+    {
+      "ext": [".json"],
+      "mode": "edit",
+      "label": {
+        "de": "In TaskBoard öffnen",
+        "en": "Open in TaskBoard"
+      }
+    }
+  ]
+}
