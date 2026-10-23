@@ -48,10 +48,23 @@
 
       // Banner offline / erro
       'banner.offline.title': '⚠️ Tailscale daemon (tailscaled) não respondeu.',
-      'banner.offline.desc': 'Certifique-se de que o Tailscale está rodando na box. Você pode iniciar o serviço pelo terminal ou configurar o endpoint da API.',
+      'banner.offline.desc': 'O serviço não responde: {err}',
       'banner.offline.retry': 'Tentar Novamente',
-      'banner.offline.cfg': 'Configurar Endpoint',
-      'banner.offline.demo': 'Modo Demonstração',
+      'about.text': 'Tailscale {v} para ShareOS · App {a}',
+      'peers.relay': 'via relay {r}',
+      'peers.direct': 'direto',
+      'toast.loggedOut': 'Desconectado do Tailnet',
+      'confirm.logout': 'Remover esta box do Tailnet? Para acesso remoto será preciso fazer login novamente.',
+      'menu.logout': 'Sair do Tailnet…',
+      'menu.reauth': 'Fazer login novamente…',
+      'modal.login.wait': 'Solicitando link de login…',
+      'card.status.needsMachineAuth': 'Aguardando aprovação no console de administração',
+      'card.status.starting': 'Tailscale está iniciando…',
+      'conn.starting': '◌ Iniciando…',
+      'banner.missing.desc': 'Instale-o na loja do ShareOS (Apps → Loja → Apps de sistema) e depois clique em "Tentar novamente".',
+      'banner.missing.title': '⚠️ O app de sistema "tailscaled" não está instalado.',
+      'banner.noapi.desc': 'Este app precisa do ShareOS 0.2.0-beta.8 ou mais recente e só funciona para contas de administrador.',
+      'banner.noapi.title': '⚠️ Sem acesso ao Tailscale da box.',
 
       // Botões comuns
       'btn.copy': 'Copiar',
@@ -94,7 +107,7 @@
       
       'access.step3.badge': 'Serviço 2',
       'access.step3.title': 'Transmission (Torrents e Downloads)',
-      'access.step3.desc': 'Adicione novos downloads ou acompanhe o progresso do Transmission pelo navegador:',
+      'access.step3.desc': 'Faça login no ShareOS e abra o Transmission:',
 
       'access.step4.badge': 'Serviço 3',
       'access.step4.title': 'Terminal SSH Leve',
@@ -121,8 +134,6 @@
 
       // Modal Configurações
       'modal.cfg.title': 'Configurações de Conexão do Tailscale',
-      'modal.cfg.api.label': 'Endereço da API do Tailscale (daemon local ou proxy):',
-      'modal.cfg.api.help': 'Padrão: /_shareos/cgi/tailscale ou http://127.0.0.1:5252',
       'modal.cfg.auto.label': 'Atualizar status da rede automaticamente a cada 20 segundos (economiza CPU)',
 
       // Barra de Status
@@ -191,10 +202,23 @@
 
       // Banner offline
       'banner.offline.title': '⚠️ Tailscale daemon (tailscaled) is unreachable.',
-      'banner.offline.desc': 'Ensure Tailscale is running on the box. You can launch the daemon in the terminal or configure the API URL.',
+      'banner.offline.desc': 'The service does not answer: {err}',
       'banner.offline.retry': 'Retry',
-      'banner.offline.cfg': 'Configure Endpoint',
-      'banner.offline.demo': 'Demo Mode',
+      'about.text': 'Tailscale {v} for ShareOS · App {a}',
+      'peers.relay': 'via relay {r}',
+      'peers.direct': 'direct',
+      'toast.loggedOut': 'Logged out of the Tailnet',
+      'confirm.logout': 'Remove this box from the Tailnet? Remote access will need a new sign-in afterwards.',
+      'menu.logout': 'Log out of Tailnet…',
+      'menu.reauth': 'Sign in again…',
+      'modal.login.wait': 'Requesting sign-in link…',
+      'card.status.needsMachineAuth': 'Waiting for approval in the admin console',
+      'card.status.starting': 'Tailscale is starting…',
+      'conn.starting': '◌ Starting…',
+      'banner.missing.desc': 'Install it from the ShareOS store (Apps → Store → System apps), then click "Retry".',
+      'banner.missing.title': '⚠️ The system app "tailscaled" is not installed.',
+      'banner.noapi.desc': 'This app needs ShareOS 0.2.0-beta.8 or newer and only works for administrator accounts.',
+      'banner.noapi.title': '⚠️ No access to the box\'s Tailscale.',
 
       // Common Buttons
       'btn.copy': 'Copy',
@@ -237,7 +261,7 @@
 
       'access.step3.badge': 'Service 2',
       'access.step3.title': 'Transmission & Downloads',
-      'access.step3.desc': 'Add torrents or monitor your downloads remotely in the browser:',
+      'access.step3.desc': 'Sign in to ShareOS and open Transmission:',
 
       'access.step4.badge': 'Service 3',
       'access.step4.title': 'Lightweight SSH Terminal',
@@ -264,8 +288,6 @@
 
       // Modal Settings
       'modal.cfg.title': 'Tailscale Connection Settings',
-      'modal.cfg.api.label': 'Tailscale API Endpoint (local daemon or proxy):',
-      'modal.cfg.api.help': 'Default: /_shareos/cgi/tailscale or http://127.0.0.1:5252',
       'modal.cfg.auto.label': 'Automatically refresh network state every 20 seconds (saves CPU)',
 
       // Status Bar
@@ -334,10 +356,23 @@
 
       // Banner offline
       'banner.offline.title': '⚠️ Tailscale-Daemon (tailscaled) nicht erreichbar.',
-      'banner.offline.desc': 'Stellen Sie sicher, dass Tailscale auf der Box läuft. Sie können den Dienst im Terminal starten oder den API-Endpunkt anpassen.',
+      'banner.offline.desc': 'Der Dienst antwortet nicht: {err}',
       'banner.offline.retry': 'Erneut versuchen',
-      'banner.offline.cfg': 'Endpunkt konfigurieren',
-      'banner.offline.demo': 'Demo-Modus',
+      'about.text': 'Tailscale {v} für ShareOS · App {a}',
+      'peers.relay': 'über Relay {r}',
+      'peers.direct': 'direkt',
+      'toast.loggedOut': 'Vom Tailnet abgemeldet',
+      'confirm.logout': 'Diese Box vom Tailnet abmelden? Für den Fernzugriff muss sie danach neu angemeldet werden.',
+      'menu.logout': 'Vom Tailnet abmelden…',
+      'menu.reauth': 'Neu anmelden…',
+      'modal.login.wait': 'Anmeldelink wird angefordert…',
+      'card.status.needsMachineAuth': 'Wartet auf Freigabe in der Admin-Konsole',
+      'card.status.starting': 'Tailscale startet…',
+      'conn.starting': '◌ Startet…',
+      'banner.missing.desc': 'Bitte im ShareOS-Store (Apps → Store → System-Apps) installieren und dann „Erneut versuchen“ klicken.',
+      'banner.missing.title': '⚠️ Die System-App „tailscaled“ ist nicht installiert.',
+      'banner.noapi.desc': 'Diese App braucht ShareOS 0.2.0-beta.8 oder neuer und funktioniert nur mit Administrator-Konten.',
+      'banner.noapi.title': '⚠️ Kein Zugriff auf Tailscale der Box.',
 
       // Schaltflächen
       'btn.copy': 'Kopieren',
@@ -380,7 +415,7 @@
 
       'access.step3.badge': 'Dienst 2',
       'access.step3.title': 'Transmission & Downloads',
-      'access.step3.desc': 'Torrents von unterwegs überwachen und Downloads starten:',
+      'access.step3.desc': 'In ShareOS anmelden und Transmission öffnen:',
 
       'access.step4.badge': 'Dienst 3',
       'access.step4.title': 'Schlankes SSH-Terminal',
@@ -407,8 +442,6 @@
 
       // Modal Einstellungen
       'modal.cfg.title': 'Tailscale Verbindungseinstellungen',
-      'modal.cfg.api.label': 'Tailscale API-Endpunkt (lokaler Daemon oder Proxy):',
-      'modal.cfg.api.help': 'Standard: /_shareos/cgi/tailscale oder http://127.0.0.1:5252',
       'modal.cfg.auto.label': 'Netzwerkstatus alle 20 Sekunden automatisch aktualisieren (schont die CPU)',
 
       // Statusleiste
