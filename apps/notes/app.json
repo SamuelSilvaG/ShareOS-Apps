@@ -1,0 +1,19 @@
+{
+	"id": "notes",
+	"name": "ShareNotes",
+	"version": "1.0.3",
+	"publisher": "UniqueDroid",
+	"description": {
+		"de": "Notizen-App mit Bearbeitungs-Modal, Multi-User-Trennung und nativer ShareOS.fs Anbindung.",
+		"en": "Notes app with edit modal, multi-user isolation and native ShareOS.fs support."
+	},
+	"type": "webapp",
+	"entry": "index.html",
+	"icon": "icon.svg",
+	"category": "office",
+	"license": "MIT",
+	"homepage": "https://github.com/UniqueDroid/ShareOS-Apps/tree/main/apps/notes",
+	"min_shareos": "0.2.0-beta.1",
+	"permissions": [ "files" ],
+	"window": { "width": 1040, "height": 720 }
+}
