@@ -1,0 +1,31 @@
+{
+  "id": "quickunit",
+  "name": "QuickUnit",
+  "version": "1.0.0",
+  "publisher": "UniqueDroid",
+  "description": {
+    "de": "Werbefreier Offline-Einheiten- & Währungsrechner mit Schnellkopie und ShareOS.fs Favoriten-Speicherung.",
+    "en": "Ad-free offline unit & currency converter with instant copy and ShareOS.fs favorites storage."
+  },
+  "type": "webapp",
+  "entry": "index.html",
+  "icon": "icon.svg",
+  "category": "tools",
+  "license": "MIT",
+  "min_shareos": "0.2.0-beta.1",
+  "permissions": ["files"],
+  "window": {
+    "width": 960,
+    "height": 680
+  },
+  "opens": [
+    {
+      "ext": [".json"],
+      "mode": "view",
+      "label": {
+        "de": "In QuickUnit öffnen",
+        "en": "Open in QuickUnit"
+      }
+    }
+  ]
+}

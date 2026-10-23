@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>QuickUnit - Offline Einheitenrechner</title>
+  <link rel="stylesheet" href="/_shareos/theme.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="sos-app unit-body">
+  <header class="u-header">
+    <div class="brand">
+      <span class="brand-icon">🔄</span>
+      <span class="brand-title">QuickUnit</span>
+      <span class="version-badge">v1.0.0</span>
+    </div>
+
+    <div class="header-center">
+      <button class="u-btn" id="swap-btn" title="Einheiten vertauschen">⇄ Tauschen</button>
+      <button class="u-btn" id="save-fav-btn" title="Als Favorit auf der Box sichern">⭐ Favorit</button>
+    </div>
+
+    <div class="header-right">
+      <button class="icon-nav-btn" id="refresh-btn" title="Neu laden">🔄</button>
+      <div class="account-pill" id="user-display">Account: ...</div>
+    </div>
+  </header>
+
+  <!-- Horizontale Sub-Header Leiste mit Kategorien -->
+  <nav class="sub-header-filter">
+    <div class="filter-pills" id="category-filter-bar">
+      <button class="filter-pill active" data-cat="length">📏 Länge</button>
+      <button class="filter-pill" data-cat="weight">⚖️ Masse / Gewicht</button>
+      <button class="filter-pill" data-cat="data">💾 Daten & Speicher</button>
+      <button class="filter-pill" data-cat="temp">🌡️ Temperatur</button>
+      <button class="filter-pill" data-cat="speed">⚡ Tempo / Speed</button>
+      <button class="filter-pill" data-cat="pressure">🎈 Druck & Reifen</button>
+      <button class="filter-pill" data-cat="currency">💶 Währung (Offline)</button>
+    </div>
+  </nav>
+
+  <div id="banner" class="banner hidden"></div>
+
+  <main class="u-workspace">
+    <!-- Rechner Karte -->
+    <section class="converter-card">
+      <div class="inputs-grid">
+        <!-- Quell-Einheit -->
+        <div class="unit-box">
+          <div class="unit-head">
+            <label for="input-from">Eingabe</label>
+            <select id="select-from" class="unit-select"></select>
+          </div>
+          <div class="input-wrap">
+            <input type="number" id="input-from" value="1" step="any" placeholder="0">
+            <button class="clear-btn" id="clear-input-btn" title="Eingabe leeren">✕</button>
+          </div>
+        </div>
+
+        <!-- Tauschen Button Center -->
+        <button class="mid-swap-btn" id="mid-swap-btn" title="Einheiten tauschen">⇄</button>
+
+        <!-- Ziel-Einheit -->
+        <div class="unit-box">
+          <div class="unit-head">
+            <label for="input-to">Ergebnis</label>
+            <select id="select-to" class="unit-select"></select>
+          </div>
+          <div class="input-wrap">
+            <input type="text" id="input-to" readonly placeholder="0">
+            <button class="copy-val-btn" id="copy-result-btn" title="Ergebnis kopieren">📋</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Umrechnungsformel / Detailanzeige -->
+      <div class="formula-banner" id="formula-display">1 m = 100 cm</div>
+    </section>
+
+    <!-- Schnell-Übersichtstabelle (Multi-Conversion) -->
+    <section class="quick-table-card">
+      <div class="card-head">
+        <span>SCHNELLE MEHRFACH-UMRECHNUNG</span>
+        <span class="active-cat-label" id="active-cat-name">Länge</span>
+      </div>
+      <div class="multi-results-grid" id="multi-results-grid"></div>
+    </section>
+
+    <!-- Gespeicherte Favoriten -->
+    <section class="favs-card">
+      <div class="card-head">
+        <span>GESPEICHERTE FAVORITEN (SHAREOS.FS)</span>
+        <span id="favs-count-label">0 Favoriten</span>
+      </div>
+      <div class="favs-list" id="favs-list"></div>
+    </section>
+  </main>
+
+  <footer class="u-footer">
+    <span id="storage-status">Verbinde mit Box-Dateisystem...</span>
+    <span>QuickUnit (units/favorites.json via ShareOS.fs)</span>
+  </footer>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/_shareos/app.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
