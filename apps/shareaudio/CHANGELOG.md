@@ -1,10 +1,30 @@
 # Changelog
 
+## [1.0.2] - 2026-10-24
+
+### Changed
+- Adjusted CSS to ensure the UI fits narrow screens such as smartphones.
+
+### Geändert
+- CSS angepasst, damit die Oberfläche auf schmale Bildschirme wie Smartphones passt.
+
 ## [1.0.1] - 2026-10-23
+
+### Fixed
+- Header wraps on mobile instead of scrolling horizontally: Search / center items moved to a dedicated line, account name truncated, version number hidden.
+
 ### Behoben
 - Auf dem Handy bricht die Kopfleiste um, statt seitlich zu scrollen: Suche bzw. Mitte in eigener Zeile, Kontoname gekürzt, Versionsnummer ausgeblendet.
 
 ## [1.0.0] - 2026-10-23
+
+### Added
+- Initial release of ShareAudio for the ShareOS ecosystem.
+- In-browser recording via MediaRecorder API.
+- Audio visualizer with AudioContext canvas frequency bars.
+- Persistent storage on the box under voice_memos/ via ShareOS.fs.
+- Direct playback, download, and deletion functions for voice messages.
+
 ### Hinzugefügt
 - Erstveröffentlichung von ShareAudio für das ShareOS-Ökosystem.
 - Aufnahme über `MediaRecorder` API direkt im Browser.
