@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>ShareVault</title>
   <link rel="stylesheet" href="/_shareos/theme.css">
   <link rel="stylesheet" href="style.css">
@@ -14,10 +14,11 @@
       <div class="brand">
         <span class="brand-icon">🛡️</span>
         <span class="brand-title">ShareVault</span>
-        <span class="version-badge">v1.0.1</span>
+        <span class="version-badge">v1.0.5</span>
       </div>
+      <!-- Inline-Suche im Header -->
       <div class="search-box">
-        <input type="text" id="search-input" placeholder="Einträge durchsuchen (Titel, Benutzer, URL, Notiz)...">
+        <input type="text" id="search-input" placeholder="Einträge & Dienste durchsuchen...">
       </div>
       <div class="header-actions">
         <button class="lock-btn" id="lock-vault-btn" title="Tresor sperren">
@@ -31,95 +32,36 @@
     <div id="banner" class="banner hidden"></div>
 
     <div class="vault-workspace">
-      <!-- SIDEBAR: ENTRIES LIST -->
-      <aside class="vault-sidebar">
-        <div class="sidebar-top">
+      <!-- Zentraler Workspace mit Grid-Karten (mittig) -->
+      <main class="vault-main-pane">
+        <div class="workspace-action-row">
           <button class="add-entry-btn" id="add-entry-btn">➕ Neuer Eintrag</button>
-        </div>
-        <div class="entries-list" id="entries-list"></div>
-      </aside>
-
-      <!-- MAIN PANE: ENTRY DETAILS -->
-      <main class="entry-detail" id="entry-detail">
-        <div class="detail-empty" id="detail-empty">
-          <span>Wähle einen Eintrag aus oder erstelle einen neuen</span>
+          <div class="entries-count-badge" id="entries-count">0 Einträge</div>
         </div>
 
-        <div class="detail-form hidden" id="detail-form">
-          <div class="detail-header">
-            <h2 id="detail-heading">Eintrag bearbeiten</h2>
-            <div class="detail-header-actions">
-              <button class="del-btn" id="delete-entry-btn" title="Eintrag löschen">🗑 Löschen</button>
-              <button class="save-btn" id="save-entry-btn">💾 Speichern</button>
-            </div>
-          </div>
+        <div class="vault-grid" id="vault-grid"></div>
 
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="f-title">Titel / Dienst</label>
-              <input type="text" id="f-title" placeholder="z. B. GitHub, Nextcloud, WLAN Heimnetz">
-            </div>
-
-            <div class="form-group">
-              <label for="f-username">Benutzername / E-Mail</label>
-              <div class="input-with-action">
-                <input type="text" id="f-username" placeholder="name@beispiel.de">
-                <button class="icon-btn copy-btn" data-target="f-username" title="Kopieren">📋</button>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="f-password">Passwort</label>
-              <div class="input-with-action">
-                <input type="password" id="f-password" placeholder="Passwort...">
-                <button class="icon-btn" id="toggle-pw-btn" title="Passwort anzeigen">👁️</button>
-                <button class="icon-btn copy-btn" data-target="f-password" title="Kopieren">📋</button>
-                <button class="icon-btn" id="gen-pw-btn" title="Sicheres Passwort generieren">🎲</button>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="f-url">URL / Adresse</label>
-              <div class="input-with-action">
-                <input type="text" id="f-url" placeholder="https://...">
-                <button class="icon-btn" id="open-url-btn" title="URL öffnen">🔗</button>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="f-totp">2FA / TOTP Secret (Base32)</label>
-              <div class="input-with-action">
-                <input type="text" id="f-totp" placeholder="JBSWY3DPEHPK3PXP...">
-                <button class="icon-btn copy-btn" data-target="totp-code-display" title="2FA Code kopieren">📋</button>
-              </div>
-              <div class="totp-display hidden" id="totp-container">
-                <span class="totp-code" id="totp-code-display">------</span>
-                <span class="totp-timer" id="totp-timer">30s</span>
-              </div>
-            </div>
-
-            <div class="form-group full-width">
-              <label for="f-notes">Sichere Notizen / Wiederherstellungsschlüssel</label>
-              <textarea id="f-notes" rows="4" placeholder="Zusätzliche geheime Informationen..."></textarea>
-            </div>
-          </div>
+        <div class="empty-state hidden" id="empty-state">
+          <span class="empty-icon">🛡️</span>
+          <span class="empty-title">Keine Passwörter im Tresor</span>
+          <span class="empty-sub">Klicke oben auf „➕ Neuer Eintrag“, um deinen ersten Account oder ein Server-Passwort hinzuzufügen.</span>
         </div>
       </main>
     </div>
 
     <footer class="vault-footer">
-      <span id="entries-count">0 Einträge</span>
       <span id="storage-status">Verbinde mit Box-Dateisystem...</span>
+      <span>ShareVault (vault.enc via ShareOS.fs)</span>
     </footer>
   </div>
 
-  <!-- LOCKED OVERLAY VIEW -->
+  <!-- LOCKED OVERLAY VIEW (Login & Farben 100% original beibehalten) -->
   <div id="lock-view" class="lock-overlay">
     <div class="lock-card">
       <div class="lock-icon">🔒</div>
       <div style="display:flex; align-items:center; gap:8px; justify-content:center;">
         <h1 class="lock-title">ShareVault</h1>
-        <span class="version-badge">v1.0.1</span>
+        <span class="version-badge">v1.0.5</span>
       </div>
       <p class="lock-sub" id="lock-sub">Gib dein Master-Passwort ein, um den Tresor zu entschlüsseln.</p>
 
@@ -132,6 +74,63 @@
         <span>Verschlüsselung: AES-GCM-256 via WebCrypto API.</span>
         <span>Datei: <code id="lock-filepath">vault.enc</code> auf deiner Box.</span>
       </div>
+    </div>
+  </div>
+
+  <!-- Modal zum Anlegen / Bearbeiten von Einträgen -->
+  <div class="modal-backdrop hidden" id="entry-modal">
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <h2 id="modal-heading">Eintrag bearbeiten</h2>
+        <button class="close-x-btn" id="close-modal-x" type="button">✕</button>
+      </div>
+      <form id="entry-form" class="modal-form" onsubmit="return false;">
+        <div class="form-group">
+          <label for="f-title">Titel / Dienst</label>
+          <input type="text" id="f-title" placeholder="z. B. GitHub, Nextcloud, WLAN Heimnetz" required>
+        </div>
+
+        <div class="form-group">
+          <label for="f-username">Benutzername / E-Mail</label>
+          <input type="text" id="f-username" placeholder="name@beispiel.de">
+        </div>
+
+        <div class="form-group">
+          <div class="label-with-action">
+            <label for="f-password">Passwort</label>
+            <button type="button" class="text-link-btn" id="gen-pw-btn">🎲 Generieren</button>
+          </div>
+          <div class="input-with-toggle">
+            <input type="password" id="f-password" placeholder="Passwort..." required autocomplete="new-password">
+            <button type="button" class="eye-toggle-btn" id="toggle-pw-btn" title="Passwort anzeigen">👁️</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="f-url">URL / Adresse</label>
+          <input type="text" id="f-url" placeholder="https://...">
+        </div>
+
+        <div class="form-group">
+          <label for="f-totp">2FA / TOTP Secret (Base32)</label>
+          <input type="text" id="f-totp" placeholder="JBSWY3DPEHPK3PXP...">
+          <div class="totp-display hidden" id="totp-container">
+            <span class="totp-code" id="totp-code-display">------</span>
+            <span class="totp-timer" id="totp-timer">30s</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="f-notes">Sichere Notizen</label>
+          <textarea id="f-notes" rows="3" placeholder="Zusätzliche geheime Informationen..."></textarea>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="del-btn hidden" id="delete-entry-btn">Löschen</button>
+          <button type="button" class="cancel-btn" id="modal-cancel-btn">Abbrechen</button>
+          <button type="submit" class="save-btn" id="save-entry-btn">Speichern</button>
+        </div>
+      </form>
     </div>
   </div>
 

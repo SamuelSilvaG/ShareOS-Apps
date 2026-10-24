@@ -1,9 +1,7 @@
 'use strict';
 
 /**
- * ShareVault - Privater Passwort- & 2FA-Manager
- * Vollständig abgesichert mit WebCrypto (PBKDF2 + AES-GCM-256).
- * Persistiert als verschlüsselte Datei 'vault.enc' auf der Box via ShareOS.fs.
+ * ShareVault v1.0.5 - Modernes Grid-Layout in der Mitte mit originalem Login & Farben
  */
 
 const SOS = window.ShareOS || null;
@@ -16,9 +14,9 @@ const VAULT_FOLDER = 'vault';
 const VAULT_FILE = 'vault.enc';
 let boxRootName = null;
 
-let vaultKey = null; // CryptoKey
+let vaultKey = null;
 let vaultEntries = [];
-let activeEntryId = null;
+let editingEntryId = null;
 let totpInterval = null;
 
 // UI Elements
@@ -29,17 +27,16 @@ const unlockForm = document.getElementById('unlock-form');
 const lockSub = document.getElementById('lock-sub');
 const lockVaultBtn = document.getElementById('lock-vault-btn');
 
-const entriesList = document.getElementById('entries-list');
+const vaultGrid = document.getElementById('vault-grid');
 const entriesCount = document.getElementById('entries-count');
 const searchInput = document.getElementById('search-input');
 const addEntryBtn = document.getElementById('add-entry-btn');
+const emptyState = document.getElementById('empty-state');
 
-const detailEmpty = document.getElementById('detail-empty');
-const detailForm = document.getElementById('detail-form');
-const detailHeading = document.getElementById('detail-heading');
-const saveEntryBtn = document.getElementById('save-entry-btn');
-const deleteEntryBtn = document.getElementById('delete-entry-btn');
-
+// Modal Elements
+const entryModal = document.getElementById('entry-modal');
+const modalHeading = document.getElementById('modal-heading');
+const entryForm = document.getElementById('entry-form');
 const fTitle = document.getElementById('f-title');
 const fUsername = document.getElementById('f-username');
 const fPassword = document.getElementById('f-password');
@@ -49,7 +46,9 @@ const fNotes = document.getElementById('f-notes');
 
 const togglePwBtn = document.getElementById('toggle-pw-btn');
 const genPwBtn = document.getElementById('gen-pw-btn');
-const openUrlBtn = document.getElementById('open-url-btn');
+const deleteEntryBtn = document.getElementById('delete-entry-btn');
+const modalCancelBtn = document.getElementById('modal-cancel-btn');
+const closeModalX = document.getElementById('close-modal-x');
 
 const totpContainer = document.getElementById('totp-container');
 const totpCodeDisplay = document.getElementById('totp-code-display');
@@ -71,7 +70,7 @@ function showBanner(text) {
   b.classList.remove('hidden');
 }
 
-// ==================== CRYPTOGRAPHY (WebCrypto API) ====================
+// ==================== CRYPTOGRAPHY ====================
 async function deriveKey(password, salt) {
   const enc = new TextEncoder();
   const keyMaterial = await crypto.subtle.importKey(
@@ -110,14 +109,13 @@ async function encryptVault(dataObj, password) {
     plainBytes
   );
 
-  const payload = {
+  return JSON.stringify({
     salt: Array.from(salt),
     iv: Array.from(iv),
     data: Array.from(new Uint8Array(cipherBuffer)),
     version: 1,
     mtime: new Date().toISOString()
-  };
-  return JSON.stringify(payload);
+  });
 }
 
 async function decryptVault(cipherJsonStr, password) {
@@ -138,7 +136,7 @@ async function decryptVault(cipherJsonStr, password) {
   return JSON.parse(dec.decode(decryptedBuffer));
 }
 
-// ==================== SHAREOS.FS INTEGRATION ====================
+// ==================== STORAGE ====================
 async function initStorage() {
   if (!FS) {
     storageStatus.textContent = `Speicher: Browser (LocalStorage: ${user})`;
@@ -155,7 +153,7 @@ async function initStorage() {
       storageStatus.textContent = `Box: 🏠 ${boxRootName}/${VAULT_FOLDER}/${VAULT_FILE}`;
       checkBoxVault();
     } else {
-      showBanner('Kein persönlicher Ordner auf der Box gefunden. Speicher wird im Browser gehalten.');
+      showBanner('Kein persönlicher Ordner auf der Box gefunden.');
       checkLocalVault();
     }
   } catch (err) {
@@ -216,7 +214,7 @@ async function saveEncryptedData(cipherStr) {
   }
 }
 
-// ==================== UNLOCK / LOCK WORKFLOW ====================
+// ==================== UNLOCK / LOCK ====================
 unlockForm.addEventListener('submit', async () => {
   const pw = masterPwInput.value.trim();
   if (!pw) return;
@@ -250,8 +248,7 @@ unlockForm.addEventListener('submit', async () => {
     lockView.classList.add('hidden');
     vaultView.classList.remove('hidden');
     masterPwInput.value = '';
-    renderEntries();
-    if (vaultEntries.length > 0) selectEntry(vaultEntries[0].id);
+    renderGrid();
   } catch (err) {
     console.error(err);
     showToast('Falsches Master-Passwort oder beschädigte Datei!');
@@ -264,21 +261,19 @@ unlockForm.addEventListener('submit', async () => {
 lockVaultBtn.addEventListener('click', () => {
   vaultKey = null;
   vaultEntries = [];
-  activeEntryId = null;
+  editingEntryId = null;
   stopTotp();
   vaultView.classList.add('hidden');
   lockView.classList.remove('hidden');
-  detailForm.classList.add('hidden');
-  detailEmpty.classList.remove('hidden');
   masterPwInput.value = '';
   masterPwInput.focus();
   showToast('Tresor gesperrt.');
 });
 
-// ==================== ENTRIES MANAGEMENT ====================
-function renderEntries() {
+// ==================== GRID RENDERING ====================
+function renderGrid() {
   const query = searchInput.value.trim().toLowerCase();
-  entriesList.innerHTML = '';
+  vaultGrid.innerHTML = '';
 
   const filtered = vaultEntries.filter(e =>
     (e.title || '').toLowerCase().includes(query) ||
@@ -287,93 +282,148 @@ function renderEntries() {
     (e.notes || '').toLowerCase().includes(query)
   );
 
-  entriesCount.textContent = `${vaultEntries.length} Eintrag/Einträge`;
+  entriesCount.textContent = `${vaultEntries.length} Einträge`;
+
+  if (!filtered.length) {
+    emptyState.classList.remove('hidden');
+    return;
+  }
+  emptyState.classList.add('hidden');
 
   filtered.forEach(entry => {
-    const item = document.createElement('div');
-    item.className = `entry-item ${entry.id === activeEntryId ? 'active' : ''}`;
-    item.innerHTML = `
-      <div class="entry-item-title">${escapeHTML(entry.title || 'Unbenannt')}</div>
-      <div class="entry-item-user">${escapeHTML(entry.username || '–')}</div>
+    const card = document.createElement('div');
+    card.className = 'vault-card';
+
+    card.innerHTML = `
+      <div class="card-top">
+        <div class="card-meta">
+          <div class="card-icon">🔑</div>
+          <div class="card-title-box">
+            <span class="card-title">${escapeHTML(entry.title || 'Unbenannt')}</span>
+            <span class="card-user">${escapeHTML(entry.username || '–')}</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-secret-row">
+        <span class="secret-masked">••••••••••••</span>
+        <div class="card-quick-actions">
+          <button class="touch-copy-btn">📋 Kopieren</button>
+        </div>
+      </div>
     `;
-    item.addEventListener('click', () => selectEntry(entry.id));
-    entriesList.appendChild(item);
+
+    card.querySelector('.touch-copy-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      navigator.clipboard.writeText(entry.password);
+      showToast(`Passwort für '${entry.title}' kopiert!`);
+    });
+
+    card.addEventListener('click', () => openModal(entry));
+
+    vaultGrid.appendChild(card);
   });
 }
 
-function selectEntry(id) {
-  activeEntryId = id;
-  const entry = vaultEntries.find(e => e.id === id);
-  if (!entry) {
-    detailForm.classList.add('hidden');
-    detailEmpty.classList.remove('hidden');
-    return;
-  }
+// ==================== MODAL (NEU / BEARBEITEN) ====================
+function openModal(entry = null) {
+  editingEntryId = entry ? entry.id : null;
+  modalHeading.textContent = entry ? 'Eintrag bearbeiten' : 'Neuen Eintrag erfassen';
 
-  detailEmpty.classList.add('hidden');
-  detailForm.classList.remove('hidden');
-  detailHeading.textContent = entry.title || 'Eintrag bearbeiten';
-
-  fTitle.value = entry.title || '';
-  fUsername.value = entry.username || '';
-  fPassword.value = entry.password || '';
-  fUrl.value = entry.url || '';
-  fTotp.value = entry.totp || '';
-  fNotes.value = entry.notes || '';
+  fTitle.value = entry ? entry.title : '';
+  fUsername.value = entry ? (entry.username || '') : '';
+  fPassword.value = entry ? entry.password : '';
+  fUrl.value = entry ? (entry.url || '') : '';
+  fTotp.value = entry ? (entry.totp || '') : '';
+  fNotes.value = entry ? (entry.notes || '') : '';
 
   fPassword.type = 'password';
   togglePwBtn.textContent = '👁️';
 
-  startTotp(entry.totp);
-  renderEntries();
+  startTotp(entry ? entry.totp : '');
+
+  deleteEntryBtn.classList.toggle('hidden', !entry);
+  entryModal.classList.remove('hidden');
+  fTitle.focus();
 }
 
-addEntryBtn.addEventListener('click', async () => {
-  const newEntry = {
-    id: Date.now(),
-    title: 'Neues Passwort',
-    username: '',
-    password: generateSecurePassword(16),
-    url: '',
-    totp: '',
-    notes: ''
-  };
-  vaultEntries.unshift(newEntry);
-  selectEntry(newEntry.id);
-  fTitle.focus();
-  fTitle.select();
-  await persistVault();
+function closeModal() {
+  entryModal.classList.add('hidden');
+  editingEntryId = null;
+  stopTotp();
+  entryForm.reset();
+}
+
+addEntryBtn.addEventListener('click', () => openModal());
+closeModalX.addEventListener('click', closeModal);
+modalCancelBtn.addEventListener('click', closeModal);
+entryModal.addEventListener('click', (e) => {
+  if (e.target === entryModal) closeModal();
 });
 
-saveEntryBtn.addEventListener('click', async () => {
-  if (!activeEntryId) return;
-  const entry = vaultEntries.find(e => e.id === activeEntryId);
-  if (!entry) return;
+togglePwBtn.addEventListener('click', () => {
+  if (fPassword.type === 'password') {
+    fPassword.type = 'text';
+    togglePwBtn.textContent = '🔒';
+  } else {
+    fPassword.type = 'password';
+    togglePwBtn.textContent = '👁️';
+  }
+});
 
-  entry.title = fTitle.value.trim() || 'Unbenannt';
-  entry.username = fUsername.value.trim();
-  entry.password = fPassword.value;
-  entry.url = fUrl.value.trim();
-  entry.totp = fTotp.value.trim().replace(/\s+/g, '');
-  entry.notes = fNotes.value;
+genPwBtn.addEventListener('click', () => {
+  fPassword.value = generateSecurePassword(18);
+  fPassword.type = 'text';
+  togglePwBtn.textContent = '🔒';
+  showToast('Sicheres Passwort generiert!');
+});
 
-  detailHeading.textContent = entry.title;
-  startTotp(entry.totp);
-  renderEntries();
+entryForm.addEventListener('submit', async () => {
+  const title = fTitle.value.trim() || 'Unbenannt';
+  const username = fUsername.value.trim();
+  const password = fPassword.value;
+  const url = fUrl.value.trim();
+  const totp = fTotp.value.trim().replace(/\s+/g, '');
+  const notes = fNotes.value;
 
+  if (!password) return;
+
+  if (editingEntryId) {
+    const entry = vaultEntries.find(e => e.id === editingEntryId);
+    if (entry) {
+      entry.title = title;
+      entry.username = username;
+      entry.password = password;
+      entry.url = url;
+      entry.totp = totp;
+      entry.notes = notes;
+    }
+    showToast('Eintrag aktualisiert.');
+  } else {
+    const newEntry = {
+      id: Date.now(),
+      title,
+      username,
+      password,
+      url,
+      totp,
+      notes
+    };
+    vaultEntries.unshift(newEntry);
+    showToast('Neuer Eintrag gespeichert!');
+  }
+
+  closeModal();
+  renderGrid();
   await persistVault();
-  showToast('Eintrag gespeichert & verschlüsselt.');
 });
 
 deleteEntryBtn.addEventListener('click', async () => {
-  if (!activeEntryId) return;
+  if (!editingEntryId) return;
   if (!confirm('Diesen Eintrag wirklich unwiderruflich löschen?')) return;
 
-  vaultEntries = vaultEntries.filter(e => e.id !== activeEntryId);
-  activeEntryId = vaultEntries.length > 0 ? vaultEntries[0].id : null;
-  selectEntry(activeEntryId);
-  renderEntries();
-
+  vaultEntries = vaultEntries.filter(e => e.id !== editingEntryId);
+  closeModal();
+  renderGrid();
   await persistVault();
   showToast('Eintrag gelöscht.');
 });
@@ -404,7 +454,6 @@ async function persistVault() {
   await saveEncryptedData(JSON.stringify(payload));
 }
 
-// ==================== HELPER & GENERATORS ====================
 function generateSecurePassword(length = 16) {
   const chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$%^&*-_+=';
   const array = new Uint32Array(length);
@@ -412,52 +461,14 @@ function generateSecurePassword(length = 16) {
   return Array.from(array, x => chars[x % chars.length]).join('');
 }
 
-genPwBtn.addEventListener('click', () => {
-  fPassword.value = generateSecurePassword(18);
-  fPassword.type = 'text';
-  togglePwBtn.textContent = '🔒';
-  showToast('Sicheres 18-stelliges Passwort generiert!');
-});
+searchInput.addEventListener('input', renderGrid);
 
-togglePwBtn.addEventListener('click', () => {
-  if (fPassword.type === 'password') {
-    fPassword.type = 'text';
-    togglePwBtn.textContent = '🔒';
-  } else {
-    fPassword.type = 'password';
-    togglePwBtn.textContent = '👁️';
-  }
-});
-
-openUrlBtn.addEventListener('click', () => {
-  let u = fUrl.value.trim();
-  if (!u) return;
-  if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
-  window.open(u, '_blank', 'noopener,noreferrer');
-});
-
-document.querySelectorAll('.copy-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const targetId = btn.dataset.target;
-    const el = document.getElementById(targetId);
-    const val = el ? (el.value || el.textContent || '') : '';
-    if (val && val !== '------') {
-      navigator.clipboard.writeText(val);
-      showToast('In Zwischenablage kopiert!');
-    }
-  });
-});
-
-searchInput.addEventListener('input', renderEntries);
-
-// ==================== RFC 6238 TOTP (2FA ENGINE) ====================
+// ==================== TOTP ENGINE ====================
 function base32ToBytes(base32) {
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-  let bits = 0;
-  let value = 0;
+  let bits = 0, value = 0;
   const bytes = [];
   const clean = base32.toUpperCase().replace(/=+$/, '');
-
   for (let i = 0; i < clean.length; i++) {
     const idx = alphabet.indexOf(clean[i]);
     if (idx === -1) continue;
@@ -475,34 +486,18 @@ async function generateTOTP(secretBase32) {
   try {
     const keyBytes = base32ToBytes(secretBase32);
     if (!keyBytes.length) return null;
-
     const epochSeconds = Math.floor(Date.now() / 1000);
     const counter = Math.floor(epochSeconds / 30);
-
     const counterBuffer = new ArrayBuffer(8);
     const counterView = new DataView(counterBuffer);
     counterView.setUint32(4, counter, false);
 
-    const key = await crypto.subtle.importKey(
-      'raw',
-      keyBytes,
-      { name: 'HMAC', hash: 'SHA-1' },
-      false,
-      ['sign']
-    );
-
+    const key = await crypto.subtle.importKey('raw', keyBytes, { name: 'HMAC', hash: 'SHA-1' }, false, ['sign']);
     const signature = await crypto.subtle.sign('HMAC', key, counterBuffer);
     const hmac = new Uint8Array(signature);
-
     const offset = hmac[hmac.length - 1] & 0x0f;
-    const binary =
-      ((hmac[offset] & 0x7f) << 24) |
-      ((hmac[offset + 1] & 0xff) << 16) |
-      ((hmac[offset + 2] & 0xff) << 8) |
-      (hmac[offset + 3] & 0xff);
-
-    const otp = binary % 1000000;
-    return String(otp).padStart(6, '0');
+    const binary = ((hmac[offset] & 0x7f) << 24) | ((hmac[offset + 1] & 0xff) << 16) | ((hmac[offset + 2] & 0xff) << 8) | (hmac[offset + 3] & 0xff);
+    return String(binary % 1000000).padStart(6, '0');
   } catch (_) {
     return null;
   }
@@ -514,29 +509,20 @@ function startTotp(secret) {
     totpContainer.classList.add('hidden');
     return;
   }
-
   totpContainer.classList.remove('hidden');
-
   const update = async () => {
     const code = await generateTOTP(secret);
-    if (code) {
-      totpCodeDisplay.textContent = `${code.slice(0, 3)} ${code.slice(3)}`;
-    } else {
-      totpCodeDisplay.textContent = 'UNGÜLTIG';
-    }
+    if (code) totpCodeDisplay.textContent = `${code.slice(0, 3)} ${code.slice(3)}`;
+    else totpCodeDisplay.textContent = 'UNGÜLTIG';
     const rem = 30 - (Math.floor(Date.now() / 1000) % 30);
     totpTimerDisplay.textContent = `${rem}s`;
   };
-
   update();
   totpInterval = setInterval(update, 1000);
 }
 
 function stopTotp() {
-  if (totpInterval) {
-    clearInterval(totpInterval);
-    totpInterval = null;
-  }
+  if (totpInterval) { clearInterval(totpInterval); totpInterval = null; }
 }
 
 function escapeHTML(str) {
