@@ -14,7 +14,7 @@
       <div class="brand">
         <span class="brand-icon">🛡️</span>
         <span class="brand-title">ShareVault</span>
-        <span class="version-badge">v1.0.5</span>
+        <span class="version-badge">v1.1.0</span>
       </div>
       <!-- Inline-Suche im Header -->
       <div class="search-box">
@@ -39,6 +39,12 @@
           <div class="entries-count-badge" id="entries-count">0 Einträge</div>
         </div>
 
+        <!-- Rubriken: Filter und Verwaltung -->
+        <div class="category-bar">
+          <div class="category-chips" id="category-chips"></div>
+          <button class="manage-cat-btn" id="manage-cat-btn" type="button" title="Rubriken verwalten">⚙️ Rubriken</button>
+        </div>
+
         <div class="vault-grid" id="vault-grid"></div>
 
         <div class="empty-state hidden" id="empty-state">
@@ -61,7 +67,7 @@
       <div class="lock-icon">🔒</div>
       <div style="display:flex; align-items:center; gap:8px; justify-content:center;">
         <h1 class="lock-title">ShareVault</h1>
-        <span class="version-badge">v1.0.5</span>
+        <span class="version-badge">v1.1.0</span>
       </div>
       <p class="lock-sub" id="lock-sub">Gib dein Master-Passwort ein, um den Tresor zu entschlüsseln.</p>
 
@@ -88,6 +94,16 @@
         <div class="form-group">
           <label for="f-title">Titel / Dienst</label>
           <input type="text" id="f-title" placeholder="z. B. GitHub, Nextcloud, WLAN Heimnetz" required>
+        </div>
+
+        <div class="form-group">
+          <label for="f-category">Rubrik</label>
+          <select id="f-category"></select>
+          <div class="new-cat-row hidden" id="new-cat-row">
+            <input type="text" id="new-cat-icon" class="cat-icon-input" maxlength="4" placeholder="📁" aria-label="Symbol der neuen Rubrik">
+            <input type="text" id="new-cat-name" maxlength="40" placeholder="Name der neuen Rubrik" aria-label="Name der neuen Rubrik">
+            <button type="button" class="text-link-btn" id="new-cat-add">Anlegen</button>
+          </div>
         </div>
 
         <div class="form-group">
@@ -131,6 +147,27 @@
           <button type="submit" class="save-btn" id="save-entry-btn">Speichern</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Rubriken verwalten -->
+  <div class="modal-backdrop hidden" id="cat-modal">
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <h2>Rubriken verwalten</h2>
+        <button class="close-x-btn" id="close-cat-x" type="button">✕</button>
+      </div>
+      <p class="cat-hint">Symbol und Name ändern sich sofort. Wird eine Rubrik gelöscht, wandern ihre Einträge nach „Allgemein“.</p>
+      <div class="cat-list" id="cat-list"></div>
+      <form class="cat-add-row" id="cat-add-form" onsubmit="return false;">
+        <input type="text" id="cat-add-icon" class="cat-icon-input" maxlength="4" placeholder="📁" aria-label="Symbol">
+        <input type="text" id="cat-add-name" maxlength="40" placeholder="Neue Rubrik, z. B. Gaming" aria-label="Name" required>
+        <button type="submit" class="save-btn">Hinzufügen</button>
+      </form>
+      <div class="modal-actions">
+        <button type="button" class="cancel-btn" id="cat-reset-btn">Beispiele wiederherstellen</button>
+        <button type="button" class="save-btn" id="cat-done-btn">Fertig</button>
+      </div>
     </div>
   </div>
 
