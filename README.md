@@ -1,7 +1,7 @@
 # ShareOS Apps
 
 Apps for [ShareOS](https://github.com/UniqueDroid/ShareOS), the alternative NAS
-firmware for the D-Link DNS-320L. ShareOS shows them under **APPS → Store** and
+firmware for the D-Link DNS-320L, DNS-320 and DNS-325. ShareOS shows them under **APPS → Store** and
 installs them with one click – the same way it offers firmware updates.
 
 *Deutsch weiter unten.*
@@ -14,21 +14,77 @@ installs them with one click – the same way it offers firmware updates.
 
 ## Apps
 
+38 web apps. Most save their data in the personal folder of the signed-in
+account on the box (permission `files`, `ShareOS.fs`) and fall back to the
+browser's storage without it.
+
+**Files and office**
+
 | App | What it does |
 |---|---|
 | [Webpad](apps/webpad) | Text editor in the style of Notepad++; opens and saves files on the box or on your computer, takes files from other apps |
-| [WebTerm](apps/webterm) | Terminal with tabs, a virtual file system, a JavaScript sandbox and a bridge to Webpad; views log files of the box |
 | [ShareCommander](apps/sharecommander) | Two-pane file manager in the style of Total Commander for the folders of the box and the browser file system (shared with WebTerm): ZIP, multi-rename, preview, bridges to Webpad and WinWeb Player |
-| [WinWeb Player](apps/webplayer) | Audio and video player in retro style with equalizer and visualizer; plays music and videos from your area on the box (streamed, with seeking) or from your computer |
 | [SheetOS](apps/sheetos) | Small spreadsheet with formulas; opens and saves CSV files of the box |
 | [ShareNotes](apps/notes) | Sticky notes in colour with an edit dialog and search; every note is a file in your personal folder on the box |
-| [DevBox](apps/devbox) | Developer toolbox: JSON, Base64/URL/hex, checksums (also of files of the box), regex, diff, JWT |
-| [API-Pilot](apps/apipilot) | REST and GraphQL client in the style of Postman: headers, auth, JSON/GraphQL/form bodies, history, cURL/fetch code; saves responses on the box or opens them in Webpad |
+| [TaskBoard](apps/taskboard) | Kanban board for tasks; columns stack on phones |
+| [DailyLog](apps/dailylog) | Diary and bullet journal with a calendar |
+| [BoxScan](apps/boxscan) | Document scanner and receipt archive with the phone camera and image filters |
+| [TinyPDF](apps/tinypdf) | PDF viewer and form helper with touch signature |
+| [ExpenseTracker](apps/expensetracker) | Expenses and budget on the go, CSV export |
+
+**Media**
+
+| App | What it does |
+|---|---|
+| [WinWeb Player](apps/webplayer) | Audio and video player in retro style with equalizer and visualizer; plays music and videos from your area on the box (streamed, with seeking) or from your computer |
+| [MediaTranscoder](apps/mediatranscoder) | Converts media on the box with FFmpeg (system app `ffmpeg`): audio to MP3/M4A/Opus/FLAC/WAV, videos into another container without re-encoding, cut out parts; jobs run in the background |
 | [BeatBox Studio](apps/beatbox) | 16-step drum sequencer with synthesizer; projects (`.beatbox`) and WAV loops on the box, sends loops to WinWeb Player |
+| [PhotoDrop](apps/photodrop) | Upload photos from the phone straight to the box, with a gallery |
+| [ShareAudio](apps/shareaudio) | Voice memos and audio recordings saved on the box |
+
+**Network and system**
+
+| App | What it does |
+|---|---|
 | [Transmission](apps/transmission) | BitTorrent client by @SamuelSilvaG: every user has their own Transmission service (system app `transmission-daemon`), downloads into their folders |
 | [NetTunnel](apps/nettunnel) | VPN for the box (OpenVPN, system app `openvpn`): as client import profiles and connect; as server reach home from anywhere with a ready-made profile per device; admins only, shown inside ShareOS |
-| [MediaTranscoder](apps/mediatranscoder) | Converts media on the box with FFmpeg (system app `ffmpeg`): audio to MP3/M4A/Opus/FLAC/WAV, videos into another container without re-encoding, cut out parts; jobs run in the background |
 | [Tailscale](apps/tailscale) | WireGuard-based mesh VPN client by @SamuelSilvaG: secure zero-config remote access to your box, files (SMB) and web apps from anywhere – connects the box through the ShareOS system app `tailscaled` (admins, ShareOS 0.2.0-beta.8+) |
+| [SpeedCheck](apps/speedcheck) | Latency, jitter and transfer rate between your device and the box (at home, over VPN), with a log |
+| [HomePing](apps/homeping) | Status board for the hosts of your homelab |
+| [SysMon](apps/sysmon) | System monitor and task manager view |
+| [DockerDeck](apps/dockerdeck) | Overview of Docker containers and stacks of your homelab |
+| [TuyaPulse](apps/tuyapulse) | Dashboard for local Tuya smart-home devices (protocol v3.3/v3.4) |
+
+**Security**
+
+| App | What it does |
+|---|---|
+| [ShareVault](apps/sharevault) | Password and 2FA (TOTP) manager, encrypted with AES-GCM in the browser; categories with examples and your own |
+| [KeyKeeper](apps/keykeeper) | SSH keys, API tokens and SSL certificates of your homelab in one list |
+| [PassphraseGen](apps/passphrasegen) | Diceware passphrases with WebCrypto, with a history |
+
+**Development**
+
+| App | What it does |
+|---|---|
+| [WebTerm](apps/webterm) | Terminal with tabs, a virtual file system, a JavaScript sandbox and a bridge to Webpad; views log files of the box |
+| [DevBox](apps/devbox) | Developer toolbox: JSON, Base64/URL/hex, checksums (also of files of the box), regex, diff, JWT |
+| [API-Pilot](apps/apipilot) | REST and GraphQL client in the style of Postman: headers, auth, JSON/GraphQL/form bodies, history, cURL/fetch code; saves responses on the box or opens them in Webpad |
+| [ShareSnippets](apps/sharesnippets) | Code and text snippets: commands, configs, templates |
+
+**Everyday life**
+
+| App | What it does |
+|---|---|
+| [ShareFeed](apps/sharefeed) | RSS and news reader with offline cache (uses the internet) |
+| [ShareStash](apps/sharestash) | Bookmarks and read-later list in the style of Pocket / Raindrop |
+| [RecipeVault](apps/recipevault) | Cookbook with portion scaler and shopping list |
+| [PackList](apps/packlist) | Packing lists for travel, camping and shopping with progress |
+| [HabitGrid](apps/habitgrid) | Habit tracker with monthly heatmap and streaks |
+| [PillClock](apps/pillclock) | Medication schedule and vital signs (blood pressure, pulse, weight) |
+| [SmartBudget](apps/smartbudget) | Electricity, gas and energy costs from meter readings, with projections |
+| [VehicleLog](apps/vehiclelog) | Mileage log, fuel and charging with consumption, CSV export |
+| [QuickUnit](apps/quickunit) | Unit and currency converter, offline, with favourites |
 
 ## How it works
 
@@ -71,7 +127,7 @@ releases stay on GitHub.
   "entry": "index.html",               // in files/
   "icon": "icon.svg",                  // in files/ (SVG or PNG)
   "category": "tools",                 // tools, media, office, network, system …
-  "license": "MIT",
+  "license": "GPL-2.0-only",           // SPDX name; apps by UniqueDroid are GPL-2.0-only like ShareOS
   "homepage": "https://…",
   "min_shareos": "0.1.0",              // also met by the betas of 0.1.0; name a beta if you need one ("0.1.0-beta.7")
   "permissions": ["cron"],             // see below; ShareOS refuses unknown ones
@@ -103,7 +159,7 @@ releases stay on GitHub.
 | `tailscale` | Remote access with Tailscale through `ShareOS.tailscale` (`status`, `up({authKey})`, `login`, `down`, `logout`, `ping(ip)`, `log`; without a key `up` answers with `auth_url`, the sign-in link; needs `files`; ShareOS 0.2.0-beta.7+, system app `tailscaled` since 0.2.0-beta.8). **Admin accounts only** – it changes the network of the whole box. |
 | `autobrr` | The box's autobrr (download automation, system app `autobrr`) through `ShareOS.autobrr` (`status`, `start`, `set({enabled, ui, account})`, `password`, `accounts`, `log`, `api(method, path, body)` – autobrr's REST API with the key of ShareOS; needs `files`; ShareOS 0.2.0-beta.9+). One autobrr for the whole box, **admin accounts only**. Found torrents go to the Transmission of the chosen `account` through autobrr's action *Watch dir* with the folder `status().drop`. |
 | `status` | One short chip in the header of the ShareOS interface through `ShareOS.status.set({ text, state, ttl })` / `.clear()` (needs `files`; ShareOS 0.2.0-beta.6+): max. 24 characters, state `ok`/`warn`/`err`/`info`, gone after `ttl` seconds (max. 600) unless set again; only the account that opened the app sees it. |
-| `files` | Read, change and delete the files the signed-in user reaches in the file browser (his personal folder; admins: all volumes and USB drives), with his rights, while the app is open – through `ShareOS.fs` (ShareOS 0.1.0-beta.11+). For file managers and editors that save on the box. Accounts without "Dateien" get one private folder of the app instead (root `app`, `private: true`, ShareOS 0.2.0-beta.9+). |
+| `files` | Read, change and delete the files the signed-in user reaches in the file browser (his personal folder; admins: all volumes and USB drives), with his rights, while the app is open – through `ShareOS.fs` (ShareOS 0.1.0-beta.11+). For file managers and editors that save on the box. Accounts without "Dateien" get one private folder of the app instead (root `app`, `private: true`, ShareOS 0.2.0-beta.9+). Admins get their personal folder as the first root, marked `home: true` (root: `home/root` on the apps drive; ShareOS 0.2.0-beta.10+) – pick `roots.find(r => r.home) || roots[0]` to store an app's data. |
 | `cron` | Run its `jobs` on a schedule (at most 5, at most every 5 minutes). Each job runs as the app's own user `app-<id>` (no login, no access to the users' files) in the app's data folder, with `nice` and the time limit; the output (max. 64 KB) appears under APPS → Tasks. The admin can change or switch off every schedule there; a changed schedule stays across updates. |
 
 Environment of a job: `APP_ID`, `APP_DIR` (the installed files, read-only for
@@ -184,6 +240,14 @@ installed (its `"requires"` is not in the store) and is not merged.
 
 Build locally: `tools/build.py` → `dist/`.
 
+## License
+
+The apps by UniqueDroid are licensed under the **GNU General Public License
+version 2** (`GPL-2.0-only`), like ShareOS – see [COPYING](COPYING). Apps by
+other publishers keep their own license, named in their `app.json`
+(Transmission: GPL-2.0-or-later, Tailscale: BSD-3-Clause). Bundled third-party
+code keeps its license too (e.g. CodeMirror and crypto-js in Webpad: MIT).
+
 ---
 
 ## Deutsch
@@ -198,6 +262,8 @@ Klick installiert – genauso wie Firmware-Updates angeboten werden.
 - **Fenster und Dateien** (ab ShareOS 0.1.0-beta.9): `"window"` legt die Fenstergröße fest, `"opens"` die Dateitypen, die die App aus dem Dateibrowser öffnet (`edit` darf zurückspeichern). Die Berechtigung `embed` zeigt eine reine Einstellungs-App direkt in ShareOS an. Mit der Berechtigung `files` (ab ShareOS 0.1.0-beta.11) arbeitet eine App mit den Ordnern der Box – mit den Rechten des angemeldeten Benutzers (`ShareOS.fs`). Für Aussehen, Menüleiste (Datei | Bearbeiten | Ansicht), geöffnete Datei und Nachrichten zwischen Apps gibt es `/_shareos/theme.css` und `/_shareos/app.js` (siehe oben).
 - **Speicher je Konto** (ab ShareOS 0.2.0-beta.1): Das SDK trennt `localStorage` und IndexedDB der Apps nach Konto – dafür `/_shareos/app.js` vor den eigenen Skripten laden. Private Daten gehören auf die Box (`ShareOS.fs`, Dateidialog `ShareOS.fs.pick`).
 - Web-Apps bringen ihren eigenen Code mit (kein CDN für Skripte, Styles, Schriften), damit sie auch auf einer Box ohne Internet starten. **Internet nutzen dürfen sie**, wenn sie es brauchen (Online-Dienste, Streams, Karten, Sync …): dann `"internet": true` in `app.json` setzen – der Store zeigt „Nutzt das Internet“ (ab ShareOS 0.1.0-beta.12, ältere Versionen ignorieren das Feld).
+- **Ordner der Box:** Apps legen ihre Daten im persönlichen Ordner ab (`roots.find(r => r.home) || roots[0]`). Admins bekommen ab ShareOS 0.2.0-beta.10 ebenfalls einen persönlichen Ordner als ersten Eintrag (root: `home/root` auf dem Apps-Laufwerk), damit nichts oben auf dem Laufwerk landet.
+- **Lizenz:** Die Apps von UniqueDroid stehen wie ShareOS unter der GNU GPL Version 2 (`GPL-2.0-only`, siehe [COPYING](COPYING)); Apps anderer Herausgeber behalten ihre Lizenz aus `app.json`.
 - **Eigene Apps:** `.sapp` unter APPS → Store hochladen (gilt als „eigene/ungeprüft“) oder einen eigenen Katalog unter APPS → Quellen eintragen.
 - **Hier nur Web-Apps.** System-Apps (Programme und Dienste für die Box, z. B. Tailscale, OpenVPN, Transmission) werden im [ShareOS-Repository unter `sysapps/`](https://github.com/UniqueDroid/ShareOS/tree/main/sysapps) eingereicht – dort gibt es je ein Beispiel für ein Programm (`tree`) und einen Dienst (`mosquitto`, mit `"service"` in `app.json` und der Steuerung `shareos-<control>` in der Firmware). Eine Web-App für einen Dienst kommt erst hierher, wenn ShareOS den Dienst hat; sie spricht ihn nur über das SDK und eine Berechtigung an.
 

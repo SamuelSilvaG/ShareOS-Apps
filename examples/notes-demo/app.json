@@ -10,7 +10,7 @@
 	"type": "webapp",
 	"entry": "index.html",
 	"category": "tools",
-	"license": "MIT",
+	"license": "GPL-2.0-only",
 	"min_shareos": "0.1.0-beta.9",
 	"permissions": [],
 	"window": { "width": 720, "height": 520 },

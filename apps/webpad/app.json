@@ -11,7 +11,7 @@
 	"entry": "index.html",
 	"icon": "icon.svg",
 	"category": "tools",
-	"license": "Webpad © UniqueDroid; CodeMirror MIT, crypto-js MIT, fonts OFL-1.1",
+	"license": "GPL-2.0-only (Webpad); CodeMirror MIT, crypto-js MIT, fonts OFL-1.1",
 	"homepage": "https://github.com/UniqueDroid/ShareOS-Apps/tree/main/apps/webpad",
 	"min_shareos": "0.1.0-beta.11",
 	"permissions": [
