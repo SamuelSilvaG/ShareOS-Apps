@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * ShareVault v1.0.5 - Modernes Grid-Layout in der Mitte mit originalem Login & Farben
+ * ShareVault v1.1.0 - Grid-Layout mit Rubriken (Beispiele und eigene)
  */
 
 const SOS = window.ShareOS || null;
@@ -16,6 +16,22 @@ let boxRootName = null;
 
 let vaultKey = null;
 let vaultEntries = [];
+let vaultCategories = [];
+let activeCategory = 'all';
+
+// example categories for a new vault (and "restore examples")
+const DEFAULT_CATEGORIES = [
+  { id: 'general', icon: '🔑', name: 'Allgemein' },
+  { id: 'email', icon: '✉️', name: 'E-Mail' },
+  { id: 'banking', icon: '🏦', name: 'Banking & Finanzen' },
+  { id: 'shopping', icon: '🛒', name: 'Shopping' },
+  { id: 'social', icon: '💬', name: 'Social Media' },
+  { id: 'streaming', icon: '🎬', name: 'Streaming' },
+  { id: 'work', icon: '💼', name: 'Arbeit' },
+  { id: 'server', icon: '🖥️', name: 'Server & Homelab' },
+  { id: 'wifi', icon: '📶', name: 'WLAN & Netzwerk' }
+];
+const GENERAL = 'general';
 let editingEntryId = null;
 let totpInterval = null;
 
@@ -113,7 +129,7 @@ async function encryptVault(dataObj, password) {
     salt: Array.from(salt),
     iv: Array.from(iv),
     data: Array.from(new Uint8Array(cipherBuffer)),
-    version: 1,
+    version: 2,
     mtime: new Date().toISOString()
   });
 }
@@ -135,6 +151,20 @@ async function decryptVault(cipherJsonStr, password) {
   const dec = new TextDecoder();
   return JSON.parse(dec.decode(decryptedBuffer));
 }
+
+// vault contents: up to 1.0.x a plain list of entries, from 1.1.0
+// { entries, categories } – both are read
+function vaultData() {
+  return { entries: vaultEntries, categories: vaultCategories };
+}
+function applyVaultData(d) {
+  if (Array.isArray(d)) { vaultEntries = d; vaultCategories = []; }
+  else { vaultEntries = d.entries || []; vaultCategories = d.categories || []; }
+  if (!vaultCategories.length) vaultCategories = DEFAULT_CATEGORIES.map(c => ({ ...c }));
+  if (!vaultCategories.some(c => c.id === GENERAL)) vaultCategories.unshift({ ...DEFAULT_CATEGORIES[0] });
+  for (const e of vaultEntries) if (!catById(e.category)) e.category = GENERAL;
+}
+function catById(id) { return vaultCategories.find(c => c.id === id); }
 
 // ==================== STORAGE ====================
 async function initStorage() {
@@ -226,9 +256,11 @@ unlockForm.addEventListener('submit', async () => {
   try {
     const rawCipher = await loadEncryptedData();
     if (!rawCipher) {
+      vaultCategories = DEFAULT_CATEGORIES.map(c => ({ ...c }));
       vaultEntries = [
         {
           id: Date.now(),
+          category: 'server',
           title: 'ShareOS Box Web-Login',
           username: user,
           password: 'GeheimesPasswort123!',
@@ -237,11 +269,11 @@ unlockForm.addEventListener('submit', async () => {
           notes: 'Standard-Eintrag für dein ShareOS Konto auf der Box.'
         }
       ];
-      const cipher = await encryptVault(vaultEntries, pw);
+      const cipher = await encryptVault(vaultData(), pw);
       await saveEncryptedData(cipher);
       showToast('Neuer Tresor erfolgreich angelegt!');
     } else {
-      vaultEntries = await decryptVault(rawCipher, pw);
+      applyVaultData(await decryptVault(rawCipher, pw));
       showToast('Tresor erfolgreich entschlüsselt!');
     }
 
@@ -261,6 +293,8 @@ unlockForm.addEventListener('submit', async () => {
 lockVaultBtn.addEventListener('click', () => {
   vaultKey = null;
   vaultEntries = [];
+  vaultCategories = [];
+  activeCategory = 'all';
   editingEntryId = null;
   stopTotp();
   vaultView.classList.add('hidden');
@@ -275,12 +309,14 @@ function renderGrid() {
   const query = searchInput.value.trim().toLowerCase();
   vaultGrid.innerHTML = '';
 
-  const filtered = vaultEntries.filter(e =>
+  renderChips();
+  const filtered = vaultEntries.filter(e => (activeCategory === 'all' || e.category === activeCategory) && (
     (e.title || '').toLowerCase().includes(query) ||
     (e.username || '').toLowerCase().includes(query) ||
     (e.url || '').toLowerCase().includes(query) ||
-    (e.notes || '').toLowerCase().includes(query)
-  );
+    (e.notes || '').toLowerCase().includes(query) ||
+    (catById(e.category)?.name || '').toLowerCase().includes(query)
+  ));
 
   entriesCount.textContent = `${vaultEntries.length} Einträge`;
 
@@ -293,16 +329,18 @@ function renderGrid() {
   filtered.forEach(entry => {
     const card = document.createElement('div');
     card.className = 'vault-card';
+    const cat = catById(entry.category) || catById(GENERAL);
 
     card.innerHTML = `
       <div class="card-top">
         <div class="card-meta">
-          <div class="card-icon">🔑</div>
+          <div class="card-icon">${escapeHTML(cat.icon || '🔑')}</div>
           <div class="card-title-box">
             <span class="card-title">${escapeHTML(entry.title || 'Unbenannt')}</span>
             <span class="card-user">${escapeHTML(entry.username || '–')}</span>
           </div>
         </div>
+        <span class="card-cat">${escapeHTML(cat.name)}</span>
       </div>
       <div class="card-secret-row">
         <span class="secret-masked">••••••••••••</span>
@@ -324,6 +362,96 @@ function renderGrid() {
   });
 }
 
+// ==================== RUBRIKEN ====================
+function renderChips() {
+  const box = document.getElementById('category-chips');
+  const count = (id) => vaultEntries.filter(e => id === 'all' || e.category === id).length;
+  if (activeCategory !== 'all' && !catById(activeCategory)) activeCategory = 'all';
+  const chips = [{ id: 'all', icon: '🗂️', name: 'Alle' }, ...vaultCategories];
+  box.innerHTML = chips.map(c => `<button type="button" class="cat-chip${c.id === activeCategory ? ' active' : ''}" data-cat="${escapeHTML(c.id)}">
+    <span>${escapeHTML(c.icon || '📁')}</span> ${escapeHTML(c.name)} <span class="cat-count">${count(c.id)}</span></button>`).join('');
+  box.querySelectorAll('.cat-chip').forEach(b => b.addEventListener('click', () => { activeCategory = b.dataset.cat; renderGrid(); }));
+}
+
+function fillCategorySelect(selected) {
+  const sel = document.getElementById('f-category');
+  sel.innerHTML = vaultCategories.map(c => `<option value="${escapeHTML(c.id)}">${escapeHTML((c.icon || '📁') + ' ' + c.name)}</option>`).join('')
+    + '<option value="__new">➕ Neue Rubrik …</option>';
+  sel.value = catById(selected) ? selected : GENERAL;
+}
+
+function newCategory(icon, name) {
+  name = (name || '').trim().slice(0, 40);
+  if (!name) return null;
+  const same = vaultCategories.find(c => c.name.toLowerCase() === name.toLowerCase());
+  if (same) return same;
+  const c = { id: 'c' + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36), icon: (icon || '').trim().slice(0, 4) || '📁', name };
+  vaultCategories.push(c);
+  return c;
+}
+
+document.getElementById('f-category').addEventListener('change', (e) => {
+  const row = document.getElementById('new-cat-row');
+  row.classList.toggle('hidden', e.target.value !== '__new');
+  if (e.target.value === '__new') document.getElementById('new-cat-name').focus();
+});
+document.getElementById('new-cat-add').addEventListener('click', async () => {
+  const c = newCategory(document.getElementById('new-cat-icon').value, document.getElementById('new-cat-name').value);
+  if (!c) { showToast('Bitte einen Namen für die Rubrik eingeben.'); return; }
+  document.getElementById('new-cat-icon').value = ''; document.getElementById('new-cat-name').value = '';
+  document.getElementById('new-cat-row').classList.add('hidden');
+  fillCategorySelect(c.id);
+  renderChips();
+  await persistVault();
+  showToast(`Rubrik „${c.name}“ angelegt.`);
+});
+
+const catModal = document.getElementById('cat-modal');
+function renderCatList() {
+  const list = document.getElementById('cat-list');
+  list.innerHTML = vaultCategories.map(c => `<div class="cat-row" data-id="${escapeHTML(c.id)}">
+    <input type="text" class="cat-icon-input" maxlength="4" value="${escapeHTML(c.icon || '')}" aria-label="Symbol von ${escapeHTML(c.name)}">
+    <input type="text" class="cat-name-input" maxlength="40" value="${escapeHTML(c.name)}" aria-label="Name">
+    <span class="cat-count">${vaultEntries.filter(e => e.category === c.id).length}</span>
+    ${c.id === GENERAL ? '<span class="cat-fixed" title="Allgemein bleibt immer erhalten">–</span>' : '<button type="button" class="cat-del-btn" title="Rubrik löschen">🗑</button>'}
+  </div>`).join('');
+  list.querySelectorAll('.cat-row').forEach(row => {
+    const c = catById(row.dataset.id);
+    row.querySelector('.cat-icon-input').addEventListener('change', async (e) => { c.icon = e.target.value.trim().slice(0, 4) || '📁'; renderGrid(); await persistVault(); });
+    row.querySelector('.cat-name-input').addEventListener('change', async (e) => {
+      const n = e.target.value.trim().slice(0, 40);
+      if (!n) { e.target.value = c.name; return; }
+      c.name = n; renderGrid(); await persistVault();
+    });
+    row.querySelector('.cat-del-btn')?.addEventListener('click', async () => {
+      const n = vaultEntries.filter(e => e.category === c.id).length;
+      if (n && !confirm(`Rubrik „${c.name}“ löschen? Ihre ${n} Einträge wandern nach „Allgemein“.`)) return;
+      vaultEntries.forEach(e => { if (e.category === c.id) e.category = GENERAL; });
+      vaultCategories = vaultCategories.filter(x => x.id !== c.id);
+      renderCatList(); renderGrid(); await persistVault();
+    });
+  });
+}
+document.getElementById('manage-cat-btn').addEventListener('click', () => { renderCatList(); catModal.classList.remove('hidden'); });
+const closeCat = () => catModal.classList.add('hidden');
+document.getElementById('close-cat-x').addEventListener('click', closeCat);
+document.getElementById('cat-done-btn').addEventListener('click', closeCat);
+catModal.addEventListener('click', (e) => { if (e.target === catModal) closeCat(); });
+document.getElementById('cat-add-form').addEventListener('submit', async () => {
+  const nameEl = document.getElementById('cat-add-name'), iconEl = document.getElementById('cat-add-icon');
+  const c = newCategory(iconEl.value, nameEl.value);
+  if (!c) return;
+  nameEl.value = ''; iconEl.value = '';
+  renderCatList(); renderGrid(); await persistVault();
+  showToast(`Rubrik „${c.name}“ angelegt.`);
+});
+document.getElementById('cat-reset-btn').addEventListener('click', async () => {
+  let added = 0;
+  for (const d of DEFAULT_CATEGORIES) if (!catById(d.id)) { vaultCategories.push({ ...d }); added++; }
+  renderCatList(); renderGrid(); await persistVault();
+  showToast(added ? `${added} Beispiel-Rubriken wiederhergestellt.` : 'Alle Beispiel-Rubriken sind schon da.');
+});
+
 // ==================== MODAL (NEU / BEARBEITEN) ====================
 function openModal(entry = null) {
   editingEntryId = entry ? entry.id : null;
@@ -335,6 +463,8 @@ function openModal(entry = null) {
   fUrl.value = entry ? (entry.url || '') : '';
   fTotp.value = entry ? (entry.totp || '') : '';
   fNotes.value = entry ? (entry.notes || '') : '';
+  fillCategorySelect(entry ? entry.category : (activeCategory !== 'all' ? activeCategory : GENERAL));
+  document.getElementById('new-cat-row').classList.add('hidden');
 
   fPassword.type = 'password';
   togglePwBtn.textContent = '👁️';
@@ -384,6 +514,11 @@ entryForm.addEventListener('submit', async () => {
   const url = fUrl.value.trim();
   const totp = fTotp.value.trim().replace(/\s+/g, '');
   const notes = fNotes.value;
+  let category = document.getElementById('f-category').value;
+  if (category === '__new') {
+    const c = newCategory(document.getElementById('new-cat-icon').value, document.getElementById('new-cat-name').value);
+    category = c ? c.id : GENERAL;
+  }
 
   if (!password) return;
 
@@ -396,6 +531,7 @@ entryForm.addEventListener('submit', async () => {
       entry.url = url;
       entry.totp = totp;
       entry.notes = notes;
+      entry.category = category;
     }
     showToast('Eintrag aktualisiert.');
   } else {
@@ -406,7 +542,8 @@ entryForm.addEventListener('submit', async () => {
       password,
       url,
       totp,
-      notes
+      notes,
+      category
     };
     vaultEntries.unshift(newEntry);
     showToast('Neuer Eintrag gespeichert!');
@@ -431,7 +568,7 @@ deleteEntryBtn.addEventListener('click', async () => {
 async function persistVault() {
   if (!vaultKey) return;
   const enc = new TextEncoder();
-  const plainBytes = enc.encode(JSON.stringify(vaultEntries));
+  const plainBytes = enc.encode(JSON.stringify(vaultData()));
   const iv = crypto.getRandomValues(new Uint8Array(12));
 
   const cipherBuffer = await crypto.subtle.encrypt(
@@ -447,7 +584,7 @@ async function persistVault() {
     salt: oldSalt,
     iv: Array.from(iv),
     data: Array.from(new Uint8Array(cipherBuffer)),
-    version: 1,
+    version: 2,
     mtime: new Date().toISOString()
   };
 
