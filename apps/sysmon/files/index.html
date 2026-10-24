@@ -12,16 +12,16 @@
     <div class="brand">
       <span class="brand-icon">📈</span>
       <span class="brand-title">SysMon</span>
-      <span class="version-badge">v1.0.0</span>
+      <span class="version-badge">v2.0.0</span>
     </div>
 
     <div class="header-center">
-      <input type="text" id="proc-search" placeholder="Prozesse & Apps filtern...">
+      <input type="text" id="proc-search" placeholder="Prozesse filtern (Name, Befehl, Benutzer, PID) …">
       <button class="sys-btn" id="refresh-now-btn">🔄 Jetzt prüfen</button>
     </div>
 
     <div class="header-right">
-      <button class="sys-btn danger-outline" id="kill-stale-btn" title="Inaktive Tabs/Worker beenden">⚡ Aufräumen</button>
+      <button class="sys-btn danger-outline" id="pause-btn" title="Aktualisierung anhalten">⏸ Anhalten</button>
       <div class="account-pill" id="user-display">Account: ...</div>
     </div>
   </header>
@@ -29,10 +29,10 @@
   <!-- Horizontale Sub-Header Leiste mit Ansichts-Filtern -->
   <nav class="sub-header-filter">
     <div class="filter-pills" id="view-filter-bar">
-      <button class="filter-pill active" data-tab="all">Alle Tasks (<span id="count-all">0</span>)</button>
-      <button class="filter-pill" data-tab="apps">📱 WebApps (<span id="count-apps">0</span>)</button>
-      <button class="filter-pill" data-tab="system">⚙️ ShareOS Core (<span id="count-sys">0</span>)</button>
-      <button class="filter-pill" data-tab="workers">⚡ Background Worker (<span id="count-workers">0</span>)</button>
+      <button class="filter-pill active" data-tab="all">Alle Prozesse (<span id="count-all">0</span>)</button>
+      <button class="filter-pill" data-tab="apps">👤 Benutzer & Apps (<span id="count-apps">0</span>)</button>
+      <button class="filter-pill" data-tab="system">⚙️ System (<span id="count-sys">0</span>)</button>
+      <button class="filter-pill" data-tab="workers">🧵 Kernel (<span id="count-workers">0</span>)</button>
     </div>
   </nav>
 
@@ -49,7 +49,7 @@
         <div class="meter-bar">
           <div class="meter-fill" id="fill-cpu"></div>
         </div>
-        <span class="vital-sub" id="sub-cpu">Berechne Taktung...</span>
+        <span class="vital-sub" id="sub-cpu">Messe …</span>
       </div>
 
       <div class="vital-card">
@@ -60,47 +60,56 @@
         <div class="meter-bar">
           <div class="meter-fill" id="fill-ram"></div>
         </div>
-        <span class="vital-sub" id="sub-ram">JS Heap & Shared Memory</span>
+        <span class="vital-sub" id="sub-ram">–</span>
       </div>
 
       <div class="vital-card">
         <div class="vital-head">
-          <span class="vital-label">ShareOS.fs I/O</span>
-          <span class="vital-val" id="val-io">Bereit</span>
+          <span class="vital-label">Temperatur & Lüfter</span>
+          <span class="vital-val" id="val-io">-- °C</span>
         </div>
         <div class="meter-bar">
-          <div class="meter-fill ok" id="fill-io" style="width: 100%;"></div>
+          <div class="meter-fill ok" id="fill-io" style="width: 0%;"></div>
         </div>
-        <span class="vital-sub" id="sub-io">Lokale Box-Speicherkanäle</span>
+        <span class="vital-sub" id="sub-io">–</span>
       </div>
 
       <div class="vital-card">
         <div class="vital-head">
-          <span class="vital-label">Uptime & Client</span>
-          <span class="vital-val" id="val-uptime">00:00:00</span>
+          <span class="vital-label">Laufzeit & Last</span>
+          <span class="vital-val" id="val-uptime">–</span>
         </div>
         <div class="meter-bar">
-          <div class="meter-fill ok" style="width: 100%;"></div>
+          <div class="meter-fill ok" id="fill-load" style="width: 0%;"></div>
         </div>
-        <span class="vital-sub" id="sub-client">ShareOS WebTask Daemon</span>
+        <span class="vital-sub" id="sub-client">–</span>
       </div>
     </section>
 
     <!-- Activity Graph (Canvas) -->
     <section class="graph-card">
       <div class="section-head">
-        <span>RESSOURCENVERLAUF (ECHTZEIT-STREAM)</span>
-        <span class="pulse-indicator">● LIVE (2s Intervall)</span>
+        <span>VERLAUF <span class="legend-cpu">■ CPU</span> <span class="legend-ram">■ RAM</span></span>
+        <span class="pulse-indicator" id="live-indicator">● LIVE (alle 3 s)</span>
       </div>
       <div class="canvas-wrap">
         <canvas id="sys-canvas" width="840" height="130"></canvas>
       </div>
     </section>
 
+    <!-- Drives -->
+    <section class="tasks-card">
+      <div class="section-head">
+        <span>LAUFWERKE</span>
+        <span class="pulse-indicator" id="net-indicator">↓ – · ↑ –</span>
+      </div>
+      <div class="volume-list" id="volume-list"></div>
+    </section>
+
     <!-- Process / Task Table -->
     <section class="tasks-card">
       <div class="section-head">
-        <span>AKTIVE AUFGABEN & PROZESSE</span>
+        <span>PROZESSE DER BOX</span>
         <button class="small-btn" id="save-snapshot-btn">💾 Snapshot sichern</button>
       </div>
 
@@ -108,8 +117,8 @@
         <table class="proc-table">
           <thead>
             <tr>
-              <th>Prozess / App</th>
-              <th>Typ</th>
+              <th>Prozess</th>
+              <th>Benutzer</th>
               <th>Status</th>
               <th>CPU</th>
               <th>Speicher</th>
@@ -124,7 +133,7 @@
 
   <footer class="sys-footer">
     <span id="storage-status">Verbinde mit Box-Dateisystem...</span>
-    <span id="sys-stats">0 Tasks registriert</span>
+    <span id="sys-stats">0 Prozesse</span>
   </footer>
 
   <div id="toast" class="toast hidden"></div>

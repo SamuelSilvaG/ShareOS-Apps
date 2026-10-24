@@ -137,10 +137,10 @@ body.ping-body {
 }
 .ping-vitals {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 12px;
 }
-@media (max-width: 768px) { .ping-vitals { grid-template-columns: 1fr; } }
+@media (max-width: 768px) { .ping-vitals { grid-template-columns: 1fr 1fr; } }
 .vital-card {
   background: var(--sos-panel);
   border: 1px solid var(--sos-line);
@@ -252,3 +252,30 @@ body.ping-body {
   padding: 10px 20px; border-radius: 6px; box-shadow: 0 6px 16px rgba(0,0,0,0.6); font-size: 13px; z-index: 2000;
 }
 .hidden { display: none !important; }
+
+/* 2.0: checks from the box */
+.sub-header-filter { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.auto-check { font-size: 12px; color: var(--sos-muted, #94a3b8); display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+.auto-check select, .form-group select {
+  background: #0b1120; border: 1px solid rgba(148, 163, 184, 0.25); color: #fff; border-radius: 6px; padding: 6px 8px; font-size: 13px; font-family: inherit;
+}
+.form-group select { padding: 9px 10px; }
+.status-pill.unknown { background: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.3); }
+.status-pill.checking { background: rgba(59, 130, 246, 0.15); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); }
+.host-check { font-size: 11px; color: var(--sos-muted, #94a3b8); font-family: monospace; }
+.host-history { display: flex; gap: 2px; align-items: flex-end; height: 18px; margin-top: 2px; }
+.host-history i { display: block; width: 6px; border-radius: 1px; background: #34d399; opacity: 0.85; }
+.host-history i.bad { background: #f87171; height: 100% !important; }
+.host-detail { font-size: 11px; color: var(--sos-muted, #94a3b8); }
+.host-error { font-size: 11px; color: #f87171; }
+.hidden { display: none !important; }
+
+/* phones: the header wraps instead of scrolling sideways */
+@media (max-width: 640px) {
+  .p-header { flex-wrap: wrap; padding: 8px 12px; gap: 8px; }
+  .p-header .brand { font-size: 16px; }
+  .p-header .header-center { order: 3; width: 100%; max-width: 100%; flex: 1 0 100%; }
+  .p-header .header-center input { min-width: 0; }
+  .p-header .account-pill { max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .v-val { font-size: 18px; }
+}

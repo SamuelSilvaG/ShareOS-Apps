@@ -12,16 +12,16 @@
     <div class="brand">
       <span class="brand-icon">🐳</span>
       <span class="brand-title">DockerDeck</span>
-      <span class="version-badge">v1.0.0</span>
+      <span class="version-badge">v2.0.0</span>
     </div>
 
     <div class="header-center">
-      <input type="text" id="container-search" placeholder="Container, Images & Ports durchsuchen...">
-      <button class="d-btn add-btn" id="open-add-btn">➕ Container hinzufügen</button>
+      <input type="text" id="container-search" placeholder="Container, Images, Stacks & Ports durchsuchen...">
+      <select id="host-select" class="host-select" aria-label="Docker-Host"></select>
     </div>
 
     <div class="header-right">
-      <button class="d-btn secondary-btn" id="prune-btn" title="Unbenutzte Ressourcen bereinigen">🧹 Prune</button>
+      <button class="d-btn secondary-btn" id="hosts-btn" title="Docker-Hosts verwalten">🖥️ Hosts</button>
       <div class="account-pill" id="user-display">Account: ...</div>
     </div>
   </header>
@@ -31,11 +31,9 @@
     <div class="filter-pills" id="status-filter-bar">
       <button class="filter-pill active" data-filter="all">Alle Container (<span id="count-all">0</span>)</button>
       <button class="filter-pill" data-filter="running">🟢 Running (<span id="count-running">0</span>)</button>
-      <button class="filter-pill" data-filter="stopped">⚪ Stopped (<span id="count-stopped">0</span>)</button>
-      <button class="filter-pill" data-cat="database">🗄️ Datenbanken</button>
-      <button class="filter-pill" data-cat="proxy">🌐 Proxy & Web</button>
-      <button class="filter-pill" data-cat="media">🎬 Media & Storage</button>
+      <button class="filter-pill" data-filter="stopped">⚪ Gestoppt (<span id="count-stopped">0</span>)</button>
     </div>
+    <div class="filter-pills" id="stack-filter-bar"></div>
   </nav>
 
   <div id="banner" class="banner hidden"></div>
@@ -44,7 +42,7 @@
     <!-- Stat Overview -->
     <section class="docker-vitals">
       <div class="vital-box">
-        <span class="v-label">Aktive Stacks</span>
+        <span class="v-label">Stacks (Compose)</span>
         <span class="v-val" id="stat-total">0</span>
       </div>
       <div class="vital-box success-box">
@@ -52,84 +50,88 @@
         <span class="v-val" id="stat-running">0</span>
       </div>
       <div class="vital-box">
-        <span class="v-label">Gesamter RAM-Verbrauch</span>
-        <span class="v-val" id="stat-ram">0 MB</span>
+        <span class="v-label">Images</span>
+        <span class="v-val" id="stat-ram">–</span>
       </div>
       <div class="vital-box">
-        <span class="v-label">Docker Daemon</span>
-        <span class="v-val daemon-ok" id="stat-daemon">Verbunden (v27.2)</span>
+        <span class="v-label">Docker</span>
+        <span class="v-val" id="stat-daemon">–</span>
       </div>
     </section>
 
     <!-- Container Grid -->
     <section class="containers-card">
       <div class="section-head">
-        <span>HOMELAB CONTAINER & STACKS</span>
-        <button class="small-btn" id="refresh-containers-btn">🔄 Status aktualisieren</button>
+        <span id="grid-title">CONTAINER</span>
+        <button class="small-btn" id="refresh-containers-btn">🔄 Aktualisieren</button>
       </div>
 
       <div class="containers-grid" id="containers-grid"></div>
 
       <div class="empty-state hidden" id="empty-state">
         <span class="empty-icon">🐳</span>
-        <span class="empty-title">Keine Container gefunden</span>
-        <span class="empty-sub">Füge deine Docker-Container über „Container hinzufügen“ hinzu oder verbinde deinen Docker Socket!</span>
+        <span class="empty-title" id="empty-title">Noch kein Docker-Host</span>
+        <span class="empty-sub" id="empty-sub">Trage unter „🖥️ Hosts“ einen Server mit Docker ein. Die Box spricht mit seiner Docker-API (z. B. http://server:2375).</span>
       </div>
     </section>
   </main>
 
-  <!-- Modal: Container hinzufügen / bearbeiten -->
-  <div class="modal-backdrop hidden" id="container-modal">
+  <!-- Modal: Docker-Hosts -->
+  <div class="modal-backdrop hidden" id="hosts-modal">
     <div class="modal-dialog">
       <div class="modal-head">
-        <h2 id="modal-heading">Container hinzufügen</h2>
-        <button class="close-x-btn" id="close-modal-x">✕</button>
+        <h2>Docker-Hosts</h2>
+        <button class="close-x-btn" id="close-hosts-x" type="button">✕</button>
       </div>
-      <form id="container-form" class="modal-form" onsubmit="return false;">
+      <div class="host-list" id="host-list"></div>
+      <form id="host-form" class="modal-form" onsubmit="return false;">
         <div class="form-row">
-          <div class="form-group flex-2">
-            <label for="f-name">Container-Name</label>
-            <input type="text" id="f-name" placeholder="z. B. nginx-proxy, postgres-db" required>
-          </div>
           <div class="form-group flex-1">
-            <label for="f-cat">Kategorie</label>
-            <select id="f-cat">
-              <option value="proxy">🌐 Proxy & Web</option>
-              <option value="database">🗄️ Datenbank</option>
-              <option value="media">🎬 Media & Storage</option>
-              <option value="tools">🛠️ Tools & Dev</option>
-            </select>
+            <label for="f-hname">Kurzname</label>
+            <input type="text" id="f-hname" placeholder="nuc" maxlength="32" pattern="[a-z][a-z0-9_]*" required>
+          </div>
+          <div class="form-group flex-2">
+            <label for="f-hlabel">Bezeichnung</label>
+            <input type="text" id="f-hlabel" placeholder="z. B. Proxmox-VM Docker" maxlength="40">
           </div>
         </div>
-
-        <div class="form-row">
-          <div class="form-group flex-2">
-            <label for="f-image">Docker Image & Tag</label>
-            <input type="text" id="f-image" placeholder="z. B. nginx:alpine oder postgres:16" required>
-          </div>
-          <div class="form-group flex-1">
-            <label for="f-ports">Ports (Host:Container)</label>
-            <input type="text" id="f-ports" placeholder="z. B. 80:80, 443:443">
-          </div>
-        </div>
-
         <div class="form-group">
-          <label for="f-env">Environment / Notes (optional)</label>
-          <input type="text" id="f-env" placeholder="z. B. PUID=1000, PGID=1000">
+          <label for="f-hurl">Adresse der Docker-API</label>
+          <input type="text" id="f-hurl" placeholder="http://192.168.1.20:2375" required>
         </div>
-
+        <label class="check-row"><input type="checkbox" id="f-hinsecure"> HTTPS mit eigenem Zertifikat (nicht prüfen)</label>
+        <p class="form-hint">Am Server die API freigeben, z. B. in <code>/etc/docker/daemon.json</code>: <code>"hosts": ["unix:///var/run/docker.sock", "tcp://0.0.0.0:2375"]</code> – nur im Heimnetz, die API hat keine Anmeldung. Wer sie erreicht, kann alle Container steuern.</p>
         <div class="modal-actions">
-          <button type="button" class="del-btn hidden" id="modal-delete-btn">Löschen</button>
-          <button type="button" class="cancel-btn" id="modal-cancel-btn">Abbrechen</button>
-          <button type="submit" class="save-btn" id="modal-save-btn">Speichern</button>
+          <button type="button" class="cancel-btn" id="hosts-close-btn">Schließen</button>
+          <button type="submit" class="save-btn">Host speichern</button>
         </div>
       </form>
     </div>
   </div>
 
+  <!-- Modal: Protokoll / Details -->
+  <div class="modal-backdrop hidden" id="log-modal">
+    <div class="modal-dialog log-dialog">
+      <div class="modal-head">
+        <h2 id="log-heading">Protokoll</h2>
+        <button class="close-x-btn" id="close-log-x" type="button">✕</button>
+      </div>
+      <div class="log-tools">
+        <span id="log-stats" class="log-stats"></span>
+        <select id="log-tail" aria-label="Zeilen">
+          <option value="100">100 Zeilen</option>
+          <option value="300" selected>300 Zeilen</option>
+          <option value="1000">1000 Zeilen</option>
+        </select>
+        <button class="small-btn" id="log-reload">🔄</button>
+      </div>
+      <pre class="log-box" id="log-box">Lade …</pre>
+    </div>
+  </div>
+
   <footer class="d-footer">
-    <span id="storage-status">Verbinde mit Box-Dateisystem...</span>
-    <span>DockerDeck (system/dockerdeck_containers.json via ShareOS.fs)</span>
+    <span id="storage-status">–</span>
+    <span>Docker-API über die Box (ShareOS.docker)</span>
   </footer>
 
   <div id="toast" class="toast hidden"></div>
