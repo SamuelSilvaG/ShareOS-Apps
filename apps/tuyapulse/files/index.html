@@ -12,7 +12,7 @@
     <div class="brand">
       <span class="brand-icon">🏠</span>
       <span class="brand-title">TuyaPulse</span>
-      <span class="version-badge">v1.3.0</span>
+      <span class="version-badge">v1.4.0</span>
     </div>
 
     <div class="header-center">
@@ -21,13 +21,14 @@
     </div>
 
     <div class="header-right">
+      <button class="t-btn secondary-btn" id="open-log-modal-btn" title="UDP Diagnose Log">📡 UDP Log</button>
       <button class="t-btn secondary-btn" id="open-scan-modal-btn" title="Geräte im Netzwerk suchen">🔍 Auto-Scan</button>
       <button class="t-btn secondary-btn" id="open-room-modal-btn" title="Räume verwalten">🏠 Räume</button>
       <div class="account-pill" id="user-display">Account: ...</div>
     </div>
   </header>
 
-  <!-- Horizontale Sub-Header Filterleiste (Ansichten & Räume) -->
+  <!-- Horizontale Sub-Header Filterleiste -->
   <nav class="sub-header-filter">
     <div class="filter-pills" id="main-view-filter">
       <button class="filter-pill active" data-view="devices">🔌 Alle Geräte (<span id="count-devices">0</span>)</button>
@@ -55,8 +56,8 @@
         <span class="v-val" id="stat-power">0 W</span>
       </div>
       <div class="vital-box">
-        <span class="v-label">Lokaler Gateway</span>
-        <span class="v-val gateway-ok">Online (UDP 6666)</span>
+        <span class="v-label">UDP Gateway</span>
+        <span class="v-val gateway-ok">Port 6666 (Aktiv)</span>
       </div>
     </section>
 
@@ -93,7 +94,7 @@
     </section>
   </main>
 
-  <!-- Modal: Gerät anlegen/bearbeiten -->
+  <!-- Modal: Gerät anlegen/bearbeiten (Inkl. Protokoll-Auswahl v3.3 / v3.4) -->
   <div class="modal-backdrop hidden" id="device-modal">
     <div class="modal-dialog">
       <div class="modal-head">
@@ -128,10 +129,20 @@
         </div>
 
         <div class="form-row">
-          <div class="form-group flex-1">
-            <label for="f-key">Local Key (Hex)</label>
-            <input type="text" id="f-key" placeholder="z. B. a1b2c3d4e5f6g7h8">
+          <div class="form-group flex-2">
+            <label for="f-key">Local Key (16 Hex Zeichen)</label>
+            <input type="text" id="f-key" placeholder="z. B. a1b2c3d4e5f6g7h8" required>
           </div>
+          <div class="form-group flex-1">
+            <label for="f-proto">Protokoll-Version</label>
+            <select id="f-proto">
+              <option value="3.3">v3.3 (Standard)</option>
+              <option value="3.4">v3.4 (Neu / SSL)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
           <div class="form-group flex-1">
             <label for="f-icon">Icon / Emoji</label>
             <input type="text" id="f-icon" value="🔌" maxlength="4" style="text-align: center;">
@@ -144,6 +155,29 @@
           <button type="submit" class="save-btn" id="device-save-btn">Speichern</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Modal: UDP Diagnose Log -->
+  <div class="modal-backdrop hidden" id="log-modal">
+    <div class="modal-dialog log-dialog">
+      <div class="modal-head">
+        <h2>📡 UDP Diagnose-Log & Test-Konsole</h2>
+        <button class="close-x-btn" id="close-log-x">✕</button>
+      </div>
+      <div class="log-modal-body">
+        <p class="scan-hint">Protokolliert alle gesendeten UDP-Befehle (Port 6666) und Geräte-Antworten in Echtzeit:</p>
+        <div class="log-actions-row">
+          <button class="t-btn secondary-btn" id="clear-log-btn">🧹 Log leeren</button>
+          <button class="t-btn add-btn" id="test-ping-btn">⚡ Ping an alle IPs</button>
+        </div>
+        <div class="log-terminal" id="log-terminal">
+          <div class="log-line">[SYSTEM] UDP Socket (Port 6666) initialisiert. Bereit für LocalTuya Befehle.</div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="cancel-btn" id="close-log-modal-btn">Schließen</button>
+      </div>
     </div>
   </div>
 

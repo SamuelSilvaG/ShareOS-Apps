@@ -1,22 +1,22 @@
 {
   "id": "homeping",
   "name": "HomePing",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "publisher": "UniqueDroid",
   "description": {
-    "de": "Homelab Status-Monitor für Server, Docker-Container und Netzwerk-Dienste mit ShareOS.fs VFS Anbindung.",
-    "en": "Homelab status monitor for servers, Docker containers and network services with ShareOS.fs VFS integration."
+    "de": "Homelab- & Netzwerk-Ping-Monitor mit robustem ShareOS.fs und LocalStorage-Fallback.",
+    "en": "Homelab & network ping monitor with robust ShareOS.fs and LocalStorage fallback."
   },
   "type": "webapp",
   "entry": "index.html",
   "icon": "icon.svg",
-  "category": "system",
+  "category": "network",
   "license": "MIT",
   "min_shareos": "0.2.0-beta.1",
   "permissions": ["files"],
   "window": {
     "width": 1040,
-    "height": 720
+    "height": 700
   },
   "opens": [
     {

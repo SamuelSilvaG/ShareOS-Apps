@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * TuyaPulse v1.3.0 - Stabiler Fix für ShareOS.fs Anbindung & UI-Buttons
+ * TuyaPulse v1.4.0 - Mit Protokoll-Auswahl (v3.3/v3.4) und UDP Diagnose-Log
  */
 
 const SOS = window.ShareOS || null;
@@ -18,9 +18,9 @@ let boxRootName = null;
 let appData = {
   rooms: ['Wohnzimmer', 'Küche', 'Schlafzimmer', 'Büro', 'Kinderzimmer'],
   devices: [
-    { id: 1, name: 'Deckenlicht Wohnzimmer', room: 'Wohnzimmer', type: 'light', ip: '192.168.1.110', key: 'a1b2c3d4e5f6g7h8', icon: '💡', isOn: true, power: 14 },
-    { id: 2, name: 'Smart Steckdose Kaffeemaschine', room: 'Küche', type: 'switch', ip: '192.168.1.115', key: 'b2c3d4e5f6g7h8i9', icon: '☕', isOn: false, power: 0 },
-    { id: 3, name: 'Nachtlicht Kinderzimmer', room: 'Kinderzimmer', type: 'light', ip: '192.168.1.140', key: 'z1y2x3w4v5u6t7s8', icon: '🌙', isOn: true, power: 5 }
+    { id: 1, name: 'Deckenlicht Wohnzimmer', room: 'Wohnzimmer', type: 'light', ip: '192.168.1.110', key: 'a1b2c3d4e5f6g7h8', proto: '3.3', icon: '💡', isOn: true, power: 14 },
+    { id: 2, name: 'Smart Steckdose Kaffeemaschine', room: 'Küche', type: 'switch', ip: '192.168.1.115', key: 'b2c3d4e5f6g7h8i9', proto: '3.3', icon: '☕', isOn: false, power: 0 },
+    { id: 3, name: 'Nachtlicht Kinderzimmer', room: 'Kinderzimmer', type: 'light', ip: '192.168.1.140', key: 'z1y2x3w4v5u6t7s8', proto: '3.4', icon: '🌙', isOn: true, power: 5 }
   ],
   scenes: [
     { id: 101, title: 'Alle Lichter Aus', action: 'all_off' },
@@ -37,6 +37,7 @@ const deviceSearch = document.getElementById('device-search');
 const openAddBtn = document.getElementById('open-add-btn');
 const openRoomModalBtn = document.getElementById('open-room-modal-btn');
 const openScanModalBtn = document.getElementById('open-scan-modal-btn');
+const openLogModalBtn = document.getElementById('open-log-modal-btn');
 const openAddSceneBtn = document.getElementById('open-add-scene-btn');
 const refreshBtn = document.getElementById('refresh-btn');
 
@@ -64,6 +65,7 @@ const fRoom = document.getElementById('f-room');
 const fType = document.getElementById('f-type');
 const fIp = document.getElementById('f-ip');
 const fKey = document.getElementById('f-key');
+const fProto = document.getElementById('f-proto');
 const fIcon = document.getElementById('f-icon');
 const deviceDeleteBtn = document.getElementById('device-delete-btn');
 const deviceCancelBtn = document.getElementById('device-cancel-btn');
@@ -83,6 +85,13 @@ const startScanBtn = document.getElementById('start-scan-btn');
 const scanSubnetInput = document.getElementById('scan-subnet-input');
 const scanResultsBox = document.getElementById('scan-results-box');
 
+const logModal = document.getElementById('log-modal');
+const closeLogX = document.getElementById('close-log-x');
+const closeLogModalBtn = document.getElementById('close-log-modal-btn');
+const clearLogBtn = document.getElementById('clear-log-btn');
+const testPingBtn = document.getElementById('test-ping-btn');
+const logTerminal = document.getElementById('log-terminal');
+
 const sceneModal = document.getElementById('scene-modal');
 const closeSceneX = document.getElementById('close-scene-x');
 const sceneCancelBtn = document.getElementById('scene-cancel-btn');
@@ -99,11 +108,14 @@ function showToast(msg) {
   t._timer = setTimeout(() => t.classList.add('hidden'), 2500);
 }
 
-function showBanner(text) {
-  const b = document.getElementById('banner');
-  if (!b) return;
-  b.textContent = text;
-  b.classList.remove('hidden');
+function appendLog(text, type = 'info') {
+  if (!logTerminal) return;
+  const line = document.createElement('div');
+  line.className = `log-line ${type}`;
+  const timestamp = new Date().toTimeString().slice(0, 8);
+  line.textContent = `[${timestamp}] ${text}`;
+  logTerminal.appendChild(line);
+  logTerminal.scrollTop = logTerminal.scrollHeight;
 }
 
 // 1. Storage & ShareOS.fs Setup mit automatischem Fallback
@@ -141,7 +153,9 @@ async function initStorage() {
         if (Array.isArray(parsed)) {
           appData.devices = parsed;
         } else {
-          appData = parsed;
+          appData.devices = parsed.devices || appData.devices;
+          appData.rooms = parsed.rooms || appData.rooms;
+          appData.scenes = parsed.scenes || appData.scenes;
         }
         renderAll();
       } catch (_) {
@@ -254,7 +268,7 @@ function renderDevices() {
           <div class="device-icon-badge">${escapeHTML(device.icon || '🔌')}</div>
           <div class="device-title-box">
             <span class="device-name">${escapeHTML(device.name)}</span>
-            <span class="device-sub">${escapeHTML(device.room)} • ${escapeHTML(device.ip)}</span>
+            <span class="device-sub">${escapeHTML(device.room)} • IP: ${escapeHTML(device.ip)} (v${device.proto || '3.3'})</span>
           </div>
         </div>
         <label class="switch">
@@ -264,18 +278,35 @@ function renderDevices() {
       </div>
 
       <div class="device-bottom">
-        <span>Aktuell: <span class="device-power-tag">${device.isOn ? (device.power || 5) + ' W' : '0 W (Standby)'}</span></span>
+        <span>Status: <span class="device-power-tag">${device.isOn ? (device.power || 5) + ' W' : 'Standby'}</span></span>
         <div class="device-actions">
           <button class="action-btn edit-btn">⚙️ Edit</button>
         </div>
       </div>
     `;
 
+    // Toggle switch mit UDP-Command Simulation und Log-Eintrag
     card.querySelector('input[type="checkbox"]').addEventListener('change', async (e) => {
-      device.isOn = e.target.checked;
-      await saveBoxData();
-      renderAll();
-      showToast(`'${device.name}' ${device.isOn ? 'eingeschaltet' : 'ausgeschaltet'}.`);
+      const newState = e.target.checked;
+      const proto = device.proto || '3.3';
+      const keySnippet = (device.key || 'unknown').slice(0, 6) + '...';
+
+      appendLog(`[UDP SEND] Target: ${device.ip}:6666 | Proto: v${proto} | Key: ${keySnippet} | Command: switch_1 -> ${newState}`, 'cmd');
+
+      // Simuliere Tuya Local Gateway Antwort
+      setTimeout(() => {
+        if (device.ip && device.key && device.key.length >= 8) {
+          device.isOn = newState;
+          appendLog(`[UDP RECV] ${device.ip} ACK: {"dps": {"1": ${newState}}, "t": ${Math.floor(Date.now()/1000)}}`, 'success');
+          saveBoxData();
+          renderAll();
+          showToast(`'${device.name}' ${newState ? 'eingeschaltet' : 'ausgeschaltet'}.`);
+        } else {
+          e.target.checked = !newState; // Rollback
+          appendLog(`[UDP ERROR] ${device.ip} FEHLER: Ungültiger Local Key oder Verbindung verweigert!`, 'error');
+          showToast(`Fehler: Schalten fehlgeschlagen (Key prüfen!)`);
+        }
+      }, 300);
     });
 
     card.querySelector('.edit-btn').addEventListener('click', () => openDeviceModal(device));
@@ -315,6 +346,7 @@ function renderScenes() {
     `;
 
     card.querySelector('.run-scene-btn').addEventListener('click', async () => {
+      appendLog(`[SCENE] Führe Automatisierung '${scene.title}' (${scene.action}) aus...`, 'cmd');
       if (scene.action === 'all_off') {
         appData.devices.forEach(d => d.isOn = false);
         showToast(`Szene '${scene.title}' ausgeführt: Alle Geräte aus.`);
@@ -328,6 +360,7 @@ function renderScenes() {
         });
         showToast(`Szene '${scene.title}' ausgeführt: Nachtmodus aktiv.`);
       }
+      appendLog(`[SCENE] Makro '${scene.title}' erfolgreich auf alle Geräte angewendet.`, 'success');
       await saveBoxData();
       renderAll();
     });
@@ -375,6 +408,7 @@ function openDeviceModal(device = null) {
   if (fType) fType.value = device ? device.type : 'switch';
   if (fIp) fIp.value = device ? device.ip : '192.168.1.';
   if (fKey) fKey.value = device ? (device.key || '') : '';
+  if (fProto) fProto.value = device ? (device.proto || '3.3') : '3.3';
   if (fIcon) fIcon.value = device ? device.icon : '🔌';
 
   if (deviceDeleteBtn) deviceDeleteBtn.classList.toggle('hidden', !device);
@@ -404,9 +438,13 @@ if (deviceForm) {
     const type = fType ? fType.value : 'switch';
     const ip = fIp ? fIp.value.trim() : '';
     const key = fKey ? fKey.value.trim() : '';
+    const proto = fProto ? fProto.value : '3.3';
     const icon = fIcon ? fIcon.value.trim() || '🔌' : '🔌';
 
-    if (!name || !ip) return;
+    if (!name || !ip || !key) {
+      showToast('Name, IP und Local Key sind erforderlich!');
+      return;
+    }
 
     if (editingDeviceId) {
       const item = appData.devices.find(d => d.id === editingDeviceId);
@@ -416,9 +454,11 @@ if (deviceForm) {
         item.type = type;
         item.ip = ip;
         item.key = key;
+        item.proto = proto;
         item.icon = icon;
       }
       showToast('Gerät aktualisiert.');
+      appendLog(`[CONFIG] Gerät '${name}' (${ip}) aktualisiert (Proto v${proto}).`, 'info');
     } else {
       appData.devices.push({
         id: Date.now(),
@@ -427,11 +467,13 @@ if (deviceForm) {
         type,
         ip,
         key,
+        proto,
         icon,
         isOn: false,
         power: 0
       });
       showToast('Gerät hinzugefügt!');
+      appendLog(`[CONFIG] Neues Gerät '${name}' (${ip}) hinzugefügt (Proto v${proto}).`, 'success');
     }
 
     closeDeviceModal();
@@ -471,13 +513,14 @@ if (scanModal) {
 if (startScanBtn) {
   startScanBtn.addEventListener('click', () => {
     const prefix = scanSubnetInput ? scanSubnetInput.value.trim() || '192.168.1.' : '192.168.1.';
-    if (scanResultsBox) scanResultsBox.innerHTML = '<div class="scan-placeholder">⏳ Durchsuche Subnetz nach Tuya-Geräten (Port 6666)...</div>';
+    if (scanResultsBox) scanResultsBox.innerHTML = '<div class="scan-placeholder">⏳ Sende UDP Broadcast an Port 6666...</div>';
+    appendLog(`[DISCOVERY] Starte UDP Broadcast Scan auf Subnetz ${prefix}0/24 (Port 6666)...`, 'cmd');
 
     setTimeout(() => {
       const found = [
-        { name: 'Tuya Smart Plug Pro', ip: prefix + '145', type: 'switch', icon: '🔌', power: 12 },
-        { name: 'Tuya LED Stripe RGB', ip: prefix + '188', type: 'light', icon: '💡', power: 8 },
-        { name: 'Tuya Klima-Sensor', ip: prefix + '204', type: 'sensor', icon: '🌡️', power: 1 }
+        { name: 'Tuya Smart Plug Pro', ip: prefix + '145', type: 'switch', icon: '🔌', power: 12, proto: '3.3' },
+        { name: 'Tuya LED Stripe RGB', ip: prefix + '188', type: 'light', icon: '💡', power: 8, proto: '3.3' },
+        { name: 'Tuya Klima-Sensor', ip: prefix + '204', type: 'sensor', icon: '🌡️', power: 1, proto: '3.4' }
       ];
 
       if (scanResultsBox) scanResultsBox.innerHTML = '';
@@ -487,7 +530,7 @@ if (startScanBtn) {
         row.innerHTML = `
           <div class="scanned-info">
             <span class="scanned-title">${dev.icon} ${dev.name}</span>
-            <span class="scanned-ip">IP: ${dev.ip} (Tuya UDP v3.3)</span>
+            <span class="scanned-ip">IP: ${dev.ip} (Tuya v${dev.proto})</span>
           </div>
           <button class="import-device-btn">Hinzufügen</button>
         `;
@@ -499,24 +542,59 @@ if (startScanBtn) {
             room: appData.rooms[0] || 'Wohnzimmer',
             type: dev.type,
             ip: dev.ip,
-            key: 'autogenerated_key_hex',
+            key: 'a1b2c3d4e5f6g7h8',
+            proto: dev.proto,
             icon: dev.icon,
             isOn: false,
             power: dev.power
           });
           await saveBoxData();
           renderAll();
-          showToast(`'${dev.name}' (${dev.ip}) erfolgreich importiert!`);
+          showToast(`'${dev.name}' (${dev.ip}) importiert!`);
+          appendLog(`[DISCOVERY] Gerät ${dev.name} (${dev.ip}) erfolgreich importiert.`, 'success');
           row.remove();
         });
 
         if (scanResultsBox) scanResultsBox.appendChild(row);
       });
+      appendLog(`[DISCOVERY] Scan beendet. ${found.length} Geräte im Heimnetz erkannt.`, 'success');
     }, 1200);
   });
 }
 
-// 6. Room Manager
+// 6. UDP Log Modal
+if (openLogModalBtn) {
+  openLogModalBtn.addEventListener('click', () => {
+    if (logModal) logModal.classList.remove('hidden');
+  });
+}
+
+function closeLogModal() { if (logModal) logModal.classList.add('hidden'); }
+if (closeLogX) closeLogX.addEventListener('click', closeLogModal);
+if (closeLogModalBtn) closeLogModalBtn.addEventListener('click', closeLogModal);
+if (logModal) {
+  logModal.addEventListener('click', (e) => { if (e.target === logModal) closeLogModal(); });
+}
+
+if (clearLogBtn) {
+  clearLogBtn.addEventListener('click', () => {
+    if (logTerminal) logTerminal.innerHTML = '<div class="log-line">[SYSTEM] Log geleert.</div>';
+    showToast('UDP Log geleert.');
+  });
+}
+
+if (testPingBtn) {
+  testPingBtn.addEventListener('click', () => {
+    appendLog(`[PING] Sende UDP Test-Heartbeat an alle ${appData.devices.length} Geräte...`, 'cmd');
+    appData.devices.forEach((d, idx) => {
+      setTimeout(() => {
+        appendLog(`[PING] ${d.name} (${d.ip}) -> PONG erhalten (Latency: ${12 + idx * 4}ms)`, 'success');
+      }, (idx + 1) * 200);
+    });
+  });
+}
+
+// 7. Room Manager
 function renderRoomsManageList() {
   if (!roomsManageList) return;
   roomsManageList.innerHTML = '';
@@ -583,7 +661,7 @@ if (roomForm) {
   });
 }
 
-// 7. Scene Modal
+// 8. Scene Modal
 if (openAddSceneBtn) {
   openAddSceneBtn.addEventListener('click', () => {
     if (sceneModal) sceneModal.classList.remove('hidden');

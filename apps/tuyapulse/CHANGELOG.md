@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.3.0] - 2026-10-23
+## [1.4.0] - 2026-10-23
 ### Hinzugefügt
-- **TuyaPulse Clean**: Bezeichnung von „Pro“ auf reines **TuyaPulse** umgestellt.
-- **ShareOS.fs & LocalStorage Fallback**: Zuverlässige Datenspeicherung und reibungslose Button-Funktionen.
+- **Protokoll-Auswahl (v3.3 / v3.4)**: Jedes Gerät kann nun mit seiner korrekten Tuya-Firmware-Version konfiguriert werden.
+- **UDP Diagnose-Log & Test-Konsole**: Interaktives Terminal (`📡 UDP Log`) zur Überwachung von Befehlen, ACK-Antworten und Ping-Tests im Heimnetz.

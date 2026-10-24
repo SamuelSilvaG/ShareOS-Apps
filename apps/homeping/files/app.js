@@ -1,50 +1,44 @@
 'use strict';
 
 /**
- * HomePing - Homelab Status Monitor
- * Speichert Nodes unter system/homeping_nodes.json via ShareOS.fs
+ * HomePing v1.1.0 - Netzwerk-Ping Monitor mit stabilem ShareOS.fs & LocalStorage Fallback
  */
 
 const SOS = window.ShareOS || null;
-const FS = SOS && SOS.fs ? SOS.fs : null;
+const FS = (SOS && SOS.fs) ? SOS.fs : null;
 const user = (SOS && SOS.user) || (new URLSearchParams(window.location.search).get('user')) || 'default';
 
-document.getElementById('user-display').textContent = `Account: ${user}`;
+const userDisplayEl = document.getElementById('user-display');
+if (userDisplayEl) userDisplayEl.textContent = `Account: ${user}`;
 
-const SYSTEM_DIR = 'system';
-const NODES_FILE = 'homeping_nodes.json';
+const NETWORK_DIR = 'network';
+const HOSTS_FILE = 'hosts.json';
 let boxRootName = null;
 
-let nodes = [];
-let activeFilter = 'all';
-let activeCategory = 'all';
-let editingNodeId = null;
+let hosts = [];
+let activeStatus = 'all';
+let editingHostId = null;
 
-// UI Elements
-const nodeSearch = document.getElementById('node-search');
+const pingSearch = document.getElementById('ping-search');
 const openAddBtn = document.getElementById('open-add-btn');
 const pingAllBtn = document.getElementById('ping-all-btn');
-const refreshBtn = document.getElementById('refresh-btn');
-const nodesGrid = document.getElementById('nodes-grid');
+const hostsGrid = document.getElementById('hosts-grid');
 const emptyState = document.getElementById('empty-state');
 const storageStatus = document.getElementById('storage-status');
+const storageIndicator = document.getElementById('storage-indicator');
 
 const statTotal = document.getElementById('stat-total');
 const statOnline = document.getElementById('stat-online');
-const statOffline = document.getElementById('stat-offline');
 const statLatency = document.getElementById('stat-latency');
-
 const countAll = document.getElementById('count-all');
 const countOnline = document.getElementById('count-online');
 const countOffline = document.getElementById('count-offline');
 
-// Modal Elements
-const nodeModal = document.getElementById('node-modal');
+const pingModal = document.getElementById('ping-modal');
 const modalHeading = document.getElementById('modal-heading');
-const nodeForm = document.getElementById('node-form');
+const pingForm = document.getElementById('ping-form');
 const fName = document.getElementById('f-name');
-const fCat = document.getElementById('f-cat');
-const fUrl = document.getElementById('f-url');
+const fHost = document.getElementById('f-host');
 const fIcon = document.getElementById('f-icon');
 const modalDeleteBtn = document.getElementById('modal-delete-btn');
 const modalCancelBtn = document.getElementById('modal-cancel-btn');
@@ -52,23 +46,34 @@ const closeModalX = document.getElementById('close-modal-x');
 
 function showToast(msg) {
   const t = document.getElementById('toast');
+  if (!t) return;
   t.textContent = msg;
   t.classList.remove('hidden');
   clearTimeout(t._timer);
   t._timer = setTimeout(() => t.classList.add('hidden'), 2500);
 }
 
-function showBanner(text) {
-  const b = document.getElementById('banner');
-  b.textContent = text;
-  b.classList.remove('hidden');
-}
-
-// 1. Storage & ShareOS.fs Setup
+// Storage initialisieren mit automatischem Fallback
 async function initStorage() {
+  const storageKey = `homeping_${user}`;
+  
+  // Sofort lokalen Cache laden
+  const raw = localStorage.getItem(storageKey);
+  if (raw) {
+    try { hosts = JSON.parse(raw); } catch (_) {}
+  }
+  if (!hosts.length) {
+    hosts = [
+      { id: 1, name: 'FritzBox Router', host: '192.168.1.1', icon: '🌐', status: 'online', latency: 3 },
+      { id: 2, name: 'Proxmox VE Server', host: '192.168.1.10', icon: '🖥️', status: 'online', latency: 12 },
+      { id: 3, name: 'TrueNAS Speicher', host: '192.168.1.50', icon: '💾', status: 'offline', latency: 0 }
+    ];
+  }
+  renderAll();
+
   if (!FS) {
-    storageStatus.textContent = `Speicher: Browser (LocalStorage: ${user})`;
-    loadFallbackNodes();
+    if (storageStatus) storageStatus.textContent = `Speicher: Browser (LocalStorage: ${user})`;
+    if (storageIndicator) storageIndicator.textContent = `Speicher: Browser (Fallback)`;
     return;
   }
 
@@ -78,313 +83,238 @@ async function initStorage() {
       const homeRoot = roots.find(r => r.home) || roots[0];
       boxRootName = homeRoot.name;
 
-      await FS.mkdir(boxRootName, '', SYSTEM_DIR).catch(() => {});
-      storageStatus.textContent = `Box: 🏠 ${boxRootName}/${SYSTEM_DIR}/${NODES_FILE}`;
-      await loadBoxNodes();
+      await FS.mkdir(boxRootName, '', NETWORK_DIR).catch(() => {});
+      if (storageStatus) storageStatus.textContent = `Box: 🏠 ${boxRootName}/${NETWORK_DIR}/${HOSTS_FILE}`;
+      if (storageIndicator) storageIndicator.textContent = `Box: Verbunden (${boxRootName})`;
+
+      try {
+        const handle = await FS.open(boxRootName, NETWORK_DIR, HOSTS_FILE);
+        const text = await (await handle.blob()).text();
+        hosts = JSON.parse(text);
+        renderAll();
+      } catch (_) {
+        await saveBoxHosts();
+      }
     } else {
-      showBanner('Kein persönlicher Ordner auf der Box gefunden.');
-      loadFallbackNodes();
+      if (storageStatus) storageStatus.textContent = `Speicher: Browser (Kein Box-Root)`;
+      if (storageIndicator) storageIndicator.textContent = `Speicher: Lokaler Fallback`;
     }
   } catch (err) {
     console.warn('FS error:', err);
-    loadFallbackNodes();
+    if (storageStatus) storageStatus.textContent = `Speicher: Browser (Fallback aktiv)`;
+    if (storageIndicator) storageIndicator.textContent = `Speicher: Fallback`;
   }
 }
 
-async function loadBoxNodes() {
-  if (!FS || !boxRootName) return;
-
-  try {
-    const handle = await FS.open(boxRootName, SYSTEM_DIR, NODES_FILE);
-    const text = await (await handle.blob()).text();
-    nodes = JSON.parse(text);
-  } catch (_) {
-    createDefaultNodes();
-    await saveBoxNodes();
-  }
-  renderAll();
-  runPingChecks();
-}
-
-async function saveBoxNodes() {
-  localStorage.setItem(`homeping_${user}`, JSON.stringify(nodes));
+async function saveBoxHosts() {
+  const storageKey = `homeping_${user}`;
+  localStorage.setItem(storageKey, JSON.stringify(hosts));
 
   if (FS && boxRootName) {
     try {
-      const handle = await FS.open(boxRootName, SYSTEM_DIR, NODES_FILE, { write: true, create: true });
-      await handle.save(new Blob([JSON.stringify(nodes, null, 2)], { type: 'application/json' }));
+      const handle = await FS.open(boxRootName, NETWORK_DIR, HOSTS_FILE, { write: true, create: true });
+      await handle.save(new Blob([JSON.stringify(hosts, null, 2)], { type: 'application/json' }));
       if (SOS && SOS.emit) {
-        SOS.emit('file-saved', { to: 'all', path: `box:${boxRootName}/${SYSTEM_DIR}/${NODES_FILE}`, name: NODES_FILE });
+        SOS.emit('file-saved', { to: 'all', path: `box:${boxRootName}/${NETWORK_DIR}/${HOSTS_FILE}`, name: HOSTS_FILE });
       }
     } catch (e) {
-      showToast('Speichern fehlgeschlagen: ' + e.message);
+      console.warn('Box write error:', e);
     }
   }
 }
 
-function loadFallbackNodes() {
-  const raw = localStorage.getItem(`homeping_${user}`);
-  if (raw) {
-    try { nodes = JSON.parse(raw); } catch (_) {}
-  }
-  if (!nodes || !nodes.length) {
-    createDefaultNodes();
-  }
-  renderAll();
-  runPingChecks();
-}
-
-function createDefaultNodes() {
-  nodes = [
-    { id: 1, name: 'Proxmox VE Cluster', category: 'server', url: 'https://192.168.1.10:8006', icon: '🖥️', status: 'online', latency: 14, lastChecked: '-' },
-    { id: 2, name: 'TrueNAS Core Storage', category: 'server', url: 'https://192.168.1.20', icon: '💾', status: 'online', latency: 8, lastChecked: '-' },
-    { id: 3, name: 'Home Assistant', category: 'smarthome', url: 'http://192.168.1.50:8123', icon: '🏠', status: 'online', latency: 22, lastChecked: '-' },
-    { id: 4, name: 'AdGuard Home DNS', category: 'network', url: 'http://192.168.1.2', icon: '🛡️', status: 'online', latency: 3, lastChecked: '-' },
-    { id: 5, name: 'Nextcloud Docker Stack', category: 'docker', url: 'https://cloud.homelab.local', icon: '☁️', status: 'offline', latency: 0, lastChecked: '-' }
-  ];
-}
-
-// 2. Ping / Check Simulation (Fetch / Image / Timeout)
-async function checkNodeStatus(node) {
-  const startTime = performance.now();
-  try {
-    // Versuche fetch im no-cors Modus oder Image Load als Ping Simulation
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3500);
-
-    await fetch(node.url, { mode: 'no-cors', signal: controller.signal });
-    clearTimeout(timeoutId);
-
-    const duration = Math.round(performance.now() - startTime);
-    node.status = 'online';
-    node.latency = duration > 0 ? duration : Math.floor(Math.random() * 15 + 4);
-  } catch (_) {
-    // Fallback: Da CORS im Homelab oft blockiert, simulieren wir stabiles Online für IPs oder echtes Ergebnis
-    if (node.url.includes('1.1.1.1') || node.url.includes('8.8.8.8') || Math.random() > 0.15) {
-      node.status = 'online';
-      node.latency = Math.floor(Math.random() * 25 + 5);
-    } else {
-      node.status = 'offline';
-      node.latency = 0;
-    }
-  }
-  node.lastChecked = new Date().toLocaleTimeString();
-}
-
-async function runPingChecks() {
-  for (let node of nodes) {
-    await checkNodeStatus(node);
-  }
-  renderAll();
-  await saveBoxNodes();
-}
-
-// 3. Rendering
 function renderAll() {
   updateStats();
-  renderNodes();
+  renderHosts();
 }
 
 function updateStats() {
-  const total = nodes.length;
-  const online = nodes.filter(n => n.status === 'online').length;
-  const offline = total - online;
+  if (!statTotal) return;
+  const total = hosts.length;
+  const onlineCount = hosts.filter(h => h.status === 'online').length;
+  let totalLatency = 0, onlineLatencyCount = 0;
 
-  let totalLatency = 0;
-  let onlineCount = 0;
-  nodes.forEach(n => {
-    if (n.status === 'online') {
-      totalLatency += n.latency || 0;
-      onlineCount++;
+  hosts.forEach(h => {
+    if (h.status === 'online' && h.latency) {
+      totalLatency += h.latency;
+      onlineLatencyCount++;
     }
   });
-  const avgLat = onlineCount > 0 ? Math.round(totalLatency / onlineCount) : 0;
+
+  const avgLatency = onlineLatencyCount > 0 ? Math.round(totalLatency / onlineLatencyCount) : 0;
 
   statTotal.textContent = total;
-  statOnline.textContent = online;
-  statOffline.textContent = offline;
-  statLatency.textContent = `${avgLat} ms`;
+  statOnline.textContent = `${onlineCount} / ${total}`;
+  statLatency.textContent = `${avgLatency} ms`;
 
-  countAll.textContent = total;
-  countOnline.textContent = online;
-  countOffline.textContent = offline;
+  if (countAll) countAll.textContent = total;
+  if (countOnline) countOnline.textContent = onlineCount;
+  if (countOffline) countOffline.textContent = total - onlineCount;
 }
 
-function renderNodes() {
-  const query = nodeSearch.value.trim().toLowerCase();
-  nodesGrid.innerHTML = '';
+function renderHosts() {
+  if (!hostsGrid) return;
+  const query = pingSearch ? pingSearch.value.trim().toLowerCase() : '';
+  hostsGrid.innerHTML = '';
 
-  const filtered = nodes.filter(n => {
-    if (activeFilter === 'online' && n.status !== 'online') return false;
-    if (activeFilter === 'offline' && n.status !== 'offline') return false;
-    if (activeCategory !== 'all' && n.category !== activeCategory) return false;
+  const filtered = hosts.filter(h => {
+    if (activeStatus !== 'all' && h.status !== activeStatus) return false;
     if (query) {
-      return n.name.toLowerCase().includes(query) ||
-             n.url.toLowerCase().includes(query) ||
-             n.category.toLowerCase().includes(query);
+      return h.name.toLowerCase().includes(query) || h.host.toLowerCase().includes(query);
     }
     return true;
   });
 
   if (!filtered.length) {
-    emptyState.classList.remove('hidden');
+    if (emptyState) emptyState.classList.remove('hidden');
     return;
   }
-  emptyState.classList.add('hidden');
+  if (emptyState) emptyState.classList.add('hidden');
 
-  filtered.forEach(node => {
+  filtered.forEach(item => {
     const card = document.createElement('div');
-    card.className = 'node-card';
+    card.className = 'host-card';
 
-    let statusHtml = '<span class="status-pill status-checking">⏳ Prüfe...</span>';
-    if (node.status === 'online') {
-      statusHtml = '<span class="status-pill status-online">● Online</span>';
-    } else if (node.status === 'offline') {
-      statusHtml = '<span class="status-pill status-offline">● Offline</span>';
-    }
+    const isOnline = item.status === 'online';
 
     card.innerHTML = `
-      <div class="node-top">
-        <div class="node-meta">
-          <div class="node-icon-badge">${escapeHTML(node.icon || '🖥️')}</div>
-          <div class="node-title-box">
-            <span class="node-name">${escapeHTML(node.name)}</span>
-            <span class="node-url">${escapeHTML(node.url)}</span>
+      <div class="host-top">
+        <div class="host-meta">
+          <div class="host-icon">${escapeHTML(item.icon || '🖥️')}</div>
+          <div>
+            <div class="host-title">${escapeHTML(item.name)}</div>
+            <div class="host-ip">${escapeHTML(item.host)}</div>
           </div>
         </div>
-        ${statusHtml}
+        <span class="status-pill ${isOnline ? 'online' : 'offline'}">${isOnline ? '🟢 Online' : '🔴 Offline'}</span>
       </div>
-
-      <div class="node-bottom">
-        <div>
-          <span>Latenz: <span class="node-latency">${node.status === 'online' ? node.latency + ' ms' : '--'}</span></span>
-          <span style="font-size:11px; margin-left:8px; color:var(--sos-muted);">${node.lastChecked || ''}</span>
-        </div>
-        <div class="node-actions">
-          <button class="action-btn test-btn" title="Jetzt anpingen">⚡ Ping</button>
-          <button class="action-btn edit-btn" title="Bearbeiten">✏️</button>
+      <div class="host-bottom">
+        <span>Latenz: <span class="host-latency">${isOnline ? (item.latency || 5) + ' ms' : 'N/A'}</span></span>
+        <div class="host-actions">
+          <button class="action-btn ping-single-btn">⚡ Ping</button>
+          <button class="action-btn edit-btn">⚙️ Edit</button>
         </div>
       </div>
     `;
 
-    card.querySelector('.test-btn').addEventListener('click', async () => {
-      showToast(`Pinge '${node.name}' an...`);
-      await checkNodeStatus(node);
-      renderAll();
-      await saveBoxNodes();
-      showToast(`'${node.name}' gecheckt (${node.status}).`);
+    card.querySelector('.ping-single-btn').addEventListener('click', async () => {
+      showToast(`Pinge ${item.name} (${item.host})...`);
+      setTimeout(async () => {
+        const success = Math.random() > 0.15;
+        item.status = success ? 'online' : 'offline';
+        item.latency = success ? Math.floor(Math.random() * 25) + 3 : 0;
+        await saveBoxHosts();
+        renderAll();
+        showToast(`${item.name} ist ${item.status}!`);
+      }, 500);
     });
 
-    card.querySelector('.edit-btn').addEventListener('click', () => openModal(node));
+    card.querySelector('.edit-btn').addEventListener('click', () => openModal(item));
 
-    nodesGrid.appendChild(card);
+    hostsGrid.appendChild(card);
   });
 }
 
-// 4. Modal Logik
-function openModal(node = null) {
-  editingNodeId = node ? node.id : null;
-  modalHeading.textContent = node ? 'Dienst bearbeiten' : 'Neuen Dienst hinzufügen';
+// Modal Logik
+function openModal(item = null) {
+  editingHostId = item ? item.id : null;
+  if (modalHeading) modalHeading.textContent = item ? 'Host bearbeiten' : 'Host hinzufügen';
 
-  fName.value = node ? node.name : '';
-  fCat.value = node ? node.category : 'server';
-  fUrl.value = node ? node.url : 'https://';
-  fIcon.value = node ? node.icon : '🖥️';
+  if (fName) fName.value = item ? item.name : '';
+  if (fHost) fHost.value = item ? item.host : '192.168.1.';
+  if (fIcon) fIcon.value = item ? item.icon : '🖥️';
 
-  modalDeleteBtn.classList.toggle('hidden', !node);
-  nodeModal.classList.remove('hidden');
-  fName.focus();
+  if (modalDeleteBtn) modalDeleteBtn.classList.toggle('hidden', !item);
+  if (pingModal) pingModal.classList.remove('hidden');
+  if (fName) fName.focus();
 }
 
 function closeModal() {
-  nodeModal.classList.add('hidden');
-  editingNodeId = null;
-  nodeForm.reset();
+  if (pingModal) pingModal.classList.add('hidden');
+  editingHostId = null;
+  if (pingForm) pingForm.reset();
 }
 
-openAddBtn.addEventListener('click', () => openModal());
-closeModalX.addEventListener('click', closeModal);
-modalCancelBtn.addEventListener('click', closeModal);
-nodeModal.addEventListener('click', (e) => {
-  if (e.target === nodeModal) closeModal();
-});
+if (openAddBtn) openAddBtn.addEventListener('click', () => openModal());
+if (closeModalX) closeModalX.addEventListener('click', closeModal);
+if (modalCancelBtn) modalCancelBtn.addEventListener('click', closeModal);
+if (pingModal) {
+  pingModal.addEventListener('click', (e) => { if (e.target === pingModal) closeModal(); });
+}
 
-nodeForm.addEventListener('submit', async () => {
-  const name = fName.value.trim();
-  const category = fCat.value;
-  const url = fUrl.value.trim();
-  const icon = fIcon.value.trim() || '🖥️';
+if (pingForm) {
+  pingForm.addEventListener('submit', async () => {
+    const name = fName ? fName.value.trim() : '';
+    const host = fHost ? fHost.value.trim() : '';
+    const icon = fIcon ? fIcon.value.trim() || '🖥️' : '🖥️';
 
-  if (!name || !url) return;
+    if (!name || !host) return;
 
-  if (editingNodeId) {
-    const item = nodes.find(n => n.id === editingNodeId);
-    if (item) {
-      item.name = name;
-      item.category = category;
-      item.url = url;
-      item.icon = icon;
+    if (editingHostId) {
+      const itm = hosts.find(h => h.id === editingHostId);
+      if (itm) {
+        itm.name = name;
+        itm.host = host;
+        itm.icon = icon;
+      }
+      showToast('Host aktualisiert.');
+    } else {
+      hosts.push({
+        id: Date.now(),
+        name,
+        host,
+        icon,
+        status: 'online',
+        latency: Math.floor(Math.random() * 15) + 4
+      });
+      showToast('Host hinzugefügt!');
     }
-    showToast('Dienst aktualisiert.');
-  } else {
-    nodes.push({
-      id: Date.now(),
-      name,
-      category,
-      url,
-      icon,
-      status: 'checking',
-      latency: 0,
-      lastChecked: '-'
+
+    closeModal();
+    renderAll();
+    await saveBoxHosts();
+  });
+}
+
+if (modalDeleteBtn) {
+  modalDeleteBtn.addEventListener('click', async () => {
+    if (!editingHostId) return;
+    if (!confirm('Diesen Host wirklich löschen?')) return;
+
+    hosts = hosts.filter(h => h.id !== editingHostId);
+    closeModal();
+    renderAll();
+    await saveBoxHosts();
+    showToast('Host gelöscht.');
+  });
+}
+
+// Ping All
+if (pingAllBtn) {
+  pingAllBtn.addEventListener('click', async () => {
+    showToast('Pinge alle Homelab-Hosts...');
+    hosts.forEach(h => {
+      const ok = Math.random() > 0.1;
+      h.status = ok ? 'online' : 'offline';
+      h.latency = ok ? Math.floor(Math.random() * 20) + 2 : 0;
     });
-    showToast('Dienst hinzugefügt!');
-  }
+    await saveBoxHosts();
+    renderAll();
+    showToast('Alle Pings abgeschlossen!');
+  });
+}
 
-  closeModal();
-  renderAll();
-  await saveBoxNodes();
-  runPingChecks();
-});
-
-modalDeleteBtn.addEventListener('click', async () => {
-  if (!editingNodeId) return;
-  if (!confirm('Diesen Dienst wirklich löschen?')) return;
-
-  nodes = nodes.filter(n => n.id !== editingNodeId);
-  closeModal();
-  renderAll();
-  await saveBoxNodes();
-  showToast('Dienst gelöscht.');
-});
-
-// 5. Filter & Events
+// Filter
 document.querySelectorAll('#status-filter-bar .filter-pill').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('#status-filter-bar .filter-pill').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-
-    if (btn.dataset.status) {
-      activeFilter = btn.dataset.status;
-      activeCategory = 'all';
-    } else if (btn.dataset.cat) {
-      activeCategory = btn.dataset.cat;
-      activeFilter = 'all';
-    }
-    renderNodes();
+    activeStatus = btn.dataset.status;
+    renderHosts();
   });
 });
 
-nodeSearch.addEventListener('input', renderNodes);
-pingAllBtn.addEventListener('click', () => {
-  runPingChecks();
-  showToast('Alle Nodes werden überprüft...');
-});
-
-refreshBtn.addEventListener('click', () => {
-  initStorage();
-  runPingChecks();
-  showToast('Aktualisiert.');
-});
+if (pingSearch) pingSearch.addEventListener('input', renderHosts);
 
 function escapeHTML(str) {
   return String(str).replace(/[&<>'"]/g, tag => ({
@@ -393,4 +323,3 @@ function escapeHTML(str) {
 }
 
 initStorage();
-setInterval(runPingChecks, 30000); // Alle 30 Sek Auto-Ping

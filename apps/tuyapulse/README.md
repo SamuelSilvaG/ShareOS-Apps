@@ -1,2 +1,2 @@
 # TuyaPulse (`tuyapulse`)
-Lokales Smart-Home Dashboard für ShareOS.
+Lokales Smart-Home Dashboard mit UDP-Diagnose für ShareOS.
