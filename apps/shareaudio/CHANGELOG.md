@@ -3,9 +3,11 @@
 ## [1.0.2] - 2026-10-24
 
 ### Changed
+- Updated the version number that was previously forgotten.
 - Adjusted CSS to ensure the UI fits narrow screens such as smartphones.
 
 ### Geändert
+- Versionsnummer angepasst, die zuvor vergessen wurde.
 - CSS angepasst, damit die Oberfläche auf schmale Bildschirme wie Smartphones passt.
 
 ## [1.0.1] - 2026-10-23

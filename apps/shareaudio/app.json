@@ -1,7 +1,7 @@
 {
   "id": "shareaudio",
   "name": "ShareAudio",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "publisher": "UniqueDroid",
   "description": {
     "de": "Diktiergerät & Sprachnotizen unterwegs aufnehmen und direkt auf der Box speichern via ShareOS.fs.",
