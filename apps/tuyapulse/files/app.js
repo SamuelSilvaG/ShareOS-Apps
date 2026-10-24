@@ -1,11 +1,15 @@
 'use strict';
 
 /**
- * TuyaPulse v1.4.0 - Mit Protokoll-Auswahl (v3.3/v3.4) und UDP Diagnose-Log
+ * TuyaPulse 2.0 – Tuya devices in the local network through ShareOS.tuya
+ * (permission "tuya", admin accounts, ShareOS 0.2.0-beta.11+): find, read
+ * and switch them without the cloud (protocol 3.3/3.4). Devices, rooms and
+ * scenes live in the personal folder on the box (smarthome/tuya_devices.json).
  */
 
 const SOS = window.ShareOS || null;
 const FS = (SOS && SOS.fs) ? SOS.fs : null;
+const TUYA = (SOS && SOS.tuya) ? SOS.tuya : null;
 const user = (SOS && SOS.user) || (new URLSearchParams(window.location.search).get('user')) || 'default';
 
 const userDisplayEl = document.getElementById('user-display');
@@ -17,11 +21,7 @@ let boxRootName = null;
 
 let appData = {
   rooms: ['Wohnzimmer', 'Küche', 'Schlafzimmer', 'Büro', 'Kinderzimmer'],
-  devices: [
-    { id: 1, name: 'Deckenlicht Wohnzimmer', room: 'Wohnzimmer', type: 'light', ip: '192.168.1.110', key: 'a1b2c3d4e5f6g7h8', proto: '3.3', icon: '💡', isOn: true, power: 14 },
-    { id: 2, name: 'Smart Steckdose Kaffeemaschine', room: 'Küche', type: 'switch', ip: '192.168.1.115', key: 'b2c3d4e5f6g7h8i9', proto: '3.3', icon: '☕', isOn: false, power: 0 },
-    { id: 3, name: 'Nachtlicht Kinderzimmer', room: 'Kinderzimmer', type: 'light', ip: '192.168.1.140', key: 'z1y2x3w4v5u6t7s8', proto: '3.4', icon: '🌙', isOn: true, power: 5 }
-  ],
+  devices: [],
   scenes: [
     { id: 101, title: 'Alle Lichter Aus', action: 'all_off' },
     { id: 102, title: 'Nachtmodus', action: 'night_mode' }
@@ -65,6 +65,8 @@ const fRoom = document.getElementById('f-room');
 const fType = document.getElementById('f-type');
 const fIp = document.getElementById('f-ip');
 const fKey = document.getElementById('f-key');
+const fDevId = document.getElementById('f-devid');
+const fDp = document.getElementById('f-dp');
 const fProto = document.getElementById('f-proto');
 const fIcon = document.getElementById('f-icon');
 const deviceDeleteBtn = document.getElementById('device-delete-btn');
@@ -118,6 +120,42 @@ function appendLog(text, type = 'info') {
   logTerminal.scrollTop = logTerminal.scrollHeight;
 }
 
+// the sample devices of 1.x were never real: drop them
+const SAMPLE_KEYS = ['a1b2c3d4e5f6g7h8', 'b2c3d4e5f6g7h8i9', 'z1y2x3w4v5u6t7s8'];
+function cleanDevices() {
+  appData.devices = (appData.devices || []).filter(d => !SAMPLE_KEYS.includes(d.key));
+}
+
+const dpOf = (d) => String(d.dp || 1);
+const devOf = (d) => ({ ip: d.ip, id: d.devId, key: d.key, version: d.proto || '3.3' });
+
+// read the state of devices from the box (switch data point, power if reported)
+async function pollDevices(list = appData.devices) {
+  if (!TUYA) return;
+  await Promise.all(list.filter(d => d.devId).map(async (d) => {
+    try {
+      const dps = await TUYA.status(devOf(d));
+      d.online = true; d.error = null;
+      if (dps && dps[dpOf(d)] !== undefined) d.isOn = !!dps[dpOf(d)];
+      // plugs with metering: 19 = power in 0.1 W (some report on 5 or 104)
+      const p = dps && (dps['19'] ?? dps['5'] ?? dps['104']);
+      d.power = typeof p === 'number' ? Math.round(p / 10 * 10) / 10 : null;
+      appendLog(`[STATUS] ${d.name} (${d.ip}): ${JSON.stringify(dps)}`, 'success');
+    } catch (err) {
+      d.online = false; d.error = err.message;
+      appendLog(`[FEHLER] ${d.name} (${d.ip}): ${err.message}`, 'error');
+    }
+  }));
+  renderAll();
+}
+
+async function switchDevice(d, on) {
+  appendLog(`[SET] ${d.name} (${d.ip}) DP ${dpOf(d)} → ${on}`, 'cmd');
+  const dps = await TUYA.set(devOf(d), { [dpOf(d)]: on });
+  d.isOn = on; d.online = true; d.error = null;
+  appendLog(`[OK] ${d.name}: ${JSON.stringify(dps)}`, 'success');
+}
+
 // 1. Storage & ShareOS.fs Setup mit automatischem Fallback
 async function initStorage() {
   const storageKey = `tuyapulse_${user}`;
@@ -130,6 +168,7 @@ async function initStorage() {
       else appData = parsed;
     } catch (_) {}
   }
+  cleanDevices();
   renderAll();
 
   if (!FS) {
@@ -157,6 +196,7 @@ async function initStorage() {
           appData.rooms = parsed.rooms || appData.rooms;
           appData.scenes = parsed.scenes || appData.scenes;
         }
+        cleanDevices();
         renderAll();
       } catch (_) {
         await saveBoxData();
@@ -201,12 +241,18 @@ function updateStats() {
   const active = appData.devices.filter(d => d.isOn).length;
   let totalPower = 0;
   appData.devices.forEach(d => {
-    if (d.isOn) totalPower += (d.power || 0);
+    if (d.isOn && typeof d.power === 'number') totalPower += d.power;
   });
 
   statTotal.textContent = total;
   statActive.textContent = active;
-  statPower.textContent = `${totalPower} W`;
+  statPower.textContent = `${Math.round(totalPower * 10) / 10} W`;
+  const gw = document.getElementById('stat-gateway');
+  if (gw) {
+    const known = appData.devices.filter(d => d.online !== undefined);
+    gw.textContent = !TUYA ? 'keine Verbindung' : known.length ? `${known.filter(d => d.online).length} / ${total}` : '–';
+    gw.style.color = known.some(d => d.online === false) ? '#fbbf24' : '';
+  }
   if (countDevices) countDevices.textContent = total;
   if (countScenes) countScenes.textContent = (appData.scenes || []).length;
 }
@@ -268,7 +314,7 @@ function renderDevices() {
           <div class="device-icon-badge">${escapeHTML(device.icon || '🔌')}</div>
           <div class="device-title-box">
             <span class="device-name">${escapeHTML(device.name)}</span>
-            <span class="device-sub">${escapeHTML(device.room)} • IP: ${escapeHTML(device.ip)} (v${device.proto || '3.3'})</span>
+            <span class="device-sub">${escapeHTML(device.room)} • IP: ${escapeHTML(device.ip)} (v${device.proto || '3.3'})${device.online === false ? ' • <span class="dev-offline">nicht erreichbar</span>' : ''}</span>
           </div>
         </div>
         <label class="switch">
@@ -278,35 +324,32 @@ function renderDevices() {
       </div>
 
       <div class="device-bottom">
-        <span>Status: <span class="device-power-tag">${device.isOn ? (device.power || 5) + ' W' : 'Standby'}</span></span>
+        <span>Status: <span class="device-power-tag" title="${escapeHTML(device.error || '')}">${device.online === false ? 'Fehler – siehe Protokoll' : device.isOn ? (typeof device.power === 'number' ? device.power + ' W' : 'an') : 'aus'}</span></span>
         <div class="device-actions">
           <button class="action-btn edit-btn">⚙️ Edit</button>
         </div>
       </div>
     `;
 
-    // Toggle switch mit UDP-Command Simulation und Log-Eintrag
+    // switch the real device through the box
     card.querySelector('input[type="checkbox"]').addEventListener('change', async (e) => {
-      const newState = e.target.checked;
-      const proto = device.proto || '3.3';
-      const keySnippet = (device.key || 'unknown').slice(0, 6) + '...';
-
-      appendLog(`[UDP SEND] Target: ${device.ip}:6666 | Proto: v${proto} | Key: ${keySnippet} | Command: switch_1 -> ${newState}`, 'cmd');
-
-      // Simuliere Tuya Local Gateway Antwort
-      setTimeout(() => {
-        if (device.ip && device.key && device.key.length >= 8) {
-          device.isOn = newState;
-          appendLog(`[UDP RECV] ${device.ip} ACK: {"dps": {"1": ${newState}}, "t": ${Math.floor(Date.now()/1000)}}`, 'success');
-          saveBoxData();
-          renderAll();
-          showToast(`'${device.name}' ${newState ? 'eingeschaltet' : 'ausgeschaltet'}.`);
-        } else {
-          e.target.checked = !newState; // Rollback
-          appendLog(`[UDP ERROR] ${device.ip} FEHLER: Ungültiger Local Key oder Verbindung verweigert!`, 'error');
-          showToast(`Fehler: Schalten fehlgeschlagen (Key prüfen!)`);
-        }
-      }, 300);
+      const on = e.target.checked;
+      if (!TUYA) { e.target.checked = !on; showToast('Schalten braucht ShareOS 0.2.0-beta.11 und ein Administratorkonto.'); return; }
+      if (!device.devId) { e.target.checked = !on; showToast('Bitte zuerst die Geräte-ID eintragen (⚙️ Edit).'); return; }
+      e.target.disabled = true;
+      try {
+        await switchDevice(device, on);
+        showToast(`'${device.name}' ${on ? 'eingeschaltet' : 'ausgeschaltet'}.`);
+        saveBoxData();
+        setTimeout(() => pollDevices([device]), 1500);
+      } catch (err) {
+        e.target.checked = !on;
+        device.online = false; device.error = err.message;
+        appendLog(`[FEHLER] ${device.name}: ${err.message}`, 'error');
+        showToast(`${device.name}: ${err.message}`);
+      }
+      e.target.disabled = false;
+      renderAll();
     });
 
     card.querySelector('.edit-btn').addEventListener('click', () => openDeviceModal(device));
@@ -346,21 +389,17 @@ function renderScenes() {
     `;
 
     card.querySelector('.run-scene-btn').addEventListener('click', async () => {
-      appendLog(`[SCENE] Führe Automatisierung '${scene.title}' (${scene.action}) aus...`, 'cmd');
-      if (scene.action === 'all_off') {
-        appData.devices.forEach(d => d.isOn = false);
-        showToast(`Szene '${scene.title}' ausgeführt: Alle Geräte aus.`);
-      } else if (scene.action === 'all_on') {
-        appData.devices.forEach(d => d.isOn = true);
-        showToast(`Szene '${scene.title}' ausgeführt: Alle Geräte an.`);
-      } else if (scene.action === 'night_mode') {
-        appData.devices.forEach(d => {
-          if (d.type === 'light') d.isOn = false;
-          else if (d.type === 'switch') d.isOn = true;
-        });
-        showToast(`Szene '${scene.title}' ausgeführt: Nachtmodus aktiv.`);
+      if (!TUYA) { showToast('Szenen brauchen ShareOS 0.2.0-beta.11 und ein Administratorkonto.'); return; }
+      appendLog(`[SZENE] '${scene.title}' (${scene.action}) …`, 'cmd');
+      const want = (d) => scene.action === 'all_off' ? false : scene.action === 'all_on' ? true
+        : d.type === 'light' ? false : d.type === 'switch' ? true : null;
+      let ok = 0, bad = 0;
+      for (const d of appData.devices) {
+        const on = want(d);
+        if (on === null || !d.devId || d.type === 'sensor') continue;
+        try { await switchDevice(d, on); ok++; } catch (err) { bad++; d.online = false; d.error = err.message; appendLog(`[FEHLER] ${d.name}: ${err.message}`, 'error'); }
       }
-      appendLog(`[SCENE] Makro '${scene.title}' erfolgreich auf alle Geräte angewendet.`, 'success');
+      showToast(`Szene '${scene.title}': ${ok} geschaltet${bad ? `, ${bad} Fehler` : ''}.`);
       await saveBoxData();
       renderAll();
     });
@@ -406,8 +445,10 @@ function openDeviceModal(device = null) {
   if (fName) fName.value = device ? device.name : '';
   populateRoomSelect(device ? device.room : (activeRoom !== 'all' ? activeRoom : appData.rooms[0]));
   if (fType) fType.value = device ? device.type : 'switch';
-  if (fIp) fIp.value = device ? device.ip : '192.168.1.';
+  if (fIp) fIp.value = device ? device.ip : '';
   if (fKey) fKey.value = device ? (device.key || '') : '';
+  if (fDevId) fDevId.value = device ? (device.devId || '') : '';
+  if (fDp) fDp.value = device ? (device.dp || 1) : 1;
   if (fProto) fProto.value = device ? (device.proto || '3.3') : '3.3';
   if (fIcon) fIcon.value = device ? device.icon : '🔌';
 
@@ -440,11 +481,15 @@ if (deviceForm) {
     const key = fKey ? fKey.value.trim() : '';
     const proto = fProto ? fProto.value : '3.3';
     const icon = fIcon ? fIcon.value.trim() || '🔌' : '🔌';
+    const devId = fDevId ? fDevId.value.trim() : '';
+    const dp = fDp ? Math.max(1, Math.min(255, +fDp.value || 1)) : 1;
 
-    if (!name || !ip || !key) {
-      showToast('Name, IP und Local Key sind erforderlich!');
+    if (!name || !ip || !key || !devId) {
+      showToast('Name, IP, Geräte-ID und Local Key sind erforderlich.');
       return;
     }
+    if (!/^(\d{1,3}\.){3}\d{1,3}$/.test(ip)) { showToast('Bitte eine IPv4-Adresse eingeben.'); return; }
+    if (key.length !== 16) { showToast('Der Local Key hat 16 Zeichen.'); return; }
 
     if (editingDeviceId) {
       const item = appData.devices.find(d => d.id === editingDeviceId);
@@ -456,6 +501,8 @@ if (deviceForm) {
         item.key = key;
         item.proto = proto;
         item.icon = icon;
+        item.devId = devId;
+        item.dp = dp;
       }
       showToast('Gerät aktualisiert.');
       appendLog(`[CONFIG] Gerät '${name}' (${ip}) aktualisiert (Proto v${proto}).`, 'info');
@@ -469,16 +516,20 @@ if (deviceForm) {
         key,
         proto,
         icon,
+        devId,
+        dp,
         isOn: false,
-        power: 0
+        power: null
       });
       showToast('Gerät hinzugefügt!');
       appendLog(`[CONFIG] Neues Gerät '${name}' (${ip}) hinzugefügt (Proto v${proto}).`, 'success');
     }
 
+    const saved = editingDeviceId ? appData.devices.find(d => d.id === editingDeviceId) : appData.devices[appData.devices.length - 1];
     closeDeviceModal();
     renderAll();
     await saveBoxData();
+    if (saved) pollDevices([saved]);
   });
 }
 
@@ -511,54 +562,42 @@ if (scanModal) {
 }
 
 if (startScanBtn) {
-  startScanBtn.addEventListener('click', () => {
-    const prefix = scanSubnetInput ? scanSubnetInput.value.trim() || '192.168.1.' : '192.168.1.';
-    if (scanResultsBox) scanResultsBox.innerHTML = '<div class="scan-placeholder">⏳ Sende UDP Broadcast an Port 6666...</div>';
-    appendLog(`[DISCOVERY] Starte UDP Broadcast Scan auf Subnetz ${prefix}0/24 (Port 6666)...`, 'cmd');
-
-    setTimeout(() => {
-      const found = [
-        { name: 'Tuya Smart Plug Pro', ip: prefix + '145', type: 'switch', icon: '🔌', power: 12, proto: '3.3' },
-        { name: 'Tuya LED Stripe RGB', ip: prefix + '188', type: 'light', icon: '💡', power: 8, proto: '3.3' },
-        { name: 'Tuya Klima-Sensor', ip: prefix + '204', type: 'sensor', icon: '🌡️', power: 1, proto: '3.4' }
-      ];
-
-      if (scanResultsBox) scanResultsBox.innerHTML = '';
-      found.forEach(dev => {
-        const row = document.createElement('div');
-        row.className = 'scanned-item';
-        row.innerHTML = `
-          <div class="scanned-info">
-            <span class="scanned-title">${dev.icon} ${dev.name}</span>
-            <span class="scanned-ip">IP: ${dev.ip} (Tuya v${dev.proto})</span>
-          </div>
-          <button class="import-device-btn">Hinzufügen</button>
-        `;
-
-        row.querySelector('.import-device-btn').addEventListener('click', async () => {
-          appData.devices.push({
-            id: Date.now() + Math.floor(Math.random() * 100),
-            name: dev.name,
-            room: appData.rooms[0] || 'Wohnzimmer',
-            type: dev.type,
-            ip: dev.ip,
-            key: 'a1b2c3d4e5f6g7h8',
-            proto: dev.proto,
-            icon: dev.icon,
-            isOn: false,
-            power: dev.power
-          });
-          await saveBoxData();
-          renderAll();
-          showToast(`'${dev.name}' (${dev.ip}) importiert!`);
-          appendLog(`[DISCOVERY] Gerät ${dev.name} (${dev.ip}) erfolgreich importiert.`, 'success');
-          row.remove();
-        });
-
-        if (scanResultsBox) scanResultsBox.appendChild(row);
+  startScanBtn.addEventListener('click', async () => {
+    if (!TUYA) { showToast('Die Suche braucht ShareOS 0.2.0-beta.11 und ein Administratorkonto.'); return; }
+    const secs = +(scanSubnetInput ? scanSubnetInput.value : 6) || 6;
+    startScanBtn.disabled = true;
+    if (scanResultsBox) scanResultsBox.innerHTML = `<div class="scan-placeholder">⏳ Die Box lauscht ${secs} Sekunden auf Tuya-Geräte …</div>`;
+    appendLog(`[SUCHE] ${secs} s auf UDP 6666/6667 …`, 'cmd');
+    let found = [];
+    try { found = await TUYA.discover(secs); }
+    catch (err) { if (scanResultsBox) scanResultsBox.innerHTML = `<div class="scan-placeholder">Fehler: ${escapeHTML(err.message)}</div>`; startScanBtn.disabled = false; return; }
+    startScanBtn.disabled = false;
+    appendLog(`[SUCHE] ${found.length} Gerät(e) gefunden.`, 'success');
+    if (!scanResultsBox) return;
+    if (!found.length) { scanResultsBox.innerHTML = '<div class="scan-placeholder">Kein Gerät gemeldet. Sind die Geräte im selben Netz wie die Box? Protokoll-3.5-Geräte melden sich anders und werden noch nicht gefunden.</div>'; return; }
+    scanResultsBox.innerHTML = '';
+    found.forEach(dev => {
+      const known = appData.devices.find(d => d.devId === dev.id);
+      const row = document.createElement('div');
+      row.className = 'scanned-item';
+      row.innerHTML = `
+        <div class="scanned-info">
+          <span class="scanned-title">🔌 ${escapeHTML(known ? known.name : dev.id || 'Tuya-Gerät')}</span>
+          <span class="scanned-ip">IP: ${escapeHTML(dev.ip)} · ID ${escapeHTML(dev.id || '?')} · v${escapeHTML(dev.version || '?')}</span>
+        </div>
+        <button class="import-device-btn">${known ? 'Bearbeiten' : 'Hinzufügen'}</button>`;
+      row.querySelector('.import-device-btn').addEventListener('click', () => {
+        closeScanModal();
+        if (known) { known.ip = dev.ip; openDeviceModal(known); return; }
+        openDeviceModal();
+        if (fIp) fIp.value = dev.ip;
+        if (fDevId) fDevId.value = dev.id || '';
+        if (fProto && (dev.version === '3.3' || dev.version === '3.4')) fProto.value = dev.version;
+        if (fName) fName.value = '';
+        if (fKey) fKey.focus();
       });
-      appendLog(`[DISCOVERY] Scan beendet. ${found.length} Geräte im Heimnetz erkannt.`, 'success');
-    }, 1200);
+      scanResultsBox.appendChild(row);
+    });
   });
 }
 
@@ -585,12 +624,8 @@ if (clearLogBtn) {
 
 if (testPingBtn) {
   testPingBtn.addEventListener('click', () => {
-    appendLog(`[PING] Sende UDP Test-Heartbeat an alle ${appData.devices.length} Geräte...`, 'cmd');
-    appData.devices.forEach((d, idx) => {
-      setTimeout(() => {
-        appendLog(`[PING] ${d.name} (${d.ip}) -> PONG erhalten (Latency: ${12 + idx * 4}ms)`, 'success');
-      }, (idx + 1) * 200);
-    });
+    appendLog(`[STATUS] Frage ${appData.devices.length} Geräte ab …`, 'cmd');
+    pollDevices();
   });
 }
 
@@ -696,7 +731,7 @@ if (sceneForm) {
 }
 
 if (deviceSearch) deviceSearch.addEventListener('input', renderDevices);
-if (refreshBtn) refreshBtn.addEventListener('click', () => { initStorage(); showToast('Aktualisiert.'); });
+if (refreshBtn) refreshBtn.addEventListener('click', () => { pollDevices(); showToast('Frage die Geräte ab …'); });
 
 function escapeHTML(str) {
   return String(str).replace(/[&<>'"]/g, tag => ({
@@ -704,4 +739,9 @@ function escapeHTML(str) {
   }[tag]));
 }
 
-initStorage();
+if (!TUYA) {
+  const b = document.getElementById('banner');
+  if (b) { b.textContent = 'TuyaPulse spricht über die Box mit den Geräten und braucht dafür ShareOS 0.2.0-beta.11 oder neuer und ein Administratorkonto (Berechtigung „tuya“). Geräte lassen sich schon eintragen.'; b.classList.remove('hidden'); }
+}
+initStorage().then(() => pollDevices());
+setInterval(() => { if (!document.hidden) pollDevices(); }, 30000);

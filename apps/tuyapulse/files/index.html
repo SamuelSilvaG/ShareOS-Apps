@@ -12,7 +12,7 @@
     <div class="brand">
       <span class="brand-icon">🏠</span>
       <span class="brand-title">TuyaPulse</span>
-      <span class="version-badge">v1.4.0</span>
+      <span class="version-badge">v2.0.0</span>
     </div>
 
     <div class="header-center">
@@ -21,7 +21,7 @@
     </div>
 
     <div class="header-right">
-      <button class="t-btn secondary-btn" id="open-log-modal-btn" title="UDP Diagnose Log">📡 UDP Log</button>
+      <button class="t-btn secondary-btn" id="open-log-modal-btn" title="Anfragen und Antworten">📡 Protokoll</button>
       <button class="t-btn secondary-btn" id="open-scan-modal-btn" title="Geräte im Netzwerk suchen">🔍 Auto-Scan</button>
       <button class="t-btn secondary-btn" id="open-room-modal-btn" title="Räume verwalten">🏠 Räume</button>
       <div class="account-pill" id="user-display">Account: ...</div>
@@ -56,8 +56,8 @@
         <span class="v-val" id="stat-power">0 W</span>
       </div>
       <div class="vital-box">
-        <span class="v-label">UDP Gateway</span>
-        <span class="v-val gateway-ok">Port 6666 (Aktiv)</span>
+        <span class="v-label">Erreichbar</span>
+        <span class="v-val gateway-ok" id="stat-gateway">–</span>
       </div>
     </section>
 
@@ -65,7 +65,7 @@
     <section class="content-section" id="section-devices">
       <div class="section-head">
         <span>LOKALE SMART-HOME GERÄTE & STECKDOSEN</span>
-        <span class="pulse-indicator">● LIVE UDP SOCKET</span>
+        <span class="pulse-indicator" id="live-indicator">● lokal über die Box</span>
       </div>
 
       <div class="devices-grid" id="devices-grid"></div>
@@ -130,14 +130,25 @@
 
         <div class="form-row">
           <div class="form-group flex-2">
-            <label for="f-key">Local Key (16 Hex Zeichen)</label>
-            <input type="text" id="f-key" placeholder="z. B. a1b2c3d4e5f6g7h8" required>
+            <label for="f-devid">Geräte-ID</label>
+            <input type="text" id="f-devid" placeholder="z. B. bf1234567890abcdefgh (aus der Suche oder der Tuya-App)" required>
+          </div>
+          <div class="form-group flex-1">
+            <label for="f-dp">Schalter-Datenpunkt</label>
+            <input type="number" id="f-dp" min="1" max="255" value="1" title="Meist 1; viele Lampen: 20">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-2">
+            <label for="f-key">Local Key (16 Zeichen)</label>
+            <input type="text" id="f-key" placeholder="16 Zeichen, z. B. aus „tinytuya wizard“" maxlength="16" required>
           </div>
           <div class="form-group flex-1">
             <label for="f-proto">Protokoll-Version</label>
             <select id="f-proto">
               <option value="3.3">v3.3 (Standard)</option>
-              <option value="3.4">v3.4 (Neu / SSL)</option>
+              <option value="3.4">v3.4 (neuere Geräte)</option>
             </select>
           </div>
         </div>
@@ -158,21 +169,21 @@
     </div>
   </div>
 
-  <!-- Modal: UDP Diagnose Log -->
+  <!-- Modal: Protokoll -->
   <div class="modal-backdrop hidden" id="log-modal">
     <div class="modal-dialog log-dialog">
       <div class="modal-head">
-        <h2>📡 UDP Diagnose-Log & Test-Konsole</h2>
+        <h2>📡 Protokoll</h2>
         <button class="close-x-btn" id="close-log-x">✕</button>
       </div>
       <div class="log-modal-body">
-        <p class="scan-hint">Protokolliert alle gesendeten UDP-Befehle (Port 6666) und Geräte-Antworten in Echtzeit:</p>
+        <p class="scan-hint">Anfragen der Box an die Geräte (TCP 6668) und ihre Antworten:</p>
         <div class="log-actions-row">
           <button class="t-btn secondary-btn" id="clear-log-btn">🧹 Log leeren</button>
-          <button class="t-btn add-btn" id="test-ping-btn">⚡ Ping an alle IPs</button>
+          <button class="t-btn add-btn" id="test-ping-btn">⚡ Alle abfragen</button>
         </div>
         <div class="log-terminal" id="log-terminal">
-          <div class="log-line">[SYSTEM] UDP Socket (Port 6666) initialisiert. Bereit für LocalTuya Befehle.</div>
+          <div class="log-line">[SYSTEM] Bereit – die Box spricht lokal mit den Geräten, ohne Cloud.</div>
         </div>
       </div>
       <div class="modal-actions">
@@ -189,10 +200,10 @@
         <button class="close-x-btn" id="close-scan-x">✕</button>
       </div>
       <div class="scan-modal-body">
-        <p class="scan-hint">Durchsucht das lokale Subnetz nach Tuya-Smart-Geräten auf Port 6666 & 80:</p>
+        <p class="scan-hint">Die Box lauscht einige Sekunden auf die Meldungen, die Tuya-Geräte im Heimnetz regelmäßig senden (UDP 6666/6667). Gefunden werden IP, Geräte-ID und Protokoll – den Local Key gibt es nur über die Tuya-Cloud (z. B. <code>tinytuya wizard</code>).</p>
         <div class="scan-controls">
-          <input type="text" id="scan-subnet-input" value="192.168.1." placeholder="Subnetz Prefix">
-          <button class="t-btn add-btn" id="start-scan-btn">Scan starten</button>
+          <select id="scan-subnet-input" aria-label="Dauer"><option value="6">6 Sekunden</option><option value="12">12 Sekunden</option></select>
+          <button class="t-btn add-btn" id="start-scan-btn">Suche starten</button>
         </div>
         <div class="scan-results-box" id="scan-results-box">
           <div class="scan-placeholder">Klicke auf „Scan starten“, um Geräte im Heimnetz zu finden.</div>

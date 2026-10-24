@@ -1,279 +1,273 @@
-'use strict';
-
 /**
- * TinyPDF - Leichtgewichtiger PDF-Viewer & Touch-Signatur-Helfer
- * Findet PDFs im ShareOS.fs VFS oder erlaubt lokales Laden
+ * TinyPDF 2.0 – PDF viewer with pdf.js and a hand-drawn signature that is
+ * put into the PDF with pdf-lib. Opens PDFs from the box (ShareOS.fs.pick),
+ * from the device or from the ShareOS file browser (ShareOS.file); the signed
+ * copy is saved on the box (file dialog of the box) or downloaded.
  */
+import * as pdfjsLib from './vendor/pdfjs/pdf.min.js';
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('./vendor/pdfjs/pdf.worker.min.js', import.meta.url).href;
 
 const SOS = window.ShareOS || null;
 const FS = SOS && SOS.fs ? SOS.fs : null;
 const user = (SOS && SOS.user) || (new URLSearchParams(window.location.search).get('user')) || 'default';
+const $ = (id) => document.getElementById(id);
+$('user-display').textContent = `Account: ${user}`;
 
-document.getElementById('user-display').textContent = `Account: ${user}`;
+let pdfBytes = null;        // the original file
+let pdfDoc = null;          // pdf.js document
+let fileName = '';
+let pageNum = 1;
+let zoom = 1;               // 1 = 100 %
+let fitWidth = true;
+let renderTask = null;
+let viewport = null;
+let signature = null;       // {png (data URL), w, h, page, x, y, width} – x/y/width in PDF points
 
-let boxRootName = null;
-let currentZoom = 100;
-let currentFilename = 'Beleg_Vertrag_2026.pdf';
-let signatureDataUrl = null;
-
-// UI Elements
-const pdfFileSelector = document.getElementById('pdf-file-selector');
-const uploadPdfBtn = document.getElementById('upload-pdf-btn');
-const openSignModalBtn = document.getElementById('open-sign-modal-btn');
-const refreshBtn = document.getElementById('refresh-btn');
-const zoomOutBtn = document.getElementById('zoom-out-btn');
-const zoomInBtn = document.getElementById('zoom-in-btn');
-const zoomIndicator = document.getElementById('zoom-indicator');
-const downloadPdfBtn = document.getElementById('download-pdf-btn');
-
-const docFilename = document.getElementById('doc-filename');
-const docContentBody = document.getElementById('doc-content-body');
-const docSignatureArea = document.getElementById('doc-signature-area');
-const signaturePreviewImg = document.getElementById('signature-preview-img');
-const pdfPageWrapper = document.getElementById('pdf-page-wrapper');
-const storageStatus = document.getElementById('storage-status');
-
-// Sign Modal
-const signModal = document.getElementById('sign-modal');
-const closeSignX = document.getElementById('close-sign-x');
-const cancelSignBtn = document.getElementById('cancel-sign-btn');
-const applySignBtn = document.getElementById('apply-sign-btn');
-const clearSigBtn = document.getElementById('clear-sig-btn');
-const sigCanvas = document.getElementById('sig-canvas');
-const sigCtx = sigCanvas.getContext('2d');
+const canvas = $('pdf-canvas');
+const ctx = canvas.getContext('2d');
+const overlay = $('sig-overlay');
 
 function showToast(msg) {
-  const t = document.getElementById('toast');
+  const t = $('toast');
   t.textContent = msg;
   t.classList.remove('hidden');
   clearTimeout(t._timer);
-  t._timer = setTimeout(() => t.classList.add('hidden'), 2500);
+  t._timer = setTimeout(() => t.classList.add('hidden'), 3000);
 }
 
-function showBanner(text) {
-  const b = document.getElementById('banner');
-  b.textContent = text;
-  b.classList.remove('hidden');
-}
-
-// 1. VFS / ShareOS.fs PDF Suche
-async function initStorage() {
-  if (!FS) {
-    storageStatus.textContent = `Speicher: Browser (LocalStorage: ${user})`;
-    loadDefaultPdfContent('Mustervertrag_ShareOS_VPN.pdf', 'Dies ist ein sicheres Beispieldokument im ShareOS TinyPDF Viewer.
-
-Paragraph 1: VPN-Verbindung und Netzzugriff
-Alle Datenübertragungen erfolgen verschlüsselt über das virtuelle Heimnetz.
-
-Paragraph 2: Unterschrift
-Dieses Dokument kann direkt im Browser mittels Touch- oder Maus-Signatur digital abgezeichnet und gesichert werden.');
-    return;
-  }
-
+// 1. opening
+async function openBytes(bytes, name) {
   try {
-    const roots = await FS.roots();
-    if (roots && roots.length > 0) {
-      const homeRoot = roots.find(r => r.home) || roots[0];
-      boxRootName = homeRoot.name;
-
-      storageStatus.textContent = `Box: 🏠 ${boxRootName} (VFS verbunden)`;
-      await scanForPdfs(boxRootName, '');
-    } else {
-      showBanner('Kein persönlicher Ordner auf der Box gefunden.');
-      loadDefaultPdfContent('Mustervertrag.pdf', 'Lokales Beispieldokument.');
-    }
+    pdfBytes = new Uint8Array(bytes);
+    pdfDoc = await pdfjsLib.getDocument({ data: pdfBytes.slice() }).promise;
   } catch (err) {
-    console.warn('FS error:', err);
-    loadDefaultPdfContent('Mustervertrag.pdf', 'Lokales Beispieldokument.');
-  }
-}
-
-async function scanForPdfs(rootName, folderPath) {
-  try {
-    const items = await FS.list(rootName, folderPath);
-    items.forEach(item => {
-      const fullPath = folderPath ? `${folderPath}/${item.name}` : item.name;
-      if (item.type === 'file' && item.name.toLowerCase().endsWith('.pdf')) {
-        const opt = document.createElement('option');
-        opt.value = fullPath;
-        opt.textContent = `📄 ${fullPath}`;
-        pdfFileSelector.appendChild(opt);
-      } else if (item.type === 'dir') {
-        scanForPdfs(rootName, fullPath);
-      }
-    });
-
-    if (pdfFileSelector.options.length <= 1) {
-      // Wenn keine PDFs auf der Box, Default einfügen
-      const opt = document.createElement('option');
-      opt.value = 'demo.pdf';
-      opt.textContent = '📄 Demo-Vertrag.pdf';
-      pdfFileSelector.appendChild(opt);
-    }
-  } catch (e) {
-    console.warn('Scan error:', e);
-  }
-}
-
-function loadDefaultPdfContent(filename, textContent) {
-  currentFilename = filename;
-  docFilename.textContent = filename;
-  docContentBody.innerHTML = `<p>${textContent.replace(/\n/g, '<br>')}</p>`;
-}
-
-// PDF Auswahl von Box
-pdfFileSelector.addEventListener('change', async () => {
-  const path = pdfFileSelector.value;
-  if (!path) return;
-
-  if (path === 'demo.pdf') {
-    loadDefaultPdfContent('Demo-Vertrag.pdf', 'Dies ist ein Beispieldokument für den TinyPDF Viewer.');
-    showToast('Demo-Dokument geladen.');
+    pdfDoc = null;
+    showToast('Das ist kein lesbares PDF: ' + err.message);
     return;
   }
+  fileName = name || 'Dokument.pdf';
+  pageNum = 1;
+  signature = null;
+  fitWidth = true;
+  $('pdf-empty').classList.add('hidden');
+  $('pdf-stage').classList.remove('hidden');
+  $('open-sign-modal-btn').disabled = false;
+  $('download-pdf-btn').disabled = false;
+  $('storage-status').textContent = `📄 ${fileName} · ${pdfDoc.numPages} ${pdfDoc.numPages === 1 ? 'Seite' : 'Seiten'}`;
+  document.title = `${fileName} – TinyPDF`;
+  await renderPage();
+}
 
-  if (FS && boxRootName) {
-    try {
-      const parts = path.split('/');
-      const filename = parts.pop();
-      const dir = parts.join('/');
-      const handle = await FS.open(boxRootName, dir, filename);
-      const text = await (await handle.blob()).text();
-      loadDefaultPdfContent(filename, text);
-      showToast(`'${filename}' geladen.`);
-    } catch (e) {
-      showToast('Fehler beim Öffnen der PDF: ' + e.message);
-    }
-  }
-});
-
-// Lokale Datei öffnen
-uploadPdfBtn.addEventListener('click', () => {
+$('upload-pdf-btn').addEventListener('click', () => {
   const input = document.createElement('input');
   input.type = 'file';
-  input.accept = '.pdf,.txt,.md';
-  input.onchange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const text = await file.text();
-    loadDefaultPdfContent(file.name, text);
-    showToast(`Lokale Datei '${file.name}' geladen.`);
+  input.accept = '.pdf,application/pdf';
+  input.onchange = async () => {
+    const f = input.files[0];
+    if (f) await openBytes(await f.arrayBuffer(), f.name);
   };
   input.click();
 });
 
-// 2. Touch Signature Pad Logik
-let isDrawing = false;
-let lastX = 0;
-let lastY = 0;
+$('box-pdf-btn').addEventListener('click', async () => {
+  if (!FS || !FS.pick) { showToast('Der Dateidialog der Box braucht ShareOS 0.2.0-beta.1 und die Berechtigung „Dateien“.'); return; }
+  try {
+    const sel = await FS.pick({ title: 'PDF öffnen', ext: ['.pdf'] });
+    if (!sel || !sel.length) return;
+    const h = await FS.open(sel[0].root, sel[0].path, sel[0].name);
+    await openBytes(await (await h.blob()).arrayBuffer(), sel[0].name);
+  } catch (err) {
+    showToast('Öffnen fehlgeschlagen: ' + err.message);
+  }
+});
+if (!FS || !FS.pick) $('box-pdf-btn').disabled = true;
 
-function initSigPad() {
-  sigCtx.strokeStyle = '#0f172a';
-  sigCtx.lineWidth = 2.5;
-  sigCtx.lineCap = 'round';
-  sigCtx.lineJoin = 'round';
-
-  const getPos = (e) => {
-    const rect = sigCanvas.getBoundingClientRect();
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    return {
-      x: clientX - rect.left,
-      y: clientY - rect.top
-    };
-  };
-
-  const startDraw = (e) => {
-    isDrawing = true;
-    const pos = getPos(e);
-    lastX = pos.x;
-    lastY = pos.y;
-    e.preventDefault();
-  };
-
-  const draw = (e) => {
-    if (!isDrawing) return;
-    const pos = getPos(e);
-    sigCtx.beginPath();
-    sigCtx.moveTo(lastX, lastY);
-    sigCtx.lineTo(pos.x, pos.y);
-    sigCtx.stroke();
-    lastX = pos.x;
-    lastY = pos.y;
-    e.preventDefault();
-  };
-
-  const stopDraw = () => { isDrawing = false; };
-
-  sigCanvas.addEventListener('mousedown', startDraw);
-  sigCanvas.addEventListener('mousemove', draw);
-  window.addEventListener('mouseup', stopDraw);
-
-  sigCanvas.addEventListener('touchstart', startDraw, { passive: false });
-  sigCanvas.addEventListener('touchmove', draw, { passive: false });
-  window.addEventListener('touchend', stopDraw);
+// 2. drawing a page
+async function renderPage() {
+  if (!pdfDoc) return;
+  const page = await pdfDoc.getPage(pageNum);
+  const base = page.getViewport({ scale: 1 });
+  if (fitWidth) {
+    // the whole page in view (on phones: the width)
+    const c = $('pdf-workspace');
+    const fw = (c.clientWidth - 56) / base.width, fh = (c.clientHeight - 56) / base.height;
+    zoom = Math.max(0.3, Math.min(3, c.clientWidth < 700 ? fw : Math.min(fw, fh)));
+  }
+  viewport = page.getViewport({ scale: zoom });
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.floor(viewport.width * dpr);
+  canvas.height = Math.floor(viewport.height * dpr);
+  canvas.style.width = `${Math.floor(viewport.width)}px`;
+  canvas.style.height = `${Math.floor(viewport.height)}px`;
+  $('pdf-stage').style.width = `${Math.floor(viewport.width)}px`;
+  if (renderTask) renderTask.cancel();
+  renderTask = page.render({ canvasContext: ctx, viewport, transform: dpr !== 1 ? [dpr, 0, 0, dpr, 0, 0] : null });
+  try { await renderTask.promise; } catch (e) { if (e && e.name !== 'RenderingCancelledException') throw e; }
+  renderTask = null;
+  $('page-indicator').textContent = `Seite ${pageNum} von ${pdfDoc.numPages}`;
+  $('zoom-indicator').textContent = `${Math.round(zoom * 100)}%`;
+  $('prev-page-btn').disabled = pageNum <= 1;
+  $('next-page-btn').disabled = pageNum >= pdfDoc.numPages;
+  placeOverlay();
 }
 
-openSignModalBtn.addEventListener('click', () => {
-  signModal.classList.remove('hidden');
-  // Canvas löschen beim Öffnen
-  sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+$('prev-page-btn').addEventListener('click', () => { if (pageNum > 1) { pageNum--; renderPage(); } });
+$('next-page-btn').addEventListener('click', () => { if (pdfDoc && pageNum < pdfDoc.numPages) { pageNum++; renderPage(); } });
+$('zoom-in-btn').addEventListener('click', () => { fitWidth = false; zoom = Math.min(3, zoom * 1.2); renderPage(); });
+$('zoom-out-btn').addEventListener('click', () => { fitWidth = false; zoom = Math.max(0.3, zoom / 1.2); renderPage(); });
+$('fit-btn').addEventListener('click', () => { fitWidth = true; renderPage(); });
+window.addEventListener('resize', () => { if (fitWidth) renderPage(); });
+document.addEventListener('keydown', (e) => {
+  if (e.target.closest('input, textarea')) return;
+  if (e.key === 'ArrowRight' || e.key === 'PageDown') $('next-page-btn').click();
+  if (e.key === 'ArrowLeft' || e.key === 'PageUp') $('prev-page-btn').click();
 });
 
-closeSignX.addEventListener('click', () => signModal.classList.add('hidden'));
-cancelSignBtn.addEventListener('click', () => signModal.classList.add('hidden'));
-signModal.addEventListener('click', (e) => {
-  if (e.target === signModal) signModal.classList.add('hidden');
-});
+// 3. signature: drawn in the dialog, placed on the page, PDF points stored
+function placeOverlay() {
+  const on = signature && viewport && signature.page === pageNum;
+  overlay.classList.toggle('hidden', !on);
+  $('sig-tools').classList.toggle('hidden', !signature);
+  if (!on) return;
+  const s = viewport.scale;
+  const h = signature.width * signature.h / signature.w;
+  overlay.style.left = `${signature.x * s}px`;
+  overlay.style.top = `${(viewport.viewBox[3] - signature.y - h) * s}px`;
+  overlay.style.width = `${signature.width * s}px`;
+}
 
-clearSigBtn.addEventListener('click', () => {
-  sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+let drag = null;
+overlay.addEventListener('pointerdown', (e) => {
+  drag = { x: e.clientX, y: e.clientY, sx: signature.x, sy: signature.y };
+  overlay.setPointerCapture(e.pointerId);
+  e.preventDefault();
 });
-
-applySignBtn.addEventListener('click', () => {
-  signatureDataUrl = sigCanvas.toDataURL('image/png');
-  signaturePreviewImg.src = signatureDataUrl;
-  signaturePreviewImg.classList.remove('hidden');
-  docSignatureArea.classList.remove('hidden');
-  signModal.classList.add('hidden');
-  showToast('Unterschrift erfolgreich in das Dokument eingefügt!');
+overlay.addEventListener('pointermove', (e) => {
+  if (!drag) return;
+  const s = viewport.scale;
+  const h = signature.width * signature.h / signature.w;
+  signature.x = Math.max(0, Math.min(viewport.viewBox[2] - signature.width, drag.sx + (e.clientX - drag.x) / s));
+  signature.y = Math.max(0, Math.min(viewport.viewBox[3] - h, drag.sy - (e.clientY - drag.y) / s));
+  placeOverlay();
 });
+overlay.addEventListener('pointerup', () => { drag = null; });
+const resizeSig = (f) => { if (!signature) return; signature.width = Math.max(40, Math.min(400, signature.width * f)); placeOverlay(); };
+$('sig-bigger').addEventListener('click', () => resizeSig(1.15));
+$('sig-smaller').addEventListener('click', () => resizeSig(1 / 1.15));
+$('sig-remove').addEventListener('click', () => { signature = null; placeOverlay(); });
 
-// 3. Zoom & Download
-zoomInBtn.addEventListener('click', () => {
-  if (currentZoom < 160) {
-    currentZoom += 15;
-    pdfPageWrapper.style.transform = `scale(${currentZoom / 100})`;
-    zoomIndicator.textContent = `${currentZoom}%`;
+// the signature pad
+const sigCanvas = $('sig-canvas');
+const sigCtx = sigCanvas.getContext('2d');
+let drawing = false, last = null, inked = false;
+function padPos(e) {
+  const r = sigCanvas.getBoundingClientRect();
+  return { x: (e.clientX - r.left) * sigCanvas.width / r.width, y: (e.clientY - r.top) * sigCanvas.height / r.height };
+}
+sigCanvas.style.touchAction = 'none';
+sigCanvas.addEventListener('pointerdown', (e) => { drawing = true; last = padPos(e); sigCanvas.setPointerCapture(e.pointerId); });
+sigCanvas.addEventListener('pointermove', (e) => {
+  if (!drawing) return;
+  const p = padPos(e);
+  sigCtx.strokeStyle = '#0b2a6f';
+  sigCtx.lineWidth = 2.6;
+  sigCtx.lineCap = 'round';
+  sigCtx.lineJoin = 'round';
+  sigCtx.beginPath(); sigCtx.moveTo(last.x, last.y); sigCtx.lineTo(p.x, p.y); sigCtx.stroke();
+  last = p; inked = true;
+});
+sigCanvas.addEventListener('pointerup', () => { drawing = false; });
+const clearPad = () => { sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height); inked = false; };
+$('clear-sig-btn').addEventListener('click', clearPad);
+
+// crop the drawing to its strokes (transparent PNG)
+function croppedSignature() {
+  const { width, height } = sigCanvas;
+  const data = sigCtx.getImageData(0, 0, width, height).data;
+  let x0 = width, y0 = height, x1 = -1, y1 = -1;
+  for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
+    if (data[(y * width + x) * 4 + 3] > 10) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
   }
+  if (x1 < 0) return null;
+  const pad = 6;
+  x0 = Math.max(0, x0 - pad); y0 = Math.max(0, y0 - pad); x1 = Math.min(width - 1, x1 + pad); y1 = Math.min(height - 1, y1 + pad);
+  const c = document.createElement('canvas');
+  c.width = x1 - x0 + 1; c.height = y1 - y0 + 1;
+  c.getContext('2d').drawImage(sigCanvas, x0, y0, c.width, c.height, 0, 0, c.width, c.height);
+  return { png: c.toDataURL('image/png'), w: c.width, h: c.height };
+}
+
+$('open-sign-modal-btn').addEventListener('click', () => { clearPad(); $('sign-modal').classList.remove('hidden'); });
+const closeSign = () => $('sign-modal').classList.add('hidden');
+$('close-sign-x').addEventListener('click', closeSign);
+$('cancel-sign-btn').addEventListener('click', closeSign);
+$('sign-modal').addEventListener('click', (e) => { if (e.target === $('sign-modal')) closeSign(); });
+$('apply-sign-btn').addEventListener('click', () => {
+  const sig = inked ? croppedSignature() : null;
+  if (!sig) { showToast('Bitte zuerst unterschreiben.'); return; }
+  const pw = viewport.viewBox[2], ph = viewport.viewBox[3];
+  const width = Math.min(180, pw * 0.35);
+  // bottom right of the page to start with, then drag it into place
+  signature = { ...sig, page: pageNum, width, x: pw - width - 50, y: 60 };
+  overlay.src = sig.png;
+  closeSign();
+  placeOverlay();
+  showToast('Unterschrift an die richtige Stelle ziehen, dann „Speichern“.');
 });
 
-zoomOutBtn.addEventListener('click', () => {
-  if (currentZoom > 70) {
-    currentZoom -= 15;
-    pdfPageWrapper.style.transform = `scale(${currentZoom / 100})`;
-    zoomIndicator.textContent = `${currentZoom}%`;
+// 4. saving: the original PDF with the signature drawn in (pdf-lib)
+async function buildPdf() {
+  if (!signature) return pdfBytes;
+  const { PDFDocument } = window.PDFLib;
+  const doc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
+  const png = await doc.embedPng(signature.png);
+  const page = doc.getPage(signature.page - 1);
+  const box = page.getCropBox ? page.getCropBox() : { x: 0, y: 0 };
+  const h = signature.width * signature.h / signature.w;
+  page.drawImage(png, { x: box.x + signature.x, y: box.y + signature.y, width: signature.width, height: h });
+  return await doc.save();
+}
+
+$('download-pdf-btn').addEventListener('click', async () => {
+  if (!pdfBytes) return;
+  let out;
+  try { out = await buildPdf(); }
+  catch (err) { showToast('PDF konnte nicht erzeugt werden: ' + err.message); return; }
+  const name = signature ? fileName.replace(/(\.pdf)?$/i, '_unterschrieben.pdf') : fileName;
+  const blob = new Blob([out], { type: 'application/pdf' });
+  if (FS && FS.pick) {
+    try {
+      const sel = await FS.pick({ title: 'PDF speichern', save: true, name, ext: ['.pdf'] });
+      if (sel && sel.length) {
+        const h = await FS.open(sel[0].root, sel[0].path, sel[0].name, { write: true, create: true });
+        await h.save(blob);
+        showToast(`Gespeichert: ${sel[0].name}`);
+        return;
+      }
+      if (sel === null) return;
+    } catch (err) {
+      showToast('Speichern auf der Box fehlgeschlagen – lade herunter: ' + err.message);
+    }
   }
-});
-
-downloadPdfBtn.addEventListener('click', () => {
-  const content = document.getElementById('pdf-virtual-doc').outerHTML;
-  const blob = new Blob([content], { type: 'text/html;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url;
-  a.download = `Signed_${currentFilename}.html`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  showToast('Signiertes Dokument heruntergeladen!');
+  a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+  showToast('PDF heruntergeladen.');
 });
 
-refreshBtn.addEventListener('click', () => {
-  initStorage();
-  showToast('Aktualisiert.');
-});
-
-initSigPad();
-initStorage();
+// 5. opened from the ShareOS file browser
+(async () => {
+  if (SOS && SOS.file) {
+    try {
+      const info = await SOS.file.info();
+      await openBytes(await (await SOS.file.blob()).arrayBuffer(), info.name);
+    } catch (err) {
+      showToast('Datei aus ShareOS: ' + err.message);
+    }
+  }
+  if (!FS) $('storage-status').textContent = 'Ohne „Dateien“: PDFs vom Gerät öffnen, Ergebnis wird heruntergeladen';
+  else if (!pdfDoc) $('storage-status').textContent = 'Bereit';
+})();

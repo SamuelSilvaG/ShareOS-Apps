@@ -2,7 +2,7 @@
 
 /**
  * KeyKeeper - SSH Keys, API Tokens & SSL Certificate Manager
- * Speichert Daten unter security/credentials.json via ShareOS.fs
+ * 2.0: everything encrypted with a master password (security/keykeeper.enc)
  */
 
 const SOS = window.ShareOS || null;
@@ -20,6 +20,9 @@ let activeType = 'all';
 let editingCredId = null;
 
 // UI Elements
+const $ = (id) => document.getElementById(id);
+const lockView = $('lock-view');
+const appView = $('app-view');
 const credentialSearch = document.getElementById('credential-search');
 const openAddBtn = document.getElementById('open-add-btn');
 const refreshBtn = document.getElementById('refresh-btn');
@@ -61,101 +64,138 @@ function showBanner(text) {
   b.classList.remove('hidden');
 }
 
-// 1. Storage & ShareOS.fs Setup
+// 1. Storage: one encrypted file in the personal folder on the box
+//    (security/keykeeper.enc, AES-GCM-256, key from the master password with
+//    PBKDF2-SHA256, 250 000 rounds); a browser copy of the same encrypted
+//    data when the box is not reachable. Nothing is stored in plain text.
+const VAULT_FILE = 'keykeeper.enc';
+const LS_KEY = 'keykeeper_vault';
+const ITER = 250000;
+let vaultKey = null;      // CryptoKey while unlocked
+let vaultSalt = null;
+let legacyPlain = null;   // credentials.json of 1.0 (plain text), moved into the vault
+
+function b64(u8) { let s = ''; for (let i = 0; i < u8.length; i += 8192) s += String.fromCharCode.apply(null, u8.subarray(i, i + 8192)); return btoa(s); }
+const unb64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+
+async function deriveKey(pw, salt) {
+  const km = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: ITER, hash: 'SHA-256' }, km, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+}
+
+async function readBoxText(name) {
+  const h = await FS.open(boxRootName, SECURITY_DIR, name);
+  return await (await h.blob()).text();
+}
+
 async function initStorage() {
-  if (!FS) {
-    storageStatus.textContent = `Speicher: Browser (LocalStorage: ${user})`;
-    loadFallbackCredentials();
-    return;
+  if (FS) {
+    try {
+      const roots = await FS.roots();
+      if (roots && roots.length) {
+        boxRootName = (roots.find(r => r.home) || roots[0]).name;
+        await FS.mkdir(boxRootName, '', SECURITY_DIR).catch(() => {});
+        storageStatus.textContent = `Box: 🏠 ${boxRootName}/${SECURITY_DIR}/${VAULT_FILE} (verschlüsselt)`;
+      }
+    } catch (err) { console.warn('FS error:', err); }
   }
-
-  try {
-    const roots = await FS.roots();
-    if (roots && roots.length > 0) {
-      const homeRoot = roots.find(r => r.home) || roots[0];
-      boxRootName = homeRoot.name;
-
-      await FS.mkdir(boxRootName, '', SECURITY_DIR).catch(() => {});
-      storageStatus.textContent = `Box: 🏠 ${boxRootName}/${SECURITY_DIR}/${CREDENTIALS_FILE}`;
-      await loadBoxCredentials();
-    } else {
-      showBanner('Kein persönlicher Ordner auf der Box gefunden.');
-      loadFallbackCredentials();
+  if (!boxRootName) storageStatus.textContent = 'Speicher: Browser (verschlüsselt)';
+  let stored = null;
+  if (boxRootName) {
+    try { stored = await readBoxText(VAULT_FILE); } catch (_) { stored = null; }
+    if (!stored) {
+      try { legacyPlain = JSON.parse(await readBoxText(CREDENTIALS_FILE)); } catch (_) { legacyPlain = null; }
     }
+  }
+  if (!stored) { try { stored = localStorage.getItem(LS_KEY); } catch (_) {} }
+  if (!legacyPlain) {
+    try { const old = localStorage.getItem(`keykeeper_${user}`) || localStorage.getItem('keykeeper_' + 'default'); if (old) legacyPlain = JSON.parse(old); } catch (_) {}
+  }
+  // the sample entries of 1.0 are not taken over
+  if (Array.isArray(legacyPlain)) legacyPlain = legacyPlain.filter(c => !(c.id <= 3 && /xyz987|AAABlw==|AJCV/.test(c.secret || '')));
+  showLock(stored);
+}
+
+function showLock(stored) {
+  lockView.dataset.mode = stored ? 'unlock' : 'create';
+  lockView._stored = stored;
+  $('lock-sub').textContent = stored ? 'Gib dein Master-Passwort ein, um deine Schlüssel zu entschlüsseln.'
+    : 'Lege ein Master-Passwort fest. Damit werden alle Schlüssel, Tokens und Zertifikate verschlüsselt – ohne es kommt niemand an die Daten, auch du nicht.';
+  $('master-pw2').classList.toggle('hidden', !!stored);
+  $('unlock-btn').textContent = stored ? 'Entsperren' : 'Tresor anlegen';
+  $('lock-legacy').classList.toggle('hidden', !(Array.isArray(legacyPlain) && legacyPlain.length && !stored));
+  if (Array.isArray(legacyPlain) && legacyPlain.length) $('lock-legacy').textContent = `${legacyPlain.length} ${legacyPlain.length === 1 ? 'Eintrag' : 'Einträge'} aus der unverschlüsselten Datei von KeyKeeper 1.0 werden übernommen und die alte Datei danach gelöscht.`;
+  lockView.classList.remove('hidden');
+  appView.classList.add('hidden');
+  $('master-pw').value = ''; $('master-pw2').value = '';
+  $('master-pw').focus();
+}
+
+async function unlock() {
+  const pw = $('master-pw').value;
+  const stored = lockView._stored;
+  const btn = $('unlock-btn');
+  if (!stored) {
+    if (pw.length < 8) { showToast('Das Master-Passwort braucht mindestens 8 Zeichen.'); return; }
+    if (pw !== $('master-pw2').value) { showToast('Die Passwörter stimmen nicht überein.'); return; }
+  }
+  btn.disabled = true; btn.textContent = 'Berechne Schlüssel …';
+  try {
+    if (stored) {
+      const p = JSON.parse(stored);
+      vaultSalt = unb64(p.salt);
+      vaultKey = await deriveKey(pw, vaultSalt);
+      const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(p.iv) }, vaultKey, unb64(p.data));
+      credentials = JSON.parse(new TextDecoder().decode(plain));
+    } else {
+      vaultSalt = crypto.getRandomValues(new Uint8Array(16));
+      vaultKey = await deriveKey(pw, vaultSalt);
+      credentials = Array.isArray(legacyPlain) ? legacyPlain : [];
+      await saveBoxCredentials();
+      await dropLegacy();
+    }
+    lockView.classList.add('hidden');
+    appView.classList.remove('hidden');
+    renderAll();
   } catch (err) {
-    console.warn('FS error:', err);
-    loadFallbackCredentials();
+    vaultKey = null;
+    showToast(stored ? 'Falsches Master-Passwort oder beschädigte Datei.' : 'Anlegen fehlgeschlagen: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = lockView._stored ? 'Entsperren' : 'Tresor anlegen';
   }
 }
 
-async function loadBoxCredentials() {
-  if (!FS || !boxRootName) return;
-
-  try {
-    const handle = await FS.open(boxRootName, SECURITY_DIR, CREDENTIALS_FILE);
-    const text = await (await handle.blob()).text();
-    credentials = JSON.parse(text);
-  } catch (_) {
-    createDefaultCredentials();
-    await saveBoxCredentials();
+// the plain-text data of 1.0 go once they are in the vault
+async function dropLegacy() {
+  try { localStorage.removeItem(`keykeeper_${user}`); localStorage.removeItem('keykeeper_default'); } catch (_) {}
+  if (legacyPlain && FS && boxRootName) {
+    try { await FS.remove(boxRootName, SECURITY_DIR, [CREDENTIALS_FILE]); showToast('Alte unverschlüsselte Datei gelöscht.'); } catch (_) {}
   }
-  renderAll();
+  legacyPlain = null;
 }
 
 async function saveBoxCredentials() {
-  localStorage.setItem(`keykeeper_${user}`, JSON.stringify(credentials));
-
+  if (!vaultKey) return;
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const data = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, vaultKey, new TextEncoder().encode(JSON.stringify(credentials))));
+  const text = JSON.stringify({ app: 'keykeeper', v: 1, kdf: 'PBKDF2-SHA256', iter: ITER, salt: b64(vaultSalt), iv: b64(iv), data: b64(data), mtime: new Date().toISOString() });
+  try { localStorage.setItem(LS_KEY, text); } catch (_) {}
   if (FS && boxRootName) {
     try {
-      const handle = await FS.open(boxRootName, SECURITY_DIR, CREDENTIALS_FILE, { write: true, create: true });
-      await handle.save(new Blob([JSON.stringify(credentials, null, 2)], { type: 'application/json' }));
-      if (SOS && SOS.emit) {
-        SOS.emit('file-saved', { to: 'all', path: `box:${boxRootName}/${SECURITY_DIR}/${CREDENTIALS_FILE}`, name: CREDENTIALS_FILE });
-      }
+      const handle = await FS.open(boxRootName, SECURITY_DIR, VAULT_FILE, { write: true, create: true });
+      await handle.save(new Blob([text], { type: 'application/json' }));
     } catch (e) {
-      showToast('Speichern fehlgeschlagen: ' + e.message);
+      showToast('Speichern auf der Box fehlgeschlagen: ' + e.message);
     }
   }
 }
 
-function loadFallbackCredentials() {
-  const raw = localStorage.getItem(`keykeeper_${user}`);
-  if (raw) {
-    try { credentials = JSON.parse(raw); } catch (_) {}
-  }
-  if (!credentials || !credentials.length) {
-    createDefaultCredentials();
-  }
-  renderAll();
-}
-
-function createDefaultCredentials() {
-  credentials = [
-    {
-      id: 1,
-      title: 'Proxmox VE Root SSH Key',
-      type: 'ssh',
-      secret: '-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAABlw==\n-----END OPENSSH PRIVATE KEY-----',
-      expiry: '',
-      target: '192.168.1.10'
-    },
-    {
-      id: 2,
-      title: 'Cloudflare Wildcard SSL Cert',
-      type: 'ssl',
-      secret: '-----BEGIN CERTIFICATE-----\nMIIDXTCCAkWgAwIBAgIJAJCV\n-----END CERTIFICATE-----',
-      expiry: '2027-11-15',
-      target: '*.homelab.local'
-    },
-    {
-      id: 3,
-      title: 'GitHub Personal Access Token',
-      type: 'token',
-      secret: 'ghp_secret_homelab_automation_token_xyz987',
-      expiry: '2026-12-31',
-      target: 'github.com'
-    }
-  ];
+function lock() {
+  vaultKey = null;
+  credentials = [];
+  credentialsGrid.innerHTML = '';
+  initStorage();
 }
 
 // 2. Rendering
@@ -344,10 +384,12 @@ document.querySelectorAll('#type-filter-bar .filter-pill').forEach(btn => {
 });
 
 credentialSearch.addEventListener('input', renderCredentials);
-refreshBtn.addEventListener('click', () => {
-  initStorage();
-  showToast('Aktualisiert.');
-});
+refreshBtn.addEventListener('click', () => { lock(); showToast('Gesperrt.'); });
+$('unlock-form').addEventListener('submit', (e) => { e.preventDefault(); unlock(); });
+// lock again after 10 minutes without use
+let idle = null;
+const touch = () => { clearTimeout(idle); idle = setTimeout(() => { if (vaultKey) { lock(); showToast('Nach 10 Minuten automatisch gesperrt.'); } }, 600000); };
+['click', 'keydown', 'pointermove'].forEach(ev => document.addEventListener(ev, touch, { passive: true }));
 
 function escapeHTML(str) {
   return String(str).replace(/[&<>'"]/g, tag => ({

@@ -1,374 +1,281 @@
 'use strict';
 
 /**
- * DockerDeck - Leichtgewichtiger Docker Container & Stack Manager
- * Speichert Daten unter system/dockerdeck_containers.json via ShareOS.fs
+ * DockerDeck 2.0 – the Docker hosts of the homelab through ShareOS.docker
+ * (permission "docker", admin accounts, ShareOS 0.2.0-beta.11+): the box
+ * talks to their Docker Engine API. Containers with state, stack (compose
+ * project) and ports; start, stop, restart, log and CPU/memory per container.
+ * Docker itself does not run on the box.
  */
 
 const SOS = window.ShareOS || null;
-const FS = SOS && SOS.fs ? SOS.fs : null;
+const DK = SOS && SOS.docker ? SOS.docker : null;
 const user = (SOS && SOS.user) || (new URLSearchParams(window.location.search).get('user')) || 'default';
 
-document.getElementById('user-display').textContent = `Account: ${user}`;
+const $ = (id) => document.getElementById(id);
+$('user-display').textContent = `Account: ${user}`;
 
-const SYSTEM_DIR = 'system';
-const CONTAINERS_FILE = 'dockerdeck_containers.json';
-let boxRootName = null;
-
-let containers = [];
+let hosts = [];
+let containers = [];       // [{host, hostLabel, id, name, image, state, status, ports, stack}]
+let hostState = {};        // name -> {ok, version, images, error}
 let activeFilter = 'all';
-let activeCategory = 'all';
-let editingContainerId = null;
-
-// UI Elements
-const containerSearch = document.getElementById('container-search');
-const openAddBtn = document.getElementById('open-add-btn');
-const pruneBtn = document.getElementById('prune-btn');
-const refreshContainersBtn = document.getElementById('refresh-containers-btn');
-const refreshBtn = document.getElementById('refresh-btn');
-const containersGrid = document.getElementById('containers-grid');
-const emptyState = document.getElementById('empty-state');
-const storageStatus = document.getElementById('storage-status');
-
-const statTotal = document.getElementById('stat-total');
-const statRunning = document.getElementById('stat-running');
-const statRam = document.getElementById('stat-ram');
-const countAll = document.getElementById('count-all');
-const countRunning = document.getElementById('count-running');
-const countStopped = document.getElementById('count-stopped');
-
-// Modal Elements
-const containerModal = document.getElementById('container-modal');
-const modalHeading = document.getElementById('modal-heading');
-const containerForm = document.getElementById('container-form');
-const fName = document.getElementById('f-name');
-const fCat = document.getElementById('f-cat');
-const fImage = document.getElementById('f-image');
-const fPorts = document.getElementById('f-ports');
-const fEnv = document.getElementById('f-env');
-const modalDeleteBtn = document.getElementById('modal-delete-btn');
-const modalCancelBtn = document.getElementById('modal-cancel-btn');
-const closeModalX = document.getElementById('close-modal-x');
+let activeStack = null;
+let logTarget = null;
 
 function showToast(msg) {
-  const t = document.getElementById('toast');
+  const t = $('toast');
   t.textContent = msg;
   t.classList.remove('hidden');
   clearTimeout(t._timer);
-  t._timer = setTimeout(() => t.classList.add('hidden'), 2500);
+  t._timer = setTimeout(() => t.classList.add('hidden'), 3000);
 }
-
 function showBanner(text) {
-  const b = document.getElementById('banner');
+  const b = $('banner');
   b.textContent = text;
   b.classList.remove('hidden');
 }
+function escapeHTML(str) {
+  return String(str).replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag]));
+}
+const fmtMB = (b) => b >= 1073741824 ? (b / 1073741824).toFixed(2) + ' GB' : Math.round(b / 1048576) + ' MB';
 
-// 1. Storage & ShareOS.fs Setup
-async function initStorage() {
-  if (!FS) {
-    storageStatus.textContent = `Speicher: Browser (LocalStorage: ${user})`;
-    loadFallbackContainers();
-    return;
-  }
-
+// 1. hosts and containers
+async function loadAll() {
+  if (!DK) return;
   try {
-    const roots = await FS.roots();
-    if (roots && roots.length > 0) {
-      const homeRoot = roots.find(r => r.home) || roots[0];
-      boxRootName = homeRoot.name;
-
-      await FS.mkdir(boxRootName, '', SYSTEM_DIR).catch(() => {});
-      storageStatus.textContent = `Box: 🏠 ${boxRootName}/${SYSTEM_DIR}/${CONTAINERS_FILE}`;
-      await loadBoxContainers();
-    } else {
-      showBanner('Kein persönlicher Ordner auf der Box gefunden.');
-      loadFallbackContainers();
-    }
+    hosts = await DK.hosts();
   } catch (err) {
-    console.warn('FS error:', err);
-    loadFallbackContainers();
-  }
-}
-
-async function loadBoxContainers() {
-  if (!FS || !boxRootName) return;
-
-  try {
-    const handle = await FS.open(boxRootName, SYSTEM_DIR, CONTAINERS_FILE);
-    const text = await (await handle.blob()).text();
-    containers = JSON.parse(text);
-  } catch (_) {
-    createDefaultContainers();
-    await saveBoxContainers();
-  }
-  renderAll();
-}
-
-async function saveBoxContainers() {
-  localStorage.setItem(`dockerdeck_${user}`, JSON.stringify(containers));
-
-  if (FS && boxRootName) {
-    try {
-      const handle = await FS.open(boxRootName, SYSTEM_DIR, CONTAINERS_FILE, { write: true, create: true });
-      await handle.save(new Blob([JSON.stringify(containers, null, 2)], { type: 'application/json' }));
-      if (SOS && SOS.emit) {
-        SOS.emit('file-saved', { to: 'all', path: `box:${boxRootName}/${SYSTEM_DIR}/${CONTAINERS_FILE}`, name: CONTAINERS_FILE });
-      }
-    } catch (e) {
-      showToast('Speichern fehlgeschlagen: ' + e.message);
-    }
-  }
-}
-
-function loadFallbackContainers() {
-  const raw = localStorage.getItem(`dockerdeck_${user}`);
-  if (raw) {
-    try { containers = JSON.parse(raw); } catch (_) {}
-  }
-  if (!containers || !containers.length) {
-    createDefaultContainers();
-  }
-  renderAll();
-}
-
-function createDefaultContainers() {
-  containers = [
-    { id: 1, name: 'nginx-proxy-manager', category: 'proxy', image: 'jc21/nginx-proxy-manager:latest', ports: '80:80, 443:443, 81:81', status: 'running', ram: 84, uptime: '3 Tage' },
-    { id: 2, name: 'postgres-db', category: 'database', image: 'postgres:16-alpine', ports: '5432:5432', status: 'running', ram: 142, uptime: '3 Tage' },
-    { id: 3, name: 'home-assistant', category: 'tools', image: 'ghcr.io/home-assistant/home-assistant:stable', ports: '8123:8123', status: 'running', ram: 310, uptime: '12 Tage' },
-    { id: 4, name: 'jellyfin-media', category: 'media', image: 'jellyfin/jellyfin:latest', ports: '8096:8096', status: 'stopped', ram: 0, uptime: 'Gestoppt' }
-  ];
-}
-
-// 2. Rendering
-function renderAll() {
-  updateStats();
-  renderContainers();
-}
-
-function updateStats() {
-  const total = containers.length;
-  const running = containers.filter(c => c.status === 'running').length;
-
-  let totalRam = 0;
-  containers.forEach(c => {
-    if (c.status === 'running') totalRam += (c.ram || 45);
-  });
-
-  statTotal.textContent = total;
-  statRunning.textContent = running;
-  statRam.textContent = `${totalRam} MB`;
-
-  countAll.textContent = total;
-  countRunning.textContent = running;
-  countStopped.textContent = total - running;
-}
-
-function renderContainers() {
-  const query = containerSearch.value.trim().toLowerCase();
-  containersGrid.innerHTML = '';
-
-  const filtered = containers.filter(c => {
-    if (activeFilter === 'running' && c.status !== 'running') return false;
-    if (activeFilter === 'stopped' && c.status !== 'stopped') return false;
-    if (activeCategory !== 'all' && c.category !== activeCategory) return false;
-    if (query) {
-      return c.name.toLowerCase().includes(query) ||
-             c.image.toLowerCase().includes(query) ||
-             (c.ports || '').toLowerCase().includes(query);
-    }
-    return true;
-  });
-
-  if (!filtered.length) {
-    emptyState.classList.remove('hidden');
+    showBanner(/no access/.test(err.message) ? 'Kein Zugriff: DockerDeck ist nur für Administratoren.' : 'Docker-Hosts: ' + err.message);
     return;
   }
-  emptyState.classList.add('hidden');
-
-  filtered.forEach(container => {
-    const card = document.createElement('div');
-    card.className = 'container-card';
-
-    let statusHtml = '<span class="status-pill status-stopped">⚪ Stopped</span>';
-    if (container.status === 'running') {
-      statusHtml = '<span class="status-pill status-running">● Running</span>';
+  renderHostSelect();
+  $('storage-status').textContent = hosts.length ? `${hosts.length} Docker-Host${hosts.length === 1 ? '' : 's'} eingetragen` : 'kein Docker-Host eingetragen';
+  const sel = $('host-select').value;
+  const list = sel ? hosts.filter(h => h.name === sel) : hosts;
+  $('refresh-containers-btn').disabled = true;
+  const all = [];
+  await Promise.all(list.map(async (h) => {
+    try {
+      const [v, cs, imgs] = await Promise.all([DK.version(h.name), DK.containers(h.name, true), DK.images(h.name).catch(() => null)]);
+      hostState[h.name] = { ok: true, version: v.Version, images: Array.isArray(imgs) ? imgs.length : null };
+      for (const c of cs) {
+        all.push({
+          host: h.name, hostLabel: h.label, id: c.Id, name: (c.Names && c.Names[0] || c.Id.slice(0, 12)).replace(/^\//, ''),
+          image: c.Image, state: c.State, status: c.Status,
+          stack: c.Labels && (c.Labels['com.docker.compose.project'] || c.Labels['com.docker.stack.namespace']) || null,
+          ports: (c.Ports || []).filter(p => p.PublicPort).map(p => `${p.PublicPort}:${p.PrivatePort}${p.Type === 'udp' ? '/udp' : ''}`)
+            .filter((x, i, a) => a.indexOf(x) === i).join(', ')
+        });
+      }
+    } catch (err) {
+      hostState[h.name] = { ok: false, error: err.message };
     }
+  }));
+  $('refresh-containers-btn').disabled = false;
+  containers = all.sort((a, b) => (a.stack || '~').localeCompare(b.stack || '~') || a.name.localeCompare(b.name));
+  const bad = list.filter(h => hostState[h.name] && !hostState[h.name].ok);
+  if (bad.length) showToast(bad.map(h => `${h.label}: ${hostState[h.name].error}`).join(' · '));
+  renderAll();
+}
 
-    let icon = '🐳';
-    if (container.category === 'database') icon = '🗄️';
-    else if (container.category === 'proxy') icon = '🌐';
-    else if (container.category === 'media') icon = '🎬';
+function renderHostSelect() {
+  const sel = $('host-select'), cur = sel.value;
+  sel.innerHTML = `<option value="">Alle Hosts (${hosts.length})</option>` + hosts.map(h => `<option value="${escapeHTML(h.name)}">${escapeHTML(h.label)}</option>`).join('');
+  if (hosts.some(h => h.name === cur)) sel.value = cur;
+}
 
-    card.innerHTML = `
+// 2. view
+function renderAll() {
+  const running = containers.filter(c => c.state === 'running');
+  const stacks = [...new Set(containers.map(c => c.stack).filter(Boolean))];
+  $('count-all').textContent = containers.length;
+  $('count-running').textContent = running.length;
+  $('count-stopped').textContent = containers.length - running.length;
+  $('stat-total').textContent = stacks.length;
+  $('stat-running').textContent = `${running.length} / ${containers.length}`;
+  const sel = $('host-select').value;
+  const shown = sel ? [sel] : hosts.map(h => h.name);
+  const imgs = shown.map(n => hostState[n] && hostState[n].images).filter(x => x != null);
+  $('stat-ram').textContent = imgs.length ? imgs.reduce((a, b) => a + b, 0) : '–';
+  const ok = shown.filter(n => hostState[n] && hostState[n].ok);
+  const versions = [...new Set(ok.map(n => hostState[n].version))];
+  const d = $('stat-daemon');
+  d.textContent = !shown.length ? '–' : ok.length === shown.length ? (versions.length === 1 ? 'v' + versions[0] : `${ok.length} verbunden`) : `${ok.length} / ${shown.length} erreichbar`;
+  d.className = 'v-val ' + (shown.length && ok.length === shown.length ? 'daemon-ok' : '');
+
+  const bar = $('stack-filter-bar');
+  if (activeStack && !stacks.includes(activeStack)) activeStack = null;
+  bar.innerHTML = stacks.length ? stacks.map(s => `<button class="filter-pill${s === activeStack ? ' active' : ''}" data-stack="${escapeHTML(s)}">📦 ${escapeHTML(s)}</button>`).join('') : '';
+  renderGrid();
+}
+
+const STATE = { running: ['running', '● Running'], exited: ['stopped', '⚪ Gestoppt'], created: ['stopped', '⚪ Erstellt'], paused: ['paused', '⏸ Pausiert'], restarting: ['restarting', '🔁 Startet neu'], dead: ['dead', '✖ Tot'], removing: ['dead', '✖ Wird entfernt'] };
+
+function renderGrid() {
+  const query = $('container-search').value.trim().toLowerCase();
+  const filtered = containers.filter(c => {
+    if (activeFilter === 'running' && c.state !== 'running') return false;
+    if (activeFilter === 'stopped' && c.state === 'running') return false;
+    if (activeStack && c.stack !== activeStack) return false;
+    return !query || [c.name, c.image, c.stack || '', c.ports, c.hostLabel].some(x => x.toLowerCase().includes(query));
+  });
+  $('grid-title').textContent = activeStack ? `STACK ${activeStack.toUpperCase()}` : 'CONTAINER';
+  const empty = $('empty-state');
+  empty.classList.toggle('hidden', filtered.length > 0);
+  if (!hosts.length) { $('empty-title').textContent = 'Noch kein Docker-Host'; $('empty-sub').classList.remove('hidden'); }
+  else { $('empty-title').textContent = containers.length ? 'Kein Container passt zum Filter' : 'Keine Container gefunden'; $('empty-sub').classList.add('hidden'); }
+  const multi = hosts.length > 1 && !$('host-select').value;
+  $('containers-grid').innerHTML = filtered.map(c => {
+    const st = STATE[c.state] || ['stopped', c.state];
+    const run = c.state === 'running';
+    const key = escapeHTML(c.host + '|' + c.id);
+    return `<div class="container-card" data-key="${key}">
       <div class="container-top">
         <div class="container-meta">
-          <div class="container-icon-badge">${icon}</div>
+          <div class="container-icon-badge">${c.stack ? '📦' : '🐳'}</div>
           <div class="container-title-box">
-            <span class="container-name">${escapeHTML(container.name)}</span>
-            <span class="container-image">${escapeHTML(container.image)}</span>
+            <span class="container-name">${escapeHTML(c.name)}</span>
+            <span class="container-image">${escapeHTML(c.image)}</span>
           </div>
         </div>
-        ${statusHtml}
+        <span class="status-pill status-${st[0]}">${st[1]}</span>
       </div>
-
+      <div class="container-sub">
+        ${c.stack ? `<span class="tag">📦 ${escapeHTML(c.stack)}</span>` : ''}
+        ${multi ? `<span class="tag">🖥️ ${escapeHTML(c.hostLabel)}</span>` : ''}
+        <span>${escapeHTML(c.status || '')}</span>
+      </div>
       <div class="container-info-row">
-        <span>Ports: ${escapeHTML(container.ports || '-')}</span>
-        <span>RAM: ${container.status === 'running' ? (container.ram || 50) + ' MB' : '0 MB'}</span>
+        <span>Ports: ${escapeHTML(c.ports || '–')}</span>
       </div>
-
       <div class="container-bottom">
         <div class="container-actions">
-          <button class="action-btn toggle-btn">${container.status === 'running' ? '⏹️ Stoppen' : '▶️ Starten'}</button>
-          <button class="action-btn restart-btn">🔄 Neustart</button>
-          <button class="action-btn edit-btn">⚙️ Edit</button>
+          <button class="action-btn" data-act="${run ? 'stop' : 'start'}">${run ? '⏹️ Stoppen' : '▶️ Starten'}</button>
+          <button class="action-btn" data-act="restart"${run ? '' : ' disabled'}>🔄 Neustart</button>
+          <button class="action-btn" data-act="logs">📜 Protokoll</button>
         </div>
       </div>
-    `;
-
-    // Start / Stop Toggle
-    card.querySelector('.toggle-btn').addEventListener('click', async () => {
-      container.status = container.status === 'running' ? 'stopped' : 'running';
-      await saveBoxContainers();
-      renderAll();
-      showToast(`Container '${container.name}' ${container.status === 'running' ? 'gestartet' : 'gestoppt'}.`);
-    });
-
-    // Restart
-    card.querySelector('.restart-btn').addEventListener('click', async () => {
-      container.status = 'running';
-      await saveBoxContainers();
-      renderAll();
-      showToast(`Container '${container.name}' neugestartet.`);
-    });
-
-    // Edit
-    card.querySelector('.edit-btn').addEventListener('click', () => openModal(container));
-
-    containersGrid.appendChild(card);
-  });
+    </div>`;
+  }).join('');
 }
 
-// 3. Modal Logik
-function openModal(container = null) {
-  editingContainerId = container ? container.id : null;
-  modalHeading.textContent = container ? 'Container bearbeiten' : 'Container hinzufügen';
-
-  fName.value = container ? container.name : '';
-  fCat.value = container ? container.category : 'proxy';
-  fImage.value = container ? container.image : '';
-  fPorts.value = container ? container.ports : '';
-  fEnv.value = container ? (container.env || '') : '';
-
-  modalDeleteBtn.classList.toggle('hidden', !container);
-  containerModal.classList.remove('hidden');
-  fName.focus();
-}
-
-function closeModal() {
-  containerModal.classList.add('hidden');
-  editingContainerId = null;
-  containerForm.reset();
-}
-
-openAddBtn.addEventListener('click', () => openModal());
-closeModalX.addEventListener('click', closeModal);
-modalCancelBtn.addEventListener('click', closeModal);
-containerModal.addEventListener('click', (e) => {
-  if (e.target === containerModal) closeModal();
-});
-
-containerForm.addEventListener('submit', async () => {
-  const name = fName.value.trim();
-  const category = fCat.value;
-  const image = fImage.value.trim();
-  const ports = fPorts.value.trim();
-  const env = fEnv.value.trim();
-
-  if (!name || !image) return;
-
-  if (editingContainerId) {
-    const item = containers.find(c => c.id === editingContainerId);
-    if (item) {
-      item.name = name;
-      item.category = category;
-      item.image = image;
-      item.ports = ports;
-      item.env = env;
-    }
-    showToast('Container aktualisiert.');
-  } else {
-    containers.push({
-      id: Date.now(),
-      name,
-      category,
-      image,
-      ports,
-      env,
-      status: 'running',
-      ram: Math.floor(Math.random() * 80 + 30),
-      uptime: 'Gerade gestartet'
-    });
-    showToast('Container hinzugefügt & gestartet!');
+// 3. actions on a container
+$('containers-grid').addEventListener('click', async (e) => {
+  const btn = e.target.closest('.action-btn');
+  const card = e.target.closest('.container-card');
+  if (!btn || !card || btn.disabled) return;
+  const [host, id] = card.dataset.key.split('|');
+  const c = containers.find(x => x.host === host && x.id === id);
+  if (!c) return;
+  const act = btn.dataset.act;
+  if (act === 'logs') { openLogs(c); return; }
+  if (act === 'stop' && !confirm(`Container „${c.name}“ stoppen?`)) return;
+  card.querySelectorAll('.action-btn').forEach(b => { b.disabled = true; });
+  try {
+    await DK.action(host, id, act);
+    showToast(`„${c.name}“ ${act === 'start' ? 'gestartet' : act === 'stop' ? 'gestoppt' : 'neu gestartet'}.`);
+  } catch (err) {
+    showToast(`${c.name}: ${err.message}`);
   }
-
-  closeModal();
-  renderAll();
-  await saveBoxContainers();
+  await loadAll();
 });
 
-modalDeleteBtn.addEventListener('click', async () => {
-  if (!editingContainerId) return;
-  if (!confirm('Diesen Container wirklich löschen?')) return;
+// 4. log and resources of one container
+async function openLogs(c) {
+  logTarget = c;
+  $('log-heading').textContent = `Protokoll · ${c.name}`;
+  $('log-modal').classList.remove('hidden');
+  await reloadLogs();
+}
+async function reloadLogs() {
+  const c = logTarget;
+  if (!c) return;
+  $('log-box').textContent = 'Lade …';
+  $('log-stats').textContent = '';
+  try {
+    const text = await DK.logs(c.host, c.id, +$('log-tail').value);
+    $('log-box').textContent = text || '(keine Ausgabe)';
+    $('log-box').scrollTop = $('log-box').scrollHeight;
+  } catch (err) {
+    $('log-box').textContent = 'Fehler: ' + err.message;
+  }
+  if (c.state === 'running') {
+    try {
+      const s = await DK.stats(c.host, c.id);
+      const cpuD = s.cpu_stats.cpu_usage.total_usage - s.precpu_stats.cpu_usage.total_usage;
+      const sysD = (s.cpu_stats.system_cpu_usage || 0) - (s.precpu_stats.system_cpu_usage || 0);
+      const cores = s.cpu_stats.online_cpus || (s.cpu_stats.cpu_usage.percpu_usage || []).length || 1;
+      const cpu = sysD > 0 ? cpuD / sysD * cores * 100 : 0;
+      const mem = s.memory_stats.usage - ((s.memory_stats.stats || {}).inactive_file || (s.memory_stats.stats || {}).cache || 0);
+      $('log-stats').textContent = `CPU ${cpu.toFixed(1)} % · RAM ${fmtMB(mem)}${s.memory_stats.limit ? ' / ' + fmtMB(s.memory_stats.limit) : ''}`;
+    } catch (_) { /* stats are optional */ }
+  }
+}
+$('log-reload').addEventListener('click', reloadLogs);
+$('log-tail').addEventListener('change', reloadLogs);
+const closeLog = () => { $('log-modal').classList.add('hidden'); logTarget = null; };
+$('close-log-x').addEventListener('click', closeLog);
+$('log-modal').addEventListener('click', (e) => { if (e.target === $('log-modal')) closeLog(); });
 
-  containers = containers.filter(c => c.id !== editingContainerId);
-  closeModal();
-  renderAll();
-  await saveBoxContainers();
-  showToast('Container gelöscht.');
+// 5. managing the hosts
+function renderHostList() {
+  $('host-list').innerHTML = hosts.length ? hosts.map(h => {
+    const st = hostState[h.name];
+    return `<div class="host-row"><span>${st ? (st.ok ? '🟢' : '🔴') : '⚪'}</span>
+      <div class="grow"><b>${escapeHTML(h.label)}</b><small>${escapeHTML(h.name)} · ${escapeHTML(h.url)}${h.insecure ? ' · Zertifikat ungeprüft' : ''}${st && !st.ok ? ' · ' + escapeHTML(st.error) : ''}</small></div>
+      <button class="del" data-name="${escapeHTML(h.name)}" title="Host entfernen">🗑</button></div>`;
+  }).join('') : '<p class="form-hint">Noch kein Host eingetragen.</p>';
+}
+$('hosts-btn').addEventListener('click', () => { renderHostList(); $('hosts-modal').classList.remove('hidden'); });
+const closeHosts = () => $('hosts-modal').classList.add('hidden');
+$('close-hosts-x').addEventListener('click', closeHosts);
+$('hosts-close-btn').addEventListener('click', closeHosts);
+$('hosts-modal').addEventListener('click', (e) => { if (e.target === $('hosts-modal')) closeHosts(); });
+$('host-list').addEventListener('click', async (e) => {
+  const b = e.target.closest('.del');
+  if (!b || !confirm(`Host „${b.dataset.name}“ aus DockerDeck entfernen? (Am Server ändert sich nichts.)`)) return;
+  try { hosts = await DK.removeHost(b.dataset.name); delete hostState[b.dataset.name]; renderHostList(); await loadAll(); }
+  catch (err) { showToast(err.message); }
+});
+$('host-form').addEventListener('submit', async () => {
+  const name = $('f-hname').value.trim().toLowerCase();
+  try {
+    hosts = await DK.setHost({ name, label: $('f-hlabel').value.trim(), url: $('f-hurl').value.trim(), insecure: $('f-hinsecure').checked });
+    $('host-form').reset();
+    showToast('Host gespeichert – verbinde …');
+    await loadAll();
+    renderHostList();
+    const st = hostState[name];
+    showToast(st && st.ok ? `Verbunden: Docker ${st.version}` : `Gespeichert, aber nicht erreichbar: ${st ? st.error : ''}`);
+  } catch (err) {
+    showToast(err.message);
+  }
 });
 
-// 4. Prune & Filter Events
-pruneBtn.addEventListener('click', async () => {
-  const before = containers.length;
-  containers = containers.filter(c => c.status === 'running');
-  const removed = before - containers.length;
-  await saveBoxContainers();
-  renderAll();
-  showToast(removed > 0 ? `${removed} gestoppte Container bereinigt (Prune).` : 'Keine gestoppten Container zum Bereinigen.');
-});
-
+// 6. filters and refresh
 document.querySelectorAll('#status-filter-bar .filter-pill').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('#status-filter-bar .filter-pill').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-
-    if (btn.dataset.filter) {
-      activeFilter = btn.dataset.filter;
-      activeCategory = 'all';
-    } else if (btn.dataset.cat) {
-      activeCategory = btn.dataset.cat;
-      activeFilter = 'all';
-    }
-    renderContainers();
+    activeFilter = btn.dataset.filter;
+    renderGrid();
   });
 });
-
-containerSearch.addEventListener('input', renderContainers);
-refreshContainersBtn.addEventListener('click', () => {
+$('stack-filter-bar').addEventListener('click', (e) => {
+  const b = e.target.closest('.filter-pill');
+  if (!b) return;
+  activeStack = activeStack === b.dataset.stack ? null : b.dataset.stack;
   renderAll();
-  showToast('Container-Status aktualisiert.');
 });
-refreshBtn.addEventListener('click', () => {
-  initStorage();
-  showToast('Aktualisiert.');
-});
+$('container-search').addEventListener('input', renderGrid);
+$('host-select').addEventListener('change', loadAll);
+$('refresh-containers-btn').addEventListener('click', loadAll);
+setInterval(() => { if (DK && !document.hidden && $('log-modal').classList.contains('hidden') && $('hosts-modal').classList.contains('hidden')) loadAll(); }, 30000);
 
-function escapeHTML(str) {
-  return String(str).replace(/[&<>'"]/g, tag => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
-  }[tag]));
+if (!DK) {
+  showBanner('DockerDeck braucht ShareOS 0.2.0-beta.11 oder neuer und ein Administratorkonto (Berechtigung „docker“).');
+  $('empty-state').classList.remove('hidden');
+  $('hosts-btn').disabled = true;
+} else {
+  loadAll().then(() => { if (!hosts.length) { renderHostList(); $('hosts-modal').classList.remove('hidden'); } });
 }
-
-initStorage();

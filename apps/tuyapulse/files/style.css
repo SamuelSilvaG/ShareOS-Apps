@@ -598,3 +598,6 @@ input:checked + .slider:before { transform: translateX(22px); }
   .tuya-vitals { grid-template-columns: 1fr; }
   .devices-grid, .scenes-grid { grid-template-columns: 1fr; }
 }
+
+.dev-offline { color: #f87171; }
+.scan-hint code { font-size: 11px; }

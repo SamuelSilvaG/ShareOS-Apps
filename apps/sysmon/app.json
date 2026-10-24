@@ -1,26 +1,32 @@
 {
   "id": "sysmon",
   "name": "SysMon",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "publisher": "UniqueDroid",
   "description": {
-    "de": "Leichtgewichtiger Task-Manager & System-Monitor für ShareOS mit CPU-, RAM- und Prozessanzeige sowie ShareOS.fs Logging.",
-    "en": "Lightweight task manager & system monitor for ShareOS with CPU, memory, and process inspector plus ShareOS.fs logging."
+    "de": "System-Monitor und Task-Manager der Box: CPU, Arbeitsspeicher, Temperatur, Lüfter, Last, Netzwerk, Laufwerke und alle Prozesse live – Prozesse beenden, Snapshots auf der Box. Nur für Administratoren.",
+    "en": "System monitor and task manager of the box: CPU, memory, temperature, fan, load, network, drives and every process live – end processes, snapshots on the box. Admins only."
   },
   "type": "webapp",
   "entry": "index.html",
   "icon": "icon.svg",
   "category": "system",
   "license": "GPL-2.0-only",
-  "min_shareos": "0.2.0-beta.1",
-  "permissions": ["files"],
+  "min_shareos": "0.2.0-beta.11",
+  "permissions": [
+    "files",
+    "sysinfo"
+  ],
   "window": {
     "width": 1040,
     "height": 720
   },
   "opens": [
     {
-      "ext": [".json", ".log"],
+      "ext": [
+        ".json",
+        ".log"
+      ],
       "mode": "view",
       "label": {
         "de": "In SysMon anzeigen",
