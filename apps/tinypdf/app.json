@@ -1,26 +1,30 @@
 {
   "id": "tinypdf",
   "name": "TinyPDF",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "publisher": "UniqueDroid",
   "description": {
-    "de": "Leichtgewichtiger PDF-Viewer & Formular-Helfer mit Touch-Unterschrift und ShareOS.fs VFS Anbindung.",
-    "en": "Lightweight PDF viewer & form assistant with touch signature and ShareOS.fs VFS integration."
+    "de": "PDF-Betrachter mit Unterschrift: echte PDF-Seiten (pdf.js), Unterschrift zeichnen, auf der Seite platzieren und als neues PDF auf der Box speichern.",
+    "en": "PDF viewer with signature: real PDF pages (pdf.js), draw a signature, place it on the page and save a new PDF on the box."
   },
   "type": "webapp",
   "entry": "index.html",
   "icon": "icon.svg",
   "category": "office",
-  "license": "GPL-2.0-only",
+  "license": "GPL-2.0-only (TinyPDF); pdf.js Apache-2.0, pdf-lib MIT",
   "min_shareos": "0.2.0-beta.1",
-  "permissions": ["files"],
+  "permissions": [
+    "files"
+  ],
   "window": {
     "width": 1080,
     "height": 740
   },
   "opens": [
     {
-      "ext": [".pdf"],
+      "ext": [
+        ".pdf"
+      ],
       "mode": "view",
       "label": {
         "de": "In TinyPDF öffnen",

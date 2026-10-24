@@ -598,3 +598,5 @@ input:checked + .slider:before { transform: translateX(22px); }
   .tuya-vitals { grid-template-columns: 1fr; }
   .devices-grid, .scenes-grid { grid-template-columns: 1fr; }
 }
+
+.demo-badge { background: rgba(245, 158, 11, 0.18) !important; color: #fbbf24 !important; border-color: rgba(245, 158, 11, 0.45) !important; }

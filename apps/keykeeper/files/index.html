@@ -8,11 +8,26 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="sos-app key-body">
+  <!-- LOCK VIEW -->
+  <div id="lock-view" class="lock-overlay hidden">
+    <form class="lock-card" id="unlock-form">
+      <div class="lock-icon">🔐</div>
+      <h1 class="lock-title">KeyKeeper</h1>
+      <p class="lock-sub" id="lock-sub"></p>
+      <input type="password" id="master-pw" class="master-input" placeholder="Master-Passwort" autocomplete="current-password" required>
+      <input type="password" id="master-pw2" class="master-input hidden" placeholder="Master-Passwort wiederholen" autocomplete="new-password">
+      <button type="submit" id="unlock-btn" class="unlock-btn">Entsperren</button>
+      <p class="lock-legacy hidden" id="lock-legacy"></p>
+      <p class="lock-hint">AES-GCM-256 im Browser, Schlüssel aus dem Master-Passwort (PBKDF2, 250 000 Runden). Auf der Box liegt nur die verschlüsselte Datei <code>security/keykeeper.enc</code>. Nach 10 Minuten ohne Bedienung sperrt KeyKeeper sich.</p>
+    </form>
+  </div>
+
+  <div id="app-view" class="app-view hidden">
   <header class="k-header">
     <div class="brand">
       <span class="brand-icon">🔐</span>
       <span class="brand-title">KeyKeeper</span>
-      <span class="version-badge">v1.0.0</span>
+      <span class="version-badge">v2.0.0</span>
     </div>
 
     <div class="header-center">
@@ -21,7 +36,7 @@
     </div>
 
     <div class="header-right">
-      <button class="icon-nav-btn" id="refresh-btn" title="Aktualisieren">🔄</button>
+      <button class="icon-nav-btn" id="refresh-btn" title="Sperren">🔒</button>
       <div class="account-pill" id="user-display">Account: ...</div>
     </div>
   </header>
@@ -108,6 +123,8 @@
     <span id="storage-status">Verbinde mit Box-Dateisystem...</span>
     <span>KeyKeeper (security/credentials.json via ShareOS.fs)</span>
   </footer>
+
+  </div>
 
   <div id="toast" class="toast hidden"></div>
 
