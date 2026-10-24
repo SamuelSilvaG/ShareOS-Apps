@@ -257,18 +257,7 @@ unlockForm.addEventListener('submit', async () => {
     const rawCipher = await loadEncryptedData();
     if (!rawCipher) {
       vaultCategories = DEFAULT_CATEGORIES.map(c => ({ ...c }));
-      vaultEntries = [
-        {
-          id: Date.now(),
-          category: 'server',
-          title: 'ShareOS Box Web-Login',
-          username: user,
-          password: 'GeheimesPasswort123!',
-          url: window.location.origin,
-          totp: '',
-          notes: 'Standard-Eintrag für dein ShareOS Konto auf der Box.'
-        }
-      ];
+      vaultEntries = [];
       const cipher = await encryptVault(vaultData(), pw);
       await saveEncryptedData(cipher);
       showToast('Neuer Tresor erfolgreich angelegt!');

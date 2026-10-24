@@ -8,6 +8,7 @@
 - Die Kachel zeigt das Symbol und den Namen ihrer Rubrik.
 
 ### Geändert
+- Ein neuer Tresor beginnt leer – kein Beispiel-Eintrag mit Beispiel-Passwort mehr.
 - Tresor-Format 2: die Datei enthält Einträge und Rubriken (`{ entries, categories }`). Tresore aus 1.0.x werden weiter geöffnet; ihre Einträge landen in „Allgemein“, die Beispiel-Rubriken kommen dazu.
 
 ## [1.0.5] - 2026-10-24
