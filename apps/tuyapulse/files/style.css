@@ -599,4 +599,5 @@ input:checked + .slider:before { transform: translateX(22px); }
   .devices-grid, .scenes-grid { grid-template-columns: 1fr; }
 }
 
-.demo-badge { background: rgba(245, 158, 11, 0.18) !important; color: #fbbf24 !important; border-color: rgba(245, 158, 11, 0.45) !important; }
+.dev-offline { color: #f87171; }
+.scan-hint code { font-size: 11px; }
