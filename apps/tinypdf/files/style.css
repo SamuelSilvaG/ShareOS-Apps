@@ -366,3 +366,13 @@ body.pdf-body {
   .ctrl-btn { padding: 4px 6px; }
   .pdf-virtual-document { padding: 20px; }
 }
+
+/* 2.0: real PDF pages (pdf.js), signature placed on the page */
+.pdf-stage { position: relative; margin: 0 auto; box-shadow: 0 6px 24px rgba(0,0,0,0.45); background: #fff; line-height: 0; }
+.pdf-stage canvas { display: block; }
+.sig-overlay { position: absolute; cursor: move; touch-action: none; user-select: none; outline: 2px dashed rgba(59, 130, 246, 0.85); outline-offset: 2px; background: rgba(59, 130, 246, 0.06); }
+.pdf-empty { margin: 60px auto; color: var(--sos-muted); }
+.pdf-empty .empty-title { color: var(--sos-text); }
+.pdf-canvas-container { overflow: auto; }
+.sig-group { display: flex; align-items: center; gap: 6px; }
+.pdf-btn:disabled, .ctrl-btn:disabled { opacity: 0.45; cursor: not-allowed; }

@@ -1,11 +1,11 @@
 {
   "id": "tuyapulse",
   "name": "TuyaPulse",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "publisher": "UniqueDroid",
   "description": {
-    "de": "Lokales Smart-Home Dashboard mit Protokoll-Auswahl (v3.3/v3.4), UDP-Diagnose-Log und Auto-Discovery.",
-    "en": "Local smart home dashboard with protocol selection (v3.3/v3.4), UDP debug log and auto-discovery."
+    "de": "DEMO – Smart-Home-Dashboard für lokale Tuya-Geräte (Protokoll 3.3/3.4). Schaltet noch keine echten Geräte; die echte Steuerung kommt mit einem Dienst auf der Box.",
+    "en": "DEMO – smart home dashboard for local Tuya devices (protocol 3.3/3.4). Does not switch real devices yet; real control comes with a service on the box."
   },
   "type": "webapp",
   "entry": "index.html",
@@ -13,14 +13,18 @@
   "category": "smarthome",
   "license": "MIT",
   "min_shareos": "0.2.0-beta.1",
-  "permissions": ["files"],
+  "permissions": [
+    "files"
+  ],
   "window": {
     "width": 1140,
     "height": 780
   },
   "opens": [
     {
-      "ext": [".json"],
+      "ext": [
+        ".json"
+      ],
       "mode": "edit",
       "label": {
         "de": "In TuyaPulse öffnen",
