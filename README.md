@@ -29,7 +29,7 @@ browser's storage without it.
 | [TaskBoard](apps/taskboard) | Kanban board for tasks; columns stack on phones |
 | [DailyLog](apps/dailylog) | Diary and bullet journal with a calendar |
 | [BoxScan](apps/boxscan) | Document scanner and receipt archive with the phone camera and image filters |
-| [TinyPDF](apps/tinypdf) | PDF viewer and form helper with touch signature |
+| [TinyPDF](apps/tinypdf) | PDF viewer (pdf.js) with a drawn signature placed on the page and saved as a new PDF |
 | [ExpenseTracker](apps/expensetracker) | Expenses and budget on the go, CSV export |
 
 **Media**
@@ -53,14 +53,14 @@ browser's storage without it.
 | [HomePing](apps/homeping) | Status board for the hosts of your homelab |
 | [SysMon](apps/sysmon) | System monitor and task manager view |
 | [DockerDeck](apps/dockerdeck) | Overview of Docker containers and stacks of your homelab |
-| [TuyaPulse](apps/tuyapulse) | Dashboard for local Tuya smart-home devices (protocol v3.3/v3.4) |
+| [TuyaPulse](apps/tuyapulse) | Dashboard for local Tuya smart-home devices (protocol v3.3/v3.4) – **demo for now**: real switching comes with a service on the box |
 
 **Security**
 
 | App | What it does |
 |---|---|
 | [ShareVault](apps/sharevault) | Password and 2FA (TOTP) manager, encrypted with AES-GCM in the browser; categories with examples and your own |
-| [KeyKeeper](apps/keykeeper) | SSH keys, API tokens and SSL certificates of your homelab in one list |
+| [KeyKeeper](apps/keykeeper) | SSH keys, API tokens and SSL certificates of your homelab, encrypted with a master password |
 | [PassphraseGen](apps/passphrasegen) | Diceware passphrases with WebCrypto, with a history |
 
 **Development**
