@@ -11,7 +11,7 @@
 	"entry": "index.html",
 	"icon": "icon.svg",
 	"category": "tools",
-	"license": "MIT",
+	"license": "GPL-2.0-only",
 	"homepage": "https://github.com/UniqueDroid/ShareOS-Apps/tree/main/apps/sharecommander",
 	"min_shareos": "0.1.0-beta.11",
 	"permissions": [
