@@ -1,11 +1,11 @@
 {
   "id": "speedcheck",
   "name": "SpeedCheck",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "UniqueDroid",
   "description": {
-    "de": "Heimnetz-, VPN- & Latenz-Diagnose für unterwegs mit Protokollierung via ShareOS.fs.",
-    "en": "Home network, VPN & latency diagnostic tool on the go with logging via ShareOS.fs."
+    "de": "Verbindung zwischen diesem Gerät und der Box messen – zu Hause oder unterwegs über VPN: Ping, Jitter und Durchsatz, mit Protokoll auf der Box.",
+    "en": "Measure the connection between this device and the box – at home or on the road through a VPN: ping, jitter and throughput, with a log on the box."
   },
   "type": "webapp",
   "entry": "index.html",
@@ -14,14 +14,19 @@
   "license": "GPL-2.0-only",
   "internet": true,
   "min_shareos": "0.2.0-beta.1",
-  "permissions": ["files"],
+  "permissions": [
+    "files"
+  ],
   "window": {
     "width": 960,
     "height": 680
   },
   "opens": [
     {
-      "ext": [".json", ".log"],
+      "ext": [
+        ".json",
+        ".log"
+      ],
       "mode": "view",
       "label": {
         "de": "In SpeedCheck anzeigen",
