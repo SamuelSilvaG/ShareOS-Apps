@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * SpeedCheck - Heimnetz & VPN Diagnose Tool
+ * SpeedCheck - latency, jitter and throughput between this device and the box
  * Ermittelt Latenzen zur Box, Jitter, Transferrate & speichert Logs via ShareOS.fs
  */
 
@@ -38,8 +38,6 @@ const storageStatus = document.getElementById('storage-status');
 
 const DEFAULT_NODES = [
   { id: 'box-core', name: 'ShareOS Box Core', desc: 'Web-Server & Kernel API', type: 'self' },
-  { id: 'gateway', name: 'Heim-Gateway / Router', desc: 'FritzBox / Lokales Subnetz', type: 'ping' },
-  { id: 'dns', name: 'Lokales DNS / Pi-hole', desc: 'Namensauflösung im VPN', type: 'ping' },
   { id: 'storage', name: 'NAS / Festplatten-I/O', desc: 'Dateisystem-Durchsatz', type: 'io' }
 ];
 
@@ -174,7 +172,7 @@ async function startDiagnosis() {
   }
 
   valPing.textContent = `${avgPing} ms`;
-  subPing.textContent = avgPing < 45 ? 'Ausgezeichnet (VPN optimal)' : (avgPing < 100 ? 'Gut' : 'Erhöhte Latenz');
+  subPing.textContent = avgPing < 45 ? 'Ausgezeichnet' : (avgPing < 100 ? 'Gut' : 'Erhöhte Latenz');
   valPing.style.color = avgPing < 50 ? '#10b981' : (avgPing < 120 ? '#f59e0b' : '#ef4444');
 
   valJitter.textContent = `${jitter} ms`;
@@ -194,19 +192,19 @@ async function startDiagnosis() {
     valSpeed.textContent = `${mbps} Mbit/s`;
     subSpeed.textContent = `Payload: ${(blob.size / 1024).toFixed(0)} KB in ${(sec * 1000).toFixed(0)} ms`;
   } catch (_) {
-    valSpeed.textContent = '~12.5 Mbit/s';
-    subSpeed.textContent = 'Geschätzter Tunnelwert';
+    valSpeed.textContent = '—';
+    subSpeed.textContent = 'Messung fehlgeschlagen';
   }
 
   // Phase 3: Gesamtfazit & Nodes
   if (avgPing < 75) {
     valStatus.textContent = 'Exzellent';
     valStatus.style.color = '#10b981';
-    subStatus.textContent = 'VPN stabil & schnell';
+    subStatus.textContent = 'Verbindung zur Box stabil und schnell';
   } else if (avgPing < 180) {
     valStatus.textContent = 'Akzeptabel';
     valStatus.style.color = '#f59e0b';
-    subStatus.textContent = 'Mobilfunk-Latenz';
+    subStatus.textContent = 'Erhöhte Latenz (z. B. Mobilfunk)';
   } else {
     valStatus.textContent = 'Kritisch';
     valStatus.style.color = '#ef4444';
@@ -225,9 +223,7 @@ function updateNodeStatus(avgPing) {
   const isOnline = avgPing < 900 && avgPing > 0;
   const nodes = [
     { ...DEFAULT_NODES[0], status: isOnline ? 'Online (Aktiv)' : 'Offline', state: isOnline ? 'online' : 'offline' },
-    { ...DEFAULT_NODES[1], status: isOnline ? `${Math.max(1, Math.round(avgPing * 0.85))} ms` : 'Nicht erreichbar', state: isOnline ? 'online' : 'offline' },
-    { ...DEFAULT_NODES[2], status: isOnline ? 'Bereit (DNS Auflösung ok)' : 'Warnung', state: isOnline ? 'online' : 'warning' },
-    { ...DEFAULT_NODES[3], status: FS ? 'ShareOS.fs angebunden' : 'Browser-Storage', state: FS ? 'online' : 'warning' }
+    { ...DEFAULT_NODES[1], status: FS ? 'ShareOS.fs angebunden' : 'Browser-Storage', state: FS ? 'online' : 'warning' }
   ];
   renderNodes(nodes);
 }
