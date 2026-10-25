@@ -1,28 +1,91 @@
 # ShareOS Apps
 
 Apps for [ShareOS](https://github.com/UniqueDroid/ShareOS), the alternative NAS
-firmware for the D-Link DNS-320L. ShareOS shows them under **APPS → Store** and
+firmware for the D-Link DNS-320L, DNS-320 and DNS-325. ShareOS shows them under **APPS → Store** and
 installs them with one click – the same way it offers firmware updates.
 
 *Deutsch weiter unten.*
 
+> **This repository takes web apps only** (HTML/CSS/JS that run in the
+> browser and use the app SDK). **System apps** – native programs and
+> services (daemons) for the box – are submitted to the
+> [ShareOS repository, folder `sysapps/`](https://github.com/UniqueDroid/ShareOS/tree/main/sysapps),
+> which has an example of each kind. See [System apps and services](#system-apps-and-services).
+
 ## Apps
+
+38 web apps. Most save their data in the personal folder of the signed-in
+account on the box (permission `files`, `ShareOS.fs`) and fall back to the
+browser's storage without it.
+
+**Files and office**
 
 | App | What it does |
 |---|---|
 | [Webpad](apps/webpad) | Text editor in the style of Notepad++; opens and saves files on the box or on your computer, takes files from other apps |
-| [WebTerm](apps/webterm) | Terminal with tabs, a virtual file system, a JavaScript sandbox and a bridge to Webpad; views log files of the box |
 | [ShareCommander](apps/sharecommander) | Two-pane file manager in the style of Total Commander for the folders of the box and the browser file system (shared with WebTerm): ZIP, multi-rename, preview, bridges to Webpad and WinWeb Player |
-| [WinWeb Player](apps/webplayer) | Audio and video player in retro style with equalizer and visualizer; plays music and videos from your area on the box (streamed, with seeking) or from your computer |
 | [SheetOS](apps/sheetos) | Small spreadsheet with formulas; opens and saves CSV files of the box |
-| [DevBox](apps/devbox) | Developer toolbox: JSON, Base64/URL/hex, checksums (also of files of the box), regex, diff, JWT |
-| [API-Pilot](apps/apipilot) | REST and GraphQL client in the style of Postman: headers, auth, JSON/GraphQL/form bodies, history, cURL/fetch code; saves responses on the box or opens them in Webpad |
+| [ShareNotes](apps/notes) | Sticky notes in colour with an edit dialog and search; every note is a file in your personal folder on the box |
+| [TaskBoard](apps/taskboard) | Kanban board for tasks; columns stack on phones |
+| [DailyLog](apps/dailylog) | Diary and bullet journal with a calendar |
+| [BoxScan](apps/boxscan) | Document scanner and receipt archive with the phone camera and image filters |
+| [TinyPDF](apps/tinypdf) | PDF viewer (pdf.js) with a drawn signature placed on the page and saved as a new PDF |
+| [ExpenseTracker](apps/expensetracker) | Expenses and budget on the go, CSV export |
+
+**Media**
+
+| App | What it does |
+|---|---|
+| [WinWeb Player](apps/webplayer) | Audio and video player in retro style with equalizer and visualizer; plays music and videos from your area on the box (streamed, with seeking) or from your computer |
+| [MediaTranscoder](apps/mediatranscoder) | Converts media on the box with FFmpeg (system app `ffmpeg`): audio to MP3/M4A/Opus/FLAC/WAV, videos into another container without re-encoding, cut out parts; jobs run in the background |
 | [BeatBox Studio](apps/beatbox) | 16-step drum sequencer with synthesizer; projects (`.beatbox`) and WAV loops on the box, sends loops to WinWeb Player |
+| [PhotoDrop](apps/photodrop) | Upload photos from the phone straight to the box, with a gallery |
+| [ShareAudio](apps/shareaudio) | Voice memos and audio recordings saved on the box |
+
+**Network and system**
+
+| App | What it does |
+|---|---|
 | [Transmission](apps/transmission) | BitTorrent client by @SamuelSilvaG: every user has their own Transmission service (system app `transmission-daemon`), downloads into their folders |
 | [NetTunnel](apps/nettunnel) | VPN for the box (OpenVPN, system app `openvpn`): as client import profiles and connect; as server reach home from anywhere with a ready-made profile per device; admins only, shown inside ShareOS |
-| [MediaTranscoder](apps/mediatranscoder) | Converts media on the box with FFmpeg (system app `ffmpeg`): audio to MP3/M4A/Opus/FLAC/WAV, videos into another container without re-encoding, cut out parts; jobs run in the background |
-| [Tailscale](apps/tailscale) | WireGuard-based mesh VPN client by @SamuelSilvaG: secure zero-config remote access to your box, files (SMB) and web apps from anywhere |
-| [autobrr](apps/autobrr) | Download automation for IRC announces and RSS feeds by @SamuelSilvaG: filters releases in real time and sends torrents directly to Transmission |
+| [Tailscale](apps/tailscale) | WireGuard-based mesh VPN client by @SamuelSilvaG: secure zero-config remote access to your box, files (SMB) and web apps from anywhere – connects the box through the ShareOS system app `tailscaled` (admins, ShareOS 0.2.0-beta.8+) |
+| [autobrr](apps/autobrr) | Download automation for IRC announces and RSS feeds by @SamuelSilvaG: filters releases in real time and sends torrents to Transmission (admins, ShareOS 0.2.0-beta.9+) |
+| [SpeedCheck](apps/speedcheck) | Latency, jitter and transfer rate between your device and the box (at home, over VPN), with a log |
+| [HomePing](apps/homeping) | Reachability of your homelab, checked from the box: ping, port or web address, automatically, with a history per host (admins, permission `netcheck`) |
+| [SysMon](apps/sysmon) | System monitor and task manager of the box: CPU, memory, temperature, fan, drives and every process live; end processes (admins, permission `sysinfo`) |
+| [DockerDeck](apps/dockerdeck) | Docker containers of your servers through their Docker API: state, stacks, ports, start/stop/restart, log with CPU and memory (admins, permission `docker`) |
+| [TuyaPulse](apps/tuyapulse) | Local Tuya smart-home devices without the cloud: find them, switch them, power readings (protocol 3.3/3.4; admins, permission `tuya`) |
+
+**Security**
+
+| App | What it does |
+|---|---|
+| [ShareVault](apps/sharevault) | Password and 2FA (TOTP) manager, encrypted with AES-GCM in the browser; categories with examples and your own |
+| [KeyKeeper](apps/keykeeper) | SSH keys, API tokens and SSL certificates of your homelab, encrypted with a master password |
+| [PassphraseGen](apps/passphrasegen) | Diceware passphrases with WebCrypto, with a history |
+
+**Development**
+
+| App | What it does |
+|---|---|
+| [WebTerm](apps/webterm) | Terminal with tabs, a virtual file system, a JavaScript sandbox and a bridge to Webpad; views log files of the box |
+| [DevBox](apps/devbox) | Developer toolbox: JSON, Base64/URL/hex, checksums (also of files of the box), regex, diff, JWT |
+| [API-Pilot](apps/apipilot) | REST and GraphQL client in the style of Postman: headers, auth, JSON/GraphQL/form bodies, history, cURL/fetch code; saves responses on the box or opens them in Webpad |
+| [ShareSnippets](apps/sharesnippets) | Code and text snippets: commands, configs, templates |
+
+**Everyday life**
+
+| App | What it does |
+|---|---|
+| [ShareFeed](apps/sharefeed) | RSS and news reader with offline cache (uses the internet) |
+| [ShareStash](apps/sharestash) | Bookmarks and read-later list in the style of Pocket / Raindrop |
+| [RecipeVault](apps/recipevault) | Cookbook with portion scaler and shopping list |
+| [PackList](apps/packlist) | Packing lists for travel, camping and shopping with progress |
+| [HabitGrid](apps/habitgrid) | Habit tracker with monthly heatmap and streaks |
+| [PillClock](apps/pillclock) | Medication schedule and vital signs (blood pressure, pulse, weight) |
+| [SmartBudget](apps/smartbudget) | Electricity, gas and energy costs from meter readings, with projections |
+| [VehicleLog](apps/vehiclelog) | Mileage log, fuel and charging with consumption, CSV export |
+| [QuickUnit](apps/quickunit) | Unit and currency converter, offline, with favourites |
 
 ## How it works
 
@@ -65,7 +128,7 @@ releases stay on GitHub.
   "entry": "index.html",               // in files/
   "icon": "icon.svg",                  // in files/ (SVG or PNG)
   "category": "tools",                 // tools, media, office, network, system …
-  "license": "MIT",
+  "license": "GPL-2.0-only",           // SPDX name; apps by UniqueDroid are GPL-2.0-only like ShareOS
   "homepage": "https://…",
   "min_shareos": "0.1.0",              // also met by the betas of 0.1.0; name a beta if you need one ("0.1.0-beta.7")
   "permissions": ["cron"],             // see below; ShareOS refuses unknown ones
@@ -94,8 +157,15 @@ releases stay on GitHub.
 | `torrent` | Control the signed-in user's own Transmission service through `ShareOS.torrent.rpc(method, args)` (needs `files`; ShareOS 0.2.0-beta.4+ with the system app `transmission-daemon`). Every user has their own service; folders are `<root>/<path>` like `ShareOS.fs`, and the box passes only what a remote control needs (no scripts, no other places). |
 | `media` | Media jobs with FFmpeg on the box through `ShareOS.media` (needs `files`; ShareOS 0.2.0-beta.5+ with the system app `ffmpeg`). |
 | `vpn` | The box as an OpenVPN client through `ShareOS.vpn` (`list`, `status`, `log`, `importProfile`, `set`, `remove`, `connect`, `disconnect`; needs `files`; ShareOS 0.2.0-beta.6+ with the system app `openvpn`). **Admin accounts only** – a VPN changes the network of the whole box. The box cleans every profile on import (no scripts, plugins, file references). |
+| `tailscale` | Remote access with Tailscale through `ShareOS.tailscale` (`status`, `up({authKey})`, `login`, `down`, `logout`, `ping(ip)`, `log`; without a key `up` answers with `auth_url`, the sign-in link; needs `files`; ShareOS 0.2.0-beta.7+, system app `tailscaled` since 0.2.0-beta.8). **Admin accounts only** – it changes the network of the whole box. |
+| `autobrr` | The box's autobrr (download automation, system app `autobrr`) through `ShareOS.autobrr` (`status`, `start`, `set({enabled, ui, account})`, `password`, `accounts`, `log`, `api(method, path, body)` – autobrr's REST API with the key of ShareOS; needs `files`; ShareOS 0.2.0-beta.9+). One autobrr for the whole box, **admin accounts only**. Found torrents go to the Transmission of the chosen `account` through autobrr's action *Watch dir* with the folder `status().drop`. |
+| `sysinfo` | The box's values through `ShareOS.sysinfo` – `info()` (CPU from two samples, memory, temperature, fan, load, network, drives with use and standby), `processes()` (user, memory, CPU ticks, command line), `kill(pid, signal)` (never init, kernel threads or what keeps ShareOS running); needs `files`; ShareOS 0.2.0-beta.11+. **Admin accounts only.** |
+| `netcheck` | Checks **from the box** through `ShareOS.netcheck.check([{kind: 'ping', host, count}, {kind: 'tcp', host, port}, {kind: 'http', url}])` – up to 32 side by side with short time limits; one result per check `{ok, ms, error, …}` (also `.ping()`, `.tcp()`, `.http()`); needs `files`; ShareOS 0.2.0-beta.11+. **Admin accounts only.** |
+| `tuya` | Tuya smart-home devices on the home network **without the cloud** through `ShareOS.tuya` – `discover(seconds)` (their announcements on UDP 6666/6667: `{ip, id, product, version}`), `status({ip, id, key, version})` (data points) and `set(device, {"1": true})` over TCP 6668 with the device's local key, protocol 3.3 and 3.4; the app keeps devices and keys; needs `files`; ShareOS 0.2.0-beta.11+. **Admin accounts only.** |
+| `docker` | Docker hosts of the homelab through their Docker Engine API (`http://host:2375` / `https://host:2376`) via `ShareOS.docker` – `hosts()`, `setHost()`, `removeHost()`, `version`, `info`, `images`, `containers`, `inspect`, `stats`, `logs` (plain text), `action(host, id, 'start'|'stop'|'restart'|'pause'|'unpause')`; fixed calls only, no exec; needs `files`; ShareOS 0.2.0-beta.11+. **Admin accounts only.** Docker does not run on the box itself. |
 | `status` | One short chip in the header of the ShareOS interface through `ShareOS.status.set({ text, state, ttl })` / `.clear()` (needs `files`; ShareOS 0.2.0-beta.6+): max. 24 characters, state `ok`/`warn`/`err`/`info`, gone after `ttl` seconds (max. 600) unless set again; only the account that opened the app sees it. |
-| `files` | Read, change and delete the files the signed-in user reaches in the file browser (his personal folder; admins: all volumes and USB drives), with his rights, while the app is open – through `ShareOS.fs` (ShareOS 0.1.0-beta.11+). For file managers and editors that save on the box. |
+| `notify` | Messages through the box's notification service (System → Messages, e-mail, push). In a scheduled task: `shareos-app-notify <info\|warn\|error> <key> <title> [text]` and `shareos-app-notify clear <key>` – sent when the task has finished, at most 10 per run. In the browser: `ShareOS.notify.send(level, key, title, text)` / `.clear(key)` (needs `files`, **admin accounts only**). The same key is one message (counted, sent again after 24 h at most); key 1–32 characters `A-Z a-z 0-9 . _ -`, title ≤ 100 characters (the app's name is put in front), text ≤ 1000; at most 20 messages an hour per app. ShareOS 0.2.0-beta.12+. |
+| `files` | Read, change and delete the files the signed-in user reaches in the file browser (his personal folder; admins: all volumes and USB drives), with his rights, while the app is open – through `ShareOS.fs` (ShareOS 0.1.0-beta.11+). For file managers and editors that save on the box. Accounts without "Dateien" get one private folder of the app instead (root `app`, `private: true`, ShareOS 0.2.0-beta.9+). Admins get their personal folder as the first root, marked `home: true` (root: `home/root` on the apps drive; ShareOS 0.2.0-beta.10+) – pick `roots.find(r => r.home) || roots[0]` to store an app's data. |
 | `cron` | Run its `jobs` on a schedule (at most 5, at most every 5 minutes). Each job runs as the app's own user `app-<id>` (no login, no access to the users' files) in the app's data folder, with `nice` and the time limit; the output (max. 64 KB) appears under APPS → Tasks. The admin can change or switch off every schedule there; a changed schedule stays across updates. |
 
 Environment of a job: `APP_ID`, `APP_DIR` (the installed files, read-only for
@@ -140,20 +210,34 @@ No symbolic links, at most 40 MB.
 
 ## System apps and services
 
+**Not here – in the [ShareOS repository](https://github.com/UniqueDroid/ShareOS/tree/main/sysapps).**
 System apps (`"type": "system"`) are native programs for the box – nano,
-htop, strace, iperf3, the Transmission daemon. They need the firmware's
-toolchain, so they are built in the [ShareOS repository](https://github.com/UniqueDroid/ShareOS/tree/main/sysapps)
-and attached to its releases as `.sapp`. The catalog lists them too (every
-version once, from the newest firmware release that has it; refreshed every
-3 hours), so the store installs them like any other app.
+htop, strace, iperf3, FFmpeg – and services (daemons) such as Tailscale,
+OpenVPN, Transmission or the media server. They need the firmware's
+toolchain, so they are built in ShareOS (`sysapps/<id>/`) and attached to its
+releases as `.sapp`. The catalog lists them too (every version once, from the
+newest firmware release that has it; refreshed every 3 hours), so the store
+installs them like any other app. `tools/build.py` refuses `"type": "system"`.
 
-An app that needs one names it in `"requires"`: installing the app installs
+[`sysapps/README.md`](https://github.com/UniqueDroid/ShareOS/blob/main/sysapps/README.md)
+in ShareOS explains both kinds with an example each:
+
+- a **program** (`tree`): buildroot package + `sysapps/<id>/` (`app.json`,
+  `pack.json`, `icon.svg`);
+- a **service** (`mosquitto`): the same plus `"service": { "control": … }` in
+  `app.json` and the controller `/usr/sbin/shareos-<control>` in the firmware,
+  which ShareOS uses to start the daemon at boot and stop it on removal
+  (ShareOS 0.2.0-beta.9+). A package never starts a service by itself.
+
+A web app that needs one names it in `"requires"`: installing the app installs
 the system app first, and the store warns before removing a system app an
-installed app needs. **Services** (daemons that keep running) come only with
-the firmware: the system app brings the program, ShareOS starts and stops it
-(e.g. one Transmission daemon per user) – a package never starts a service by
-itself. If your app needs a service, open an issue in ShareOS; the web app
-stays here.
+installed app needs. A web app for a service (e.g. Tailscale, NetTunnel,
+Transmission) talks to it only through the app SDK and a permission of
+ShareOS (`tailscale`, `vpn`, `torrent` …) – not through its own ports or
+interfaces on the box. **Plan a new service?** Open an issue or pull request
+in ShareOS for the system app and its controller first; the web app comes
+here once ShareOS has it. A web app whose service does not exist yet cannot be
+installed (its `"requires"` is not in the store) and is not merged.
 
 ## Own apps
 
@@ -161,6 +245,14 @@ stays here.
 - **Own catalog:** fork this repository (or use the same layout), run the workflow, then add `https://github.com/<you>/<repo>/releases/download/catalog/index.json` under APPS → Sources.
 
 Build locally: `tools/build.py` → `dist/`.
+
+## License
+
+The apps by UniqueDroid are licensed under the **GNU General Public License
+version 2** (`GPL-2.0-only`), like ShareOS – see [COPYING](COPYING). Apps by
+other publishers keep their own license, named in their `app.json`
+(Transmission: GPL-2.0-or-later, Tailscale: BSD-3-Clause). Bundled third-party
+code keeps its license too (e.g. CodeMirror and crypto-js in Webpad: MIT).
 
 ---
 
@@ -176,7 +268,10 @@ Klick installiert – genauso wie Firmware-Updates angeboten werden.
 - **Fenster und Dateien** (ab ShareOS 0.1.0-beta.9): `"window"` legt die Fenstergröße fest, `"opens"` die Dateitypen, die die App aus dem Dateibrowser öffnet (`edit` darf zurückspeichern). Die Berechtigung `embed` zeigt eine reine Einstellungs-App direkt in ShareOS an. Mit der Berechtigung `files` (ab ShareOS 0.1.0-beta.11) arbeitet eine App mit den Ordnern der Box – mit den Rechten des angemeldeten Benutzers (`ShareOS.fs`). Für Aussehen, Menüleiste (Datei | Bearbeiten | Ansicht), geöffnete Datei und Nachrichten zwischen Apps gibt es `/_shareos/theme.css` und `/_shareos/app.js` (siehe oben).
 - **Speicher je Konto** (ab ShareOS 0.2.0-beta.1): Das SDK trennt `localStorage` und IndexedDB der Apps nach Konto – dafür `/_shareos/app.js` vor den eigenen Skripten laden. Private Daten gehören auf die Box (`ShareOS.fs`, Dateidialog `ShareOS.fs.pick`).
 - Web-Apps bringen ihren eigenen Code mit (kein CDN für Skripte, Styles, Schriften), damit sie auch auf einer Box ohne Internet starten. **Internet nutzen dürfen sie**, wenn sie es brauchen (Online-Dienste, Streams, Karten, Sync …): dann `"internet": true` in `app.json` setzen – der Store zeigt „Nutzt das Internet“ (ab ShareOS 0.1.0-beta.12, ältere Versionen ignorieren das Feld).
+- **Ordner der Box:** Apps legen ihre Daten im persönlichen Ordner ab (`roots.find(r => r.home) || roots[0]`). Admins bekommen ab ShareOS 0.2.0-beta.10 ebenfalls einen persönlichen Ordner als ersten Eintrag (root: `home/root` auf dem Apps-Laufwerk), damit nichts oben auf dem Laufwerk landet.
+- **Lizenz:** Die Apps von UniqueDroid stehen wie ShareOS unter der GNU GPL Version 2 (`GPL-2.0-only`, siehe [COPYING](COPYING)); Apps anderer Herausgeber behalten ihre Lizenz aus `app.json`.
 - **Eigene Apps:** `.sapp` unter APPS → Store hochladen (gilt als „eigene/ungeprüft“) oder einen eigenen Katalog unter APPS → Quellen eintragen.
+- **Hier nur Web-Apps.** System-Apps (Programme und Dienste für die Box, z. B. Tailscale, OpenVPN, Transmission) werden im [ShareOS-Repository unter `sysapps/`](https://github.com/UniqueDroid/ShareOS/tree/main/sysapps) eingereicht – dort gibt es je ein Beispiel für ein Programm (`tree`) und einen Dienst (`mosquitto`, mit `"service"` in `app.json` und der Steuerung `shareos-<control>` in der Firmware). Eine Web-App für einen Dienst kommt erst hierher, wenn ShareOS den Dienst hat; sie spricht ihn nur über das SDK und eine Berechtigung an.
 
 ## Example
 

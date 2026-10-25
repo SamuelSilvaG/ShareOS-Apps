@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>TaskBoard - Kanban</title>
+  <link rel="stylesheet" href="/_shareos/theme.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="sos-app board-body">
+  <header class="board-header">
+    <div class="brand">
+      <span class="brand-icon">📋</span>
+      <span class="brand-title">TaskBoard</span>
+      <span class="version-badge">v1.0.1</span>
+    </div>
+
+    <div class="header-center">
+      <input type="text" id="board-search" placeholder="Aufgaben durchsuchen...">
+      <button class="add-task-btn" id="open-new-task-btn">➕ Neue Aufgabe</button>
+    </div>
+
+    <div class="header-right">
+      <button class="icon-nav-btn" id="refresh-board-btn" title="Board neu laden">🔄</button>
+      <div class="account-pill" id="user-display">Account: ...</div>
+    </div>
+  </header>
+
+  <div id="banner" class="banner hidden"></div>
+
+  <!-- Kanban Columns Stage -->
+  <main class="board-stage">
+    <!-- Backlog Column -->
+    <div class="kanban-column" data-status="backlog">
+      <div class="col-header">
+        <div class="col-title-wrap">
+          <span class="col-dot dot-backlog"></span>
+          <span class="col-title">Ideen & Backlog</span>
+        </div>
+        <span class="col-count" id="count-backlog">0</span>
+      </div>
+      <div class="cards-container" id="col-backlog"></div>
+      <button class="quick-add-btn" data-target="backlog">+ Karte hinzufügen</button>
+    </div>
+
+    <!-- Todo Column -->
+    <div class="kanban-column" data-status="todo">
+      <div class="col-header">
+        <div class="col-title-wrap">
+          <span class="col-dot dot-todo"></span>
+          <span class="col-title">Zu Erledigen</span>
+        </div>
+        <span class="col-count" id="count-todo">0</span>
+      </div>
+      <div class="cards-container" id="col-todo"></div>
+      <button class="quick-add-btn" data-target="todo">+ Karte hinzufügen</button>
+    </div>
+
+    <!-- In Progress Column -->
+    <div class="kanban-column" data-status="inprogress">
+      <div class="col-header">
+        <div class="col-title-wrap">
+          <span class="col-dot dot-inprogress"></span>
+          <span class="col-title">In Arbeit</span>
+        </div>
+        <span class="col-count" id="count-inprogress">0</span>
+      </div>
+      <div class="cards-container" id="col-inprogress"></div>
+      <button class="quick-add-btn" data-target="inprogress">+ Karte hinzufügen</button>
+    </div>
+
+    <!-- Done Column -->
+    <div class="kanban-column" data-status="done">
+      <div class="col-header">
+        <div class="col-title-wrap">
+          <span class="col-dot dot-done"></span>
+          <span class="col-title">Erledigt</span>
+        </div>
+        <span class="col-count" id="count-done">0</span>
+      </div>
+      <div class="cards-container" id="col-done"></div>
+      <button class="quick-add-btn" data-target="done">+ Karte hinzufügen</button>
+    </div>
+  </main>
+
+  <!-- Add / Edit Task Modal -->
+  <div class="modal-backdrop hidden" id="task-modal">
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <h2 id="modal-heading">Aufgabe bearbeiten</h2>
+        <button class="close-x-btn" id="close-modal-x">✕</button>
+      </div>
+      <form id="task-form" class="modal-form" onsubmit="return false;">
+        <div class="form-group">
+          <label for="t-title">Titel der Aufgabe</label>
+          <input type="text" id="t-title" placeholder="z. B. VPN-Zertifikat erneuern" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="t-status">Status-Spalte</label>
+            <select id="t-status">
+              <option value="backlog">Ideen & Backlog</option>
+              <option value="todo">Zu Erledigen</option>
+              <option value="inprogress">In Arbeit</option>
+              <option value="done">Erledigt</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="t-priority">Priorität</label>
+            <select id="t-priority">
+              <option value="low">🟢 Niedrig</option>
+              <option value="medium" selected>🟡 Normal</option>
+              <option value="high">🔴 Hoch / Dringend</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="t-tags">Tags (kommagetrennt)</label>
+          <input type="text" id="t-tags" placeholder="nas, vpn, docker, setup">
+        </div>
+        <div class="form-group">
+          <label for="t-desc">Beschreibung & Checkliste</label>
+          <textarea id="t-desc" rows="5" placeholder="Details, Schritte oder Notizen..."></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="del-btn hidden" id="modal-delete-btn">Löschen</button>
+          <button type="button" class="cancel-btn" id="modal-cancel-btn">Abbrechen</button>
+          <button type="submit" class="save-btn" id="modal-save-btn">Speichern</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <footer class="board-footer">
+    <span id="storage-status">Verbinde mit Box-Dateisystem...</span>
+    <span id="board-stats">0 Aufgaben insgesamt</span>
+  </footer>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/_shareos/app.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

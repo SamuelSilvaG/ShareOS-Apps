@@ -1,0 +1,31 @@
+{
+  "id": "habitgrid",
+  "name": "HabitGrid",
+  "version": "1.0.0",
+  "publisher": "UniqueDroid",
+  "description": {
+    "de": "Minimalistischer Gewohnheiten- und Routine-Tracker mit Monats-Heatmap, Streak-Zähler und ShareOS.fs Speicherung.",
+    "en": "Minimalist habit & routine tracker with monthly heatmaps, streak counters and ShareOS.fs storage."
+  },
+  "type": "webapp",
+  "entry": "index.html",
+  "icon": "icon.svg",
+  "category": "lifestyle",
+  "license": "GPL-2.0-only",
+  "min_shareos": "0.2.0-beta.1",
+  "permissions": ["files"],
+  "window": {
+    "width": 1040,
+    "height": 720
+  },
+  "opens": [
+    {
+      "ext": [".json"],
+      "mode": "edit",
+      "label": {
+        "de": "In HabitGrid öffnen",
+        "en": "Open in HabitGrid"
+      }
+    }
+  ]
+}

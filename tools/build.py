@@ -17,7 +17,7 @@ ID_RE = re.compile(r'^[a-z][a-z0-9-]{1,31}$')
 VER_RE = re.compile(r'^v?\d+\.\d+(\.\d+)?(-[A-Za-z0-9.]+)?$')
 TYPES = {'webapp'}
 MAX_FILES = 40 * 1048576
-PERMISSIONS = {'cron', 'embed', 'files', 'torrent', 'media', 'vpn', 'status'}   # what ShareOS knows (cron: beta.7+, embed: beta.9+, files: beta.11+, torrent: 0.2.0-beta.4+, media: 0.2.0-beta.5+, vpn/status: 0.2.0-beta.6+)
+PERMISSIONS = {'cron', 'embed', 'files', 'torrent', 'media', 'vpn', 'status', 'tailscale', 'autobrr', 'sysinfo', 'netcheck', 'docker', 'tuya', 'notify'}   # what ShareOS knows (cron: beta.7+, embed: beta.9+, files: beta.11+, torrent: 0.2.0-beta.4+, media: 0.2.0-beta.5+, vpn/status: 0.2.0-beta.6+, tailscale: 0.2.0-beta.7+, autobrr: 0.2.0-beta.9+, sysinfo/netcheck/docker/tuya: 0.2.0-beta.11+, notify: 0.2.0-beta.12+)
 JOB_RE = re.compile(r'^[a-z][a-z0-9-]{0,23}$')
 CRON_RE = re.compile(r'^[0-9*/,-]+( [0-9*/,-]+){4}$')
 MAX_JOBS = 5
@@ -89,7 +89,8 @@ def check(app_dir):
     if not VER_RE.match(a.get('version', '')): err.append('version: e.g. 1.2.0 or 1.3.0-beta.1')
     if not isinstance(a.get('name'), str) or not 0 < len(a['name']) <= 64: err.append('name: 1-64 characters')
     if not a.get('publisher'): err.append('publisher missing')
-    if a.get('type', 'webapp') not in TYPES: err.append('type: ' + ', '.join(sorted(TYPES)))
+    if a.get('type') == 'system': err.append('type "system": system apps are submitted to the ShareOS repository (sysapps/), see https://github.com/UniqueDroid/ShareOS/blob/main/sysapps/README.md')
+    elif a.get('type', 'webapp') not in TYPES: err.append('type: ' + ', '.join(sorted(TYPES)))
     files = os.path.join(app_dir, 'files')
     entry = a.get('entry', 'index.html')
     if '..' in entry or entry.startswith('/') or not os.path.isfile(os.path.join(files, entry)): err.append('entry file missing in files/')

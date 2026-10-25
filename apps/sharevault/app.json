@@ -1,0 +1,36 @@
+{
+  "id": "sharevault",
+  "name": "ShareVault",
+  "version": "1.1.0",
+  "publisher": "UniqueDroid",
+  "description": {
+    "de": "Verschlüsselter Passwort- & 2FA-Manager (AES-GCM) mit Rubriken – Beispiele wie E-Mail, Banking oder Server, dazu eigene – und Grid-Layout.",
+    "en": "Encrypted password & 2FA manager (AES-GCM) with categories – examples such as e-mail, banking or servers, plus your own – and a grid layout."
+  },
+  "type": "webapp",
+  "entry": "index.html",
+  "icon": "icon.svg",
+  "category": "tools",
+  "license": "GPL-2.0-only",
+  "min_shareos": "0.2.0-beta.1",
+  "permissions": [
+    "files"
+  ],
+  "window": {
+    "width": 1040,
+    "height": 720
+  },
+  "opens": [
+    {
+      "ext": [
+        ".enc",
+        ".json"
+      ],
+      "mode": "edit",
+      "label": {
+        "de": "In ShareVault öffnen",
+        "en": "Open in ShareVault"
+      }
+    }
+  ]
+}

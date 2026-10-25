@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>HabitGrid - Gewohnheiten & Routinen</title>
+  <link rel="stylesheet" href="/_shareos/theme.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="sos-app habit-body">
+  <header class="habit-header">
+    <div class="brand">
+      <span class="brand-icon">🌱</span>
+      <span class="brand-title">HabitGrid</span>
+      <span class="version-badge">v1.0.0</span>
+    </div>
+
+    <div class="header-center">
+      <button class="nav-month-btn" id="prev-month-btn" title="Vorheriger Monat">◀</button>
+      <span class="current-month-display" id="month-display">Oktober 2026</span>
+      <button class="nav-month-btn" id="next-month-btn" title="Nächster Monat">▶</button>
+      <button class="add-habit-btn" id="open-add-btn">➕ Neue Gewohnheit</button>
+    </div>
+
+    <div class="header-right">
+      <button class="icon-nav-btn" id="refresh-btn" title="Aktualisieren">🔄</button>
+      <div class="account-pill" id="user-display">Account: ...</div>
+    </div>
+  </header>
+
+  <!-- Sub-Header Filterleiste für Kategorien -->
+  <nav class="sub-header-filter">
+    <div class="filter-pills" id="category-filter-bar">
+      <button class="filter-pill active" data-cat="all">Alle Gewohnheiten (<span id="count-all">0</span>)</button>
+      <button class="filter-pill" data-cat="Gesundheit">💪 Gesundheit (<span id="count-health">0</span>)</button>
+      <button class="filter-pill" data-cat="Produktivität">🎯 Produktivität (<span id="count-prod">0</span>)</button>
+      <button class="filter-pill" data-cat="Achtsamkeit">🧘 Achtsamkeit (<span id="count-mind">0</span>)</button>
+    </div>
+  </nav>
+
+  <div id="banner" class="banner hidden"></div>
+
+  <!-- Main Stage -->
+  <main class="habit-workspace">
+    <div class="habits-list" id="habits-list"></div>
+
+    <div class="empty-state hidden" id="empty-state">
+      <span class="empty-icon">🪴</span>
+      <span class="empty-title">Keine Gewohnheiten in dieser Kategorie</span>
+      <span class="empty-sub">Klicke oben auf „Neue Gewohnheit“, um deine täglichen Routinen und Streaks aufzubauen!</span>
+    </div>
+  </main>
+
+  <!-- Modal: Gewohnheit anlegen/bearbeiten -->
+  <div class="modal-backdrop hidden" id="habit-modal">
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <h2 id="modal-heading">Neue Gewohnheit anlegen</h2>
+        <button class="close-x-btn" id="close-modal-x">✕</button>
+      </div>
+      <form id="habit-form" class="modal-form" onsubmit="return false;">
+        <div class="form-row">
+          <div class="form-group flex-2">
+            <label for="f-name">Name der Gewohnheit</label>
+            <input type="text" id="f-name" placeholder="z. B. 2L Wasser trinken, 30 Min lesen" required>
+          </div>
+          <div class="form-group flex-1">
+            <label for="f-icon">Icon / Emoji</label>
+            <input type="text" id="f-icon" value="💧" maxlength="4" style="text-align: center;">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="f-cat">Kategorie</label>
+            <select id="f-cat">
+              <option value="Gesundheit">💪 Gesundheit</option>
+              <option value="Produktivität">🎯 Produktivität</option>
+              <option value="Achtsamkeit">🧘 Achtsamkeit</option>
+              <option value="Sonstiges">✨ Sonstiges</option>
+            </select>
+          </div>
+          <div class="form-group flex-1">
+            <label for="f-color">Akzentfarbe</label>
+            <select id="f-color">
+              <option value="#10b981">🟢 Smaragdgrün</option>
+              <option value="#0ea5e9">🔵 Himmelblau</option>
+              <option value="#8b5cf6">🟣 Violett</option>
+              <option value="#f59e0b">🟡 Bernstein</option>
+              <option value="#ef4444">🔴 Koralle</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="f-target">Ziel-Tage pro Woche</label>
+          <input type="number" id="f-target" min="1" max="7" value="7">
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="del-btn hidden" id="modal-delete-btn">Löschen</button>
+          <button type="button" class="cancel-btn" id="modal-cancel-btn">Abbrechen</button>
+          <button type="submit" class="save-btn" id="modal-save-btn">Speichern</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <footer class="habit-footer">
+    <span id="storage-status">Verbinde mit Box-Dateisystem...</span>
+    <span id="global-stats">0 Gewohnheiten aktiv</span>
+  </footer>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/_shareos/app.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

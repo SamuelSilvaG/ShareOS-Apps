@@ -1,0 +1,35 @@
+{
+  "id": "keykeeper",
+  "name": "KeyKeeper",
+  "version": "2.0.0",
+  "publisher": "UniqueDroid",
+  "description": {
+    "de": "SSH-Schlüssel, API-Tokens und SSL-Zertifikate deines Homelabs – mit Master-Passwort verschlüsselt (AES-GCM) im persönlichen Ordner auf der Box.",
+    "en": "SSH keys, API tokens and SSL certificates of your homelab – encrypted with a master password (AES-GCM) in your personal folder on the box."
+  },
+  "type": "webapp",
+  "entry": "index.html",
+  "icon": "icon.svg",
+  "category": "security",
+  "license": "GPL-2.0-only",
+  "min_shareos": "0.2.0-beta.1",
+  "permissions": [
+    "files"
+  ],
+  "window": {
+    "width": 1040,
+    "height": 720
+  },
+  "opens": [
+    {
+      "ext": [
+        ".json"
+      ],
+      "mode": "edit",
+      "label": {
+        "de": "In KeyKeeper öffnen",
+        "en": "Open in KeyKeeper"
+      }
+    }
+  ]
+}

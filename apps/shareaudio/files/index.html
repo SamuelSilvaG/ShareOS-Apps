@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShareAudio</title>
+  <link rel="stylesheet" href="/_shareos/theme.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="sos-app audio-body">
+  <header class="audio-header">
+    <div class="brand">
+      <span class="brand-icon">🎙️</span>
+      <span class="brand-title">ShareAudio</span>
+      <span class="version-badge">v1.0.2</span>
+    </div>
+    <div class="header-right">
+      <button class="refresh-btn" id="refresh-btn" title="Aufnahmen aktualisieren">🔄</button>
+      <div class="account-pill" id="user-display">Account: ...</div>
+    </div>
+  </header>
+
+  <div id="banner" class="banner hidden"></div>
+
+  <main class="audio-workspace">
+    <!-- Recorder Section -->
+    <section class="recorder-card">
+      <div class="visualizer-box">
+        <canvas id="visualizer" width="600" height="120"></canvas>
+      </div>
+
+      <div class="timer-display" id="record-timer">00:00</div>
+      <div class="recorder-status" id="record-status">Bereit zur Aufnahme</div>
+
+      <div class="record-controls">
+        <button class="record-btn" id="record-toggle-btn" title="Aufnahme starten/stoppen">
+          <span class="record-dot" id="record-dot"></span>
+        </button>
+      </div>
+      <div class="record-hint">Tippe auf den roten Button, um eine Sprachnotiz direkt auf deine Box zu sprechen.</div>
+    </section>
+
+    <!-- Recordings List -->
+    <section class="recordings-pane">
+      <div class="pane-header">
+        <span>GESPEICHERTE SPRACHNOTIZEN</span>
+        <span class="rec-count" id="recordings-count">0 Memos</span>
+      </div>
+      <div class="recordings-list" id="recordings-list">
+        <div class="empty-state" id="empty-state">
+          <span>Keine Sprachaufnahmen vorhanden. Nimm unterwegs deine erste Notiz auf!</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="audio-footer">
+    <span id="storage-status">Verbinde mit Box-Dateisystem...</span>
+    <span>Speicherort: voice_memos/</span>
+  </footer>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/_shareos/app.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

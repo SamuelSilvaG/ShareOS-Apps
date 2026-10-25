@@ -16,7 +16,7 @@
     <div class="titlebar-left">
       <img src="icon.svg" class="app-icon" alt="Tailscale Logo">
       <span class="app-title" data-i18n="app.title">Tailscale VPN</span>
-      <span class="version-tag">1.0.0</span>
+      <span class="version-tag">1.1.0</span>
     </div>
     <div class="titlebar-right">
       <span id="conn-badge" class="conn-badge checking" data-i18n="conn.checking">Checking connection...</span>
@@ -46,7 +46,7 @@
     <div class="tb-divider"></div>
 
     <div class="tb-group">
-      <button id="btn-tb-refresh" class="sos-btn" onclick="location.reload()">
+      <button id="btn-tb-refresh" class="sos-btn" >
         <span class="btn-icon">🔄</span> <span data-i18n="tb.refresh">Refresh</span>
       </button>
       <button id="btn-tb-settings" class="sos-btn">
@@ -60,13 +60,11 @@
   <!-- Offline Notice Banner -->
   <div id="offline-banner" class="offline-banner" style="display:none;">
     <div class="banner-msg">
-      <strong data-i18n="banner.offline.title">⚠️ Tailscale daemon (tailscaled) is unreachable.</strong>
-      <span data-i18n="banner.offline.desc">Ensure Tailscale is running on the box or configure the API URL.</span>
+      <strong id="banner-title">⚠️ Tailscale daemon (tailscaled) is unreachable.</strong>
+      <span id="banner-desc"></span>
     </div>
     <div class="banner-actions">
       <button id="btn-offline-retry" class="sos-btn sos-btn-sm" data-i18n="banner.offline.retry">Retry</button>
-      <button id="btn-offline-cfg" class="sos-btn sos-btn-sm" data-i18n="banner.offline.cfg">Configure Endpoint</button>
-      <button id="btn-offline-demo" class="sos-btn sos-btn-sm sos-btn-accent" data-i18n="banner.offline.demo">Demo Mode</button>
     </div>
   </div>
 
@@ -220,7 +218,7 @@
               Add torrents or monitor your downloads remotely in the browser:
             </div>
             <div class="code-box">
-              <span id="guide-trans-url" class="code-text">http://100.86.14.92:8081/apps/transmission/</span>
+              <span id="guide-trans-url" class="code-text">http://100.86.14.92/#/apps/run/transmission</span>
               <button id="btn-copy-trans" class="sos-btn sos-btn-sm" data-i18n="btn.copy">Copy</button>
             </div>
           </div>
@@ -319,9 +317,10 @@
           <h4 style="margin:0 0 6px 0;" data-i18n="modal.login.qr.title">Option 1: Scan QR Code with Phone or Open Link</h4>
           <p style="margin:0; font-size:12px; color:var(--sos-muted);" data-i18n="modal.login.qr.desc">Open the authentication URL in your browser or scan the QR Code below with your mobile camera:</p>
           <div class="qr-container">
-            <canvas id="login-qr-canvas" width="180" height="180"></canvas>
+            <canvas id="login-qr-canvas" width="180" height="180" style="display:none;"></canvas>
+            <span id="login-qr-wait" data-i18n="modal.login.wait">Requesting sign-in link…</span>
           </div>
-          <div style="text-align:center;">
+          <div id="login-link-wrap" style="text-align:center; display:none;">
             <a id="login-auth-url-link" href="#" target="_blank" class="sos-btn sos-btn-accent" data-i18n="modal.login.btn.open">Open Login Page ↗</a>
           </div>
         </div>
@@ -347,11 +346,6 @@
         <button class="modal-close" id="modal-cfg-close">✕</button>
       </div>
       <div class="modal-body">
-        <div class="form-group">
-          <label class="form-label" for="cfg-api-url" data-i18n="modal.cfg.api.label">Tailscale API Endpoint (local daemon or proxy):</label>
-          <input type="text" id="cfg-api-url" class="sos-input" placeholder="/_shareos/cgi/tailscale">
-          <small style="color:var(--sos-muted); font-size:11px;" data-i18n="modal.cfg.api.help">Default: /_shareos/cgi/tailscale or http://127.0.0.1:5252</small>
-        </div>
         <div class="form-group" style="flex-direction:row; align-items:center; gap:8px;">
           <input type="checkbox" id="cfg-auto-refresh" checked>
           <label for="cfg-auto-refresh" style="font-size:12px;" data-i18n="modal.cfg.auto.label">Automatically refresh network state every 20 seconds (saves CPU)</label>
@@ -367,6 +361,7 @@
   <!-- Toast Container -->
   <div id="toast-container" class="toast-container"></div>
 
+  <script src="qrcode.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

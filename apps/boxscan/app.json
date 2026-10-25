@@ -1,0 +1,31 @@
+{
+  "id": "boxscan",
+  "name": "BoxScan",
+  "version": "1.0.0",
+  "publisher": "UniqueDroid",
+  "description": {
+    "de": "Mobiler Dokumenten-Scanner & Belegablage mit Bildoptimierung und ShareOS.fs Speicherung.",
+    "en": "Mobile document scanner & receipt archive with image filters and ShareOS.fs storage."
+  },
+  "type": "webapp",
+  "entry": "index.html",
+  "icon": "icon.svg",
+  "category": "office",
+  "license": "GPL-2.0-only",
+  "min_shareos": "0.2.0-beta.1",
+  "permissions": ["files"],
+  "window": {
+    "width": 1040,
+    "height": 720
+  },
+  "opens": [
+    {
+      "ext": [".jpg", ".jpeg", ".png", ".webp"],
+      "mode": "view",
+      "label": {
+        "de": "In BoxScan bearbeiten",
+        "en": "Edit in BoxScan"
+      }
+    }
+  ]
+}

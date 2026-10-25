@@ -1,7 +1,7 @@
 {
 	"id": "transmission",
 	"name": "Transmission",
-	"version": "1.2.0",
+	"version": "1.2.1",
 	"publisher": "SamuelSilvaG",
 	"description": {
 		"de": "BitTorrent-Client für ShareOS: Jeder Benutzer hat seinen eigenen Transmission-Dienst mit eigenen Torrents; Downloads landen mit seinen Rechten in seinen Ordnern. Braucht die System-App „transmission-daemon“.",

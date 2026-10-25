@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>HomePing - Homelab Ping Monitor</title>
+  <link rel="stylesheet" href="/_shareos/theme.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="sos-app ping-body">
+  <header class="p-header">
+    <div class="brand">
+      <span class="brand-icon">📡</span>
+      <span class="brand-title">HomePing</span>
+      <span class="version-badge">v2.0.0</span>
+    </div>
+
+    <div class="header-center">
+      <input type="text" id="ping-search" placeholder="Hosts & IP-Adressen durchsuchen...">
+      <button class="p-btn add-btn" id="open-add-btn">➕ Host hinzufügen</button>
+    </div>
+
+    <div class="header-right">
+      <button class="p-btn secondary-btn" id="ping-all-btn" title="Alle jetzt prüfen">⚡ Alle prüfen</button>
+      <div class="account-pill" id="user-display">Account: ...</div>
+    </div>
+  </header>
+
+  <!-- Sub-Header Filter -->
+  <nav class="sub-header-filter">
+    <div class="filter-pills" id="status-filter-bar">
+      <button class="filter-pill active" data-status="all">Alle Hosts (<span id="count-all">0</span>)</button>
+      <button class="filter-pill" data-status="online">🟢 Online (<span id="count-online">0</span>)</button>
+      <button class="filter-pill" data-status="offline">🔴 Offline (<span id="count-offline">0</span>)</button>
+    </div>
+    <label class="auto-check">Automatisch prüfen
+      <select id="auto-interval">
+        <option value="0">aus</option>
+        <option value="30">alle 30 s</option>
+        <option value="60" selected>jede Minute</option>
+        <option value="300">alle 5 min</option>
+      </select>
+    </label>
+  </nav>
+
+  <div id="banner" class="banner hidden"></div>
+
+  <main class="p-workspace">
+    <!-- Vitals -->
+    <section class="ping-vitals">
+      <div class="vital-card">
+        <span class="v-label">Überwachte Hosts</span>
+        <span class="v-val" id="stat-total">0</span>
+      </div>
+      <div class="vital-card success-card">
+        <span class="v-label">Online Status</span>
+        <span class="v-val" id="stat-online">0 / 0</span>
+      </div>
+      <div class="vital-card">
+        <span class="v-label">Durchschnitts-Latenz</span>
+        <span class="v-val" id="stat-latency">– ms</span>
+      </div>
+      <div class="vital-card">
+        <span class="v-label">Zuletzt geprüft</span>
+        <span class="v-val" id="stat-last">–</span>
+      </div>
+    </section>
+
+    <!-- Ping Grid -->
+    <section class="hosts-card">
+      <div class="section-head">
+        <span>HOMELAB NETZWERK & HOST STATUS</span>
+        <span id="storage-indicator">Speicher: Lade...</span>
+      </div>
+
+      <div class="hosts-grid" id="hosts-grid"></div>
+
+      <div class="empty-state hidden" id="empty-state">
+        <span class="empty-icon">🌐</span>
+        <span class="empty-title">Keine Hosts konfiguriert</span>
+        <span class="empty-sub">Füge deinen Router, NAS oder Server über „Host hinzufügen“ hinzu. Die Box prüft ihn per Ping, Port oder Webadresse.</span>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal -->
+  <div class="modal-backdrop hidden" id="ping-modal">
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <h2 id="modal-heading">Host hinzufügen</h2>
+        <button class="close-x-btn" id="close-modal-x">✕</button>
+      </div>
+      <form id="ping-form" class="modal-form" onsubmit="return false;">
+        <div class="form-row">
+          <div class="form-group flex-2">
+            <label for="f-name">Host-Name / Dienst</label>
+            <input type="text" id="f-name" placeholder="z. B. Proxmox Server, NAS, FritzBox" required>
+          </div>
+          <div class="form-group flex-1">
+            <label for="f-icon">Icon</label>
+            <input type="text" id="f-icon" value="🖥️" maxlength="4" style="text-align: center;">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="f-check">Prüfung</label>
+          <select id="f-check">
+            <option value="ping">Ping (antwortet das Gerät?)</option>
+            <option value="tcp">Port (läuft ein Dienst, z. B. SSH 22)</option>
+            <option value="http">Webadresse (HTTP/HTTPS antwortet)</option>
+          </select>
+        </div>
+
+        <div class="form-row" id="row-host">
+          <div class="form-group flex-2">
+            <label for="f-host">IP-Adresse oder Name</label>
+            <input type="text" id="f-host" placeholder="z. B. 192.168.1.1 oder proxmox.lan">
+          </div>
+          <div class="form-group flex-1 hidden" id="grp-port">
+            <label for="f-port">Port</label>
+            <input type="number" id="f-port" min="1" max="65535" placeholder="22">
+          </div>
+        </div>
+
+        <div class="form-group hidden" id="grp-url">
+          <label for="f-url">Webadresse</label>
+          <input type="text" id="f-url" placeholder="https://proxmox.lan:8006/">
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="del-btn hidden" id="modal-delete-btn">Löschen</button>
+          <button type="button" class="cancel-btn" id="modal-cancel-btn">Abbrechen</button>
+          <button type="submit" class="save-btn" id="modal-save-btn">Speichern</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <footer class="p-footer">
+    <span id="storage-status">Verbinde mit Box-Dateisystem...</span>
+    <span>Geprüft von der Box (ShareOS.netcheck)</span>
+  </footer>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/_shareos/app.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

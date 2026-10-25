@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>TuyaPulse - Smart Home Dashboard</title>
+  <link rel="stylesheet" href="/_shareos/theme.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="sos-app tuya-body">
+  <header class="t-header">
+    <div class="brand">
+      <span class="brand-icon">🏠</span>
+      <span class="brand-title">TuyaPulse</span>
+      <span class="version-badge">v2.0.0</span>
+    </div>
+
+    <div class="header-center">
+      <input type="text" id="device-search" placeholder="Geräte, Räume & IPs durchsuchen...">
+      <button class="t-btn add-btn" id="open-add-btn">➕ Gerät</button>
+    </div>
+
+    <div class="header-right">
+      <button class="t-btn secondary-btn" id="open-log-modal-btn" title="Anfragen und Antworten">📡 Protokoll</button>
+      <button class="t-btn secondary-btn" id="open-scan-modal-btn" title="Geräte im Netzwerk suchen">🔍 Auto-Scan</button>
+      <button class="t-btn secondary-btn" id="open-room-modal-btn" title="Räume verwalten">🏠 Räume</button>
+      <div class="account-pill" id="user-display">Account: ...</div>
+    </div>
+  </header>
+
+  <!-- Horizontale Sub-Header Filterleiste -->
+  <nav class="sub-header-filter">
+    <div class="filter-pills" id="main-view-filter">
+      <button class="filter-pill active" data-view="devices">🔌 Alle Geräte (<span id="count-devices">0</span>)</button>
+      <button class="filter-pill" data-view="scenes">⚡ Szenen & Automationen (<span id="count-scenes">0</span>)</button>
+    </div>
+    <div class="filter-divider"></div>
+    <div class="filter-pills" id="room-filter-bar"></div>
+  </nav>
+
+  <div id="banner" class="banner hidden"></div>
+
+  <main class="t-workspace">
+    <!-- Dashboard Vitals -->
+    <section class="tuya-vitals">
+      <div class="vital-box">
+        <span class="v-label">Geräte gesamt</span>
+        <span class="v-val" id="stat-total">0</span>
+      </div>
+      <div class="vital-box success-box">
+        <span class="v-label">Aktiv (Eingeschaltet)</span>
+        <span class="v-val" id="stat-active">0</span>
+      </div>
+      <div class="vital-box">
+        <span class="v-label">Gesamtleistung</span>
+        <span class="v-val" id="stat-power">0 W</span>
+      </div>
+      <div class="vital-box">
+        <span class="v-label">Erreichbar</span>
+        <span class="v-val gateway-ok" id="stat-gateway">–</span>
+      </div>
+    </section>
+
+    <!-- Ansicht 1: Geräte Grid -->
+    <section class="content-section" id="section-devices">
+      <div class="section-head">
+        <span>LOKALE SMART-HOME GERÄTE & STECKDOSEN</span>
+        <span class="pulse-indicator" id="live-indicator">● lokal über die Box</span>
+      </div>
+
+      <div class="devices-grid" id="devices-grid"></div>
+
+      <div class="empty-state hidden" id="empty-devices">
+        <span class="empty-icon">🔌</span>
+        <span class="empty-title">Keine Geräte gefunden</span>
+        <span class="empty-sub">Nutze den „🔍 Auto-Scan“ Button oben, um dein Heimnetz automatisch nach Tuya-Geräten zu durchsuchen!</span>
+      </div>
+    </section>
+
+    <!-- Ansicht 2: Szenen & Automationen -->
+    <section class="content-section hidden" id="section-scenes">
+      <div class="section-head">
+        <span>AUTOMATISIERUNGS-SZENEN (z.B. Alle Aus, Nachtmodus)</span>
+        <button class="t-btn add-btn" id="open-add-scene-btn" style="padding: 4px 10px; font-size: 11px;">➕ Neue Szene</button>
+      </div>
+
+      <div class="scenes-grid" id="scenes-grid"></div>
+
+      <div class="empty-state hidden" id="empty-scenes">
+        <span class="empty-icon">⚡</span>
+        <span class="empty-title">Keine Szenen definiert</span>
+        <span class="empty-sub">Erstelle Szenen, um mehrere Geräte gleichzeitig per Klick zu schalten.</span>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal: Gerät anlegen/bearbeiten (Inkl. Protokoll-Auswahl v3.3 / v3.4) -->
+  <div class="modal-backdrop hidden" id="device-modal">
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <h2 id="device-modal-heading">Gerät hinzufügen</h2>
+        <button class="close-x-btn" id="close-device-x">✕</button>
+      </div>
+      <form id="device-form" class="modal-form" onsubmit="return false;">
+        <div class="form-row">
+          <div class="form-group flex-2">
+            <label for="f-name">Geräte-Name</label>
+            <input type="text" id="f-name" placeholder="z. B. Deckenlicht Wohnzimmer" required>
+          </div>
+          <div class="form-group flex-1">
+            <label for="f-room">Raum</label>
+            <select id="f-room"></select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="f-type">Gerätetyp</label>
+            <select id="f-type">
+              <option value="switch">🔌 Steckdose / Schalter</option>
+              <option value="light">💡 Lampe / LED</option>
+              <option value="sensor">🌡️ Klima- / Sensor</option>
+            </select>
+          </div>
+          <div class="form-group flex-1">
+            <label for="f-ip">Lokale IP-Adresse</label>
+            <input type="text" id="f-ip" placeholder="z. B. 192.168.1.115" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-2">
+            <label for="f-devid">Geräte-ID</label>
+            <input type="text" id="f-devid" placeholder="z. B. bf1234567890abcdefgh (aus der Suche oder der Tuya-App)" required>
+          </div>
+          <div class="form-group flex-1">
+            <label for="f-dp">Schalter-Datenpunkt</label>
+            <input type="number" id="f-dp" min="1" max="255" value="1" title="Meist 1; viele Lampen: 20">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-2">
+            <label for="f-key">Local Key (16 Zeichen)</label>
+            <input type="text" id="f-key" placeholder="16 Zeichen, z. B. aus „tinytuya wizard“" maxlength="16" required>
+          </div>
+          <div class="form-group flex-1">
+            <label for="f-proto">Protokoll-Version</label>
+            <select id="f-proto">
+              <option value="3.3">v3.3 (Standard)</option>
+              <option value="3.4">v3.4 (neuere Geräte)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="f-icon">Icon / Emoji</label>
+            <input type="text" id="f-icon" value="🔌" maxlength="4" style="text-align: center;">
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="del-btn hidden" id="device-delete-btn">Löschen</button>
+          <button type="button" class="cancel-btn" id="device-cancel-btn">Abbrechen</button>
+          <button type="submit" class="save-btn" id="device-save-btn">Speichern</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Protokoll -->
+  <div class="modal-backdrop hidden" id="log-modal">
+    <div class="modal-dialog log-dialog">
+      <div class="modal-head">
+        <h2>📡 Protokoll</h2>
+        <button class="close-x-btn" id="close-log-x">✕</button>
+      </div>
+      <div class="log-modal-body">
+        <p class="scan-hint">Anfragen der Box an die Geräte (TCP 6668) und ihre Antworten:</p>
+        <div class="log-actions-row">
+          <button class="t-btn secondary-btn" id="clear-log-btn">🧹 Log leeren</button>
+          <button class="t-btn add-btn" id="test-ping-btn">⚡ Alle abfragen</button>
+        </div>
+        <div class="log-terminal" id="log-terminal">
+          <div class="log-line">[SYSTEM] Bereit – die Box spricht lokal mit den Geräten, ohne Cloud.</div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="cancel-btn" id="close-log-modal-btn">Schließen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Auto-Scan -->
+  <div class="modal-backdrop hidden" id="scan-modal">
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <h2>🔍 Netzwerk Auto-Scan (Tuya Discovery)</h2>
+        <button class="close-x-btn" id="close-scan-x">✕</button>
+      </div>
+      <div class="scan-modal-body">
+        <p class="scan-hint">Die Box lauscht einige Sekunden auf die Meldungen, die Tuya-Geräte im Heimnetz regelmäßig senden (UDP 6666/6667). Gefunden werden IP, Geräte-ID und Protokoll – den Local Key gibt es nur über die Tuya-Cloud (z. B. <code>tinytuya wizard</code>).</p>
+        <div class="scan-controls">
+          <select id="scan-subnet-input" aria-label="Dauer"><option value="6">6 Sekunden</option><option value="12">12 Sekunden</option></select>
+          <button class="t-btn add-btn" id="start-scan-btn">Suche starten</button>
+        </div>
+        <div class="scan-results-box" id="scan-results-box">
+          <div class="scan-placeholder">Klicke auf „Scan starten“, um Geräte im Heimnetz zu finden.</div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="cancel-btn" id="close-scan-modal-btn">Schließen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Räume verwalten -->
+  <div class="modal-backdrop hidden" id="room-modal">
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <h2>🏠 Räume verwalten</h2>
+        <button class="close-x-btn" id="close-room-x">✕</button>
+      </div>
+      <div class="room-modal-body">
+        <form id="room-form" class="room-add-row" onsubmit="return false;">
+          <input type="text" id="new-room-input" placeholder="Neuer Raum (z.B. Kinderzimmer)" required>
+          <button type="submit" class="t-btn add-btn">Hinzufügen</button>
+        </form>
+        <div class="rooms-manage-list" id="rooms-manage-list"></div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="save-btn" id="close-room-modal-btn">Fertig</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Szene erstellen -->
+  <div class="modal-backdrop hidden" id="scene-modal">
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <h2>⚡ Automatisierungs-Szene erstellen</h2>
+        <button class="close-x-btn" id="close-scene-x">✕</button>
+      </div>
+      <form id="scene-form" class="modal-form" onsubmit="return false;">
+        <div class="form-group">
+          <label for="scene-title">Szenen-Name</label>
+          <input type="text" id="scene-title" placeholder="z. B. Alle Lichter Aus" required>
+        </div>
+        <div class="form-group">
+          <label>Aktion beim Aktivieren:</label>
+          <select id="scene-action-type">
+            <option value="all_off">Alle Geräte ausschalten</option>
+            <option value="all_on">Alle Geräte einschalten</option>
+            <option value="night_mode">Nachtmodus (Lichter aus, Klima an)</option>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="cancel-btn" id="scene-cancel-btn">Abbrechen</button>
+          <button type="submit" class="save-btn">Szene speichern</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <footer class="t-footer">
+    <span id="storage-status">Verbinde mit Box-Dateisystem...</span>
+    <span>TuyaPulse (smarthome/tuya_devices.json via ShareOS.fs)</span>
+  </footer>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/_shareos/app.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

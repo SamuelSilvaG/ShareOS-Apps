@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <rect width="48" height="48" rx="10" fill="#ec4899"/>
+  <!-- Kapsel / Tablette -->
+  <path d="M18 14h12a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H18a5 5 0 0 1-5-5V19a5 5 0 0 1 5-5z" fill="#ffffff"/>
+  <path d="M13 24h22v10a5 5 0 0 1-5 5H18a5 5 0 0 1-5-5V24z" fill="#fbcfe8"/>
+  <!-- Herzschlag Puls Linie -->
+  <path d="M15 24h5l3-6 4 12 3-6h5" fill="none" stroke="#be185d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

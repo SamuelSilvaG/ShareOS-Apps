@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <rect width="48" height="48" rx="10" fill="#0ea5e9"/>
+  <!-- Book / Diary -->
+  <path d="M12 10h22a2 2 0 0 1 2 2v24a2 2 0 0 1-2 2H12a4 4 0 0 1-4-4V14a4 4 0 0 1 4-4z" fill="#ffffff"/>
+  <path d="M12 10h3v28h-3a4 4 0 0 1-4-4V14a4 4 0 0 1 4-4z" fill="#0284c7"/>
+  <!-- Ribbon / Bookmark -->
+  <path d="M25 10v12l4-3 4 3V10z" fill="#f43f5e"/>
+</svg>

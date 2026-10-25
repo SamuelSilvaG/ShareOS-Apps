@@ -1,0 +1,31 @@
+{
+  "id": "photodrop",
+  "name": "PhotoDrop",
+  "version": "1.0.1",
+  "publisher": "UniqueDroid",
+  "description": {
+    "de": "Mobiler Foto-Upload und Galerie direkt auf die eigene Box via ShareOS.fs.",
+    "en": "Mobile photo upload and gallery directly to your box via ShareOS.fs."
+  },
+  "type": "webapp",
+  "entry": "index.html",
+  "icon": "icon.svg",
+  "category": "media",
+  "license": "GPL-2.0-only",
+  "min_shareos": "0.2.0-beta.1",
+  "permissions": ["files"],
+  "window": {
+    "width": 1080,
+    "height": 720
+  },
+  "opens": [
+    {
+      "ext": [".jpg", ".jpeg", ".png", ".webp", ".gif"],
+      "mode": "view",
+      "label": {
+        "de": "In PhotoDrop ansehen",
+        "en": "View in PhotoDrop"
+      }
+    }
+  ]
+}

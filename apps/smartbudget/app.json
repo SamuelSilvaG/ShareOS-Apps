@@ -1,0 +1,31 @@
+{
+  "id": "smartbudget",
+  "name": "SmartBudget",
+  "version": "1.0.0",
+  "publisher": "UniqueDroid",
+  "description": {
+    "de": "Strom-, Gas- und Energiekosten-Tracker mit Zählerstandserfassung, Kostenprognose und ShareOS.fs Speicherung.",
+    "en": "Electricity, gas and energy cost tracker with meter readings, cost projections and ShareOS.fs storage."
+  },
+  "type": "webapp",
+  "entry": "index.html",
+  "icon": "icon.svg",
+  "category": "tools",
+  "license": "GPL-2.0-only",
+  "min_shareos": "0.2.0-beta.1",
+  "permissions": ["files"],
+  "window": {
+    "width": 1080,
+    "height": 720
+  },
+  "opens": [
+    {
+      "ext": [".json", ".csv"],
+      "mode": "edit",
+      "label": {
+        "de": "In SmartBudget öffnen",
+        "en": "Open in SmartBudget"
+      }
+    }
+  ]
+}

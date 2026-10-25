@@ -1,0 +1,36 @@
+{
+  "id": "homeping",
+  "name": "HomePing",
+  "version": "2.0.0",
+  "publisher": "UniqueDroid",
+  "description": {
+    "de": "Erreichbarkeit im Homelab, von der Box aus geprüft: Ping, Port oder Webadresse (HTTP/HTTPS), automatisch oder auf Knopfdruck, mit Verlauf je Host. Nur für Administratoren.",
+    "en": "Reachability of your homelab, checked from the box: ping, port or web address (HTTP/HTTPS), automatically or on demand, with a history per host. Admins only."
+  },
+  "type": "webapp",
+  "entry": "index.html",
+  "icon": "icon.svg",
+  "category": "network",
+  "license": "GPL-2.0-only",
+  "min_shareos": "0.2.0-beta.11",
+  "permissions": [
+    "files",
+    "netcheck"
+  ],
+  "window": {
+    "width": 1040,
+    "height": 700
+  },
+  "opens": [
+    {
+      "ext": [
+        ".json"
+      ],
+      "mode": "edit",
+      "label": {
+        "de": "In HomePing öffnen",
+        "en": "Open in HomePing"
+      }
+    }
+  ]
+}

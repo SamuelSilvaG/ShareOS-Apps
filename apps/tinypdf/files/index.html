@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>TinyPDF - PDF Viewer & Signatur</title>
+  <link rel="stylesheet" href="/_shareos/theme.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="sos-app pdf-body">
+  <header class="pdf-header">
+    <div class="brand">
+      <span class="brand-icon">📄</span>
+      <span class="brand-title">TinyPDF</span>
+      <span class="version-badge">v2.0.0</span>
+    </div>
+
+    <div class="header-center">
+      <button class="pdf-btn upload-btn" id="box-pdf-btn">📁 Von der Box</button>
+      <button class="pdf-btn upload-btn" id="upload-pdf-btn">📂 Vom Gerät</button>
+    </div>
+
+    <div class="header-right">
+      <button class="pdf-btn action-btn" id="open-sign-modal-btn" title="Unterschrift auf die Seite setzen" disabled>✍️ Unterschreiben</button>
+      <div class="account-pill" id="user-display">Account: ...</div>
+    </div>
+  </header>
+
+  <!-- Sub-Header Kontrollleiste (Zoom, Seitenblättern) -->
+  <nav class="sub-header-filter">
+    <div class="pdf-controls-bar">
+      <div class="page-nav-group">
+        <button class="ctrl-btn" id="prev-page-btn" title="Vorherige Seite">◀</button>
+        <span class="page-indicator" id="page-indicator">Seite – von –</span>
+        <button class="ctrl-btn" id="next-page-btn" title="Nächste Seite">▶</button>
+      </div>
+      <div class="zoom-group">
+        <button class="ctrl-btn" id="zoom-out-btn" title="Verkleinern">🔍-</button>
+        <span class="zoom-indicator" id="zoom-indicator">100%</span>
+        <button class="ctrl-btn" id="zoom-in-btn" title="Vergrößern">🔍+</button>
+        <button class="ctrl-btn" id="fit-btn" title="Ganze Seite">⤢</button>
+      </div>
+      <div class="sig-group hidden" id="sig-tools">
+        <button class="ctrl-btn" id="sig-smaller" title="Unterschrift kleiner">−</button>
+        <span class="zoom-indicator">Unterschrift</span>
+        <button class="ctrl-btn" id="sig-bigger" title="Unterschrift größer">+</button>
+        <button class="ctrl-btn" id="sig-remove" title="Unterschrift entfernen">✕</button>
+      </div>
+      <button class="ctrl-btn highlight-ctrl" id="download-pdf-btn" title="PDF speichern" disabled>💾 Speichern</button>
+    </div>
+  </nav>
+
+  <div id="banner" class="banner hidden"></div>
+
+  <!-- Main PDF Viewer Stage -->
+  <main class="pdf-workspace" id="pdf-workspace">
+    <div class="pdf-canvas-container" id="pdf-canvas-container">
+      <div class="pdf-stage hidden" id="pdf-stage">
+        <canvas id="pdf-canvas"></canvas>
+        <img id="sig-overlay" class="sig-overlay hidden" alt="Unterschrift" draggable="false">
+      </div>
+      <div class="empty-state pdf-empty" id="pdf-empty">
+        <span class="empty-icon">📂</span>
+        <span class="empty-title">Kein PDF geöffnet</span>
+        <span class="empty-sub">Öffne ein PDF von der Box oder von deinem Gerät – oder im Dateibrowser von ShareOS mit „In TinyPDF öffnen“. Zum Unterschreiben die Unterschrift zeichnen und auf der Seite an die richtige Stelle ziehen.</span>
+      </div>
+    </div>
+  </main>
+
+  <!-- Signatur Modal (Touch Canvas) -->
+  <div class="modal-backdrop hidden" id="sign-modal">
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <h2>Unterschrift zeichnen</h2>
+        <button class="close-x-btn" id="close-sign-x">✕</button>
+      </div>
+      <div class="sign-modal-body">
+        <p class="sign-hint">Zeichne deine Unterschrift mit der Maus, dem Finger oder einem Stift. Danach erscheint sie auf der aktuellen Seite und lässt sich verschieben.</p>
+        <div class="signature-pad-wrap">
+          <canvas id="sig-canvas" width="440" height="180"></canvas>
+          <button class="clear-sig-btn" id="clear-sig-btn">Löschen</button>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="cancel-btn" id="cancel-sign-btn">Abbrechen</button>
+        <button type="button" class="save-btn" id="apply-sign-btn">Auf die Seite setzen</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="pdf-footer">
+    <span id="storage-status">–</span>
+    <span id="pdf-status-info">pdf.js · pdf-lib</span>
+  </footer>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/_shareos/app.js"></script>
+  <script src="vendor/pdf-lib/pdf-lib.min.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

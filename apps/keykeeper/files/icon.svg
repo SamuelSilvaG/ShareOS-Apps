@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <rect width="48" height="48" rx="10" fill="#8b5cf6"/>
+  <!-- Schloss / Key Symbol -->
+  <path d="M24 13a6 6 0 0 0-6 6v4h12v-4a6 6 0 0 0-6-6z" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+  <rect x="14" y="23" width="20" height="15" rx="3" fill="#ffffff"/>
+  <circle cx="24" cy="30" r="2.5" fill="#8b5cf6"/>
+</svg>

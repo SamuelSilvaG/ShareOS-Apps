@@ -1,0 +1,31 @@
+{
+  "id": "expensetracker",
+  "name": "ExpenseTracker",
+  "version": "1.0.1",
+  "publisher": "UniqueDroid",
+  "description": {
+    "de": "Mobiles Haushaltsbuch & Ausgaben-Tracker für unterwegs mit CSV-Export und ShareOS.fs Speicherung.",
+    "en": "Mobile expense tracker & budget ledger on the go with CSV export and ShareOS.fs storage."
+  },
+  "type": "webapp",
+  "entry": "index.html",
+  "icon": "icon.svg",
+  "category": "office",
+  "license": "GPL-2.0-only",
+  "min_shareos": "0.2.0-beta.1",
+  "permissions": ["files"],
+  "window": {
+    "width": 1040,
+    "height": 720
+  },
+  "opens": [
+    {
+      "ext": [".json", ".csv"],
+      "mode": "edit",
+      "label": {
+        "de": "In ExpenseTracker öffnen",
+        "en": "Open in ExpenseTracker"
+      }
+    }
+  ]
+}

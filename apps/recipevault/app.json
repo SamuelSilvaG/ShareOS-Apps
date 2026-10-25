@@ -1,0 +1,31 @@
+{
+  "id": "recipevault",
+  "name": "RecipeVault",
+  "version": "1.0.0",
+  "publisher": "UniqueDroid",
+  "description": {
+    "de": "Private Rezeptsammlung mit dynamischem Portionsrechner, Einkaufslisten-Export und ShareOS.fs Speicherung.",
+    "en": "Private recipe cookbook with dynamic portion scaler, shopping list export and ShareOS.fs storage."
+  },
+  "type": "webapp",
+  "entry": "index.html",
+  "icon": "icon.svg",
+  "category": "lifestyle",
+  "license": "GPL-2.0-only",
+  "min_shareos": "0.2.0-beta.1",
+  "permissions": ["files"],
+  "window": {
+    "width": 1040,
+    "height": 720
+  },
+  "opens": [
+    {
+      "ext": [".json"],
+      "mode": "edit",
+      "label": {
+        "de": "In RecipeVault öffnen",
+        "en": "Open in RecipeVault"
+      }
+    }
+  ]
+}

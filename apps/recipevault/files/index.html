@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>RecipeVault - Rezepte & Kochbuch</title>
+  <link rel="stylesheet" href="/_shareos/theme.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="sos-app recipe-body">
+  <header class="r-header">
+    <div class="brand">
+      <span class="brand-icon">🍳</span>
+      <span class="brand-title">RecipeVault</span>
+      <span class="version-badge">v1.0.0</span>
+    </div>
+
+    <div class="header-center">
+      <input type="text" id="recipe-search" placeholder="Rezepte oder Zutaten suchen...">
+      <button class="r-btn add-btn" id="open-add-btn">➕ Neues Rezept</button>
+    </div>
+
+    <div class="header-right">
+      <button class="icon-nav-btn" id="refresh-btn" title="Aktualisieren">🔄</button>
+      <div class="account-pill" id="user-display">Account: ...</div>
+    </div>
+  </header>
+
+  <!-- Horizontale Sub-Header Leiste mit Kategorien -->
+  <nav class="sub-header-filter">
+    <div class="filter-pills" id="category-filter-bar">
+      <button class="filter-pill active" data-cat="all">Alle Rezepte (<span id="count-all">0</span>)</button>
+      <button class="filter-pill" data-cat="Hauptgerichte">🍝 Hauptgerichte (<span id="count-main">0</span>)</button>
+      <button class="filter-pill" data-cat="Schnell & Einfach">⚡ Schnell & Einfach (<span id="count-quick">0</span>)</button>
+      <button class="filter-pill" data-cat="Vegetarisch">🥗 Vegetarisch (<span id="count-veg">0</span>)</button>
+      <button class="filter-pill" data-cat="Dessert & Backen">🍰 Dessert & Backen (<span id="count-sweet">0</span>)</button>
+    </div>
+  </nav>
+
+  <div id="banner" class="banner hidden"></div>
+
+  <!-- Main Split Layout -->
+  <main class="r-workspace">
+    <!-- Links: Rezeptkarten -->
+    <section class="recipes-list-col" id="recipes-list-col">
+      <div class="recipes-grid" id="recipes-grid"></div>
+
+      <div class="empty-state hidden" id="empty-state">
+        <span class="empty-icon">📖</span>
+        <span class="empty-title">Keine Rezepte gefunden</span>
+        <span class="empty-sub">Füge dein erstes Lieblingsgericht über „Neues Rezept“ hinzu!</span>
+      </div>
+    </section>
+
+    <!-- Rechts/Mobil: Rezept-Detailansicht -->
+    <section class="recipe-detail-col hidden" id="recipe-detail-col">
+      <div class="detail-card" id="detail-card">
+        <div class="detail-top-nav">
+          <button class="back-mobile-btn" id="back-to-list-btn">◀ Zurück zur Liste</button>
+          <div class="detail-actions">
+            <button class="action-btn copy-btn" id="copy-ingredients-btn" title="Zutaten als Einkaufsliste kopieren">📋 Zutaten kopieren</button>
+            <button class="action-btn" id="edit-recipe-btn">✏️ Bearbeiten</button>
+          </div>
+        </div>
+
+        <div class="detail-head">
+          <div class="detail-title-wrap">
+            <h2 id="detail-title">Rezepttitel</h2>
+            <div class="detail-tags-row">
+              <span class="cat-pill" id="detail-cat">Kategorie</span>
+              <span class="time-pill" id="detail-time">⏱️ 30 Min</span>
+            </div>
+          </div>
+
+          <!-- Portionsrechner -->
+          <div class="scaler-box">
+            <span class="scaler-label">Portionen</span>
+            <div class="scaler-controls">
+              <button class="scaler-btn" id="scale-dec">-</button>
+              <span class="scaler-val" id="scale-current">4</span>
+              <button class="scaler-btn" id="scale-inc">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-body">
+          <div class="ingredients-box">
+            <h3>Zutaten</h3>
+            <ul class="ingredients-list" id="detail-ingredients"></ul>
+          </div>
+
+          <div class="instructions-box">
+            <h3>Zubereitung</h3>
+            <div class="instructions-text" id="detail-instructions"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal: Rezept anlegen/bearbeiten -->
+  <div class="modal-backdrop hidden" id="recipe-modal">
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <h2 id="modal-heading">Neues Rezept anlegen</h2>
+        <button class="close-x-btn" id="close-modal-x">✕</button>
+      </div>
+      <form id="recipe-form" class="modal-form" onsubmit="return false;">
+        <div class="form-row">
+          <div class="form-group flex-2">
+            <label for="f-title">Titel des Gerichts</label>
+            <input type="text" id="f-title" placeholder="z. B. Cremige One-Pot Pasta" required>
+          </div>
+          <div class="form-group flex-1">
+            <label for="f-cat">Kategorie</label>
+            <select id="f-cat">
+              <option value="Hauptgerichte">🍝 Hauptgerichte</option>
+              <option value="Schnell & Einfach">⚡ Schnell & Einfach</option>
+              <option value="Vegetarisch">🥗 Vegetarisch</option>
+              <option value="Dessert & Backen">🍰 Dessert & Backen</option>
+              <option value="Snacks & Suppen">🍲 Snacks & Suppen</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="f-servings">Standard-Portionen</label>
+            <input type="number" id="f-servings" min="1" max="20" value="4" required>
+          </div>
+          <div class="form-group flex-1">
+            <label for="f-time">Zubereitungszeit (Min)</label>
+            <input type="number" id="f-time" min="5" step="5" value="25">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="f-ingredients">Zutaten (Eine pro Zeile, Format: Zahl Einheit Name)</label>
+          <textarea id="f-ingredients" rows="5" placeholder="500 g Pasta&#10;1 Stk Zwiebel&#10;2 Zehen Knoblauch&#10;200 ml Sahne&#10;50 g Parmesan" required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="f-instructions">Zubereitungsschritte</label>
+          <textarea id="f-instructions" rows="5" placeholder="1. Nudeln in Salzwasser al dente kochen.&#10;2. Zwiebeln und Knoblauch anbraten..."></textarea>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="del-btn hidden" id="modal-delete-btn">Löschen</button>
+          <button type="button" class="cancel-btn" id="modal-cancel-btn">Abbrechen</button>
+          <button type="submit" class="save-btn" id="modal-save-btn">Speichern</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <footer class="r-footer">
+    <span id="storage-status">Verbinde mit Box-Dateisystem...</span>
+    <span>RecipeVault (recipes/recipes.json via ShareOS.fs)</span>
+  </footer>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/_shareos/app.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+{
+  "id": "dailylog",
+  "name": "DailyLog",
+  "version": "1.0.0",
+  "publisher": "UniqueDroid",
+  "description": {
+    "de": "Persönliches Tagebuch & Bullet Journal mit Kalendernavigation und ShareOS.fs Speicherung.",
+    "en": "Personal diary & bullet journal with calendar navigation and ShareOS.fs storage."
+  },
+  "type": "webapp",
+  "entry": "index.html",
+  "icon": "icon.svg",
+  "category": "office",
+  "license": "GPL-2.0-only",
+  "min_shareos": "0.2.0-beta.1",
+  "permissions": ["files"],
+  "window": {
+    "width": 1040,
+    "height": 720
+  },
+  "opens": [
+    {
+      "ext": [".md", ".txt"],
+      "mode": "edit",
+      "label": {
+        "de": "In DailyLog öffnen",
+        "en": "Open in DailyLog"
+      }
+    }
+  ]
+}

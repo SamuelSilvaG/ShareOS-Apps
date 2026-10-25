@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.1
+
+- On phones the toolbar wraps instead of scrolling sideways.
+
 ## 1.2.0
 
 - Multilingual user interface: Portuguese, English, and German (`pt`, `en`, `de`).

@@ -1,0 +1,36 @@
+{
+  "id": "tuyapulse",
+  "name": "TuyaPulse",
+  "version": "2.0.0",
+  "publisher": "UniqueDroid",
+  "description": {
+    "de": "Smart-Home-Dashboard für Tuya-Geräte im Heimnetz – ohne Cloud: Geräte suchen, schalten, Räume, Szenen und Stromverbrauch; die Box spricht lokal mit ihnen (Protokoll 3.3/3.4). Nur für Administratoren.",
+    "en": "Smart home dashboard for Tuya devices on your network – no cloud: find devices, switch them, rooms, scenes and power use; the box talks to them locally (protocol 3.3/3.4). Admins only."
+  },
+  "type": "webapp",
+  "entry": "index.html",
+  "icon": "icon.svg",
+  "category": "smarthome",
+  "license": "GPL-2.0-only",
+  "min_shareos": "0.2.0-beta.11",
+  "permissions": [
+    "files",
+    "tuya"
+  ],
+  "window": {
+    "width": 1140,
+    "height": 780
+  },
+  "opens": [
+    {
+      "ext": [
+        ".json"
+      ],
+      "mode": "edit",
+      "label": {
+        "de": "In TuyaPulse öffnen",
+        "en": "Open in TuyaPulse"
+      }
+    }
+  ]
+}

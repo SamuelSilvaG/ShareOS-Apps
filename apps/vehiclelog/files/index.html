@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>VehicleLog - Fahrtenbuch & Tank-Tracker</title>
+  <link rel="stylesheet" href="/_shareos/theme.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="sos-app vehicle-body">
+  <header class="v-header">
+    <div class="brand">
+      <span class="brand-icon">🚗</span>
+      <span class="brand-title">VehicleLog</span>
+      <span class="version-badge">v1.0.0</span>
+    </div>
+
+    <div class="header-center">
+      <input type="text" id="entry-search" placeholder="Einträge & Notizen durchsuchen...">
+      <button class="v-btn add-btn" id="open-add-btn">➕ Neuer Eintrag</button>
+    </div>
+
+    <div class="header-right">
+      <button class="v-btn secondary-btn" id="export-csv-btn" title="Als CSV für Steuer/Excel exportieren">📥 CSV Export</button>
+      <div class="account-pill" id="user-display">Account: ...</div>
+    </div>
+  </header>
+
+  <!-- Horizontale Sub-Header Leiste mit Typ-Filtern -->
+  <nav class="sub-header-filter">
+    <div class="filter-pills" id="type-filter-bar">
+      <button class="filter-pill active" data-type="all">Alle Einträge (<span id="count-all">0</span>)</button>
+      <button class="filter-pill" data-type="trip">🗺️ Fahrten (<span id="count-trips">0</span>)</button>
+      <button class="filter-pill" data-type="fuel">⛽ Tanken / Laden (<span id="count-fuel">0</span>)</button>
+      <button class="filter-pill" data-type="service">🔧 Wartung & TÜV (<span id="count-service">0</span>)</button>
+    </div>
+  </nav>
+
+  <div id="banner" class="banner hidden"></div>
+
+  <main class="v-workspace">
+    <!-- Stat Cards Overview -->
+    <section class="v-dashboard">
+      <div class="stat-card">
+        <span class="stat-label">Gesamtkilometer</span>
+        <span class="stat-val" id="val-total-km">0 km</span>
+        <span class="stat-sub" id="sub-last-odo">Aktuellster Stand</span>
+      </div>
+
+      <div class="stat-card">
+        <span class="stat-label">Durchschnittsverbrauch</span>
+        <span class="stat-val" id="val-avg-consumption">--</span>
+        <span class="stat-sub">l/100km bzw. kWh/100km</span>
+      </div>
+
+      <div class="stat-card">
+        <span class="stat-label">Gesamtkosten</span>
+        <span class="stat-val" id="val-total-cost">0,00 €</span>
+        <span class="stat-sub" id="sub-fuel-cost">Sprit & Wartung</span>
+      </div>
+
+      <div class="stat-card">
+        <span class="stat-label">Kosten pro Kilometer</span>
+        <span class="stat-val" id="val-cost-km">-- €/km</span>
+        <span class="stat-sub">Effizienz</span>
+      </div>
+    </section>
+
+    <!-- Einträge Liste / Tabelle -->
+    <section class="entries-card">
+      <div class="entries-head">
+        <span>LOGBUCH & CHRONIK</span>
+        <span id="entries-count-label">0 Einträge</span>
+      </div>
+
+      <div class="entries-list" id="entries-list"></div>
+
+      <div class="empty-state hidden" id="empty-state">
+        <span class="empty-icon">🛣️</span>
+        <span class="empty-title">Noch keine Einträge vorhanden</span>
+        <span class="empty-sub">Erfasse deinen ersten Tankstopp, eine Dienstfahrt oder Werkstattkosten mit einem Klick oben auf „Neuer Eintrag“!</span>
+      </div>
+    </section>
+  </main>
+
+  <!-- Add/Edit Entry Modal -->
+  <div class="modal-backdrop hidden" id="entry-modal">
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <h2 id="modal-heading">Neuen Eintrag erfassen</h2>
+        <button class="close-x-btn" id="close-modal-x">✕</button>
+      </div>
+      <form id="entry-form" class="modal-form" onsubmit="return false;">
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="f-type">Eintrags-Typ</label>
+            <select id="f-type">
+              <option value="fuel">⛽ Tanken / Laden</option>
+              <option value="trip">🗺️ Fahrt / Strecke</option>
+              <option value="service">🔧 Wartung / Reparatur / TÜV</option>
+            </select>
+          </div>
+          <div class="form-group flex-1">
+            <label for="f-date">Datum</label>
+            <input type="date" id="f-date" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="f-odometer">Kilometerstand (km)</label>
+            <input type="number" id="f-odometer" placeholder="z. B. 48250" required min="0">
+          </div>
+          <div class="form-group flex-1" id="group-amount">
+            <label for="f-amount" id="label-amount">Getankt (Liter / kWh)</label>
+            <input type="number" id="f-amount" placeholder="z. B. 45.2" step="0.01" min="0">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="f-cost">Gesamtkosten (€)</label>
+            <input type="number" id="f-cost" placeholder="z. B. 74.50" step="0.01" min="0">
+          </div>
+          <div class="form-group flex-1" id="group-category">
+            <label for="f-purpose">Zweck / Route</label>
+            <input type="text" id="f-purpose" placeholder="z. B. Pendeln, Dienstfahrt Berlin">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="f-notes">Notizen & Details (optional)</label>
+          <input type="text" id="f-notes" placeholder="z. B. Aral Tankstelle, Winterreifen gewechselt">
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="del-btn hidden" id="modal-delete-btn">Löschen</button>
+          <button type="button" class="cancel-btn" id="modal-cancel-btn">Abbrechen</button>
+          <button type="submit" class="save-btn" id="modal-save-btn">Speichern</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <footer class="v-footer">
+    <span id="storage-status">Verbinde mit Box-Dateisystem...</span>
+    <span>VehicleLog (ShareOS.fs: vehicle/logbook.json)</span>
+  </footer>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/_shareos/app.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

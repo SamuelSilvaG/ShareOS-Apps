@@ -1,0 +1,31 @@
+{
+  "id": "vehiclelog",
+  "name": "VehicleLog",
+  "version": "1.0.0",
+  "publisher": "UniqueDroid",
+  "description": {
+    "de": "Fahrtenbuch, Tank- & Lade-Tracker mit automatischer Verbrauchsberechnung, CSV-Export und ShareOS.fs Speicherung.",
+    "en": "Mileage logbook, fuel & charging tracker with automatic consumption calculations, CSV export and ShareOS.fs storage."
+  },
+  "type": "webapp",
+  "entry": "index.html",
+  "icon": "icon.svg",
+  "category": "tools",
+  "license": "GPL-2.0-only",
+  "min_shareos": "0.2.0-beta.1",
+  "permissions": ["files"],
+  "window": {
+    "width": 1060,
+    "height": 720
+  },
+  "opens": [
+    {
+      "ext": [".json", ".csv"],
+      "mode": "edit",
+      "label": {
+        "de": "In VehicleLog öffnen",
+        "en": "Open in VehicleLog"
+      }
+    }
+  ]
+}
