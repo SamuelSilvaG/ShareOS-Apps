@@ -452,3 +452,104 @@ table.data-table tbody tr:hover {
   border-color: #ef4444;
   color: #f87171;
 }
+
+/* Settings Panels & Cards */
+.settings-section {
+  background: var(--sos-panel, #182234);
+  border: 1px solid var(--sos-line, #334155);
+  border-radius: 8px;
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+.settings-section h4 {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  color: var(--sos-text, #f8fafc);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings-section p.section-desc {
+  margin: 0 0 14px 0;
+  font-size: 12px;
+  color: var(--sos-muted, #94a3b8);
+  line-height: 1.45;
+}
+
+.info-box {
+  padding: 12px 14px;
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 6px;
+  font-size: 12px;
+  color: #bae6fd;
+  line-height: 1.5;
+  margin: 10px 0;
+}
+
+.info-box.warn {
+  background: rgba(245, 158, 11, 0.08);
+  border-color: rgba(245, 158, 11, 0.25);
+  color: #fde68a;
+}
+
+.log-viewer-box {
+  background: #020617;
+  border: 1px solid var(--sos-line, #334155);
+  border-radius: 6px;
+  padding: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #94a3b8;
+  max-height: 280px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  user-select: text;
+}
+
+.toggle-switch-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.toggle-switch-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  display: inline-block;
+}
+
+.badge.ok {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.badge.warn {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.badge.err {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
