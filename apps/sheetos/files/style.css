@@ -1,17 +1,17 @@
 :root {
-  --bg: #14161a;
-  --panel: #1c2028;
-  --bar: #1a1e26;
-  --field: #121418;
-  --grid: #0e1014;
-  --border: #2d333f;
-  --text: #e5e9f0;
-  --muted: #8b949e;
-  --accent: #22c55e;
-  --on-accent: #0b1a10;
-  --err: #ef4444;
-  --cell-select: rgba(34, 197, 94, 0.15);
-  --cell-border: #384050;
+  --bg: var(--sos-bg);
+  --panel: var(--sos-panel);
+  --bar: var(--sos-panel);
+  --field: var(--sos-bar);
+  --grid: var(--sos-line);
+  --border: var(--sos-line);
+  --text: var(--sos-text);
+  --muted: var(--sos-muted);
+  --accent: var(--sos-accent);
+  --on-accent: var(--sos-bg);
+  --err: var(--sos-err);
+  --cell-select: rgba(var(--sos-rgb), 0.15);
+  --cell-border: var(--sos-line);
   --font-mono: 'Cascadia Code', 'Consolas', monospace;
 }
 /* inside ShareOS: the user's look (/_shareos/theme.css), light or dark */
@@ -27,7 +27,7 @@ body { background: var(--bg); color: var(--text); font-family: system-ui, sans-s
 .topbar { background: var(--panel); border-bottom: 1px solid var(--border); padding: 6px 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
 .brand { font-family: var(--font-mono); font-weight: bold; display: flex; align-items: center; gap: 6px; min-width: 0; }
 .file-name { font-weight: normal; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 320px; }
-.file-name.dirty::after { content: " ●"; color: #e6c25a; }
+.file-name.dirty::after { content: " ●"; color: var(--sos-warn); }
 .badge { background: var(--cell-select); color: var(--accent); padding: 1px 6px; border-radius: 3px; font-size: 10px; }
 .toolbar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .tool-btn { background: var(--bar); color: var(--text); border: 1px solid var(--border); padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-family: inherit; }

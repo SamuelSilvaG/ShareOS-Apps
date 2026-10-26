@@ -1,63 +1,63 @@
 :root {
-  --bg-color: #0c0c0c;
-  --header-bg: #1f1f1f;
-  --tab-active: #0c0c0c;
-  --tab-inactive: #2d2d2d;
-  --text-color: #cccccc;
-  --prompt-user: #26a269;
-  --prompt-path: #3378ff;
-  --accent: #3378ff;
-  --error: #f66151;
-  --warning: #e5a50a;
+  --bg-color: var(--sos-bg);
+  --header-bg: var(--sos-panel);
+  --tab-active: var(--sos-panel);
+  --tab-inactive: var(--sos-muted);
+  --text-color: var(--sos-text);
+  --prompt-user: var(--sos-accent);
+  --prompt-path: var(--sos-accent);
+  --accent: var(--sos-accent);
+  --error: var(--sos-err);
+  --warning: var(--sos-warn);
   --font-mono: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
 }
 
 /* ShareOS look: colours of the user's theme (/_shareos/theme.css), light or dark */
 [data-term="shareos"] {
-  --bg-color: var(--sos-bg, #06090d);
-  --header-bg: var(--sos-bar, #0e1726);
-  --tab-active: var(--sos-bg, #06090d);
-  --tab-inactive: var(--sos-panel, #0b111a);
-  --text-color: var(--sos-text, #c6dff5);
-  --prompt-user: var(--sos-ok, #3dff8a);
-  --prompt-path: var(--sos-accent, #3da5ff);
-  --accent: var(--sos-accent, #3da5ff);
-  --error: var(--sos-err, #ff5f5f);
-  --warning: var(--sos-warn, #e6c25a);
+  --bg-color: var(--sos-bg);
+  --header-bg: var(--sos-bar, var(--sos-bg));
+  --tab-active: var(--sos-bg);
+  --tab-inactive: var(--sos-panel, var(--sos-bg));
+  --text-color: var(--sos-text, var(--sos-accent));
+  --prompt-user: var(--sos-ok, var(--sos-accent));
+  --prompt-path: var(--sos-accent);
+  --accent: var(--sos-accent);
+  --error: var(--sos-err);
+  --warning: var(--sos-warn);
   --font-mono: var(--sos-font, 'Cascadia Code', 'Consolas', 'Courier New', monospace);
 }
 
 [data-term="matrix"] {
-  --bg-color: #020a02;
-  --header-bg: #051605;
-  --tab-active: #020a02;
-  --tab-inactive: #0a290a;
-  --text-color: #00ff41;
-  --prompt-user: #00ff41;
-  --prompt-path: #008f11;
-  --accent: #00ff41;
+  --bg-color: var(--sos-bg);
+  --header-bg: var(--sos-panel);
+  --tab-active: var(--sos-bg);
+  --tab-inactive: var(--sos-muted);
+  --text-color: var(--sos-text);
+  --prompt-user: var(--sos-text);
+  --prompt-path: var(--sos-accent);
+  --accent: var(--sos-text);
 }
 
 [data-term="ubuntu"] {
-  --bg-color: #300a24;
-  --header-bg: #220719;
-  --tab-active: #300a24;
-  --tab-inactive: #421233;
-  --text-color: #eeeeec;
-  --prompt-user: #8ae234;
-  --prompt-path: #729fcf;
-  --accent: #e95420;
+  --bg-color: var(--sos-bg);
+  --header-bg: var(--sos-panel);
+  --tab-active: var(--sos-bg);
+  --tab-inactive: var(--sos-muted);
+  --text-color: var(--sos-text);
+  --prompt-user: var(--sos-accent);
+  --prompt-path: var(--sos-accent);
+  --accent: var(--sos-accent);
 }
 
 [data-term="amber"] {
-  --bg-color: #120d00;
-  --header-bg: #1f1700;
-  --tab-active: #120d00;
-  --tab-inactive: #2e2200;
-  --text-color: #ffb000;
-  --prompt-user: #ffb000;
-  --prompt-path: #cc8d00;
-  --accent: #ffb000;
+  --bg-color: var(--sos-bg);
+  --header-bg: var(--sos-panel);
+  --tab-active: var(--sos-bg);
+  --tab-inactive: var(--sos-muted);
+  --text-color: var(--sos-text);
+  --prompt-user: var(--sos-text);
+  --prompt-path: var(--sos-accent);
+  --accent: var(--sos-text);
 }
 
 * {
@@ -86,7 +86,7 @@ body {
   height: 38px;
   padding: 0 8px;
   user-select: none;
-  border-bottom: 1px solid rgba(127,127,127,0.18);
+  border-bottom: 1px solid color-mix(in srgb, var(--sos-muted) 18%, transparent);
 }
 
 .tabs-container {
@@ -124,7 +124,7 @@ body {
 }
 
 .tab-close:hover {
-  background-color: rgba(255,255,255,0.15);
+  background-color: color-mix(in srgb, var(--sos-text) 15%, transparent);
 }
 
 .new-tab-btn {
@@ -139,7 +139,7 @@ body {
 }
 
 .new-tab-btn:hover {
-  background-color: rgba(255,255,255,0.1);
+  background-color: color-mix(in srgb, var(--sos-text) 10%, transparent);
 }
 
 .status-right {

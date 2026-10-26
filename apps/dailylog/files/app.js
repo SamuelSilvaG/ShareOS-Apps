@@ -143,7 +143,7 @@ async function loadEntry() {
 // 3. Eintrag speichern (mit Debounce)
 function triggerAutoSave() {
   saveIndicator.textContent = 'Speichere...';
-  saveIndicator.style.color = '#f59e0b';
+  saveIndicator.style.color = 'var(--sos-warn)';
   clearTimeout(saveTimeout);
   saveTimeout = setTimeout(saveCurrentEntry, 800);
   updateStats();

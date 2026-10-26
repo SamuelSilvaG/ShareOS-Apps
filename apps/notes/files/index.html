@@ -31,14 +31,14 @@
         <textarea id="new-content" placeholder="Notiz erfassen..." rows="1"></textarea>
         <div class="creator-bottom hidden" id="creator-footer">
           <div class="palette" id="creator-palette">
-            <span class="palette-dot active" data-color="#202124" style="background:#202124;" title="Standard"></span>
-            <span class="palette-dot" data-color="#5c2b29" style="background:#5c2b29;" title="Koralle"></span>
-            <span class="palette-dot" data-color="#614a19" style="background:#614a19;" title="Pfirsich"></span>
-            <span class="palette-dot" data-color="#635d19" style="background:#635d19;" title="Sand"></span>
-            <span class="palette-dot" data-color="#345920" style="background:#345920;" title="Salbei"></span>
-            <span class="palette-dot" data-color="#16504b" style="background:#16504b;" title="Nebel"></span>
-            <span class="palette-dot" data-color="#2d555e" style="background:#2d555e;" title="Sturm"></span>
-            <span class="palette-dot" data-color="#42275e" style="background:#42275e;" title="Lavendel"></span>
+            <span class="palette-dot active" data-color="#202124" style="background:var(--sos-bg);" title="Standard"></span>
+            <span class="palette-dot" data-color="#5c2b29" style="background:color-mix(in srgb, var(--sos-err) 16%, transparent);" title="Koralle"></span>
+            <span class="palette-dot" data-color="#614a19" style="background:rgba(var(--sos-rgb), 0.16);" title="Pfirsich"></span>
+            <span class="palette-dot" data-color="#635d19" style="background:rgba(var(--sos-rgb), 0.16);" title="Sand"></span>
+            <span class="palette-dot" data-color="#345920" style="background:color-mix(in srgb, var(--sos-ok) 16%, transparent);" title="Salbei"></span>
+            <span class="palette-dot" data-color="#16504b" style="background:rgba(var(--sos-rgb), 0.16);" title="Nebel"></span>
+            <span class="palette-dot" data-color="#2d555e" style="background:rgba(var(--sos-rgb), 0.16);" title="Sturm"></span>
+            <span class="palette-dot" data-color="#42275e" style="background:rgba(var(--sos-rgb), 0.16);" title="Lavendel"></span>
           </div>
           <button class="keep-btn" id="add-note-btn">Schließen</button>
         </div>
@@ -56,14 +56,14 @@
       <textarea id="edit-content" class="modal-content-input" placeholder="Notiz..."></textarea>
       <div class="modal-bottom">
         <div class="palette" id="edit-palette">
-          <span class="palette-dot" data-color="#202124" style="background:#202124;" title="Standard"></span>
-          <span class="palette-dot" data-color="#5c2b29" style="background:#5c2b29;" title="Koralle"></span>
-          <span class="palette-dot" data-color="#614a19" style="background:#614a19;" title="Pfirsich"></span>
-          <span class="palette-dot" data-color="#635d19" style="background:#635d19;" title="Sand"></span>
-          <span class="palette-dot" data-color="#345920" style="background:#345920;" title="Salbei"></span>
-          <span class="palette-dot" data-color="#16504b" style="background:#16504b;" title="Nebel"></span>
-          <span class="palette-dot" data-color="#2d555e" style="background:#2d555e;" title="Sturm"></span>
-          <span class="palette-dot" data-color="#42275e" style="background:#42275e;" title="Lavendel"></span>
+          <span class="palette-dot" data-color="#202124" style="background:var(--sos-bg);" title="Standard"></span>
+          <span class="palette-dot" data-color="#5c2b29" style="background:color-mix(in srgb, var(--sos-err) 16%, transparent);" title="Koralle"></span>
+          <span class="palette-dot" data-color="#614a19" style="background:rgba(var(--sos-rgb), 0.16);" title="Pfirsich"></span>
+          <span class="palette-dot" data-color="#635d19" style="background:rgba(var(--sos-rgb), 0.16);" title="Sand"></span>
+          <span class="palette-dot" data-color="#345920" style="background:color-mix(in srgb, var(--sos-ok) 16%, transparent);" title="Salbei"></span>
+          <span class="palette-dot" data-color="#16504b" style="background:rgba(var(--sos-rgb), 0.16);" title="Nebel"></span>
+          <span class="palette-dot" data-color="#2d555e" style="background:rgba(var(--sos-rgb), 0.16);" title="Sturm"></span>
+          <span class="palette-dot" data-color="#42275e" style="background:rgba(var(--sos-rgb), 0.16);" title="Lavendel"></span>
         </div>
         <div class="modal-actions">
           <button class="keep-btn danger-text" id="modal-delete-btn">Löschen</button>

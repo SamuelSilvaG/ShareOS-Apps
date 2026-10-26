@@ -1,17 +1,17 @@
 :root {
-  --bg-main: #141619;
-  --pane-bg: #1c1f24;
-  --pane-active-border: #3b82f6;
-  --pane-border: #2e333d;
-  --header-bg: #23272e;
-  --text-main: #e5e9f0;
-  --text-muted: #8b949e;
-  --dir-color: #facc15;
-  --row-hover: rgba(255, 255, 255, 0.05);
-  --row-selected: rgba(59, 130, 246, 0.22);
-  --row-cursor: rgba(59, 130, 246, 0.35);
-  --accent: #3b82f6;
-  --danger: #ef4444;
+  --bg-main: var(--sos-bg);
+  --pane-bg: var(--sos-panel);
+  --pane-active-border: var(--sos-line);
+  --pane-border: var(--sos-line);
+  --header-bg: var(--sos-panel);
+  --text-main: var(--sos-text);
+  --text-muted: var(--sos-muted);
+  --dir-color: var(--sos-accent);
+  --row-hover: color-mix(in srgb, var(--sos-soft) 5%, transparent);
+  --row-selected: rgba(var(--sos-rgb), 0.22);
+  --row-cursor: rgba(var(--sos-rgb), 0.35);
+  --accent: var(--sos-accent);
+  --danger: var(--sos-err);
   --font-mono: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
   --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
@@ -36,34 +36,34 @@
 
 /* Classic Norton / Total Commander Blue Theme */
 [data-look="norton"] {
-  --bg-main: #000040;
-  --pane-bg: #000080;
-  --pane-active-border: #00ffff;
-  --pane-border: #00aaaa;
-  --header-bg: #0055aa;
-  --text-main: #ffff55;
-  --text-muted: #00ffff;
-  --dir-color: #ffffff;
-  --row-hover: rgba(0, 255, 255, 0.18);
-  --row-selected: rgba(255, 255, 0, 0.25);
-  --row-cursor: #008888;
-  --accent: #00ffff;
+  --bg-main: var(--sos-bg);
+  --pane-bg: var(--sos-panel);
+  --pane-active-border: var(--sos-line);
+  --pane-border: var(--sos-line);
+  --header-bg: var(--sos-panel);
+  --text-main: var(--sos-text);
+  --text-muted: var(--sos-line);
+  --dir-color: var(--sos-accent);
+  --row-hover: color-mix(in srgb, var(--sos-line) 18%, transparent);
+  --row-selected: rgba(var(--sos-rgb), 0.25);
+  --row-cursor: rgba(var(--sos-rgb), 0.14);
+  --accent: var(--sos-line);
 }
 
 /* Matrix / High Contrast Theme */
 [data-look="matrix"] {
-  --bg-main: #030a03;
-  --pane-bg: #061306;
-  --pane-active-border: #00ff41;
-  --pane-border: #0d3b0d;
-  --header-bg: #091e09;
-  --text-main: #00ff41;
-  --text-muted: #1b8a2f;
-  --dir-color: #aaff00;
-  --row-hover: rgba(0, 255, 65, 0.12);
-  --row-selected: rgba(0, 255, 65, 0.25);
-  --row-cursor: rgba(0, 255, 65, 0.38);
-  --accent: #00ff41;
+  --bg-main: var(--sos-bg);
+  --pane-bg: var(--sos-panel);
+  --pane-active-border: var(--sos-line);
+  --pane-border: var(--sos-line);
+  --header-bg: var(--sos-panel);
+  --text-main: var(--sos-line);
+  --text-muted: var(--sos-muted);
+  --dir-color: var(--sos-accent);
+  --row-hover: color-mix(in srgb, var(--sos-line) 12%, transparent);
+  --row-selected: color-mix(in srgb, var(--sos-line) 25%, transparent);
+  --row-cursor: color-mix(in srgb, var(--sos-line) 38%, transparent);
+  --accent: var(--sos-line);
 }
 
 * {
@@ -106,7 +106,7 @@ body {
 
 .brand-version {
   font-size: 10px;
-  background: rgba(255,255,255,0.08);
+  background: color-mix(in srgb, var(--sos-text) 8%, transparent);
   color: var(--accent);
   padding: 2px 6px;
   border-radius: 4px;
@@ -168,7 +168,7 @@ body {
 
 .pane.active-pane {
   border-color: var(--pane-active-border);
-  box-shadow: 0 0 12px rgba(59, 130, 246, 0.15);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--sos-line) 15%, transparent);
 }
 
 .pane-header {
@@ -509,4 +509,4 @@ body {
 }
 
 /* hint when the folders of the box are not available */
-.banner { margin: 8px 12px 0; padding: 8px 12px; border: 1px solid var(--sos-warn, #e6c25a); border-radius: 6px; color: var(--sos-warn, #e6c25a); background: rgba(230, 194, 90, .08); font-size: 12.5px; line-height: 1.5; }
+.banner { margin: 8px 12px 0; padding: 8px 12px; border: 1px solid var(--sos-warn, var(--sos-accent)); border-radius: 6px; color: var(--sos-warn, var(--sos-accent)); background: rgba(var(--sos-rgb), 0.08); font-size: 12.5px; line-height: 1.5; }
