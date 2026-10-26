@@ -1,0 +1,63 @@
+{
+ "exact": {
+  "Kein Zugriff auf die Ordner der Box. Administrator kann „Dateien“ unter Benutzer aktivieren.": "No access to the box's folders. An administrator can switch on “Files” under Users.",
+  "Kein persönlicher Ordner auf der Box gefunden.": "No personal folder found on the box.",
+  "🗑 Löschen": "🗑 Delete",
+  "Löschen fehlgeschlagen:": "Deleting failed:",
+  "Verbinde mit Box-Dateisystem...": "Connecting to the box file system...",
+  "Speicher: Browser (Fallback)": "Storage: browser (fallback)",
+  "Fehler beim Laden von der Box:": "Error loading from the box:",
+  "Noch keine Aufnahmen vorhanden. Starte links die Aufnahme!": "No recordings yet. Start a recording on the left!",
+  "Sprachaufnahme auf der Box gelöscht.": "Voice recording deleted on the box.",
+  "Aufnahme läuft... (Tippe erneut zum Beenden)": "Recording... (tap again to stop)",
+  "Mikrofon-Zugriff verweigert oder nicht unterstützt:": "Microphone access denied or not supported:",
+  "Verarbeite & speichere...": "Processing & saving...",
+  "Sprachnotiz erfolgreich gesichert!": "Voice note saved!",
+  "Fehler beim Speichern:": "Error while saving:",
+  "Sprachnotiz lokal gespeichert.": "Voice note saved locally.",
+  "Bereit zur Aufnahme": "Ready to record",
+  "Aufnahmen aktualisieren": "Refresh recordings",
+  "Aufnahme starten/stoppen": "Start/stop recording",
+  "Tippe auf den roten Button, um eine Sprachnotiz direkt auf deine Box zu sprechen.": "Tap the red button to record a voice note straight onto your box.",
+  "Keine Sprachaufnahmen vorhanden. Nimm unterwegs deine erste Notiz auf!": "No voice recordings yet. Record your first note on the go!",
+  "Speicherort: voice_memos/": "Location: voice_memos/"
+ },
+ "patterns": [
+  [
+   "^Mikrofon\\-Zugriff\\ verweigert\\ oder\\ nicht\\ unterstützt: (.+)$",
+   "Microphone access denied or not supported: $1"
+  ],
+  [
+   "^Soll\\ '(.+?)'\\ wirklich\\ gelöscht\\ werden\\?$",
+   "Really delete '$1'?"
+  ],
+  [
+   "^Speichere\\ '(.+?)'\\ auf\\ der\\ Box\\.\\.\\.$",
+   "Saving '$1' on the box..."
+  ],
+  [
+   "^Löschen\\ fehlgeschlagen: (.+)$",
+   "Deleting failed: $1"
+  ],
+  [
+   "^Fehler\\ beim\\ Speichern: (.+)$",
+   "Error while saving: $1"
+  ],
+  [
+   "^Fehler\\ bei\\ Audio\\ (.+?):$",
+   "Error with audio $1:"
+  ],
+  [
+   "^Account:\\ (.+?)$",
+   "Account: $1"
+  ]
+ ],
+ "keep": [
+  "Box: 🏠 \u0000/\u0000/",
+  "Account: ...",
+  "\u0000 Memos",
+  "💾 Download",
+  "ShareAudio",
+  "0 Memos"
+ ]
+}

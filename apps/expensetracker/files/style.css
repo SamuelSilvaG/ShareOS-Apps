@@ -1,18 +1,12 @@
 :root {
-  --sos-bg: #090d16;
-  --sos-panel: #111827;
-  --sos-text: #f9fafb;
-  --sos-muted: #94a3b8;
-  --sos-line: #1f293d;
-  --sos-accent: #10b981;
-  --sos-accent-hover: #059669;
-  --sos-danger: #ef4444;
-  --sos-income: #22c55e;
+  --sos-accent-hover: var(--sos-soft);
+  --sos-danger: var(--sos-err);
+  --sos-income: var(--sos-ok);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body.expense-body {
-  background: var(--sos-bg, #090d16);
-  color: var(--sos-text, #f9fafb);
+  background: var(--sos-bg);
+  color: var(--sos-text);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   height: 100vh;
   display: flex;
@@ -23,7 +17,7 @@ body.expense-body {
 
 /* Header */
 .expense-header {
-  background: var(--sos-panel, #111827);
+  background: var(--sos-panel);
   border-bottom: 1px solid var(--sos-line);
   padding: 10px 18px;
   display: flex;
@@ -40,9 +34,9 @@ body.expense-body {
   color: var(--sos-accent);
 }
 .version-badge {
-  background: rgba(16, 185, 129, 0.15);
+  background: rgba(var(--sos-rgb), 0.15);
   color: var(--sos-accent);
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  border: 1px solid rgba(var(--sos-rgb), 0.3);
   font-family: monospace;
   font-size: 11px;
   padding: 2px 7px;
@@ -55,9 +49,9 @@ body.expense-body {
   gap: 10px;
 }
 .nav-month-btn {
-  background: #1e293b;
+  background: var(--sos-bar);
   border: 1px solid var(--sos-line);
-  color: #fff;
+  color: var(--sos-text);
   padding: 5px 10px;
   border-radius: 6px;
   cursor: pointer;
@@ -67,7 +61,7 @@ body.expense-body {
 .current-month-label {
   font-weight: 700;
   font-size: 15px;
-  color: #fff;
+  color: var(--sos-text);
   min-width: 130px;
   text-align: center;
 }
@@ -78,8 +72,8 @@ body.expense-body {
   gap: 8px;
 }
 .action-top-btn {
-  background: #1e293b;
-  color: #fff;
+  background: var(--sos-bar);
+  color: var(--sos-text);
   border: 1px solid var(--sos-line);
   padding: 6px 12px;
   border-radius: 6px;
@@ -92,28 +86,28 @@ body.expense-body {
 .action-top-btn.add-btn {
   background: var(--sos-accent);
   border-color: var(--sos-accent);
-  color: #090d16;
+  color: var(--sos-bg);
 }
 .action-top-btn.add-btn:hover {
   background: var(--sos-accent-hover);
-  color: #fff;
+  color: var(--sos-bg);
 }
 .account-pill {
   font-family: monospace;
   font-size: 11px;
-  background: rgba(255, 255, 255, 0.08);
+  background: color-mix(in srgb, var(--sos-text) 8%, transparent);
   padding: 6px 12px;
   border-radius: 16px;
   color: var(--sos-muted);
 }
 
 .banner {
-  background: #78350f;
-  color: #fde68a;
+  background: color-mix(in srgb, var(--sos-warn) 16%, transparent);
+  color: var(--sos-warn);
   padding: 8px 16px;
   font-size: 12px;
   text-align: center;
-  border-bottom: 1px solid #92400e;
+  border-bottom: 1px solid var(--sos-warn);
 }
 
 /* Workspace */
@@ -162,7 +156,7 @@ body.expense-body {
 }
 .card-income .card-amount { color: var(--sos-income); }
 .card-expense .card-amount { color: var(--sos-danger); }
-.card-balance .card-amount { color: #fff; }
+.card-balance .card-amount { color: var(--sos-text); }
 
 /* Filter & Categories */
 .filter-bar {
@@ -178,7 +172,7 @@ body.expense-body {
   flex-wrap: wrap;
 }
 .cat-pill {
-  background: #151f33;
+  background: var(--sos-panel);
   color: var(--sos-muted);
   border: 1px solid var(--sos-line);
   padding: 5px 10px;
@@ -187,17 +181,17 @@ body.expense-body {
   cursor: pointer;
   transition: all 0.15s;
 }
-.cat-pill:hover { border-color: var(--sos-accent); color: #fff; }
+.cat-pill:hover { border-color: var(--sos-accent); color: var(--sos-text); }
 .cat-pill.active {
   background: var(--sos-accent);
-  color: #090d16;
+  color: var(--sos-bg);
   font-weight: 600;
   border-color: var(--sos-accent);
 }
 #expense-search {
-  background: #111827;
+  background: var(--sos-panel);
   border: 1px solid var(--sos-line);
-  color: #fff;
+  color: var(--sos-text);
   padding: 6px 12px;
   border-radius: 6px;
   outline: none;
@@ -223,7 +217,7 @@ body.expense-body {
   gap: 8px;
 }
 .trans-row {
-  background: #0d121e;
+  background: var(--sos-bg);
   border: 1px solid var(--sos-line);
   border-radius: 8px;
   padding: 12px 16px;
@@ -235,7 +229,7 @@ body.expense-body {
 }
 .trans-row:hover {
   transform: translateY(-1px);
-  border-color: rgba(16, 185, 129, 0.4);
+  border-color: rgba(var(--sos-rgb), 0.4);
 }
 .trans-left {
   display: flex;
@@ -246,7 +240,7 @@ body.expense-body {
   width: 38px;
   height: 38px;
   border-radius: 8px;
-  background: #172033;
+  background: var(--sos-panel);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -257,7 +251,7 @@ body.expense-body {
   flex-direction: column;
   gap: 2px;
 }
-.trans-desc { font-weight: 600; font-size: 14px; color: #fff; }
+.trans-desc { font-weight: 600; font-size: 14px; color: var(--sos-text); }
 .trans-meta { font-size: 12px; color: var(--sos-muted); }
 
 .trans-right {
@@ -296,7 +290,7 @@ body.expense-body {
   gap: 6px;
 }
 .empty-icon { font-size: 38px; }
-.empty-title { font-size: 16px; font-weight: 600; color: #fff; }
+.empty-title { font-size: 16px; font-weight: 600; color: var(--sos-text); }
 .empty-sub { font-size: 13px; max-width: 320px; line-height: 1.4; }
 
 /* Modal */
@@ -324,14 +318,14 @@ body.expense-body {
   box-shadow: 0 10px 30px rgba(0,0,0,0.7);
 }
 .modal-head { display: flex; justify-content: space-between; align-items: center; }
-.modal-head h2 { font-size: 17px; font-weight: 600; color: #fff; }
+.modal-head h2 { font-size: 17px; font-weight: 600; color: var(--sos-text); }
 .close-x-btn { background: transparent; border: none; color: var(--sos-muted); font-size: 18px; cursor: pointer; }
 .modal-form { display: flex; flex-direction: column; gap: 14px; }
 
 .type-toggle-row {
   display: flex;
   gap: 8px;
-  background: #090d16;
+  background: var(--sos-bg);
   padding: 4px;
   border-radius: 8px;
   border: 1px solid var(--sos-line);
@@ -348,16 +342,16 @@ body.expense-body {
   cursor: pointer;
   transition: all 0.15s;
 }
-.type-toggle.active.expense { background: rgba(239, 68, 68, 0.2); color: #f87171; }
-.type-toggle.active.income { background: rgba(34, 197, 94, 0.2); color: #86efac; }
+.type-toggle.active.expense { background: color-mix(in srgb, var(--sos-err) 20%, transparent); color: var(--sos-err); }
+.type-toggle.active.income { background: color-mix(in srgb, var(--sos-ok) 20%, transparent); color: var(--sos-accent); }
 
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .form-group { display: flex; flex-direction: column; gap: 5px; }
 .form-group label { font-size: 12px; font-weight: 500; color: var(--sos-muted); }
 .form-group input, .form-group select {
-  background: #090d16;
+  background: var(--sos-bg);
   border: 1px solid var(--sos-line);
-  color: #fff;
+  color: var(--sos-text);
   border-radius: 6px;
   padding: 9px 12px;
   font-size: 13px;
@@ -365,11 +359,11 @@ body.expense-body {
 }
 .form-group input:focus, .form-group select:focus { border-color: var(--sos-accent); }
 .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
-.save-btn { background: var(--sos-accent); color: #090d16; border: none; padding: 8px 18px; border-radius: 6px; font-weight: 600; cursor: pointer; }
-.save-btn:hover { background: var(--sos-accent-hover); color: #fff; }
+.save-btn { background: var(--sos-accent); color: var(--sos-bg); border: none; padding: 8px 18px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+.save-btn:hover { background: var(--sos-accent-hover); color: var(--sos-bg); }
 .cancel-btn { background: transparent; color: var(--sos-text); border: 1px solid var(--sos-line); padding: 8px 14px; border-radius: 6px; cursor: pointer; }
-.del-btn { background: transparent; color: #f87171; border: 1px solid #f87171; padding: 8px 14px; border-radius: 6px; cursor: pointer; margin-right: auto; }
-.del-btn:hover { background: rgba(248, 113, 113, 0.15); }
+.del-btn { background: transparent; color: var(--sos-err); border: 1px solid var(--sos-err); padding: 8px 14px; border-radius: 6px; cursor: pointer; margin-right: auto; }
+.del-btn:hover { background: color-mix(in srgb, var(--sos-err) 15%, transparent); }
 
 /* Footer & Toast */
 .expense-footer {
@@ -387,9 +381,9 @@ body.expense-body {
   bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
-  background: #1e293b;
+  background: var(--sos-bar);
   border: 1px solid var(--sos-line);
-  color: #fff;
+  color: var(--sos-text);
   padding: 10px 20px;
   border-radius: 6px;
   box-shadow: 0 6px 16px rgba(0,0,0,0.6);

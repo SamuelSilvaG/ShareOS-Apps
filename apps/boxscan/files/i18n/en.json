@@ -1,0 +1,70 @@
+{
+ "exact": {
+  "Verbinde mit Box-Dateisystem...": "Connecting to the box file system...",
+  "Speicher: Browser-Cache (Fallback)": "Storage: browser cache (fallback)",
+  "Kein Zugriff auf die Ordner der Box. Administrator kann „Dateien“ unter Benutzer aktivieren.": "No access to the box's folders. An administrator can switch on “Files” under Users.",
+  "Kein persönlicher Ordner auf der Box gefunden.": "No personal folder found on the box.",
+  "Dokumente auflisten fehlgeschlagen:": "Listing the documents failed:",
+  "Gespeichert": "Saved",
+  "Speichern fehlgeschlagen:": "Saving failed:",
+  "Beleg im Cache gespeichert.": "Receipt saved in the cache.",
+  "Dokument auf der Box gelöscht.": "Document deleted on the box.",
+  "Löschen fehlgeschlagen:": "Deleting failed:",
+  "Dokument entfernt.": "Document removed.",
+  "Aktualisieren": "Refresh",
+  "Links drehen": "Rotate left",
+  "Rechts drehen": "Rotate right",
+  "Dokumenten-Name (z.B. Rechnung_Telekom)": "Document name (e.g. Invoice_Telekom)",
+  "BoxScan - Dokumenten-Scanner": "BoxScan - document scanner",
+  "📸 Beleg scannen": "📸 Scan receipt",
+  "📁 Datei wählen": "📁 Choose file",
+  "Modus:": "Mode:",
+  "Dokument (S/W)": "Document (b/w)",
+  "Graustufen": "Greyscale",
+  "Farbe": "Colour",
+  "Verwerfen": "Discard",
+  "💾 Auf Box speichern": "💾 Save on the box",
+  "0 Dokumente": "0 documents",
+  "Noch keine Belege archiviert": "No receipts archived yet",
+  "Tippe oben auf „Beleg scannen“, um Rechnungen oder Briefe direkt per Kamera zu erfassen!": "Tap “Scan receipt” above to capture invoices or letters directly with the camera!",
+  "💾 Herunterladen": "💾 Download",
+  "🗑 Löschen": "🗑 Delete",
+  "Ordner: documents/YYYY/": "Folder: documents/YYYY/"
+ },
+ "patterns": [
+  [
+   "^Soll\\ der\\ Beleg\\ '(.+?)'\\ wirklich\\ gelöscht\\ werden\\?$",
+   "Really delete the receipt '$1'?"
+  ],
+  [
+   "^Beleg\\ '(.+?)'\\ auf\\ der\\ Box\\ gespeichert!$",
+   "Receipt '$1' saved on the box!"
+  ],
+  [
+   "^Fehler\\ beim\\ Öffnen\\ von\\ (.+?):$",
+   "Error opening $1:"
+  ],
+  [
+   "^Speichern\\ fehlgeschlagen: (.+)$",
+   "Saving failed: $1"
+  ],
+  [
+   "^Löschen\\ fehlgeschlagen: (.+)$",
+   "Deleting failed: $1"
+  ],
+  [
+   "^(.+?)\\ Dokument\\(e\\)$",
+   "$1 document(s)"
+  ],
+  [
+   "^Account:\\ (.+?)$",
+   "Account: $1"
+  ]
+ ],
+ "keep": [
+  "Account: ...",
+  "Box: 🏠 \u0000/\u0000/",
+  "Scan",
+  "BoxScan"
+ ]
+}

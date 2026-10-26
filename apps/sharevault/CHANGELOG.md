@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.1] - 2026-10-26
+### Geändert
+- Folgt den Farben von ShareOS: hell/dunkel und Akzentfarbe (bisher immer das eigene dunkle Farbschema); das Layout bleibt.
+- Englisch, wenn die ShareOS-Oberfläche nicht auf Deutsch steht ([#74](https://github.com/UniqueDroid/ShareOS/issues/74)).
+
 ## [1.1.0] - 2026-10-24
 ### Hinzugefügt
 - **Rubriken:** Jeder Eintrag gehört zu einer Rubrik. Ein neuer Tresor bringt Beispiele mit (Allgemein, E-Mail, Banking & Finanzen, Shopping, Social Media, Streaming, Arbeit, Server & Homelab, WLAN & Netzwerk).

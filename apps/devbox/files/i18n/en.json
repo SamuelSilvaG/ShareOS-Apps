@@ -1,0 +1,121 @@
+{
+ "exact": {
+  "Datei:": "File:",
+  "Bereit": "Ready",
+  "Kein gültiges Base64 (oder kein UTF-8-Text):": "Not valid Base64 (or not UTF-8 text):",
+  "Ungültige URL-Kodierung:": "Invalid URL encoding:",
+  "Ungerade Anzahl Hex-Ziffern.": "Odd number of hex digits.",
+  "Kein UTF-8-Text.": "Not UTF-8 text.",
+  "nur über HTTPS verfügbar": "only available over HTTPS",
+  "✕ stimmt nicht überein": "✕ does not match",
+  "Muster eingeben.": "Enter a pattern.",
+  "Keine Treffer.": "No matches.",
+  "Regex Fehler:": "Regex error:",
+  "Bitte ein gültiges JWT (Header.Payload.Signature) eingeben.": "Please enter a valid JWT (header.payload.signature).",
+  "(Die Signatur wird nicht geprüft.)": "(The signature is not verified.)",
+  "Dekodierungsfehler:": "Decoding error:",
+  "Formatiertes Ergebnis...": "Formatted result...",
+  "Text oder kodierten String hier eingeben...": "Enter text or an encoded string here...",
+  "Prüfsumme einer Datei von diesem Rechner": "Checksum of a file from this computer",
+  "Tippe hier Text ein, um Hashes in Echtzeit zu berechnen...": "Type text here to compute hashes in real time...",
+  "erwartete Prüfsumme einfügen": "paste the expected checksum",
+  "Gefundene Treffer...": "Matches found...",
+  "Originaler Text...": "Original text...",
+  "Neuer Text...": "New text...",
+  "Dekodierter Payload...": "Decoded payload...",
+  "Eingabe (Raw JSON)": "Input (raw JSON)",
+  "Ausgabe / Validierung": "Output / validation",
+  "Eingabetext": "Input text",
+  "Transformationen": "Transformations",
+  "Text für Hash-Berechnung": "Text for the hash",
+  "📂 Datei …": "📂 File …",
+  "🎲 Neue UUID v4": "🎲 New UUID v4",
+  "Kryptografische Prüfsummen (Web Crypto API)": "Cryptographic checksums (Web Crypto API)",
+  "Vergleichen mit (z. B. Inhalt der .sha256-Datei):": "Compare with (e.g. the content of the .sha256 file):",
+  "Regulärer Ausdruck & Flags": "Regular expression & flags",
+  "Test-String": "Test string",
+  "Kontaktiere uns unter info@shareos.local oder dev@uniquedroid.org für Feedback!": "Contact us at info@shareos.local or dev@uniquedroid.org for feedback!",
+  "Treffer & Gruppen (Matches)": "Matches & groups",
+  "Originaltext (Links) & Geänderter Text (Rechts)": "Original text (left) & changed text (right)",
+  "🔍 Zeilen vergleichen": "🔍 Compare lines",
+  "Diff-Ergebnis (+ Hinzugefügt / - Entfernt)": "Diff result (+ added / - removed)",
+  "Header & Payload Dekodierung": "Header & payload decoding"
+ },
+ "patterns": [
+  [
+   "^Prüfsummen\\ von\\ (.+?)\\ \\((.+?)\\ MB\\)\\.\\ Eigener\\ Text\\ ersetzt\\ sie\\.$",
+   "Checksums of $1 ($2 MB). Your own text replaces them."
+  ],
+  [
+   "^(.+?)\\ ist\\ größer\\ als\\ 256\\ MB\\ –\\ für\\ den\\ Browser\\ zu\\ groß\\.$",
+   "$1 is larger than 256 MB – too large for the browser."
+  ],
+  [
+   "^(.+?)\\ ist\\ größer\\ als\\ 1\\ GB\\ –\\ für\\ den\\ Browser\\ zu\\ groß\\.$",
+   "$1 is larger than 1 GB – too large for the browser."
+  ],
+  [
+   "^Kein\\ gültiges\\ Base64\\ \\(oder\\ kein\\ UTF\\-8\\-Text\\): (.+)$",
+   "Not valid Base64 (or not UTF-8 text): $1"
+  ],
+  [
+   "^Match\\ \\#(.+?):\\ \"(.+?)\"\\ \\(Position:\\ (.+?)\\)$",
+   "Match #$1: \"$2\" (position: $3)"
+  ],
+  [
+   "^Prüfsummen\\ von\\ (.+?)\\ \\((.+?)\\ MB\\)\\ …$",
+   "Checksums of $1 ($2 MB) …"
+  ],
+  [
+   "^Ungültige\\ URL\\-Kodierung: (.+)$",
+   "Invalid URL encoding: $1"
+  ],
+  [
+   "^Dekodierungsfehler: (.+)$",
+   "Decoding error: $1"
+  ],
+  [
+   "^erste\\ (.+?)\\ Treffer$",
+   "first $1 matches"
+  ],
+  [
+   "^Regex\\ Fehler: (.+)$",
+   "Regex error: $1"
+  ],
+  [
+   "^(.+?)\\ Treffer$",
+   "$1 matches"
+  ],
+  [
+   "^Datei: (.+)$",
+   "File: $1"
+  ]
+ ],
+ "keep": [
+  "Valid JSON ✓",
+  "Syntax Error:",
+  "Invalid JSON ✕",
+  "n    Gruppe \u0000: \u0000",
+  "– DevBox",
+  "Regex Pattern...",
+  "DevBox – ShareOS",
+  "JSON Formatter",
+  "Base64 / URL",
+  "Hashes & Crypto",
+  "Regex Tester",
+  "Diff-Viewer",
+  "JWT Decoder",
+  "Beautify (2 Spaces)",
+  "Minify",
+  "Base64 Encode",
+  "Base64 Decode",
+  "URL Encode",
+  "URL Decode",
+  "HTML Entities",
+  "HTML Entities ➔ Text",
+  "Text ➔ Hex",
+  "Hex ➔ Text",
+  "UUID v4 Generator:",
+  "JSON Web Token (JWT) String"
+ ]
+}

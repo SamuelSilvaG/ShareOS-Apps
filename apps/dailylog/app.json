@@ -1,7 +1,7 @@
 {
   "id": "dailylog",
   "name": "DailyLog",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "UniqueDroid",
   "description": {
     "de": "Persönliches Tagebuch & Bullet Journal mit Kalendernavigation und ShareOS.fs Speicherung.",

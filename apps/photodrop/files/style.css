@@ -1,17 +1,11 @@
 :root {
-  --sos-bg: #0b0f19;
-  --sos-panel: #151d2f;
-  --sos-text: #f1f5f9;
-  --sos-muted: #94a3b8;
-  --sos-line: #1e293b;
-  --sos-accent: #3b82f6;
-  --sos-accent-hover: #2563eb;
-  --sos-danger: #ef4444;
+  --sos-accent-hover: var(--sos-soft);
+  --sos-danger: var(--sos-err);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body.photo-body {
-  background: var(--sos-bg, #0b0f19);
-  color: var(--sos-text, #f1f5f9);
+  background: var(--sos-bg);
+  color: var(--sos-text);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   height: 100vh;
   display: flex;
@@ -22,8 +16,8 @@ body.photo-body {
 
 /* Header */
 .photo-header {
-  background: var(--sos-panel, #151d2f);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--sos-panel);
+  border-bottom: 1px solid color-mix(in srgb, var(--sos-text) 8%, transparent);
   padding: 10px 20px;
   display: flex;
   align-items: center;
@@ -39,9 +33,9 @@ body.photo-body {
   color: var(--sos-accent);
 }
 .version-badge {
-  background: rgba(59, 130, 246, 0.15);
+  background: rgba(var(--sos-rgb), 0.15);
   color: var(--sos-accent);
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  border: 1px solid rgba(var(--sos-rgb), 0.3);
   font-family: monospace;
   font-size: 11px;
   padding: 2px 7px;
@@ -49,7 +43,7 @@ body.photo-body {
 }
 .upload-btn {
   background: var(--sos-accent);
-  color: #fff;
+  color: var(--sos-bg);
   padding: 7px 16px;
   border-radius: 6px;
   font-weight: 600;
@@ -58,7 +52,7 @@ body.photo-body {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 2px 6px rgba(var(--sos-rgb), 0.3);
   transition: all 0.15s ease-in-out;
 }
 .upload-btn:hover {
@@ -73,19 +67,19 @@ body.photo-body {
 .account-pill {
   font-family: monospace;
   font-size: 11px;
-  background: rgba(255, 255, 255, 0.06);
+  background: color-mix(in srgb, var(--sos-text) 6%, transparent);
   padding: 6px 12px;
   border-radius: 16px;
   color: var(--sos-muted);
 }
 
 .banner {
-  background: #78350f;
-  color: #fde68a;
+  background: color-mix(in srgb, var(--sos-warn) 16%, transparent);
+  color: var(--sos-warn);
   padding: 8px 16px;
   font-size: 12px;
   text-align: center;
-  border-bottom: 1px solid #92400e;
+  border-bottom: 1px solid var(--sos-warn);
 }
 
 /* Stage */
@@ -100,8 +94,8 @@ body.photo-body {
 
 /* Dropzone */
 .dropzone {
-  border: 2px dashed rgba(255, 255, 255, 0.15);
-  background: rgba(255, 255, 255, 0.02);
+  border: 2px dashed color-mix(in srgb, var(--sos-text) 15%, transparent);
+  background: color-mix(in srgb, var(--sos-text) 2%, transparent);
   border-radius: 12px;
   padding: 24px;
   text-align: center;
@@ -110,7 +104,7 @@ body.photo-body {
 }
 .dropzone:hover, .dropzone.dragover {
   border-color: var(--sos-accent);
-  background: rgba(59, 130, 246, 0.05);
+  background: rgba(var(--sos-rgb), 0.05);
 }
 .dropzone-inner {
   display: flex;
@@ -119,7 +113,7 @@ body.photo-body {
   gap: 6px;
 }
 .drop-icon { font-size: 32px; }
-.drop-title { font-weight: 600; font-size: 15px; color: #fff; }
+.drop-title { font-weight: 600; font-size: 15px; color: var(--sos-text); }
 .drop-sub { font-size: 12px; color: var(--sos-muted); }
 
 /* Gallery Grid */
@@ -136,7 +130,7 @@ body.photo-body {
   aspect-ratio: 1 / 1;
   box-shadow: 0 2px 8px rgba(0,0,0,0.3);
   cursor: pointer;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid color-mix(in srgb, var(--sos-text) 6%, transparent);
   transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
 }
 .photo-card:hover {
@@ -166,7 +160,7 @@ body.photo-body {
 }
 .photo-name {
   font-size: 11px;
-  color: #fff;
+  color: var(--sos-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -207,7 +201,7 @@ body.photo-body {
   right: 0;
   background: transparent;
   border: none;
-  color: #fff;
+  color: var(--sos-text);
   font-size: 24px;
   cursor: pointer;
 }
@@ -223,10 +217,10 @@ body.photo-body {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  background: rgba(21, 29, 47, 0.9);
+  background: color-mix(in srgb, var(--sos-panel) 90%, transparent);
   padding: 8px 16px;
   border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid color-mix(in srgb, var(--sos-text) 10%, transparent);
 }
 .del-btn {
   background: transparent;
@@ -240,13 +234,13 @@ body.photo-body {
 }
 .del-btn:hover {
   background: var(--sos-danger);
-  color: #fff;
+  color: var(--sos-bg);
 }
 
 /* Footer & Toast */
 .photo-footer {
   background: var(--sos-panel);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid color-mix(in srgb, var(--sos-text) 8%, transparent);
   padding: 6px 20px;
   display: flex;
   justify-content: space-between;
@@ -259,9 +253,9 @@ body.photo-body {
   bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
-  background: #1e293b;
-  border: 1px solid #334155;
-  color: #fff;
+  background: var(--sos-line);
+  border: 1px solid var(--sos-line);
+  color: var(--sos-text);
   padding: 10px 20px;
   border-radius: 6px;
   box-shadow: 0 6px 16px rgba(0,0,0,0.6);

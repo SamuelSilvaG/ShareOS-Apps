@@ -1,3 +1,7 @@
+## 1.2.1
+
+- Englisch, wenn die ShareOS-Oberfläche nicht auf Deutsch steht ([#74](https://github.com/UniqueDroid/ShareOS/issues/74)).
+
 ## 1.2.0
 
 - **Keeps what you set:** volume, equalizer (bands, preamp, preset, on/off), shuffle and repeat, and the **playlist of box files** with the last track – per account (ShareOS keeps the browser storage of the accounts apart). The box files get a fresh address when they play, so the playlist still works the next day.

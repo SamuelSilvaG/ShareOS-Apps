@@ -1,20 +1,20 @@
 :root {
-  --bg: #111318;
-  --panel: #1b1f27;
-  --bar: #151820;
-  --field: #0d1015;
-  --ctl: #262c38;
-  --border: #2e3442;
-  --text: #e5e9f0;
-  --muted: #8b949e;
-  --accent: #3b82f6;
-  --accent-soft: rgba(59, 130, 246, 0.12);
-  --on-accent: #fff;
-  --in-text: #7ee787;
-  --out-text: #58a6ff;
-  --ok: #22c55e;
-  --warn: #f59e0b;
-  --err: #ef4444;
+  --bg: var(--sos-bg);
+  --panel: var(--sos-panel);
+  --bar: var(--sos-panel);
+  --field: var(--sos-bar);
+  --ctl: var(--sos-bar);
+  --border: var(--sos-line);
+  --text: var(--sos-text);
+  --muted: var(--sos-muted);
+  --accent: var(--sos-accent);
+  --accent-soft: color-mix(in srgb, var(--sos-soft) 12%, transparent);
+  --on-accent: var(--sos-bg);
+  --in-text: var(--sos-text);
+  --out-text: var(--sos-text);
+  --ok: var(--sos-ok);
+  --warn: var(--sos-warn);
+  --err: var(--sos-err);
   --font-mono: 'Cascadia Code', 'Consolas', monospace;
 }
 

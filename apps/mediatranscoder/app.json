@@ -1,7 +1,7 @@
 {
 	"id": "mediatranscoder",
 	"name": "MediaTranscoder",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"publisher": "UniqueDroid",
 	"description": {
 		"de": "Medien auf der Box umwandeln: Audio aus Videos holen, Musik in MP3, M4A, Opus, FLAC oder WAV wandeln, Videos ohne Neukodierung in einen anderen Container packen (MP4, MKV …) und Stücke herausschneiden. Läuft im Hintergrund mit FFmpeg; braucht die System-App „ffmpeg“.",

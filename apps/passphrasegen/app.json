@@ -1,7 +1,7 @@
 {
   "id": "passphrasegen",
   "name": "PassphraseGen",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "UniqueDroid",
   "description": {
     "de": "Kryptografischer Diceware-Passphrase-Generator mit WebCrypto und ShareOS.fs Historie.",

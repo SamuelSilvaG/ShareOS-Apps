@@ -1,20 +1,20 @@
 :root {
-  --bg: #111318;
-  --panel: #1b1f27;
-  --well: #14171e;
-  --ctl: #262c38;
-  --step: #252b37;
-  --step-line: #363e4f;
-  --step-beat: #525d75;
-  --border: #2e3442;
-  --text: #e5e9f0;
-  --muted: #8b949e;
-  --accent: #f97316;
-  --accent-glow: rgba(249, 115, 22, 0.35);
-  --on-accent: #000;
-  --cyan: #06b6d4;
-  --green: #22c55e;
-  --scope-bg: #090b0e;
+  --bg: var(--sos-bg);
+  --panel: var(--sos-panel);
+  --well: var(--sos-bar);
+  --ctl: var(--sos-bar);
+  --step: var(--sos-bar);
+  --step-line: var(--sos-line);
+  --step-beat: var(--sos-bar);
+  --border: var(--sos-line);
+  --text: var(--sos-text);
+  --muted: var(--sos-muted);
+  --accent: var(--sos-accent);
+  --accent-glow: rgba(var(--sos-rgb), 0.35);
+  --on-accent: var(--sos-bg);
+  --cyan: var(--sos-accent);
+  --green: var(--sos-ok);
+  --scope-bg: var(--sos-bg);
   --font-mono: 'Cascadia Code', 'Consolas', monospace;
 }
 
@@ -59,7 +59,7 @@ body { background: var(--bg); color: var(--text); font-family: system-ui, sans-s
 .step-btn { height: 30px; background: var(--step); border: 1px solid var(--step-line); border-radius: 3px; cursor: pointer; transition: background 0.08s; }
 .step-btn:nth-child(4n+1) { border-color: var(--step-beat); }
 .step-btn.active { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 8px var(--accent-glow); }
-.track-row[data-track="4"] .step-btn.active { background: var(--cyan); border-color: var(--cyan); box-shadow: 0 0 8px rgba(6,182,212,0.4); }
+.track-row[data-track="4"] .step-btn.active { background: var(--cyan); border-color: var(--cyan); box-shadow: 0 0 8px rgba(var(--sos-rgb), 0.4); }
 .step-btn.current-step { outline: 2px solid var(--text); outline-offset: -1px; }
 
 /* synth and scope */
@@ -71,9 +71,9 @@ body { background: var(--bg); color: var(--text); font-family: system-ui, sans-s
 .param-group input[type="range"] { accent-color: var(--accent); cursor: pointer; }
 
 .piano-wrap { display: flex; flex-direction: column; gap: 6px; margin-top: auto; }
-.piano-keys { display: flex; height: 110px; gap: 3px; background: #0e1015; padding: 6px; border-radius: 5px; border: 1px solid var(--border); touch-action: none; }
-.key { flex: 1; background: #e2e8f0; color: #1e293b; border-radius: 0 0 4px 4px; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; padding-bottom: 6px; font-family: var(--font-mono); font-size: 10px; font-weight: bold; cursor: pointer; user-select: none; transition: background 0.05s; }
-.key.sharp { background: #1e293b; color: #94a3b8; height: 68%; border: 1px solid #475569; }
+.piano-keys { display: flex; height: 110px; gap: 3px; background: var(--sos-bg); padding: 6px; border-radius: 5px; border: 1px solid var(--border); touch-action: none; }
+.key { flex: 1; background: var(--sos-text); color: var(--sos-bar); border-radius: 0 0 4px 4px; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; padding-bottom: 6px; font-family: var(--font-mono); font-size: 10px; font-weight: bold; cursor: pointer; user-select: none; transition: background 0.05s; }
+.key.sharp { background: var(--sos-bar); color: var(--sos-muted); height: 68%; border: 1px solid var(--sos-line); }
 .key:active, .key.pressed { background: var(--accent) !important; color: var(--on-accent) !important; }
 .piano-hint { font-size: 11px; color: var(--muted); text-align: center; font-family: var(--font-mono); }
 

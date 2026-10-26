@@ -1,7 +1,7 @@
 {
   "id": "recipevault",
   "name": "RecipeVault",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "UniqueDroid",
   "description": {
     "de": "Private Rezeptsammlung mit dynamischem Portionsrechner, Einkaufslisten-Export und ShareOS.fs Speicherung.",

@@ -1,0 +1,78 @@
+{
+ "exact": {
+  "Kein Zugriff auf die Ordner der Box. Administrator kann „Dateien“ unter Benutzer aktivieren.": "No access to the box's folders. An administrator can switch on “Files” under Users.",
+  "Kein persönlicher Ordner auf der Box gefunden.": "No personal folder found on the box.",
+  "Speichern fehlgeschlagen:": "Saving failed:",
+  "Erledigt": "Done",
+  "Tags (kommagetrennt)": "Tags (comma-separated)",
+  "Löschen": "Delete",
+  "Abbrechen": "Cancel",
+  "Speichern": "Save",
+  "Verbinde mit Box-Dateisystem...": "Connecting to the box file system...",
+  "OpenVPN Daemon auf NAS einrichten": "Set up the OpenVPN daemon on the NAS",
+  "Tunnel-Interface prüfen und Profile erzeugen.": "Check the tunnel interface and create profiles.",
+  "PhotoDrop testen": "Test PhotoDrop",
+  "Urlaubsfotos von unterwegs hochladen und Monatsordner kontrollieren.": "Upload holiday photos on the go and check the month folders.",
+  "Passwörter in ShareVault migrieren": "Move passwords to ShareVault",
+  "Alte KeePass/Bitwarden Zugangsdaten importieren.": "Import old KeePass/Bitwarden credentials.",
+  "DailyLog Journal ausprobieren": "Try the DailyLog journal",
+  "Erkenntnisse und Ziele für den Tag aufschreiben.": "Write down insights and goals for the day.",
+  "Hoch": "High",
+  "Niedrig": "Low",
+  "Aufgabe bearbeiten": "Edit task",
+  "Neue Aufgabe erstellen": "New task",
+  "Aufgabe aktualisiert.": "Task updated.",
+  "Aufgabe hinzugefügt!": "Task added!",
+  "Diese Aufgabe wirklich löschen?": "Really delete this task?",
+  "Aufgabe gelöscht.": "Task deleted.",
+  "Aufgaben durchsuchen...": "Search tasks...",
+  "Board neu laden": "Reload the board",
+  "z. B. VPN-Zertifikat erneuern": "e.g. renew the VPN certificate",
+  "Details, Schritte oder Notizen...": "Details, steps or notes...",
+  "➕ Neue Aufgabe": "➕ New task",
+  "Ideen & Backlog": "Ideas & backlog",
+  "+ Karte hinzufügen": "+ Add card",
+  "Zu Erledigen": "To do",
+  "In Arbeit": "In progress",
+  "Titel der Aufgabe": "Title of the task",
+  "Status-Spalte": "Status column",
+  "Priorität": "Priority",
+  "🟢 Niedrig": "🟢 Low",
+  "🔴 Hoch / Dringend": "🔴 High / urgent",
+  "Beschreibung & Checkliste": "Description & checklist",
+  "0 Aufgaben insgesamt": "0 tasks in total"
+ },
+ "patterns": [
+  [
+   "^Speicher:\\ Browser\\ \\(LocalStorage:\\ (.+?)\\)$",
+   "Storage: browser (LocalStorage: $1)"
+  ],
+  [
+   "^Aufgabe\\ nach\\ '(.+?)'\\ verschoben\\.$",
+   "Task moved to '$1'."
+  ],
+  [
+   "^Speichern\\ fehlgeschlagen: (.+)$",
+   "Saving failed: $1"
+  ],
+  [
+   "^Box:\\ 🏠\\ (.+?)/(.+?)/(.+?)$",
+   "Box: 🏠 $1/$2/$3"
+  ],
+  [
+   "^(.+?)\\ Aufgaben\\ insgesamt$",
+   "$1 tasks in total"
+  ],
+  [
+   "^Account:\\ (.+?)$",
+   "Account: $1"
+  ]
+ ],
+ "keep": [
+  "Account: ...",
+  "Normal",
+  "TaskBoard - Kanban",
+  "TaskBoard",
+  "🟡 Normal"
+ ]
+}

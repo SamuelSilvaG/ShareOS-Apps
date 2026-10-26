@@ -11,7 +11,7 @@ html, body { height: 100%; }
 .state.err { color: var(--sos-err); border-color: var(--sos-err); }
 .hidden { display: none !important; }
 .muted { color: var(--sos-muted); }
-.banner { margin: 8px 10px 0; padding: 8px 12px; border: 1px solid var(--sos-warn); border-radius: var(--sos-radius); color: var(--sos-warn); background: rgba(230, 194, 90, .08); font-size: 12px; }
+.banner { margin: 8px 10px 0; padding: 8px 12px; border: 1px solid var(--sos-warn); border-radius: var(--sos-radius); color: var(--sos-warn); background: color-mix(in srgb, var(--sos-warn) 8%, transparent); font-size: 12px; }
 .banner a { color: inherit; }
 
 .workspace { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 10px; padding: 10px; }
@@ -28,7 +28,7 @@ html, body { height: 100%; }
 .profiles { flex: 1; min-height: 0; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 8px; }
 .empty { padding: 24px; text-align: center; font-size: 12px; line-height: 1.6; }
 .prof { border: 1px solid var(--sos-line); border-radius: var(--sos-radius); padding: 10px 12px; background: var(--sos-bg); }
-.prof.on { border-color: var(--sos-ok); box-shadow: 0 0 0 1px rgba(61, 255, 138, .15); }
+.prof.on { border-color: var(--sos-ok); box-shadow: 0 0 0 1px color-mix(in srgb, var(--sos-ok) 15%, transparent); }
 .prof .top { display: flex; align-items: center; gap: 8px; }
 .prof .name { flex: 1; min-width: 0; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .prof .sub { margin-top: 2px; font-size: 12px; color: var(--sos-muted); }

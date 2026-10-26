@@ -1,3 +1,7 @@
+## 1.4.1
+
+- Sprache „Automatisch“ folgt der ShareOS-Oberfläche ([#74](https://github.com/UniqueDroid/ShareOS/issues/74)).
+
 ## 1.4.0
 
 - **Texts per account:** opened from ShareOS, Webpad loads the ShareOS app SDK first, so its open tabs, texts and settings in the browser belong to the account that opened it – another user in the same browser no longer sees them (ShareOS 0.2.0-beta.1). What has to stay private belongs on the box: *File → Save to the Box…* saves into your own folder.

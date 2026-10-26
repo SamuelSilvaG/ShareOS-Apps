@@ -1,7 +1,7 @@
 {
   "id": "tinypdf",
   "name": "TinyPDF",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "publisher": "UniqueDroid",
   "description": {
     "de": "PDF-Betrachter mit Unterschrift: echte PDF-Seiten (pdf.js), Unterschrift zeichnen, auf der Seite platzieren und als neues PDF auf der Box speichern.",

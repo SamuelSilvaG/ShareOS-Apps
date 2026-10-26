@@ -134,7 +134,7 @@ async function startDiagnosis() {
   runCheckBtn.textContent = '⏳ Messe...';
 
   valStatus.textContent = 'Läuft...';
-  valStatus.style.color = '#38bdf8';
+  valStatus.style.color = 'var(--sos-accent)';
   subStatus.textContent = 'Messzyklen aktiv';
 
   pingHistory = [];
@@ -199,15 +199,15 @@ async function startDiagnosis() {
   // Phase 3: Gesamtfazit & Nodes
   if (avgPing < 75) {
     valStatus.textContent = 'Exzellent';
-    valStatus.style.color = '#10b981';
+    valStatus.style.color = 'var(--sos-ok)';
     subStatus.textContent = 'Verbindung zur Box stabil und schnell';
   } else if (avgPing < 180) {
     valStatus.textContent = 'Akzeptabel';
-    valStatus.style.color = '#f59e0b';
+    valStatus.style.color = 'var(--sos-warn)';
     subStatus.textContent = 'Erhöhte Latenz (z. B. Mobilfunk)';
   } else {
     valStatus.textContent = 'Kritisch';
-    valStatus.style.color = '#ef4444';
+    valStatus.style.color = 'var(--sos-err)';
     subStatus.textContent = 'Paketverluste möglich';
   }
 

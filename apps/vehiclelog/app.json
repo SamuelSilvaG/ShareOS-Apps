@@ -1,7 +1,7 @@
 {
   "id": "vehiclelog",
   "name": "VehicleLog",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "UniqueDroid",
   "description": {
     "de": "Fahrtenbuch, Tank- & Lade-Tracker mit automatischer Verbrauchsberechnung, CSV-Export und ShareOS.fs Speicherung.",

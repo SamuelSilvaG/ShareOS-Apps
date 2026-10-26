@@ -1,0 +1,162 @@
+{
+ "exact": {
+  "Schließen": "Close",
+  "Keine Treffer.": "No matches.",
+  "Willkommen bei ShareOS WebTerm!\nTippe \"help\" für eine Liste aller Befehle.\nMit \"webpad readme.txt\" öffnest du diese Datei im Editor.": "Welcome to ShareOS WebTerm! Type \"help\" for a list of all commands. \"webpad readme.txt\" opens this file in the editor.",
+  "Tippe": "Type",
+  "für alle verfügbaren Befehle oder": "for all available commands or",
+  "Verfügbare ShareOS-Befehle:": "Available ShareOS commands:",
+  "Verzeichnisinhalt anzeigen": "Show the folder contents",
+  "Verzeichnis wechseln": "Change folder",
+  "Aktuelles Verzeichnis ausgeben": "Print the current folder",
+  "Dateiinhalt ausgeben": "Print the file contents",
+  "Leere Datei erstellen": "Create an empty file",
+  "Text in eine Datei schreiben": "Write text into a file",
+  "Neuen Ordner anlegen": "Create a new folder",
+  "Datei oder Ordner löschen": "Delete a file or folder",
+  "Datei nach Text durchsuchen": "Search a file for text",
+  "Datei in Webpad öffnen (Speichern schreibt zurück)": "Open a file in Webpad (saving writes back)",
+  "JS-Skript in einer Sandbox ausführen": "Run a JS script in a sandbox",
+  "Mathematischen Ausdruck berechnen": "Calculate a mathematical expression",
+  "Aktuelles Datum und Uhrzeit anzeigen": "Show the current date and time",
+  "Aktuellen Benutzer anzeigen": "Show the current user",
+  "Theme wechseln (shareos, dark, matrix, ubuntu, amber)": "Change theme (shareos, dark, matrix, ubuntu, amber)",
+  "System- und Browser-Informationen (Neofetch)": "System and browser information (neofetch)",
+  "Matrix-Bildschirmschoner starten/stoppen": "Start/stop the Matrix screen saver",
+  "Terminal leeren": "Clear the terminal",
+  "cat: Dateiname fehlt": "cat: file name missing",
+  "Binärdatei (aus ShareCommander) – nicht als Text darstellbar.": "Binary file (from ShareCommander) – cannot be shown as text.",
+  "touch: Dateiname fehlt": "touch: file name missing",
+  "touch: ungültiger Name": "touch: invalid name",
+  "touch: Ordner ist schreibgeschützt": "touch: folder is read-only",
+  "Datei": "File",
+  "write: ungültiger Name": "write: invalid name",
+  "write: schreibgeschützt": "write: read-only",
+  "Inhalt in": "Content in",
+  "Binärdatei – grep durchsucht nur Text.": "Binary file – grep only searches text.",
+  "mkdir: Ordnername fehlt": "mkdir: folder name missing",
+  "mkdir: ungültiger Name": "mkdir: invalid name",
+  "mkdir: Ordner ist schreibgeschützt": "mkdir: folder is read-only",
+  "Ordner": "Folder",
+  "rm: Name fehlt": "rm: name missing",
+  "rm: schreibgeschützt": "rm: read-only",
+  "Beispiel: calc 12 * (4 + 2)": "Example: calc 12 * (4 + 2)",
+  "Ungültiger mathematischer Ausdruck": "Invalid mathematical expression",
+  "Verfügbare Themes:": "Available themes:",
+  "folgt dem Aussehen von ShareOS)": "follows the look of ShareOS)",
+  "Theme geändert auf": "Theme changed to",
+  "Webpad meldet sich nicht – ist Webpad 1.2 oder neuer installiert?": "Webpad does not answer – is Webpad 1.2 or newer installed?",
+  "Webpad wird geöffnet …": "Opening Webpad …",
+  "Fenster blockiert – Pop-ups für diese Seite erlauben.": "Window blocked – allow pop-ups for this page.",
+  "Skript ohne Ausgabe beendet.": "Script finished without output.",
+  "Unbekannt": "Unknown",
+  "verbunden (App": "connected (app",
+  "nicht geladen (läuft außerhalb von ShareOS)": "not loaded (runs outside ShareOS)",
+  "Matrix-Modus umgeschaltet (Klicke oder drücke eine Taste zum Beenden).": "Matrix mode toggled (click or press a key to end).",
+  "Zum Beispiel:": "For example:",
+  "Neuer Tab (Strg+Shift+T)": "New tab (Ctrl+Shift+T)",
+  "Neuer Tab": "New tab",
+  "Befehl": "Command",
+  "WebTerm – ShareOS Terminal": "WebTerm – ShareOS terminal",
+  "für Systemdaten.": "for system data."
+ },
+ "patterns": [
+  [
+   "^'(.+?)'\\ an\\ Webpad\\ geschickt\\ –\\ Speichern\\ in\\ Webpad\\ schreibt\\ die\\ Datei\\ hierher\\ zurück\\.$",
+   "'$1' sent to Webpad – saving in Webpad writes the file back here."
+  ],
+  [
+   "^\\[ShareOS\\]\\ '(.+?)'\\ ist\\ schreibgeschützt\\ –\\ Änderung\\ aus\\ Webpad\\ nicht\\ übernommen\\.$",
+   "[ShareOS] '$1' is read-only – change from Webpad not taken over."
+  ],
+  [
+   "^\\[ShareOS\\]\\ '(.+?)'\\ von\\ der\\ Box\\ geöffnet\\ \\(nur\\ lesen\\):\\ /box/(.+?)$",
+   "[ShareOS] '$1' opened from the box (read only): /box/$2"
+  ],
+  [
+   "^\\[ShareOS\\]\\ Datei\\ konnte\\ nicht\\ geöffnet\\ werden:\\ (.+?)$",
+   "[ShareOS] The file could not be opened: $1"
+  ],
+  [
+   "^\\[ShareOS\\]\\ '(.+?)'\\ wurde\\ in\\ Webpad\\ gespeichert\\.$",
+   "[ShareOS] '$1' was saved in Webpad."
+  ],
+  [
+   "^(.+?):\\ Befehl\\ nicht\\ gefunden\\.\\ Tippe\\ 'help'\\.$",
+   "$1: command not found. Type 'help'."
+  ],
+  [
+   "^cd:\\ Kein\\ solches\\ Verzeichnis:\\ (.+?)$",
+   "cd: no such folder: $1"
+  ],
+  [
+   "^grep:\\ Datei\\ nicht\\ gefunden:\\ (.+?)$",
+   "grep: file not found: $1"
+  ],
+  [
+   "^webpad:\\ (.+?)\\ ist\\ ein\\ Verzeichnis$",
+   "webpad: $1 is a folder"
+  ],
+  [
+   "^webpad:\\ (.+?)\\ ist\\ eine\\ Binärdatei$",
+   "webpad: $1 is a binary file"
+  ],
+  [
+   "^cat:\\ Datei\\ nicht\\ gefunden:\\ (.+?)$",
+   "cat: file not found: $1"
+  ],
+  [
+   "^write:\\ (.+?)\\ ist\\ ein\\ Verzeichnis$",
+   "write: $1 is a folder"
+  ],
+  [
+   "^cd:\\ Ist\\ kein\\ Verzeichnis:\\ (.+?)$",
+   "cd: not a folder: $1"
+  ],
+  [
+   "^ls:\\ Pfad\\ nicht\\ gefunden:\\ (.+?)$",
+   "ls: path not found: $1"
+  ],
+  [
+   "^cat:\\ (.+?)\\ ist\\ ein\\ Verzeichnis$",
+   "cat: $1 is a folder"
+  ],
+  [
+   "^rm:\\ '(.+?)'\\ existiert\\ nicht$",
+   "rm: '$1' does not exist"
+  ],
+  [
+   "^Datei\\ nicht\\ gefunden:\\ (.+?)$",
+   "File not found: $1"
+  ],
+  [
+   "^'(.+?)'\\ wurde\\ gelöscht\\.$",
+   "'$1' was deleted."
+  ],
+  [
+   "^verbunden\\ \\(App (.+)$",
+   "connected (app $1"
+  ],
+  [
+   "^Rückgabe:\\ (.+?)$",
+   "Return value: $1"
+  ],
+  [
+   "^Fehler:\\ (.+?)$",
+   "Error: $1"
+  ]
+ ],
+ "keep": [
+  "ShareOS WebTerm [Version 1.0.0]",
+  "für Systemdaten.n",
+  "ShareOS Web Environment",
+  "Shell:",
+  "WebTerm 1.0 (DOM)",
+  "Resolution:",
+  "CPU Threads:",
+  "Memory:",
+  "VFS Storage:",
+  "ShareOS SDK:",
+  "ShareOS WebTerm v1.2"
+ ]
+}

@@ -1,7 +1,7 @@
 {
   "id": "habitgrid",
   "name": "HabitGrid",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "UniqueDroid",
   "description": {
     "de": "Minimalistischer Gewohnheiten- und Routine-Tracker mit Monats-Heatmap, Streak-Zähler und ShareOS.fs Speicherung.",

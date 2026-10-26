@@ -1,0 +1,131 @@
+{
+ "exact": {
+  "Fehler": "Error",
+  "Abbrechen": "Cancel",
+  "Original-Spur, ohne Umwandlung": "Original track, not converted",
+  "TS (MPEG-Transportstrom)": "TS (MPEG transport stream)",
+  "WebM (nur VP8/VP9/AV1 + Opus/Vorbis)": "WebM (only VP8/VP9/AV1 + Opus/Vorbis)",
+  "Wandelt eine Tonspur in ein anderes Audioformat oder holt sie unverändert aus einem Video heraus. Ein Video wird dabei nicht mitgenommen.": "Converts an audio track into another audio format or takes it out of a video unchanged. The video is not kept.",
+  "Packt Bild, Ton und Untertitel ohne Neukodierung in einen anderen Container – schnell und ohne Qualitätsverlust. Videos neu kodieren kann die Box nicht (dafür ist ihr Prozessor zu langsam).": "Puts picture, sound and subtitles into another container without re-encoding – fast and without loss of quality. The box cannot re-encode videos (its processor is too slow for that).",
+  "FFmpeg ist nicht installiert – System-App „ffmpeg“ im Store installieren.": "FFmpeg is not installed – install the system app “ffmpeg” from the store.",
+  "Das ist keine Mediendatei, die FFmpeg lesen kann.": "This is not a media file that FFmpeg can read.",
+  "Eine Datei mit diesem Namen gibt es im Zielordner schon.": "A file with this name already exists in the target folder.",
+  "Es warten schon zu viele Aufträge – erst einige fertig werden lassen.": "Too many jobs are waiting already – let some finish first.",
+  "Zeitangabe ungültig – z. B. 90, 01:30 oder 00:01:30.": "Invalid time – e.g. 90, 01:30 or 00:01:30.",
+  "Ungültiger Dateiname.": "Invalid file name.",
+  "Diese Audiospur gibt es nicht.": "This audio track does not exist.",
+  "Dieses Format geht hier nicht.": "This format does not work here.",
+  "Kein Zugriff – die App bitte neu öffnen.": "No access – please open the app again.",
+  "Die Datei gibt es nicht mehr.": "The file no longer exists.",
+  "FFmpeg ließ sich nicht starten.": "FFmpeg could not be started.",
+  "Mein Ordner": "My folder",
+  ": Fenster blockiert – Pop-ups für diese Seite erlauben.": ": window blocked – allow pop-ups for this page.",
+  "meldet sich nicht – ist die App installiert?": "does not answer – is the app installed?",
+  "keine Tonspur": "no audio track",
+  "Kanäle": "channels",
+  "(wie die Quelle)": "(like the source)",
+  "wie die Quelldatei": "like the source file",
+  "Die Datei hat keine Tonspur.": "The file has no audio track.",
+  "Lese": "Reading",
+  "Untertitel": "Subtitles",
+  "Mediendatei wählen": "Choose media file",
+  "Auftrag gestartet:": "Job started:",
+  "läuft": "running",
+  "läuft ·": "running ·",
+  "Im WinWeb Player abspielen": "Play in WinWeb Player",
+  "Als Quelle verwenden": "Use as source",
+  "Aus der Liste": "Remove from the list",
+  "Noch keine Aufträge.": "No jobs yet.",
+  "Auftrag läuft": "job running",
+  "Aufträge laufen": "jobs running",
+  "FFmpeg bereit": "FFmpeg ready",
+  "FFmpeg fehlt: Bitte im ShareOS-Store die System-App „ffmpeg“ installieren (ein Administrator). Danach diese App neu öffnen.": "FFmpeg missing: please install the system app “ffmpeg” from the ShareOS store (an administrator). Then open this app again.",
+  "Fertig:": "Done:",
+  "Fehlgeschlagen:": "Failed:",
+  "FFmpeg fehlt": "FFmpeg missing",
+  "Keine Verbindung": "No connection",
+  "Nicht verfügbar": "Not available",
+  "Diese App läuft nur auf einer ShareOS-Box, geöffnet aus der ShareOS-Oberfläche.": "This app only runs on a ShareOS box, opened from the ShareOS interface.",
+  "Diese App braucht ShareOS 0.2.0-beta.5 oder neuer.": "This app needs ShareOS 0.2.0-beta.5 or newer.",
+  "bis Ende": "to the end",
+  "Prüfe FFmpeg …": "Checking FFmpeg …",
+  "1 · Quelldatei": "1 · Source file",
+  "Datei wählen …": "Choose file …",
+  "Noch keine Datei gewählt.": "No file chosen yet.",
+  "2 · Was soll passieren?": "2 · What should happen?",
+  "Audio umwandeln / herausholen": "Convert / extract audio",
+  "Container wechseln": "Change container",
+  "Zielformat": "Target format",
+  "64 kbit/s (Sprache)": "64 kbit/s (speech)",
+  "Audiospur": "Audio track",
+  "Ausschnitt": "Excerpt",
+  "Länge": "Length",
+  "Zielordner": "Target folder",
+  "Ändern …": "Change …",
+  "Dateiname": "File name",
+  "Umwandeln starten": "Start converting",
+  "FFmpeg auf der Box": "FFmpeg on the box",
+  "3 · Aufträge": "3 · Jobs",
+  "Erledigte entfernen": "Remove finished ones"
+ },
+ "patterns": [
+  [
+   "^(.+) meldet\\ sich\\ nicht\\ –\\ ist\\ die\\ App\\ installiert\\?$",
+   "$1 does not answer – is the app installed?"
+  ],
+  [
+   "^(.+) \\(wie\\ die\\ Quelle\\)$",
+   "$1 (like the source)"
+  ],
+  [
+   "^Auftrag\\ gestartet: (.+)$",
+   "Job started: $1"
+  ],
+  [
+   "^(.+) Aufträge\\ laufen$",
+   "$1 jobs running"
+  ],
+  [
+   "^Fehlgeschlagen: (.+)$",
+   "Failed: $1"
+  ],
+  [
+   "^(.+) Auftrag\\ läuft$",
+   "$1 job running"
+  ],
+  [
+   "^(.+) Ausschnitt$",
+   "$1 Excerpt"
+  ],
+  [
+   "^läuft\\ · (.+)$",
+   "running · $1"
+  ],
+  [
+   "^Fertig: (.+)$",
+   "Done: $1"
+  ],
+  [
+   "^(.+) Kanäle$",
+   "$1 channels"
+  ],
+  [
+   "^Lese (.+)$",
+   "Reading $1"
+  ]
+ ],
+ "keep": [
+  "WinWeb Player",
+  "Opus",
+  "MKV (Matroska)",
+  "MOV (QuickTime)",
+  "Video",
+  "Audio",
+  "Container →",
+  "Audio →",
+  "Original",
+  "MediaTranscoder",
+  "Bitrate",
+  "192 kbit/s (Standard)"
+ ]
+}

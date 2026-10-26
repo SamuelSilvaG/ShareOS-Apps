@@ -1,19 +1,19 @@
 :root {
-  --bg: #121418;
-  --panel: #1a1e24;
-  --bar: #21262d;
-  --field: #0d1117;
-  --in-text: #58a6ff;
-  --out-text: #7ee787;
-  --border: #2e3540;
-  --text: #e2e8f0;
-  --muted: #8892b0;
-  --accent: #3b82f6;
-  --on-accent: #fff;
-  --ok: #22c55e;
-  --err: #ef4444;
-  --add-bg: rgba(34, 197, 94, 0.18); --add-text: #86efac;
-  --del-bg: rgba(239, 68, 68, 0.18); --del-text: #fca5a5;
+  --bg: var(--sos-bg);
+  --panel: var(--sos-panel);
+  --bar: var(--sos-panel);
+  --field: var(--sos-bar);
+  --in-text: var(--sos-text);
+  --out-text: var(--sos-text);
+  --border: var(--sos-line);
+  --text: var(--sos-text);
+  --muted: var(--sos-muted);
+  --accent: var(--sos-accent);
+  --on-accent: var(--sos-bg);
+  --ok: var(--sos-ok);
+  --err: var(--sos-err);
+  --add-bg: color-mix(in srgb, var(--sos-bg) 18%, transparent); --add-text: #86efac;
+  --del-bg: color-mix(in srgb, var(--sos-bg) 18%, transparent); --del-text: #fca5a5;
   --font-mono: 'Cascadia Code', 'Consolas', monospace;
 }
 
@@ -24,14 +24,14 @@
   --text: var(--sos-text); --muted: var(--sos-muted); --accent: var(--sos-accent); --on-accent: var(--sos-bg);
   --ok: var(--sos-ok); --err: var(--sos-err);
   --add-bg: rgba(var(--sos-rgb), .16); --add-text: var(--sos-ok);
-  --del-bg: rgba(255, 95, 95, .16); --del-text: var(--sos-err);
+  --del-bg: color-mix(in srgb, var(--sos-err) 16%, transparent); --del-text: var(--sos-err);
   --font-mono: var(--sos-font);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: var(--bg); color: var(--text); font-family: system-ui, sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; font-size: 13px; }
 .topbar { background: var(--panel); border-bottom: 1px solid var(--border); padding: 8px 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
 .brand { font-family: var(--font-mono); font-weight: bold; display: flex; align-items: center; gap: 6px; }
-.badge { background: rgba(59,130,246,0.2); color: var(--accent); padding: 1px 6px; border-radius: 3px; font-size: 10px; }
+.badge { background: rgba(var(--sos-rgb), 0.2); color: var(--accent); padding: 1px 6px; border-radius: 3px; font-size: 10px; }
 .tool-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
 .tab-btn { background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; }
 .tab-btn.active { background: var(--accent); border-color: var(--accent); font-weight: bold; color: var(--on-accent); }

@@ -11,7 +11,7 @@ html, body { height: 100%; }
 .status.bad { color: var(--sos-err); border-color: var(--sos-err); }
 .status.busy { color: var(--sos-accent); border-color: var(--sos-accent); }
 
-.banner { margin: 8px 10px 0; padding: 8px 12px; border: 1px solid var(--sos-warn); border-radius: var(--sos-radius); color: var(--sos-warn); background: rgba(230, 194, 90, .08); font-size: 12px; }
+.banner { margin: 8px 10px 0; padding: 8px 12px; border: 1px solid var(--sos-warn); border-radius: var(--sos-radius); color: var(--sos-warn); background: color-mix(in srgb, var(--sos-warn) 8%, transparent); font-size: 12px; }
 .hidden { display: none !important; }
 .muted { color: var(--sos-muted); }
 

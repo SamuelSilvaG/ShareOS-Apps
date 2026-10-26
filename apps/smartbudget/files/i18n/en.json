@@ -1,0 +1,124 @@
+{
+ "exact": {
+  "Kein persönlicher Ordner auf der Box gefunden.": "No personal folder found on the box.",
+  "Speichern fehlgeschlagen:": "Saving failed:",
+  "Löschen": "Delete",
+  "Abbrechen": "Cancel",
+  "Speichern": "Save",
+  "Verbinde mit Box-Dateisystem...": "Connecting to the box file system...",
+  "Jahresbeginn": "Start of year",
+  "Zwischenstand Sommer": "Interim reading summer",
+  "Gaszähler Start": "Gas meter start",
+  "Wasser Hauptzähler": "Main water meter",
+  "Stromzähler": "Electricity meter",
+  "Gaszähler": "Gas meter",
+  "Wasserzähler": "Water meter",
+  "Zählerstand bearbeiten": "Edit meter reading",
+  "Zählerstand erfassen": "Record meter reading",
+  "Zählerstand (kWh)": "Meter reading (kWh)",
+  "Zählerstand (m³)": "Meter reading (m³)",
+  "Zählerstand aktualisiert.": "Meter reading updated.",
+  "Zählerstand gespeichert!": "Meter reading saved!",
+  "Diesen Zählerstand wirklich löschen?": "Really delete this meter reading?",
+  "Zählerstand gelöscht.": "Meter reading deleted.",
+  "Keine Einträge für den Export vorhanden.": "No entries to export.",
+  "Zählerstände & Notizen durchsuchen...": "Search meter readings & notes...",
+  "Als CSV exportieren": "Export as CSV",
+  "z. B. 0.32 (pro kWh/m³)": "e.g. 0.32 (per kWh/m³)",
+  "z. B. Jahresablesung, Zwischenstand Mai": "e.g. annual reading, interim reading May",
+  "SmartBudget - Energie- & Zähler-Tracker": "SmartBudget - energy & meter tracker",
+  "➕ Zählerstand erfassen": "➕ Record meter reading",
+  "Alle Zähler (": "All meters (",
+  "⚡ Strom (": "⚡ Electricity (",
+  "💧 Wasser (": "💧 Water (",
+  "Gesamtkosten (Erfasst)": "Total costs (recorded)",
+  "Alle Zählerperioden": "All meter periods",
+  "Strom-Verbrauch": "Electricity use",
+  "Gas-Verbrauch": "Gas use",
+  "Wasser-Verbrauch": "Water use",
+  "ZÄHLERSTAND-CHRONIK & ABLESUNGEN": "METER READING HISTORY",
+  "0 Ablesungen": "0 readings",
+  "Keine Zählerstände erfasst": "No meter readings recorded",
+  "Füge deinen ersten Strom-, Gas- oder Wasserstand über „Zählerstand erfassen“ hinzu!": "Add your first electricity, gas or water reading with “Record meter reading”!",
+  "Zähler-Typ": "Meter type",
+  "⚡ Stromzähler": "⚡ Electricity meter",
+  "🔥 Gaszähler": "🔥 Gas meter",
+  "💧 Wasserzähler": "💧 Water meter",
+  "Ablesedatum": "Reading date",
+  "Arbeitspreis / Einheit (€)": "Unit price (€)",
+  "Notizen & Ablesegrund (optional)": "Notes & reason for reading (optional)"
+ },
+ "patterns": [
+  [
+   "^Speicher:\\ Browser\\ \\(LocalStorage:\\ (.+?)\\)$",
+   "Storage: browser (LocalStorage: $1)"
+  ],
+  [
+   "^(.+?)\\ •\\ Preis:\\ (.+?)\\ €/(.+?)\\ (.+?)$",
+   "$1 • price: $2 €/$3 $4"
+  ],
+  [
+   "^Speichern\\ fehlgeschlagen: (.+)$",
+   "Saving failed: $1"
+  ],
+  [
+   "^Box:\\ 🏠\\ (.+?)/(.+?)/(.+?)$",
+   "Box: 🏠 $1/$2/$3"
+  ],
+  [
+   "^(.+?)\\ Ablesungen\\ gesamt$",
+   "$1 readings in total"
+  ],
+  [
+   "^Tarif:\\ (.+?)\\ €$",
+   "Tariff: $1 €"
+  ],
+  [
+   "^Account:\\ (.+?)$",
+   "Account: $1"
+  ]
+ ],
+ "keep": [
+  "return String(str).replace(/[&",
+  "Account: ...",
+  "0 kWh",
+  "\u0000 kWh",
+  "SmartBudget",
+  "📥 CSV Export",
+  "🔥 Gas ("
+ ],
+ "words": [
+  [
+   "(^|[^\\wäöüÄÖÜß])Mai(?![\\wäöüÄÖÜß])",
+   "$1May"
+  ],
+  [
+   "(^|[^\\wäöüÄÖÜß])Gaszähler Start(?![\\wäöüÄÖÜß])",
+   "$1Gas meter start"
+  ],
+  [
+   "(^|[^\\wäöüÄÖÜß])Wasser Hauptzähler(?![\\wäöüÄÖÜß])",
+   "$1Main water meter"
+  ],
+  [
+   "(^|[^\\wäöüÄÖÜß])Stromzähler(?![\\wäöüÄÖÜß])",
+   "$1Electricity meter"
+  ],
+  [
+   "(^|[^\\wäöüÄÖÜß])Gaszähler(?![\\wäöüÄÖÜß])",
+   "$1Gas meter"
+  ],
+  [
+   "(^|[^\\wäöüÄÖÜß])Wasserzähler(?![\\wäöüÄÖÜß])",
+   "$1Water meter"
+  ],
+  [
+   "(^|[^\\wäöüÄÖÜß])Jahresbeginn(?![\\wäöüÄÖÜß])",
+   "$1Start of year"
+  ],
+  [
+   "(^|[^\\wäöüÄÖÜß])Zwischenstand Sommer(?![\\wäöüÄÖÜß])",
+   "$1Interim reading summer"
+  ]
+ ]
+}

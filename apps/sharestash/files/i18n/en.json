@@ -1,0 +1,61 @@
+{
+ "exact": {
+  "Kein Zugriff auf die Ordner der Box. Administrator kann „Dateien“ unter Benutzer aktivieren.": "No access to the box's folders. An administrator can switch on “Files” under Users.",
+  "Kein persönlicher Ordner auf der Box gefunden.": "No personal folder found on the box.",
+  "Speichern fehlgeschlagen:": "Saving failed:",
+  "Titel": "Title",
+  "Löschen": "Delete",
+  "Abbrechen": "Cancel",
+  "Speichern": "Save",
+  "Verbinde mit Box-Dateisystem...": "Connecting to the box file system...",
+  "ShareOS Apps Repository auf GitHub": "ShareOS Apps repository on GitHub",
+  "Offizielles App-Repository mit allen Web-Apps und System-Tools für die Box.": "Official app repository with all web apps and system tools for the box.",
+  "Offizielles App-Repository.": "Official app repository.",
+  "Keine Tags vergeben": "No tags",
+  "📖 Als gelesen markieren": "📖 Mark as read",
+  "👓 Ungelesen": "👓 Unread",
+  "↩️ Wiederherstellen": "↩️ Restore",
+  "📦 Archiv": "📦 Archive",
+  "Lesezeichen bearbeiten": "Edit bookmark",
+  "Neues Lesezeichen": "New bookmark",
+  "Lesezeichen aktualisiert.": "Bookmark updated.",
+  "Link gespeichert!": "Link saved!",
+  "Dieses Lesezeichen wirklich löschen?": "Really delete this bookmark?",
+  "Gelöscht.": "Deleted.",
+  "Lesezeichen & Notizen durchsuchen...": "Search bookmarks & notes...",
+  "Artikel-Überschrift oder Webseiten-Name": "Article headline or website name",
+  "Worum geht es in dem Link? Wichtigste Kernpunkte...": "What is the link about? Key points...",
+  "➕ Link speichern": "➕ Save link",
+  "📚 Alle (": "📚 All (",
+  "📖 Ungelesen (": "📖 Unread (",
+  "✅ Archiv (": "✅ Archive (",
+  "Keine Links in diesem Bereich": "No links in this section",
+  "Klicke oben auf „Link speichern“, um interessante Artikel und Lesezeichen zu sichern!": "Click “Save link” above to keep interesting articles and bookmarks!",
+  "URL / Web-Adresse": "URL / web address",
+  "Tags (kommagetrennt)": "Tags (comma-separated)",
+  "Notiz / Zusammenfassung": "Note / summary",
+  "ShareStash (Pocket / Raindrop Klon)": "ShareStash (Pocket / Raindrop clone)"
+ },
+ "patterns": [
+  [
+   "^Speicher:\\ Browser\\ \\(LocalStorage:\\ (.+?)\\)$",
+   "Storage: browser (LocalStorage: $1)"
+  ],
+  [
+   "^Speichern\\ fehlgeschlagen: (.+)$",
+   "Saving failed: $1"
+  ],
+  [
+   "^Box:\\ 🏠\\ (.+?)/(.+?)/(.+?)$",
+   "Box: 🏠 $1/$2/$3"
+  ],
+  [
+   "^Account:\\ (.+?)$",
+   "Account: $1"
+  ]
+ ],
+ "keep": [
+  "Account: ...",
+  "ShareStash"
+ ]
+}

@@ -1,0 +1,105 @@
+{
+ "exact": {
+  "Löschen": "Delete",
+  "Abbrechen": "Cancel",
+  "Speichern": "Save",
+  "Verbinde mit Box-Dateisystem...": "Connecting to the box file system...",
+  "Hosts: Browser": "Hosts: browser",
+  "Speicher: Browser": "Storage: browser",
+  "FritzBox Router": "FritzBox router",
+  "TrueNAS Speicher": "TrueNAS storage",
+  "Speichern auf der Box fehlgeschlagen:": "Saving on the box failed:",
+  "keine Antwort": "no answer",
+  "nicht erreichbar": "not reachable",
+  "% Verlust": "% loss",
+  "· Zertifikat nicht vertrauenswürdig": "· certificate not trusted",
+  "Kein Zugriff: Nur Administratoren dürfen von der Box aus prüfen.": "No access: only administrators may check from the box.",
+  "Prüfen fehlgeschlagen:": "Check failed:",
+  "Keine Hosts konfiguriert": "No hosts set up",
+  "Kein Host passt zum Filter": "No host matches the filter",
+  "⏳ Prüfe …": "⏳ Checking …",
+  "⚪ Ungeprüft": "⚪ Not checked",
+  "Latenz:": "Latency:",
+  "⚡ Prüfen": "⚡ Check",
+  "Prüfen braucht ShareOS 0.2.0-beta.11 und ein Administratorkonto.": "Checking needs ShareOS 0.2.0-beta.11 and an administrator account.",
+  "Host bearbeiten": "Edit host",
+  "Host hinzufügen": "Add host",
+  "Bitte eine IP-Adresse oder einen Namen eingeben.": "Please enter an IP address or a name.",
+  "Bitte einen Port von 1 bis 65535 eingeben.": "Please enter a port from 1 to 65535.",
+  "Die Webadresse beginnt mit http:// oder https://": "The web address starts with http:// or https://",
+  "Host aktualisiert.": "Host updated.",
+  "Host hinzugefügt.": "Host added.",
+  "Diesen Host wirklich löschen?": "Really delete this host?",
+  "Host gelöscht.": "Host deleted.",
+  "HomePing prüft von der Box aus und braucht dafür ShareOS 0.2.0-beta.11 oder neuer und ein Administratorkonto (Berechtigung „netcheck“). Hosts lassen sich trotzdem schon eintragen.": "HomePing checks from the box and needs ShareOS 0.2.0-beta.11 or newer and an administrator account for that (permission “netcheck”). Hosts can be added already.",
+  "Hosts & IP-Adressen durchsuchen...": "Search hosts & IP addresses...",
+  "Alle jetzt prüfen": "Check all now",
+  "z. B. Proxmox Server, NAS, FritzBox": "e.g. Proxmox server, NAS, FritzBox",
+  "z. B. 192.168.1.1 oder proxmox.lan": "e.g. 192.168.1.1 or proxmox.lan",
+  "HomePing - Homelab Ping Monitor": "HomePing - homelab ping monitor",
+  "➕ Host hinzufügen": "➕ Add host",
+  "⚡ Alle prüfen": "⚡ Check all",
+  "Alle Hosts (": "All hosts (",
+  "Automatisch prüfen": "Check automatically",
+  "alle 30 s": "every 30 s",
+  "jede Minute": "every minute",
+  "alle 5 min": "every 5 min",
+  "Überwachte Hosts": "Monitored hosts",
+  "Online Status": "Online status",
+  "Durchschnitts-Latenz": "Average latency",
+  "Zuletzt geprüft": "Last checked",
+  "Speicher: Lade...": "Storage: loading...",
+  "Füge deinen Router, NAS oder Server über „Host hinzufügen“ hinzu. Die Box prüft ihn per Ping, Port oder Webadresse.": "Add your router, NAS or server with “Add host”. The box checks it by ping, port or web address.",
+  "Host-Name / Dienst": "Host name / service",
+  "Prüfung": "Check",
+  "Ping (antwortet das Gerät?)": "Ping (does the device answer?)",
+  "Port (läuft ein Dienst, z. B. SSH 22)": "Port (is a service running, e.g. SSH 22)",
+  "Webadresse (HTTP/HTTPS antwortet)": "Web address (HTTP/HTTPS answers)",
+  "IP-Adresse oder Name": "IP address or name",
+  "Webadresse": "Web address",
+  "Geprüft von der Box (ShareOS.netcheck)": "Checked by the box (ShareOS.netcheck)"
+ },
+ "patterns": [
+  [
+   "^Speichern\\ auf\\ der\\ Box\\ fehlgeschlagen: (.+)$",
+   "Saving on the box failed: $1"
+  ],
+  [
+   "^(.+) ·\\ Zertifikat\\ nicht\\ vertrauenswürdig$",
+   "$1 · certificate not trusted"
+  ],
+  [
+   "^Prüfen\\ fehlgeschlagen: (.+)$",
+   "Check failed: $1"
+  ],
+  [
+   "^Port\\ (.+?)\\ offen$",
+   "Port $1 open"
+  ],
+  [
+   "^Account:\\ (.+?)$",
+   "Account: $1"
+  ],
+  [
+   "^(.+) %\\ Verlust$",
+   "$1 % loss"
+  ]
+ ],
+ "keep": [
+  "Account: ...",
+  "Host",
+  "Hosts: 🏠 \u0000/\u0000/\u0000",
+  "Box: \u0000",
+  "Proxmox VE Server",
+  "Ping",
+  "Port",
+  "Web",
+  "🟢 Online",
+  "🔴 Offline",
+  "⚙️ Edit",
+  "HomePing",
+  "🟢 Online (",
+  "🔴 Offline (",
+  "Icon"
+ ]
+}

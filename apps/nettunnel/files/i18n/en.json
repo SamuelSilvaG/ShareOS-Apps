@@ -1,0 +1,216 @@
+{
+ "exact": {
+  "Bearbeiten": "Edit",
+  "Löschen": "Delete",
+  "Speichern": "Save",
+  "läuft": "running",
+  "Lade …": "Loading …",
+  "Protokoll": "Log",
+  "Aktualisieren": "Refresh",
+  "Passwort": "Password",
+  "Abbrechen": "Cancel",
+  "wartet auf den Server …": "waiting for the server …",
+  "holt die Einstellungen …": "getting the settings …",
+  "bekommt eine Adresse …": "getting an address …",
+  "setzt Routen …": "setting routes …",
+  "verbindet neu …": "reconnecting …",
+  "sucht den Server …": "looking for the server …",
+  "OpenVPN ist nicht installiert – System-App „openvpn“ im Store installieren.": "OpenVPN is not installed – install the system app “openvpn” from the store.",
+  "Kein Zugriff – NetTunnel ist nur für Administratoren (ein VPN betrifft das Netzwerk der ganzen Box).": "No access – NetTunnel is for administrators only (a VPN affects the network of the whole box).",
+  "Diese Firmware kann noch keine Tunnel (TUN) – ShareOS aktualisieren.": "This firmware cannot do tunnels (TUN) yet – update ShareOS.",
+  "Das ist ein Server-Profil – NetTunnel verbindet die Box nur als Client.": "This is a server profile – NetTunnel only connects the box as a client.",
+  "Das Profil verweist auf Dateien (Zertifikate, Schlüssel). Sie müssen im Profil selbst stehen (": "The profile refers to files (certificates, keys). They must be inside the profile itself (",
+  "Im Profil steht kein Server („remote“).": "The profile names no server (“remote”).",
+  "Ein Gerät mit diesem Namen gibt es schon.": "A device with this name already exists.",
+  "Ein Profil mit diesem Namen gibt es schon.": "A profile with this name already exists.",
+  "Ungültiger Name (Buchstaben, Ziffern, Leerzeichen, - _ .).": "Invalid name (letters, digits, spaces, - _ .).",
+  "Das Profil braucht Benutzername und Passwort – unter „Bearbeiten“ eintragen.": "The profile needs a user name and password – enter them under “Edit”.",
+  "Das Profil ist zu groß.": "The profile is too large.",
+  "Die Datei ist leer.": "The file is empty.",
+  "OpenVPN ist nicht gestartet – siehe Protokoll.": "OpenVPN did not start – see the log.",
+  "Ungültiges VPN-Netz – z. B. 10.8.0.0 (privates Netz, letzte Zahl 0).": "Invalid VPN network – e.g. 10.8.0.0 (private network, last number 0).",
+  "Das VPN-Netz ist das Heimnetz – bitte ein anderes wählen (z. B. 10.8.0.0).": "The VPN network is the home network – please choose another one (e.g. 10.8.0.0).",
+  "Ungültiger Port (1–65535).": "Invalid port (1–65535).",
+  "Ungültige Adresse – DynDNS-Name oder IP-Adresse eintragen.": "Invalid address – enter a DynDNS name or an IP address.",
+  "Ungültiger Gerätename (Buchstaben, Ziffern, - _ ., ohne Leerzeichen).": "Invalid device name (letters, digits, - _ ., no spaces).",
+  "Dieses Gerät gibt es nicht (mehr).": "This device does not exist (any more).",
+  "Die Zertifikate konnten nicht erstellt werden – siehe Server-Protokoll.": "The certificates could not be created – see the server log.",
+  "Keine Verbindung. Links ein Profil wählen und verbinden.": "Not connected. Choose a profile on the left and connect.",
+  "Noch kein Profil – oben ein .ovpn-Profil einspielen.": "No profile yet – import an .ovpn profile above.",
+  "Profil": "Profile",
+  "Zustand": "State",
+  "Tunnel-Adresse": "Tunnel address",
+  "Seit": "Since",
+  "Empfangen": "Received",
+  "Gesendet": "Sent",
+  "Noch kein VPN-Profil. Ein .ovpn-Profil von der Box oder vom Computer einspielen – es kommt meist vom VPN-Anbieter oder vom Router im Büro.": "No VPN profile yet. Import an .ovpn profile from the box or from the computer – it usually comes from the VPN provider or the router at the office.",
+  "Gesamter Verkehr": "All traffic",
+  "Nur VPN-Netze": "VPN networks only",
+  "Beim Start": "At start",
+  "Anmeldung gespeichert": "Login saved",
+  "Anmeldung fehlt": "Login missing",
+  "Beim Einspielen entfernt:": "Removed on import:",
+  "Trennen": "Disconnect",
+  "Verbinden": "Connect",
+  "Verbindet „": "Connecting “",
+  "Profil „": "Delete profile “",
+  "“ löschen?": "” ?",
+  "Die Verbindung wird getrennt.": "The connection is closed.",
+  "Profil gelöscht.": "Profile deleted.",
+  "OpenVPN fehlt: im ShareOS-Store die System-App „openvpn“ installieren. Danach NetTunnel neu öffnen.": "OpenVPN missing: install the system app “openvpn” from the ShareOS store. Then open NetTunnel again.",
+  "Das Profil verlangt Benutzername und Passwort des VPN.": "The profile asks for the user name and password of the VPN.",
+  "Profil einspielen": "Import profile",
+  "Einspielen": "Import",
+  "Eingespielt. Entfernt:": "Imported. Removed:",
+  "Leer lassen, um die gespeicherte Anmeldung zu behalten.": "Leave empty to keep the saved login.",
+  "Nur nötig, wenn der VPN-Server danach fragt.": "Only needed if the VPN server asks for it.",
+  "Gespeichert. Gilt beim nächsten Verbinden.": "Saved. Applies to the next connection.",
+  "OpenVPN-Profil wählen": "Choose an OpenVPN profile",
+  "IP der Box": "IP of the box",
+  "Im Router eine": "In the router, a",
+  "Portfreigabe": "port forwarding",
+  "(Port": "(port",
+  "Ohne Adresse im Internet nutzen die Profile die Heimnetz-Adresse": "Without an address on the internet the profiles use the home network address",
+  "– das klappt nur zu Hause. Ein DynDNS-Name (z. B. vom Router) ist besser.": "– that only works at home. A DynDNS name (e.g. from the router) is better.",
+  "Heimnetz: im Router eine": "Home network: in the router, add a",
+  "statische Route": "static route",
+  "eintragen, damit Antworten zurückfinden.": "so that answers find their way back.",
+  "Hinweis: Mit DS-Lite (nur IPv6 von außen, z. B. bei manchen Kabelanschlüssen) ist die Box über IPv4 nicht erreichbar.": "Note: with DS-Lite (only IPv6 from outside, e.g. on some cable connections) the box cannot be reached over IPv4.",
+  "Gerät": "device",
+  "Geräte": "devices",
+  "nicht gestartet": "not started",
+  "Noch kein Gerät. Für jedes Handy oder Notebook einen Namen eintragen und „Gerät hinzufügen“ – es gibt dann ein fertiges .ovpn-Profil für die OpenVPN-App.": "No device yet. Enter a name for each phone or notebook and “Add device” – it then gets a ready .ovpn profile for the OpenVPN app.",
+  "VPN-Adresse": "VPN address",
+  "· von": "· from",
+  "Profil herunterladen": "Download profile",
+  "Auf der Box speichern": "Save on the box",
+  "Entfernen": "Remove",
+  "Gerät „": "Remove device “",
+  "“ entfernen? Sein Profil funktioniert danach nicht mehr.": "” ? Its profile no longer works afterwards.",
+  "Gerät entfernt.": "Device removed.",
+  "“ heruntergeladen – in der OpenVPN-App des Geräts importieren.": "” downloaded – import it in the device's OpenVPN app.",
+  "Profil auf der Box speichern": "Save the profile on the box",
+  "Gespeichert:": "Saved:",
+  "– das Profil enthält den Schlüssel des Geräts, nicht freigeben.": "– the profile contains the device's key, do not share it.",
+  "Ohne Adresse im Internet funktionieren die Profile nur im Heimnetz. Trotzdem speichern?": "Without an address on the internet the profiles only work in the home network. Save anyway?",
+  "Erstelle die Zertifikate der Box … (beim ersten Mal bis zu einer Minute)": "Creating the box's certificates … (up to a minute the first time)",
+  "Gespeichert – der VPN-Server läuft.": "Saved – the VPN server is running.",
+  "NetTunnel läuft nur auf einer ShareOS-Box, geöffnet aus der ShareOS-Oberfläche.": "NetTunnel only runs on a ShareOS box, opened from the ShareOS interface.",
+  "NetTunnel braucht ShareOS 0.2.0-beta.6 oder neuer.": "NetTunnel needs ShareOS 0.2.0-beta.6 or newer.",
+  "nicht verfügbar": "not available",
+  "Name, z. B. handy-jan": "Name, e.g. phone-jan",
+  "Box als Client": "Box as client",
+  "Box als Server": "Box as server",
+  "VPN-Profile": "VPN profiles",
+  "Von der Box …": "From the box …",
+  "Vom Computer …": "From the computer …",
+  "Verbindung": "Connection",
+  "VPN-Server": "VPN server",
+  "Server eingeschaltet (startet auch nach einem Neustart)": "Server switched on (also starts after a reboot)",
+  "Adresse der Box im Internet (DynDNS-Name oder feste IP)": "Address of the box on the internet (DynDNS name or fixed IP)",
+  "VPN-Netz": "VPN network",
+  "Auch das Heimnetz erreichbar machen (nicht nur die Box)": "Also make the home network reachable (not only the box)",
+  "Gerät hinzufügen": "Add device",
+  "Server-Protokoll": "Server log",
+  "Benutzername": "User name",
+  "Gesamten Verkehr der Box durch den Tunnel": "All traffic of the box through the tunnel",
+  "Aus: nur die Netze des VPN (z. B. das Büronetz) gehen durch den Tunnel, alles andere wie bisher.": "Off: only the VPN's networks (e.g. the office network) go through the tunnel, everything else as before.",
+  "Beim Start der Box verbinden": "Connect when the box starts"
+ },
+ "patterns": [
+  [
+   "^(.+) –\\ das\\ klappt\\ nur\\ zu\\ Hause\\.\\ Ein\\ DynDNS\\-Name\\ \\(z\\.\\ B\\.\\ vom\\ Router\\)\\ ist\\ besser\\.$",
+   "$1 – that only works at home. A DynDNS name (e.g. from the router) is better."
+  ],
+  [
+   "^Ohne\\ Adresse\\ im\\ Internet\\ nutzen\\ die\\ Profile\\ die\\ Heimnetz\\-Adresse (.+)$",
+   "Without an address on the internet the profiles use the home network address $1"
+  ],
+  [
+   "^(.+) –\\ das\\ Profil\\ enthält\\ den\\ Schlüssel\\ des\\ Geräts,\\ nicht\\ freigeben\\.$",
+   "$1 – the profile contains the device's key, do not share it."
+  ],
+  [
+   "^(.+) Auch\\ das\\ Heimnetz\\ erreichbar\\ machen\\ \\(nicht\\ nur\\ die\\ Box\\)$",
+   "$1 Also make the home network reachable (not only the box)"
+  ],
+  [
+   "^(.+) Server\\ eingeschaltet\\ \\(startet\\ auch\\ nach\\ einem\\ Neustart\\)$",
+   "$1 Server switched on (also starts after a reboot)"
+  ],
+  [
+   "^(.+) Gesamten\\ Verkehr\\ der\\ Box\\ durch\\ den\\ Tunnel$",
+   "$1 All traffic of the box through the tunnel"
+  ],
+  [
+   "^(.+) eintragen,\\ damit\\ Antworten\\ zurückfinden\\.$",
+   "$1 so that answers find their way back."
+  ],
+  [
+   "^(.+) Die\\ Verbindung\\ wird\\ getrennt\\.$",
+   "$1 The connection is closed."
+  ],
+  [
+   "^(.+) Beim\\ Start\\ der\\ Box\\ verbinden$",
+   "$1 Connect when the box starts"
+  ],
+  [
+   "^Beim\\ Einspielen\\ entfernt: (.+)$",
+   "Removed on import: $1"
+  ],
+  [
+   "^Heimnetz:\\ im\\ Router\\ eine (.+)$",
+   "Home network: in the router, add a $1"
+  ],
+  [
+   "^Eingespielt\\.\\ Entfernt: (.+)$",
+   "Imported. Removed: $1"
+  ],
+  [
+   "^Im\\ Router\\ eine (.+)$",
+   "In the router, a $1"
+  ],
+  [
+   "^VPN\\-Adresse (.+)$",
+   "VPN address $1"
+  ],
+  [
+   "^Gespeichert: (.+)$",
+   "Saved: $1"
+  ],
+  [
+   "^Profil (.+)$",
+   "Profile $1"
+  ],
+  [
+   "^\\(Port (.+)$",
+   "(port $1"
+  ],
+  [
+   "^(.+) \\(Port$",
+   "$1 (port"
+  ],
+  [
+   "^(.+) Geräte$",
+   "$1 devices"
+  ],
+  [
+   "^·\\ von (.+)$",
+   "· from $1"
+  ],
+  [
+   "^(.+) ·\\ von$",
+   "$1 · from"
+  ],
+  [
+   "^(.+) Gerät$",
+   "$1 device"
+  ]
+ ],
+ "keep": [
+  "Port",
+  "Server",
+  "NetTunnel",
+  "Name"
+ ]
+}

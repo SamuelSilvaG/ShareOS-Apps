@@ -1,7 +1,7 @@
 {
 	"id": "nettunnel",
 	"name": "NetTunnel",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"publisher": "UniqueDroid",
 	"description": {
 		"de": "VPN für die Box, in beide Richtungen. Als Client: OpenVPN-Profile (.ovpn) einspielen, verbinden, Status, Verbindung beim Start. Als Server: von unterwegs ins Heimnetz – eigene Zertifikate der Box, pro Gerät ein fertiges .ovpn-Profil, verbundene Geräte mit Datenmenge. Nur für Administratoren; braucht die System-App „openvpn“.",

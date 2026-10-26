@@ -1,0 +1,62 @@
+{
+ "exact": {
+  "Löschen": "Delete",
+  "Schließen": "Close",
+  "Verbinde mit Box-Dateisystem...": "Connecting to the box file system...",
+  "Kein Zugriff auf die Ordner der Box: Der Administrator kann ihn unter Benutzer → „Dateien“ für dein Konto einschalten. Notizen werden im Browser gespeichert.": "No access to the box's folders: the administrator can switch it on for your account under Users → “Files”. Notes are stored in the browser.",
+  "Für dein Konto gibt es auf der Box weder einen persönlichen Ordner noch eine Freigabe. Notizen werden im Browser-Speicher abgelegt.": "There is neither a personal folder nor a share for your account on the box. Notes are stored in the browser.",
+  "Notiz gelöscht.": "Note deleted.",
+  "Willkommen bei ShareNotes!": "Welcome to ShareNotes!",
+  "Klicke auf mich! Jetzt öffnet sich das Google-Keep-Fenster, in dem du mich bearbeiten oder umfärben kannst.": "Click me! The Google Keep style window opens, where you can edit me or change my colour.",
+  "Notiz erstellt.": "Note created.",
+  "Änderungen gespeichert.": "Changes saved.",
+  "Notizen durchsuchen...": "Search notes...",
+  "Titel": "Title",
+  "Notiz erfassen...": "Take a note...",
+  "Standard": "Default",
+  "Koralle": "Coral",
+  "Pfirsich": "Peach",
+  "Salbei": "Sage",
+  "Nebel": "Fog",
+  "Sturm": "Storm",
+  "Lavendel": "Lavender",
+  "0 Notizen": "0 notes"
+ },
+ "patterns": [
+  [
+   "^Speicher:\\ Browser\\ \\(LocalStorage:\\ (.+?)\\)$",
+   "Storage: browser (LocalStorage: $1)"
+  ],
+  [
+   "^Fehler\\ beim\\ Laden\\ von\\ der\\ Box:\\ (.+?)$",
+   "Error loading from the box: $1"
+  ],
+  [
+   "^Speichern\\ fehlgeschlagen:\\ (.+?)$",
+   "Saving failed: $1"
+  ],
+  [
+   "^Löschen\\ fehlgeschlagen:\\ (.+?)$",
+   "Deleting failed: $1"
+  ],
+  [
+   "^Box\\-Fehler:\\ (.+?)$",
+   "Box error: $1"
+  ],
+  [
+   "^(.+?)\\ Notiz\\(en\\)$",
+   "$1 note(s)"
+  ],
+  [
+   "^Account:\\ (.+?)$",
+   "Account: $1"
+  ]
+ ],
+ "keep": [
+  "Box: 🏠 \u0000/\u0000/",
+  "Account: ...",
+  "ShareNotes: cannot read \u0000:",
+  "Sand",
+  "ShareNotes"
+ ]
+}

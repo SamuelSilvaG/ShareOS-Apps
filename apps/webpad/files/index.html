@@ -522,7 +522,8 @@ let uiLang = 'en';
 let nf = new Intl.NumberFormat('en-GB');
 function resolveLang(){
   if (prefs.lang && prefs.lang !== 'auto' && UI_LANGS[prefs.lang]) return prefs.lang;
-  const n = String(navigator.language || 'en').slice(0, 2).toLowerCase();
+  // "auto": the language of the ShareOS interface, else the browser's
+  const n = String((window.ShareOS && ShareOS.lang) || new URLSearchParams(location.search).get('lang') || navigator.language || 'en').slice(0, 2).toLowerCase();
   return UI_LANGS[n] ? n : 'en';
 }
 // t('English source text', {vars}) – the English text is the key

@@ -1,7 +1,7 @@
 {
 	"id": "devbox",
 	"name": "DevBox",
-	"version": "1.1.0",
+	"version": "1.1.1",
 	"publisher": "UniqueDroid",
 	"description": {
 		"de": "Werkzeugkasten für Entwickler: JSON formatieren, Base64/URL/HTML/Hex, Prüfsummen (auch von Dateien der Box), Regex-Tester, Diff und JWT-Decoder. Alles läuft im Browser.",

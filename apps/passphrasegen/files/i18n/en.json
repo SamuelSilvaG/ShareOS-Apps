@@ -1,0 +1,59 @@
+{
+ "exact": {
+  "Gut": "Good",
+  "Speichern fehlgeschlagen:": "Saving failed:",
+  "📋 Kopieren": "📋 Copy",
+  "Verbinde mit Box-Dateisystem...": "Connecting to the box file system...",
+  "Sehr sicher (Empfohlen)": "Very secure (recommended)",
+  "Schwach": "Weak",
+  "Mittel": "Medium",
+  "Aus Verlauf kopiert!": "Copied from the history!",
+  "Verlauf auf der Box gesichert.": "History saved on the box.",
+  "Lokal im Browser gesichert.": "Saved locally in the browser.",
+  "Passphrase in Zwischenablage kopiert!": "Passphrase copied to the clipboard!",
+  "Verlauf auf Box sichern": "Save the history on the box",
+  "💾 Sichern": "💾 Save",
+  "klicke auf generieren": "click generate",
+  "Entropie: ~0 Bit (Sicherheit: –)": "Entropy: ~0 bits (security: –)",
+  "🎲 Neue Passphrase": "🎲 New passphrase",
+  "Wortanzahl:": "Number of words:",
+  "Trennzeichen": "Separator",
+  "Bindestrich ( - )": "Hyphen ( - )",
+  "Punkt ( . )": "Dot ( . )",
+  "Unterstrich ( _ )": "Underscore ( _ )",
+  "Leerzeichen (   )": "Space (   )",
+  "Raute ( # )": "Hash ( # )",
+  "Kein Trennzeichen": "No separator",
+  "Schreibweise": "Spelling",
+  "WortAnfangGross (TitleCase)": "WordStartUpper (TitleCase)",
+  "Zufallszahl anhängen (0-99)": "Append a random number (0-99)",
+  "Verlauf leeren": "Clear history",
+  "Algorithmus: WebCrypto Diceware (CSPRNG)": "Algorithm: WebCrypto Diceware (CSPRNG)"
+ },
+ "patterns": [
+  [
+   "^Speicher:\\ Browser\\ \\(LocalStorage:\\ (.+?)\\)$",
+   "Storage: browser (LocalStorage: $1)"
+  ],
+  [
+   "^Speichern\\ fehlgeschlagen: (.+)$",
+   "Saving failed: $1"
+  ],
+  [
+   "^Box:\\ 🏠\\ (.+?)/(.+?)/(.+?)$",
+   "Box: 🏠 $1/$2/$3"
+  ],
+  [
+   "^Wortanzahl: (.+)$",
+   "Number of words: $1"
+  ],
+  [
+   "^Account:\\ (.+?)$",
+   "Account: $1"
+  ]
+ ],
+ "keep": [
+  "Account: ...",
+  "PassphraseGen"
+ ]
+}

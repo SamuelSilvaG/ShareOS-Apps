@@ -1,0 +1,96 @@
+{
+ "exact": {
+  "Speichern:": "Save:",
+  "Bereit": "Ready",
+  "keine BeatBox-Datei": "not a BeatBox file",
+  "Klicken: stumm schalten": "Click: mute",
+  "Loop an WinWeb Player geschickt.": "Loop sent to WinWeb Player.",
+  "Neues Projekt": "New project",
+  "Projekt auf der Box speichern": "Save the project on the box",
+  "Projekt öffnen": "Open project",
+  "WAV auf der Box speichern": "Save the WAV on the box",
+  "Datei:": "File:",
+  "Abspielen (Leertaste)": "Play (space bar)",
+  "Lautstärke": "Volume",
+  "Pattern laden": "Load pattern",
+  "Projekt (.beatbox) öffnen": "Open project (.beatbox)",
+  "Projekt (.beatbox) speichern": "Save project (.beatbox)",
+  "Länge des WAV-Exports": "Length of the WAV export",
+  "Loop als .wav herunterladen": "Download the loop as .wav",
+  "Loop als .wav auf der Box speichern": "Save the loop as .wav on the box",
+  "Loop rendern und an WinWeb Player schicken": "Render the loop and send it to WinWeb Player",
+  "Leer": "Empty",
+  "📂 Öffnen": "📂 Open",
+  "💾 Speichern": "💾 Save",
+  "1 Takt": "1 bar",
+  "2 Takte": "2 bars",
+  "4 Takte": "4 bars",
+  "8 Takte": "8 bars",
+  "📤 WAV auf die Box": "📤 WAV to the box",
+  "⚡ An WinWeb": "⚡ To WinWeb",
+  "Wellenform": "Waveform",
+  "Sägezahn": "Sawtooth",
+  "Rechteck (Chiptune)": "Square (chiptune)",
+  "Dreieck (weich)": "Triangle (soft)",
+  "Sinus (Sub)": "Sine (sub)",
+  "Spielen mit der Maus oder den Tasten": "Play with the mouse or the keys"
+ },
+ "patterns": [
+  [
+   "^(.+?):\\ Fenster\\ blockiert\\ –\\ Pop\\-ups\\ für\\ diese\\ Seite\\ erlauben\\.$",
+   "$1: window blocked – allow pop-ups for this page."
+  ],
+  [
+   "^(.+?)\\ meldet\\ sich\\ nicht\\ –\\ ist\\ die\\ App\\ installiert\\?$",
+   "$1 does not answer – is the app installed?"
+  ],
+  [
+   "^Spielen\\ mit\\ der\\ Maus\\ oder\\ den\\ Tasten (.+)$",
+   "Play with the mouse or the keys $1"
+  ],
+  [
+   "^(.+?):\\ Loop\\ wird\\ berechnet\\ …$",
+   "$1: rendering the loop …"
+  ],
+  [
+   "^Gespeichert:\\ (.+?)(.+?)$",
+   "Saved: $1$2"
+  ],
+  [
+   "^Geöffnet:\\ (.+?)(.+?)$",
+   "Opened: $1$2"
+  ],
+  [
+   "^Gespeichert:\\ (.+?)$",
+   "Saved: $1"
+  ],
+  [
+   "^Geöffnet:\\ (.+?)$",
+   "Opened: $1"
+  ],
+  [
+   "^Speichern: (.+)$",
+   "Save: $1"
+  ],
+  [
+   "^Datei: (.+)$",
+   "File: $1"
+  ]
+ ],
+ "keep": [
+  "\u0000 · Step \u0000",
+  "\u0000 Hz",
+  "WinWeb",
+  "BeatBox – \u0000 (\u0000 BPM).wav",
+  "WinWeb Player",
+  "BeatBox Studio – ShareOS",
+  "Pattern …",
+  "Cyber Electro",
+  "Classic House",
+  "Boom Bap",
+  "Filter:",
+  "2200 Hz",
+  "Attack:",
+  "Release:"
+ ]
+}

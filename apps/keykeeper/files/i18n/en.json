@@ -1,0 +1,103 @@
+{
+ "exact": {
+  "Bearbeiten": "Edit",
+  "📋 Kopieren": "📋 Copy",
+  "➕ Neuer Eintrag": "➕ New entry",
+  "Löschen": "Delete",
+  "Abbrechen": "Cancel",
+  "Speichern": "Save",
+  "Verbinde mit Box-Dateisystem...": "Connecting to the box file system...",
+  "Speicher: Browser (verschlüsselt)": "Storage: browser (encrypted)",
+  "Gib dein Master-Passwort ein, um deine Schlüssel zu entschlüsseln.": "Enter your master password to decrypt your keys.",
+  "Lege ein Master-Passwort fest. Damit werden alle Schlüssel, Tokens und Zertifikate verschlüsselt – ohne es kommt niemand an die Daten, auch du nicht.": "Set a master password. It encrypts all keys, tokens and certificates – without it nobody gets to the data, not even you.",
+  "Entsperren": "Unlock",
+  "Tresor anlegen": "Create vault",
+  "Eintrag": "entry",
+  "Einträge": "entries",
+  "Das Master-Passwort braucht mindestens 8 Zeichen.": "The master password needs at least 8 characters.",
+  "Die Passwörter stimmen nicht überein.": "The passwords do not match.",
+  "Berechne Schlüssel …": "Deriving the key …",
+  "Falsches Master-Passwort oder beschädigte Datei.": "Wrong master password or damaged file.",
+  "Anlegen fehlgeschlagen:": "Creating failed:",
+  "Alte unverschlüsselte Datei gelöscht.": "Old unencrypted file deleted.",
+  "Speichern auf der Box fehlgeschlagen:": "Saving on the box failed:",
+  "Ablauf:": "Expires:",
+  "Kein Ablauf": "No expiry",
+  "In Zwischenablage kopieren": "Copy to the clipboard",
+  "Credential bearbeiten": "Edit credential",
+  "Credential hinzufügen": "Add credential",
+  "Privater SSH-Schlüssel (Private Key)": "Private SSH key",
+  "API Token / Secret Key": "API token / secret key",
+  "ghp_... oder Bearer Token": "ghp_... or bearer token",
+  "SSL Zertifikat & Private Key PEM": "SSL certificate & private key PEM",
+  "Credential aktualisiert.": "Credential updated.",
+  "Credential sicher hinzugefügt!": "Credential added securely!",
+  "Dieses Credential wirklich löschen?": "Really delete this credential?",
+  "Credential gelöscht.": "Credential deleted.",
+  "Nach 10 Minuten automatisch gesperrt.": "Locked automatically after 10 minutes.",
+  "Master-Passwort": "Master password",
+  "Master-Passwort wiederholen": "Repeat master password",
+  "SSH Keys, Tokens & Zertifikate durchsuchen...": "Search SSH keys, tokens & certificates...",
+  "Sperren": "Lock",
+  "z. B. Proxmox Root SSH, Cloudflare API Token": "e.g. Proxmox root SSH, Cloudflare API token",
+  "KeyKeeper - SSH Keys & Zertifikate": "KeyKeeper - SSH keys & certificates",
+  "AES-GCM-256 im Browser, Schlüssel aus dem Master-Passwort (PBKDF2, 250 000 Runden). Auf der Box liegt nur die verschlüsselte Datei": "AES-GCM-256 in the browser, key from the master password (PBKDF2, 250,000 rounds). Only the encrypted file is stored on the box",
+  "Alle Einträge (": "All entries (",
+  "🔑 SSH Keys (": "🔑 SSH keys (",
+  "🎫 API Token (": "🎫 API tokens (",
+  "📜 SSL Zertifikate (": "📜 SSL certificates (",
+  "0 Einträge gesamt": "0 entries in total",
+  "Keine Credentials gespeichert": "No credentials stored",
+  "Füge deinen ersten privaten SSH-Schlüssel, API-Token oder ein SSL-Zertifikat hinzu.": "Add your first private SSH key, API token or SSL certificate.",
+  "Titel / Bezeichnung": "Title / label",
+  "Typ": "Type",
+  "📜 SSL Zertifikat": "📜 SSL certificate",
+  "Geheimnis / Key / Token / Zertifikat": "Secret / key / token / certificate",
+  "Ablaufdatum (optional bei SSL)": "Expiry date (optional for SSL)",
+  "Ziel / Host / Dienst": "Target / host / service"
+ },
+ "patterns": [
+  [
+   "^(.+?)\\ (.+?)\\ aus\\ der\\ unverschlüsselten\\ Datei\\ von\\ KeyKeeper\\ 1\\.0\\ werden\\ übernommen\\ und\\ die\\ alte\\ Datei\\ danach\\ gelöscht\\.$",
+   "$1 $2 from the unencrypted file of KeyKeeper 1.0 are taken over and the old file is deleted afterwards."
+  ],
+  [
+   "^Speichern\\ auf\\ der\\ Box\\ fehlgeschlagen: (.+)$",
+   "Saving on the box failed: $1"
+  ],
+  [
+   "^Box:\\ 🏠\\ (.+?)/(.+?)/(.+?)\\ \\(verschlüsselt\\)$",
+   "Box: 🏠 $1/$2/$3 (encrypted)"
+  ],
+  [
+   "^Secret\\ '(.+?)'\\ in\\ Zwischenablage\\ kopiert!$",
+   "Secret '$1' copied to the clipboard!"
+  ],
+  [
+   "^Anlegen\\ fehlgeschlagen: (.+)$",
+   "Creating failed: $1"
+  ],
+  [
+   "^(.+?)\\ Credentials\\ gesamt$",
+   "$1 credentials in total"
+  ],
+  [
+   "^Account:\\ (.+?)$",
+   "Account: $1"
+  ],
+  [
+   "^Ablauf: (.+)$",
+   "Expires: $1"
+  ]
+ ],
+ "keep": [
+  "Account: ...",
+  "SSH Key",
+  "API Token",
+  "SSL Cert",
+  "⚙️ Edit",
+  "KeyKeeper",
+  "🔑 SSH Private Key",
+  "🎫 API Token / Secret"
+ ]
+}

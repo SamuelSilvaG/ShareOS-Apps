@@ -365,12 +365,10 @@ exportCsvBtn.addEventListener('click', () => {
   }
 
   const sorted = [...readings].sort((a,b) => new Date(a.date) - new Date(b.date));
-  let csv = 'ID;Datum;Typ;Zaehlerstand;Arbeitspreis_EUR;Notizen
-';
+  let csv = 'ID;Datum;Typ;Zaehlerstand;Arbeitspreis_EUR;Notizen\n';
 
   sorted.forEach(r => {
-    csv += `"${r.id}";"${r.date}";"${r.type}";"${r.reading}";"${r.price}";"${(r.notes || '').replace(/"/g, '""')}"
-`;
+    csv += `"${r.id}";"${r.date}";"${r.type}";"${r.reading}";"${r.price}";"${(r.notes || '').replace(/"/g, '""')}"\n`;
   });
 
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -396,7 +394,7 @@ document.querySelectorAll('#type-filter-bar .filter-pill').forEach(btn => {
 });
 
 entrySearch.addEventListener('input', renderReadings);
-refreshBtn.addEventListener('click', () => {
+refreshBtn?.addEventListener('click', () => {
   initStorage();
   showToast('Aktualisiert.');
 });

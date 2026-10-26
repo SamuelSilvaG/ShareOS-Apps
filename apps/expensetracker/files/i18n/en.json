@@ -1,0 +1,123 @@
+{
+ "exact": {
+  "Kein Zugriff auf die Ordner der Box. Administrator kann „Dateien“ unter Benutzer aktivieren.": "No access to the box's folders. An administrator can switch on “Files” under Users.",
+  "Kein persönlicher Ordner auf der Box gefunden.": "No personal folder found on the box.",
+  "Speichern fehlgeschlagen:": "Saving failed:",
+  "Januar": "January",
+  "Februar": "February",
+  "März": "March",
+  "Mai": "May",
+  "Juni": "June",
+  "Juli": "July",
+  "Oktober": "October",
+  "Dezember": "December",
+  "Oktober 2026": "October 2026",
+  "Verbinde mit Box-Dateisystem...": "Connecting to the box file system...",
+  "Lebensmittel": "Groceries",
+  "Wohnen": "Housing",
+  "Freizeit": "Leisure",
+  "Gehalt": "Salary",
+  "Sonstiges": "Other",
+  "Löschen": "Delete",
+  "Buchung gelöscht.": "Entry deleted.",
+  "Buchung bearbeiten": "Edit entry",
+  "Neue Buchung erfassen": "New entry",
+  "Bitte alle Felder korrekt ausfüllen.": "Please fill in all fields correctly.",
+  "Buchung aktualisiert.": "Entry updated.",
+  "Buchung gespeichert!": "Entry saved!",
+  "Keine Buchungen zum Exportieren vorhanden.": "No entries to export.",
+  "Einnahme": "Income",
+  "Ausgabe": "Expense",
+  "Als CSV für SheetOS / Excel exportieren": "Export as CSV for SheetOS / Excel",
+  "Einträge filtern...": "Filter entries...",
+  "z. B. Supermarkt-Einkauf, Tanken, Gehalt...": "e.g. supermarket, fuel, salary...",
+  "ExpenseTracker - Ausgaben & Budget": "ExpenseTracker - expenses & budget",
+  "➕ Neuer Eintrag": "➕ New entry",
+  "Einnahmen": "Income",
+  "Ausgaben": "Expenses",
+  "Saldo / Rest": "Balance / left",
+  "Alle": "All",
+  "🛒 Lebensmittel": "🛒 Groceries",
+  "☕ Restaurant & Café": "☕ Restaurant & café",
+  "🚆 Mobilität & Tanken": "🚆 Transport & fuel",
+  "🏠 Wohnen & Fixkosten": "🏠 Housing & fixed costs",
+  "🎮 Freizeit & Shopping": "🎮 Leisure & shopping",
+  "💼 Einnahmen": "💼 Income",
+  "📦 Sonstiges": "📦 Other",
+  "Keine Buchungen in diesem Monat": "No entries this month",
+  "Tippe oben auf „Neuer Eintrag“, um deine Ausgaben unterwegs direkt zu erfassen!": "Tap “New entry” above to record your expenses on the go!",
+  "Buchung erfassen": "Record entry",
+  "Betrag (€)": "Amount (€)",
+  "Datum": "Date",
+  "Beschreibung / Zweck": "Description / purpose",
+  "Kategorie": "Category",
+  "💼 Einnahmen / Gehalt": "💼 Income / salary",
+  "Abbrechen": "Cancel",
+  "Speichern": "Save",
+  "0 Buchungen": "0 entries"
+ },
+ "patterns": [
+  [
+   "^Speicher:\\ Browser\\ \\(LocalStorage:\\ (.+?)\\)$",
+   "Storage: browser (LocalStorage: $1)"
+  ],
+  [
+   "^Speichern\\ fehlgeschlagen: (.+)$",
+   "Saving failed: $1"
+  ],
+  [
+   "^(.+?)\\ von\\ (.+?)\\ Buchungen$",
+   "$1 of $2 entries"
+  ],
+  [
+   "^Account:\\ (.+?)$",
+   "Account: $1"
+  ]
+ ],
+ "keep": [
+  "Box: 🏠 \u0000/\u0000/",
+  "April",
+  "August",
+  "September",
+  "November",
+  "Account: ...",
+  "Restaurant",
+  "Transport",
+  "return String(str).replace(/[&",
+  "ExpenseTracker"
+ ],
+ "words": [
+  [
+   "(^|[^\\wäöüÄÖÜß])Januar(?![\\wäöüÄÖÜß])",
+   "$1January"
+  ],
+  [
+   "(^|[^\\wäöüÄÖÜß])Februar(?![\\wäöüÄÖÜß])",
+   "$1February"
+  ],
+  [
+   "(^|[^\\wäöüÄÖÜß])März(?![\\wäöüÄÖÜß])",
+   "$1March"
+  ],
+  [
+   "(^|[^\\wäöüÄÖÜß])Mai(?![\\wäöüÄÖÜß])",
+   "$1May"
+  ],
+  [
+   "(^|[^\\wäöüÄÖÜß])Juni(?![\\wäöüÄÖÜß])",
+   "$1June"
+  ],
+  [
+   "(^|[^\\wäöüÄÖÜß])Juli(?![\\wäöüÄÖÜß])",
+   "$1July"
+  ],
+  [
+   "(^|[^\\wäöüÄÖÜß])Oktober(?![\\wäöüÄÖÜß])",
+   "$1October"
+  ],
+  [
+   "(^|[^\\wäöüÄÖÜß])Dezember(?![\\wäöüÄÖÜß])",
+   "$1December"
+  ]
+ ]
+}

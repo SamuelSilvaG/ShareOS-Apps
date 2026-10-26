@@ -1,3 +1,8 @@
+## 1.0.5
+
+- Folgt den Farben von ShareOS: hell/dunkel und Akzentfarbe (bisher immer das eigene dunkle Farbschema); das Layout bleibt.
+- Englisch, wenn die ShareOS-Oberfläche nicht auf Deutsch steht ([#74](https://github.com/UniqueDroid/ShareOS/issues/74)).
+
 ## 1.0.4
 
 - On phones the header wraps instead of scrolling sideways: search in a line of its own, account name shortened, version hidden.

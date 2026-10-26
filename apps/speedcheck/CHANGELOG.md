@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.2] - 2026-10-26
+### Geändert
+- Folgt den Farben von ShareOS: hell/dunkel und Akzentfarbe (bisher immer das eigene dunkle Farbschema); das Layout bleibt.
+- Englisch, wenn die ShareOS-Oberfläche nicht auf Deutsch steht ([#74](https://github.com/UniqueDroid/ShareOS/issues/74)).
+
 ## [1.0.1] - 2026-10-25
 ### Behoben
 - Nur noch echte Messwerte: Die Zeilen „Router“ und „DNS“ zeigten erfundene Werte (Ping zur Box × 0,85, „DNS Auflösung ok“) und sind entfernt; bei einer fehlgeschlagenen Durchsatzmessung steht „—“ statt eines geschätzten Werts; die Texte behaupten nichts mehr über ein VPN.

@@ -1,0 +1,103 @@
+{
+ "exact": {
+  "Kein persönlicher Ordner auf der Box gefunden.": "No personal folder found on the box.",
+  "Speichern fehlgeschlagen:": "Saving failed:",
+  "Bearbeiten": "Edit",
+  "Löschen": "Delete",
+  "Aktualisieren": "Refresh",
+  "Typ": "Type",
+  "Abbrechen": "Cancel",
+  "Speichern": "Save",
+  "Verbinde mit Box-Dateisystem...": "Connecting to the box file system...",
+  "Zum Frühstück": "With breakfast",
+  "Vor dem Schlafen": "Before sleeping",
+  "Morgens nüchtern": "In the morning on an empty stomach",
+  "Wiegemessung": "Weighing",
+  "✓ Eingenommen": "✓ Taken",
+  "Als eingenommen markieren": "Mark as taken",
+  "Status zurückgesetzt.": "Status reset.",
+  "Vitalwert": "Vital value",
+  "🩸 Blutdruck & Puls": "🩸 Blood pressure & pulse",
+  "⚖️ Gewicht": "⚖️ Weight",
+  "🍬 Blutzucker": "🍬 Blood sugar",
+  "🌡️ Temperatur": "🌡️ Temperature",
+  "Messung gelöscht.": "Measurement deleted.",
+  "Medikament bearbeiten": "Edit medication",
+  "Medikament hinzufügen": "Add medication",
+  "Medikament aktualisiert.": "Medication updated.",
+  "Medikament hinzugefügt!": "Medication added!",
+  "Dieses Medikament wirklich löschen?": "Really delete this medication?",
+  "Medikament gelöscht.": "Medication deleted.",
+  "Systole (mmHg)": "Systolic (mmHg)",
+  "Diastole (mmHg)": "Diastolic (mmHg)",
+  "Gewicht (kg)": "Weight (kg)",
+  "Blutzucker (mg/dl)": "Blood sugar (mg/dl)",
+  "Temperatur (°C)": "Temperature (°C)",
+  "Vitalwert eingetragen!": "Vital value recorded!",
+  "z. B. Aspirin Cardio, Vitamin D3": "e.g. Aspirin Cardio, vitamin D3",
+  "z. B. 100 mg, 1 Stk": "e.g. 100 mg, 1 pc",
+  "z. B. Nach dem Essen einnehmen": "e.g. take after meals",
+  "z. B. Nach dem Sport, morgens nüchtern": "e.g. after sport, in the morning on an empty stomach",
+  "➕ Neues Medikament": "➕ New medication",
+  "❤️ Vitalwert eintragen": "❤️ Record vital value",
+  "💊 Medikamente & Einnahmen (": "💊 Medications & intake (",
+  "❤️ Vitalwerte & Blutdruck (": "❤️ Vital values & blood pressure (",
+  "0 von 0 eingenommen": "0 of 0 taken",
+  "Keine Medikamente hinterlegt": "No medications stored",
+  "Füge deine Medikamente und Dosierungen über „Neues Medikament“ hinzu.": "Add your medications and doses with “New medication”.",
+  "0 Messungen": "0 measurements",
+  "Datum & Zeit": "Date & time",
+  "Wert / Messung": "Value / measurement",
+  "Notiz": "Note",
+  "Aktion": "Action",
+  "Keine Vitalwerte aufgezeichnet": "No vital values recorded",
+  "Erfasse deinen Blutdruck, Puls oder das Gewicht über „Vitalwert eintragen“.": "Record your blood pressure, pulse or weight with “Record vital value”.",
+  "Medikamenten-Name": "Medication name",
+  "Dosis / Stärke": "Dose / strength",
+  "Uhrzeit": "Time",
+  "Intervall": "Interval",
+  "Täglich": "Daily",
+  "Morgens": "Mornings",
+  "Abends": "Evenings",
+  "Nach Bedarf": "As needed",
+  "Hinweise (optional)": "Notes (optional)",
+  "Vitalwert eintragen": "Record vital value",
+  "Messwert-Typ": "Type of measurement",
+  "⚖️ Körpergewicht": "⚖️ Body weight",
+  "Datum & Uhrzeit": "Date & time",
+  "Notiz (optional)": "Note (optional)"
+ },
+ "patterns": [
+  [
+   "^Speicher:\\ Browser\\ \\(LocalStorage:\\ (.+?)\\)$",
+   "Storage: browser (LocalStorage: $1)"
+  ],
+  [
+   "^Speichern\\ fehlgeschlagen: (.+)$",
+   "Saving failed: $1"
+  ],
+  [
+   "^(.+?)\\ von\\ (.+?)\\ eingenommen$",
+   "$1 of $2 taken"
+  ],
+  [
+   "^Box:\\ 🏠\\ (.+?)/(.+?)/(.+?)$",
+   "Box: 🏠 $1/$2/$3"
+  ],
+  [
+   "^(.+?)\\ Messungen$",
+   "$1 measurements"
+  ],
+  [
+   "^Account:\\ (.+?)$",
+   "Account: $1"
+  ]
+ ],
+ "keep": [
+  "Account: ...",
+  "Vitamin D3",
+  "Magnesium",
+  "PillClock - Meds & Vitals",
+  "PillClock"
+ ]
+}

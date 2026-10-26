@@ -1,7 +1,7 @@
 {
   "id": "tuyapulse",
   "name": "TuyaPulse",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "publisher": "UniqueDroid",
   "description": {
     "de": "Smart-Home-Dashboard für Tuya-Geräte im Heimnetz – ohne Cloud: Geräte suchen, schalten, Räume, Szenen und Stromverbrauch; die Box spricht lokal mit ihnen (Protokoll 3.3/3.4). Nur für Administratoren.",

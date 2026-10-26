@@ -1,0 +1,82 @@
+{
+ "exact": {
+  "Entfernen": "Remove",
+  "Vollbild": "Full screen",
+  "Leeren": "Clear",
+  "Typ": "Type",
+  "Dauer": "Duration",
+  "*** ▶ DRÜCKEN ZUM ABSPIELEN ***": "*** ▶ PRESS TO PLAY ***",
+  "*** STREAM NICHT ABSPIELBAR – DER SERVER ERLAUBT KEINEN ZUGRIFF (CORS) ODER DAS FORMAT FEHLT ***": "*** STREAM CANNOT BE PLAYED – THE SERVER DOES NOT ALLOW ACCESS (CORS) OR THE FORMAT IS MISSING ***",
+  "*** FORMAT VOM BROWSER NICHT UNTERSTÜTZT ***": "*** FORMAT NOT SUPPORTED BY THE BROWSER ***",
+  "Musik & Videos von der Box": "Music & videos from the box",
+  "Ordner von der Box abspielen": "Play a folder from the box",
+  "*** KEINE MUSIK ODER VIDEOS IN DIESEM ORDNER ***": "*** NO MUSIC OR VIDEOS IN THIS FOLDER ***",
+  "Kein Zugriff auf die Ordner der Box – der Administrator kann ihn unter Benutzer → „Dateien“ einschalten.": "No access to the box's folders – the administrator can switch it on under Users → “Files”.",
+  "Gib eine direkte Audio-/Video-Stream-URL ein (z.B. MP3/OGG/WebM):": "Enter a direct audio/video stream URL (e.g. MP3/OGG/WebM):",
+  "*** DATEI KONNTE NICHT GEÖFFNET WERDEN:": "*** THE FILE COULD NOT BE OPENED:",
+  "Skin wechseln (ShareOS / Classic / Cyber / Foobar)": "Change skin (ShareOS / Classic / Cyber / Foobar)",
+  "Eingebauten Chiptune-Demo-Track generieren": "Generate the built-in chiptune demo track",
+  "Klicken zum Wechseln: Spektrum / Oszilloskop / Spiegelwelle": "Click to switch: spectrum / oscilloscope / mirror wave",
+  "Vorheriger Titel": "Previous track",
+  "Abspielen": "Play",
+  "Stopp": "Stop",
+  "Nächster Titel": "Next track",
+  "Zufallswiedergabe": "Shuffle",
+  "Wiederholen": "Repeat",
+  "Equalizer-Preset wählen": "Choose an equalizer preset",
+  "Audio- oder Videodateien von diesem Rechner öffnen": "Open audio or video files from this computer",
+  "Musik und Videos aus deinem Bereich auf der Box abspielen (mit Spulen)": "Play music and videos from your area on the box (with seeking)",
+  "Alle Musikstücke und Videos eines Ordners der Box in die Playlist (z. B. ein Album)": "All tracks and videos of a folder of the box into the playlist (e.g. an album)",
+  "Stream- oder Datei-URL hinzufügen": "Add a stream or file URL",
+  "Playlist filtern (Foobar-Style)...": "Filter the playlist (Foobar style)...",
+  "Playlist leeren": "Clear the playlist",
+  "*** WINWEB PLAYER — DATEIEN PER DRAG & DROP ODER BUTTON LADEN ***": "*** WINWEB PLAYER — LOAD FILES BY DRAG & DROP OR BUTTON ***",
+  "Klassik": "Classical",
+  "+ Vom Rechner": "+ From the computer",
+  "+ Von der Box": "+ From the box",
+  "+ Ordner der Box": "+ Folder of the box",
+  "Titel / Dateiname": "Title / file name",
+  "🎵 Ziehe MP3, WAV, OGG, FLAC oder MP4/WebM-Dateien per Drag & Drop hierher": "🎵 Drag MP3, WAV, OGG, FLAC or MP4/WebM files here",
+  "Oder klicke oben rechts auf": "Or click at the top right on",
+  ", um den Equalizer & Visualizer sofort zu testen!": "to test the equalizer & visualizer right away!"
+ },
+ "patterns": [
+  [
+   "^\\*\\*\\*\\ (.+?)\\ TITEL\\ AUS\\ DER\\ LETZTEN\\ SITZUNG\\ –\\ ▶\\ ZUM\\ ABSPIELEN\\ \\*\\*\\*$",
+   "*** $1 TRACKS FROM THE LAST SESSION – ▶ TO PLAY ***"
+  ],
+  [
+   "^\\*\\*\\*\\ DATEI\\ KONNTE\\ NICHT\\ GEÖFFNET\\ WERDEN: (.+)$",
+   "*** THE FILE COULD NOT BE OPENED: $1"
+  ],
+  [
+   "^\\*\\*\\*\\ (.+?)\\ –\\ VON\\ (.+?)\\ \\*\\*\\*$",
+   "*** $1 – BY $2 ***"
+  ],
+  [
+   "^Oder\\ klicke\\ oben\\ rechts\\ auf (.+)$",
+   "Or click at the top right on $1"
+  ]
+ ],
+ "keep": [
+  "ShareOS Media",
+  "\u0000 Track\u0000",
+  "— kHz",
+  "NotAllowedError",
+  "Playback error:",
+  "Web Stream",
+  "ShareOS CyberSynth Demo (Generated 16s Loop).wav",
+  "– WinWeb Player",
+  "Pause",
+  "WinWeb Player – ShareOS",
+  "🎨 Skin",
+  "🎹 Synth-Demo",
+  "Flat (Neutral)",
+  "Bass Boost",
+  "Rock",
+  "Electronic / Synth",
+  "Vocal / Podcast",
+  "0 Tracks",
+  "+ Stream URL"
+ ]
+}

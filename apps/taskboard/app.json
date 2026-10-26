@@ -1,7 +1,7 @@
 {
   "id": "taskboard",
   "name": "TaskBoard",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "publisher": "UniqueDroid",
   "description": {
     "de": "Kanban- & Aufgaben-Board mit responsivem Layout (untereinander auf schmalen Screens) und ShareOS.fs Speicherung.",
