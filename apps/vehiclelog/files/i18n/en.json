@@ -1,0 +1,108 @@
+{
+ "exact": {
+  "Kein persönlicher Ordner auf der Box gefunden.": "No personal folder found on the box.",
+  "Speichern fehlgeschlagen:": "Saving failed:",
+  "Eintrag bearbeiten": "Edit entry",
+  "Neuen Eintrag erfassen": "New entry",
+  "Eintrag aktualisiert.": "Entry updated.",
+  "Eintrag gelöscht.": "Entry deleted.",
+  "Keine Einträge für den Export vorhanden.": "No entries to export.",
+  "➕ Neuer Eintrag": "➕ New entry",
+  "Alle Einträge (": "All entries (",
+  "0 Einträge": "0 entries",
+  "Datum": "Date",
+  "Löschen": "Delete",
+  "Abbrechen": "Cancel",
+  "Speichern": "Save",
+  "Verbinde mit Box-Dateisystem...": "Connecting to the box file system...",
+  "Vollbetankung": "Full tank",
+  "Super E10, Tankstelle Nord": "Super E10, petrol station north",
+  "Dienstfahrt Berlin Kundenmeeting": "Business trip Berlin customer meeting",
+  "Hin- und Rückfahrt Autobahn A12": "Return trip motorway A12",
+  "Fahrt": "Trip",
+  "Tanken / Laden": "Fuel / charging",
+  "Wartung / Service": "Maintenance / service",
+  "Gefahrene km (optional)": "Distance driven in km (optional)",
+  "z. B. Kundenbesuch Frankfurt, Ausflug Ostsee": "e.g. customer visit Frankfurt, trip to the Baltic Sea",
+  "Getankt (Liter / kWh)": "Fuelled (litres / kWh)",
+  "z. B. Vollbetankung, Zwischenladung": "e.g. full tank, top-up charge",
+  "Teile / Menge": "Parts / quantity",
+  "z. B. Inspektion, Ölwechsel, TÜV": "e.g. inspection, oil change, MOT",
+  "Eintrag gespeichert!": "Entry saved!",
+  "Diesen Eintrag wirklich löschen?": "Really delete this entry?",
+  "CSV-Export heruntergeladen!": "CSV export downloaded!",
+  "Einträge & Notizen durchsuchen...": "Search entries & notes...",
+  "Als CSV für Steuer/Excel exportieren": "Export as CSV for taxes/Excel",
+  "z. B. Pendeln, Dienstfahrt Berlin": "e.g. commuting, business trip Berlin",
+  "z. B. Aral Tankstelle, Winterreifen gewechselt": "e.g. Aral petrol station, winter tyres changed",
+  "VehicleLog - Fahrtenbuch & Tank-Tracker": "VehicleLog - logbook & fuel tracker",
+  "🗺️ Fahrten (": "🗺️ Trips (",
+  "⛽ Tanken / Laden (": "⛽ Fuel / charging (",
+  "🔧 Wartung & TÜV (": "🔧 Maintenance & MOT (",
+  "Gesamtkilometer": "Total kilometres",
+  "Aktuellster Stand": "Latest odometer reading",
+  "Durchschnittsverbrauch": "Average consumption",
+  "l/100km bzw. kWh/100km": "l/100 km or kWh/100 km",
+  "Gesamtkosten": "Total costs",
+  "Sprit & Wartung": "Fuel & maintenance",
+  "Kosten pro Kilometer": "Cost per kilometre",
+  "Effizienz": "Efficiency",
+  "Noch keine Einträge vorhanden": "No entries yet",
+  "Erfasse deinen ersten Tankstopp, eine Dienstfahrt oder Werkstattkosten mit einem Klick oben auf „Neuer Eintrag“!": "Record your first fuel stop, business trip or garage costs with one click on “New entry” above!",
+  "Eintrags-Typ": "Entry type",
+  "⛽ Tanken / Laden": "⛽ Fuel / charging",
+  "🗺️ Fahrt / Strecke": "🗺️ Trip / route",
+  "🔧 Wartung / Reparatur / TÜV": "🔧 Maintenance / repair / MOT",
+  "Kilometerstand (km)": "Odometer (km)",
+  "Gesamtkosten (€)": "Total costs (€)",
+  "Zweck / Route": "Purpose / route",
+  "Notizen & Details (optional)": "Notes & details (optional)"
+ },
+ "patterns": [
+  [
+   "^Speicher:\\ Browser\\ \\(LocalStorage:\\ (.+?)\\)$",
+   "Storage: browser (LocalStorage: $1)"
+  ],
+  [
+   "^(.+?)\\ •\\ Stand:\\ (.+?)\\ km\\ (.+?)$",
+   "$1 • odometer: $2 km $3"
+  ],
+  [
+   "^Speichern\\ fehlgeschlagen: (.+)$",
+   "Saving failed: $1"
+  ],
+  [
+   "^(.+?)\\ km\\ im\\ Log\\ erfasst$",
+   "$1 km recorded in the log"
+  ],
+  [
+   "^Box:\\ 🏠\\ (.+?)/(.+?)/(.+?)$",
+   "Box: 🏠 $1/$2/$3"
+  ],
+  [
+   "^(.+?)\\ Einträge\\ gesamt$",
+   "$1 entries in total"
+  ],
+  [
+   "^Account:\\ (.+?)$",
+   "Account: $1"
+  ]
+ ],
+ "keep": [
+  "📥 CSV Export",
+  "Account: ...",
+  "Super E10",
+  "\u0000 l/kWh",
+  "VehicleLog"
+ ],
+ "words": [
+  [
+   "(^|[^\\wäöüÄÖÜß])Hin- und Rückfahrt Autobahn A12(?![\\wäöüÄÖÜß])",
+   "$1Return trip motorway A12"
+  ],
+  [
+   "(^|[^\\wäöüÄÖÜß])Super E10, Tankstelle Nord(?![\\wäöüÄÖÜß])",
+   "$1Super E10, petrol station north"
+  ]
+ ]
+}

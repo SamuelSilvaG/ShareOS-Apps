@@ -1,0 +1,134 @@
+{
+ "exact": {
+  "Kein persönlicher Ordner auf der Box gefunden.": "No personal folder found on the box.",
+  "Tresor anlegen": "Create vault",
+  "📋 Kopieren": "📋 Copy",
+  "Alle": "All",
+  "Eintrag gelöscht.": "Entry deleted.",
+  "Master-Passwort": "Master password",
+  "Sperren": "Lock",
+  "➕ Neuer Eintrag": "➕ New entry",
+  "Verbinde mit Box-Dateisystem...": "Connecting to the box file system...",
+  "Datei:": "File:",
+  "Passwort": "Password",
+  "Löschen": "Delete",
+  "Abbrechen": "Cancel",
+  "Speichern": "Save",
+  "Hinzufügen": "Add",
+  "Allgemein": "General",
+  "Banking & Finanzen": "Banking & finance",
+  "Arbeit": "Work",
+  "WLAN & Netzwerk": "Wi-Fi & network",
+  "ShareOS.fs Fehler:": "ShareOS.fs error:",
+  "Neuen Tresor erstellen: Wähle ein sicheres Master-Passwort!": "Create a new vault: choose a secure master password!",
+  "Gib dein Master-Passwort ein, um den Tresor zu entschlüsseln.": "Enter your master password to decrypt the vault.",
+  "Entschlüsseln": "Decrypt",
+  "Box-Speicherfehler:": "Box storage error:",
+  "Berechne Schlüssel...": "Deriving the key...",
+  "Neuer Tresor erfolgreich angelegt!": "New vault created!",
+  "Tresor erfolgreich entschlüsselt!": "Vault decrypted!",
+  "Falsches Master-Passwort oder beschädigte Datei!": "Wrong master password or damaged file!",
+  "Tresor gesperrt.": "Vault locked.",
+  "Unbenannt": "Untitled",
+  "➕ Neue Rubrik …": "➕ New category …",
+  "Bitte einen Namen für die Rubrik eingeben.": "Please enter a name for the category.",
+  "Allgemein bleibt immer erhalten": "General always stays",
+  "Rubrik löschen": "Delete category",
+  "Alle Beispiel-Rubriken sind schon da.": "All example categories are there already.",
+  "Eintrag bearbeiten": "Edit entry",
+  "Neuen Eintrag erfassen": "New entry",
+  "Sicheres Passwort generiert!": "Secure password generated!",
+  "Eintrag aktualisiert.": "Entry updated.",
+  "Neuer Eintrag gespeichert!": "New entry saved!",
+  "Diesen Eintrag wirklich unwiderruflich löschen?": "Really delete this entry for good?",
+  "UNGÜLTIG": "INVALID",
+  "Einträge & Dienste durchsuchen...": "Search entries & services...",
+  "Tresor sperren": "Lock the vault",
+  "Rubriken verwalten": "Manage categories",
+  "z. B. GitHub, Nextcloud, WLAN Heimnetz": "e.g. GitHub, Nextcloud, home Wi-Fi",
+  "Symbol der neuen Rubrik": "Symbol of the new category",
+  "Name der neuen Rubrik": "Name of the new category",
+  "Passwort anzeigen": "Show password",
+  "Zusätzliche geheime Informationen...": "Additional secret information...",
+  "Neue Rubrik, z. B. Gaming": "New category, e.g. gaming",
+  "0 Einträge": "0 entries",
+  "⚙️ Rubriken": "⚙️ Categories",
+  "Keine Passwörter im Tresor": "No passwords in the vault",
+  "Klicke oben auf „➕ Neuer Eintrag“, um deinen ersten Account oder ein Server-Passwort hinzuzufügen.": "Click “➕ New entry” above to add your first account or a server password.",
+  "Verschlüsselung: AES-GCM-256 via WebCrypto API.": "Encryption: AES-GCM-256 via WebCrypto API.",
+  "auf deiner Box.": "on your box.",
+  "Titel / Dienst": "Title / service",
+  "Rubrik": "Category",
+  "Anlegen": "Create",
+  "Benutzername / E-Mail": "User name / e-mail",
+  "🎲 Generieren": "🎲 Generate",
+  "URL / Adresse": "URL / address",
+  "Sichere Notizen": "Secure notes",
+  "Symbol und Name ändern sich sofort. Wird eine Rubrik gelöscht, wandern ihre Einträge nach „Allgemein“.": "Symbol and name change at once. If a category is deleted, its entries move to “General”.",
+  "Beispiele wiederherstellen": "Restore examples",
+  "Fertig": "Done"
+ },
+ "patterns": [
+  [
+   "^Rubrik\\ „(.+?)“\\ löschen\\?\\ Ihre\\ (.+?)\\ Einträge\\ wandern\\ nach\\ „Allgemein“\\.$",
+   "Delete category “$1”? Its $2 entries move to “General”."
+  ],
+  [
+   "^(.+?)\\ Beispiel\\-Rubriken\\ wiederhergestellt\\.$",
+   "$1 example categories restored."
+  ],
+  [
+   "^Speicher:\\ Browser\\ \\(LocalStorage:\\ (.+?)\\)$",
+   "Storage: browser (LocalStorage: $1)"
+  ],
+  [
+   "^Passwort\\ für\\ '(.+?)'\\ kopiert!$",
+   "Password for '$1' copied!"
+  ],
+  [
+   "^Rubrik\\ „(.+?)“\\ angelegt\\.$",
+   "Category “$1” created."
+  ],
+  [
+   "^Box:\\ 🏠\\ (.+?)/(.+?)/(.+?)$",
+   "Box: 🏠 $1/$2/$3"
+  ],
+  [
+   "^Box\\-Speicherfehler: (.+)$",
+   "Box storage error: $1"
+  ],
+  [
+   "^(.+) auf\\ deiner\\ Box\\.$",
+   "$1 on your box."
+  ],
+  [
+   "^Symbol\\ von\\ (.+?)$",
+   "Symbol of $1"
+  ],
+  [
+   "^Account:\\ (.+?)$",
+   "Account: $1"
+  ],
+  [
+   "^(.+?)\\ Einträge$",
+   "$1 entries"
+  ],
+  [
+   "^Datei: (.+)$",
+   "File: $1"
+  ]
+ ],
+ "keep": [
+  "Name",
+  "Account: ...",
+  "E-Mail",
+  "Shopping",
+  "Social Media",
+  "Streaming",
+  "Server & Homelab",
+  "Symbol",
+  "ShareVault",
+  "ShareVault (vault.enc via ShareOS.fs)",
+  "2FA / TOTP Secret (Base32)"
+ ]
+}

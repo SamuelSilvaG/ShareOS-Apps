@@ -1,0 +1,192 @@
+{
+ "exact": {
+  "Speicher: Browser (Fallback)": "Storage: browser (fallback)",
+  "nicht erreichbar": "not reachable",
+  "Bearbeiten": "Edit",
+  "Hinzufügen": "Add",
+  "Löschen": "Delete",
+  "Gerät hinzufügen": "Add device",
+  "Icon / Emoji": "Icon / emoji",
+  "Abbrechen": "Cancel",
+  "Speichern": "Save",
+  "Schließen": "Close",
+  "Fertig": "Done",
+  "Verbinde mit Box-Dateisystem...": "Connecting to the box file system...",
+  "Wohnzimmer": "Living room",
+  "Küche": "Kitchen",
+  "Schlafzimmer": "Bedroom",
+  "Büro": "Office",
+  "Kinderzimmer": "Children's room",
+  "Alle Lichter Aus": "All lights off",
+  "Nachtmodus": "Night mode",
+  "Speicher: Browser (FS Fehler)": "Storage: browser (FS error)",
+  "keine Verbindung": "no connection",
+  "Fehler – siehe Protokoll": "Error – see the log",
+  "Schalten braucht ShareOS 0.2.0-beta.11 und ein Administratorkonto.": "Switching needs ShareOS 0.2.0-beta.11 and an administrator account.",
+  "Bitte zuerst die Geräte-ID eintragen (⚙️ Edit).": "Please enter the device ID first (⚙️ Edit).",
+  "Aktion ausführen": "Run action",
+  "Alle Geräte ausschalten": "Switch all devices off",
+  "Alle Geräte einschalten": "Switch all devices on",
+  "Nachtmodus aktivieren": "Activate night mode",
+  "Ausführen": "Run",
+  "Szenen brauchen ShareOS 0.2.0-beta.11 und ein Administratorkonto.": "Scenes need ShareOS 0.2.0-beta.11 and an administrator account.",
+  "Gerät bearbeiten": "Edit device",
+  "Smart-Home Gerät hinzufügen": "Add smart home device",
+  "Name, IP, Geräte-ID und Local Key sind erforderlich.": "Name, IP, device ID and local key are required.",
+  "Bitte eine IPv4-Adresse eingeben.": "Please enter an IPv4 address.",
+  "Der Local Key hat 16 Zeichen.": "The local key has 16 characters.",
+  "Gerät aktualisiert.": "Device updated.",
+  "Gerät hinzugefügt!": "Device added!",
+  "Dieses Gerät wirklich löschen?": "Really delete this device?",
+  "Gerät gelöscht.": "Device deleted.",
+  "Klicke auf „Scan starten“, um Geräte im Heimnetz zu finden.": "Click “Start scan” to find devices in the home network.",
+  "Die Suche braucht ShareOS 0.2.0-beta.11 und ein Administratorkonto.": "The search needs ShareOS 0.2.0-beta.11 and an administrator account.",
+  "Kein Gerät gemeldet. Sind die Geräte im selben Netz wie die Box? Protokoll-3.5-Geräte melden sich anders und werden noch nicht gefunden.": "No device reported. Are the devices in the same network as the box? Protocol 3.5 devices announce themselves differently and are not found yet.",
+  "Tuya-Gerät": "Tuya device",
+  "[SYSTEM] Log geleert.": "[SYSTEM] Log cleared.",
+  "UDP Log geleert.": "UDP log cleared.",
+  "Es muss mindestens ein Raum existieren.": "At least one room must exist.",
+  "Dieser Raum existiert bereits.": "This room exists already.",
+  "Frage die Geräte ab …": "Querying the devices …",
+  "TuyaPulse spricht über die Box mit den Geräten und braucht dafür ShareOS 0.2.0-beta.11 oder neuer und ein Administratorkonto (Berechtigung „tuya“). Geräte lassen sich schon eintragen.": "TuyaPulse talks to the devices through the box and needs ShareOS 0.2.0-beta.11 or newer and an administrator account for that (permission “tuya”). Devices can be added already.",
+  "Geräte, Räume & IPs durchsuchen...": "Search devices, rooms & IPs...",
+  "Anfragen und Antworten": "Requests and answers",
+  "Geräte im Netzwerk suchen": "Search for devices in the network",
+  "Räume verwalten": "Manage rooms",
+  "z. B. Deckenlicht Wohnzimmer": "e.g. living room ceiling light",
+  "z. B. bf1234567890abcdefgh (aus der Suche oder der Tuya-App)": "e.g. bf1234567890abcdefgh (from the search or the Tuya app)",
+  "16 Zeichen, z. B. aus „tinytuya wizard“": "16 characters, e.g. from “tinytuya wizard”",
+  "Dauer": "Duration",
+  "Neuer Raum (z.B. Kinderzimmer)": "New room (e.g. children's room)",
+  "z. B. Alle Lichter Aus": "e.g. all lights off",
+  "TuyaPulse - Smart Home Dashboard": "TuyaPulse - smart home dashboard",
+  "➕ Gerät": "➕ Device",
+  "📡 Protokoll": "📡 Log",
+  "🏠 Räume": "🏠 Rooms",
+  "🔌 Alle Geräte (": "🔌 All devices (",
+  "⚡ Szenen & Automationen (": "⚡ Scenes & automations (",
+  "Geräte gesamt": "Devices in total",
+  "Aktiv (Eingeschaltet)": "Active (switched on)",
+  "Gesamtleistung": "Total power",
+  "Erreichbar": "Reachable",
+  "LOKALE SMART-HOME GERÄTE & STECKDOSEN": "LOCAL SMART HOME DEVICES & PLUGS",
+  "● lokal über die Box": "● locally through the box",
+  "Keine Geräte gefunden": "No devices found",
+  "Nutze den „🔍 Auto-Scan“ Button oben, um dein Heimnetz automatisch nach Tuya-Geräten zu durchsuchen!": "Use the “🔍 Auto-Scan” button above to search your home network for Tuya devices automatically!",
+  "AUTOMATISIERUNGS-SZENEN (z.B. Alle Aus, Nachtmodus)": "AUTOMATION SCENES (e.g. all off, night mode)",
+  "➕ Neue Szene": "➕ New scene",
+  "Keine Szenen definiert": "No scenes defined",
+  "Erstelle Szenen, um mehrere Geräte gleichzeitig per Klick zu schalten.": "Create scenes to switch several devices at once with one click.",
+  "Geräte-Name": "Device name",
+  "Raum": "Room",
+  "Gerätetyp": "Device type",
+  "🔌 Steckdose / Schalter": "🔌 Plug / switch",
+  "💡 Lampe / LED": "💡 Lamp / LED",
+  "🌡️ Klima- / Sensor": "🌡️ Climate / sensor",
+  "Lokale IP-Adresse": "Local IP address",
+  "Geräte-ID": "Device ID",
+  "Schalter-Datenpunkt": "Switch data point",
+  "Local Key (16 Zeichen)": "Local key (16 characters)",
+  "Protokoll-Version": "Protocol version",
+  "v3.3 (Standard)": "v3.3 (default)",
+  "v3.4 (neuere Geräte)": "v3.4 (newer devices)",
+  "Anfragen der Box an die Geräte (TCP 6668) und ihre Antworten:": "Requests of the box to the devices (TCP 6668) and their answers:",
+  "🧹 Log leeren": "🧹 Clear log",
+  "⚡ Alle abfragen": "⚡ Query all",
+  "[SYSTEM] Bereit – die Box spricht lokal mit den Geräten, ohne Cloud.": "[SYSTEM] Ready – the box talks to the devices locally, without the cloud.",
+  "🔍 Netzwerk Auto-Scan (Tuya Discovery)": "🔍 Network auto-scan (Tuya discovery)",
+  "Die Box lauscht einige Sekunden auf die Meldungen, die Tuya-Geräte im Heimnetz regelmäßig senden (UDP 6666/6667). Gefunden werden IP, Geräte-ID und Protokoll – den Local Key gibt es nur über die Tuya-Cloud (z. B.": "The box listens for a few seconds for the announcements that Tuya devices in the home network send regularly (UDP 6666/6667). It finds IP, device ID and protocol – the local key is only available through the Tuya cloud (e.g.",
+  "6 Sekunden": "6 seconds",
+  "12 Sekunden": "12 seconds",
+  "Suche starten": "Start search",
+  "🏠 Räume verwalten": "🏠 Manage rooms",
+  "⚡ Automatisierungs-Szene erstellen": "⚡ Create automation scene",
+  "Szenen-Name": "Scene name",
+  "Aktion beim Aktivieren:": "Action when activated:",
+  "Nachtmodus (Lichter aus, Klima an)": "Night mode (lights off, climate on)",
+  "Szene speichern": "Save scene",
+  "Alle Räume": "All rooms"
+ },
+ "patterns": [
+  [
+   "^⚡ (.+)$",
+   "⚡ $1"
+  ],
+  [
+   "^(.+) \\((\\d+)\\)$",
+   "$1 ($2)"
+  ],
+  [
+   "^Alle Räume \\((\\d+)\\)$",
+   "All rooms ($1)"
+  ],
+  [
+   "^⏳\\ Die\\ Box\\ lauscht\\ (.+?)\\ Sekunden\\ auf\\ Tuya\\-Geräte\\ …$",
+   "⏳ The box listens for Tuya devices for $1 seconds …"
+  ],
+  [
+   "^Speicher:\\ Browser\\ \\(LocalStorage:\\ (.+?)\\)$",
+   "Storage: browser (LocalStorage: $1)"
+  ],
+  [
+   "^\\[SUCHE\\]\\ (.+?)\\ s\\ auf\\ UDP\\ 6666/6667\\ …$",
+   "[SEARCH] $1 s on UDP 6666/6667 …"
+  ],
+  [
+   "^Szene\\ '(.+?)':\\ (.+?)\\ geschaltet(.+?)\\.$",
+   "Scene '$1': $2 switched$3."
+  ],
+  [
+   "^\\[SUCHE\\]\\ (.+?)\\ Gerät\\(e\\)\\ gefunden\\.$",
+   "[SEARCH] $1 device(s) found."
+  ],
+  [
+   "^\\[STATUS\\]\\ Frage\\ (.+?)\\ Geräte\\ ab\\ …$",
+   "[STATUS] Querying $1 devices …"
+  ],
+  [
+   "^Raum\\ '(.+?)'\\ wirklich\\ löschen\\?$",
+   "Really delete room '$1'?"
+  ],
+  [
+   "^Raum\\ '(.+?)'\\ hinzugefügt!$",
+   "Room '$1' added!"
+  ],
+  [
+   "^Box:\\ 🏠\\ (.+?)/(.+?)/(.+?)$",
+   "Box: 🏠 $1/$2/$3"
+  ],
+  [
+   "^\\[FEHLER\\]\\ (.+?):\\ (.+?)$",
+   "[ERROR] $1: $2"
+  ],
+  [
+   "^Raum\\ '(.+?)'\\ gelöscht\\.$",
+   "Room '$1' deleted."
+  ],
+  [
+   "^Szene\\ '(.+?)'\\ erstellt!$",
+   "Scene '$1' created!"
+  ],
+  [
+   "^,\\ (.+?)\\ Fehler$",
+   ", $1 errors"
+  ],
+  [
+   "^Account:\\ (.+?)$",
+   "Account: $1"
+  ],
+  [
+   "^Fehler:\\ (.+?)$",
+   "Error: $1"
+  ]
+ ],
+ "keep": [
+  "⚙️ Edit",
+  "Account: ...",
+  "Box write error:",
+  "Status:",
+  "TuyaPulse",
+  "🔍 Auto-Scan"
+ ]
+}

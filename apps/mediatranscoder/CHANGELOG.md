@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.1
+
+- Folgt den Farben von ShareOS: hell/dunkel und Akzentfarbe (bisher immer das eigene dunkle Farbschema); das Layout bleibt.
+- Englisch, wenn die ShareOS-Oberfläche nicht auf Deutsch steht ([#74](https://github.com/UniqueDroid/ShareOS/issues/74)).
+
 ## 1.0.0
 
 - First release (draft by Jan, made to work with the box): media jobs run on the box with FFmpeg through `ShareOS.media` (permission `media`, ShareOS 0.2.0-beta.5+); the system app `ffmpeg` comes along from the store (`"requires"`).

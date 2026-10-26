@@ -1,0 +1,78 @@
+{
+ "exact": {
+  "ShareOS Box Core": "ShareOS box core",
+  "Web-Server & Kernel API": "Web server & kernel API",
+  "NAS / Festplatten-I/O": "NAS / disk I/O",
+  "Messung auf der Box archiviert.": "Measurement archived on the box.",
+  "Log-Speichern fehlgeschlagen:": "Saving the log failed:",
+  "Messung lokal im Browser archiviert.": "Measurement archived locally in the browser.",
+  "⏳ Messe...": "⏳ Measuring...",
+  "Läuft...": "Running...",
+  "Messzyklen aktiv": "Measuring cycles active",
+  "Ausgezeichnet": "Excellent",
+  "Gut": "Good",
+  "Erhöhte Latenz": "Increased latency",
+  "Messe Durchsatz...": "Measuring throughput...",
+  "Messung fehlgeschlagen": "Measurement failed",
+  "Exzellent": "Excellent",
+  "Verbindung zur Box stabil und schnell": "Connection to the box stable and fast",
+  "Akzeptabel": "Acceptable",
+  "Erhöhte Latenz (z. B. Mobilfunk)": "Increased latency (e.g. mobile network)",
+  "Kritisch": "Critical",
+  "Paketverluste möglich": "Packet loss possible",
+  "🔄 Neu prüfen": "🔄 Check again",
+  "Online (Aktiv)": "Online (active)",
+  "ShareOS.fs angebunden": "ShareOS.fs connected",
+  "Bereit": "Ready",
+  "Starte die Diagnose, um den Latenzgraphen zu zeichnen...": "Start the diagnosis to draw the latency graph...",
+  "🚀 Diagnose starten": "🚀 Start diagnosis",
+  "Ping zur Box": "Ping to the box",
+  "Warte auf Test...": "Waiting for test...",
+  "Jitter / Schwankung": "Jitter / variation",
+  "Stabilität": "Stability",
+  "Download-Rate (Box)": "Download rate (box)",
+  "Durchsatz zum NAS": "Throughput to the NAS",
+  "Tunnel-Qualität": "Tunnel quality",
+  "LATENZVERLAUF (PING ZUR BOX)": "LATENCY HISTORY (PING TO THE BOX)",
+  "Ziel: shareos.local": "Target: shareos.local",
+  "HEIMNETZ-ERREICHBARKEITSPRÜFUNG": "HOME NETWORK REACHABILITY CHECK",
+  "💾 Log sichern": "💾 Save log",
+  "Verbinde mit Box-Dateisystem...": "Connecting to the box file system...",
+  "Dateisystem-Durchsatz": "File system throughput"
+ },
+ "patterns": [
+  [
+   "^Speicher:\\ Browser\\ \\(LocalStorage:\\ (.+?)\\)$",
+   "Storage: browser (LocalStorage: $1)"
+  ],
+  [
+   "^Log\\-Speichern\\ fehlgeschlagen: (.+)$",
+   "Saving the log failed: $1"
+  ],
+  [
+   "^Payload:\\ (.+?)\\ KB\\ in\\ (.+?)\\ ms$",
+   "Payload: $1 KB in $2 ms"
+  ],
+  [
+   "^Box:\\ 🏠\\ (.+?)/(.+?)/(.+?)$",
+   "Box: 🏠 $1/$2/$3"
+  ],
+  [
+   "^Account:\\ (.+?)$",
+   "Account: $1"
+  ],
+  [
+   "^Ziel:\\ (.+?)$",
+   "Target: $1"
+  ]
+ ],
+ "keep": [
+  "\u0000 Mbit/s",
+  "Offline",
+  "Browser-Storage",
+  "SpeedCheck",
+  "Account: ...",
+  "-- Mbit/s",
+  "Status"
+ ]
+}

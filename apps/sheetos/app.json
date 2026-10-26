@@ -1,7 +1,7 @@
 {
 	"id": "sheetos",
 	"name": "SheetOS",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"publisher": "UniqueDroid",
 	"description": {
 		"de": "Schlanke Tabellenkalkulation: Formeln (SUM, AVG, IF, …), CSV öffnen und speichern, Kopieren und Einfügen mit anderen Tabellenprogrammen. Öffnet CSV-Dateien der Box direkt.",

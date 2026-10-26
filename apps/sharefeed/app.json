@@ -1,7 +1,7 @@
 {
   "id": "sharefeed",
   "name": "ShareFeed",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "UniqueDroid",
   "description": {
     "de": "Minimalistischer RSS- & News-Reader für unterwegs mit Offline-Cache und ShareOS.fs Speicherung.",

@@ -1,0 +1,114 @@
+{
+ "exact": {
+  "Speichern fehlgeschlagen:": "Saving failed:",
+  "Lade …": "Loading …",
+  "Benutzer": "User",
+  "Aktion": "Action",
+  "Verbinde mit Box-Dateisystem...": "Connecting to the box file system...",
+  "● Läuft": "● Running",
+  "◌ Wartet": "◌ Waiting",
+  "◌ Leerlauf": "◌ Idle",
+  "⏸ Angehalten": "⏸ Stopped",
+  "Noch keine Werte.": "No values yet.",
+  "Snapshot auf der Box gesichert.": "Snapshot saved on the box.",
+  "Snapshot im Browser gesichert.": "Snapshot saved in the browser.",
+  "Kern": "core",
+  "Kerne": "cores",
+  "Prozesse": "processes",
+  "kein Lüfterwert": "no fan value",
+  "Keine Laufwerke eingehängt.": "No drives mounted.",
+  "Flash (Einstellungen & Pakete)": "Flash (settings & packages)",
+  "Kein Prozess passt zum Filter.": "No process matches the filter.",
+  "Geschützt": "Protected",
+  "Beenden": "End",
+  "Beenden fehlgeschlagen:": "Ending failed:",
+  "● Fehler": "● Error",
+  "Kein Zugriff: SysMon zeigt die Werte der Box nur Administratoren.": "No access: SysMon shows the box's values to administrators only.",
+  "Werte der Box:": "Values of the box:",
+  "▶ Weiter": "▶ Continue",
+  "⏸ Anhalten": "⏸ Pause",
+  "SysMon braucht ShareOS 0.2.0-beta.11 oder neuer und ein Administratorkonto (Berechtigung „sysinfo“). Ohne sie zeigt die App keine Werte.": "SysMon needs ShareOS 0.2.0-beta.11 or newer and an administrator account (permission “sysinfo”). Without them the app shows no values.",
+  "● keine Verbindung": "● no connection",
+  "Keine Werte der Box verfügbar.": "No values of the box available.",
+  "Prozesse filtern (Name, Befehl, Benutzer, PID) …": "Filter processes (name, command, user, PID) …",
+  "Aktualisierung anhalten": "Pause updating",
+  "SysMon - System & Task Manager": "SysMon - system & task manager",
+  "🔄 Jetzt prüfen": "🔄 Check now",
+  "Alle Prozesse (": "All processes (",
+  "👤 Benutzer & Apps (": "👤 Users & apps (",
+  "CPU-Auslastung": "CPU load",
+  "Messe …": "Measuring …",
+  "Arbeitsspeicher (RAM)": "Memory (RAM)",
+  "Temperatur & Lüfter": "Temperature & fan",
+  "Laufzeit & Last": "Uptime & load",
+  "● LIVE (alle 3 s)": "● LIVE (every 3 s)",
+  "PROZESSE DER BOX": "PROCESSES OF THE BOX",
+  "💾 Snapshot sichern": "💾 Save snapshot",
+  "Prozess": "Process",
+  "Speicher": "Memory",
+  "0 Prozesse": "0 processes"
+ },
+ "patterns": [
+  [
+   "^Prozess\\ „(.+?)“\\ \\(PID\\ (.+?)\\)\\ beenden\\?$",
+   "End process “$1” (PID $2)?"
+  ],
+  [
+   "^Last\\ (.+?)\\ ·\\ (.+?)\\ ·\\ ShareOS\\ (.+?)$",
+   "Load $1 · $2 · ShareOS $3"
+  ],
+  [
+   "^Speichern\\ fehlgeschlagen: (.+)$",
+   "Saving failed: $1"
+  ],
+  [
+   "^Beenden\\ fehlgeschlagen: (.+)$",
+   "Ending failed: $1"
+  ],
+  [
+   "^(.+?)\\ von\\ (.+?)\\ Prozessen$",
+   "$1 of $2 processes"
+  ],
+  [
+   "^Lüfter\\ (.+?)\\ \\((.+?)\\ %\\)$",
+   "Fan $1 ($2 %)"
+  ],
+  [
+   "^●\\ LIVE\\ \\(alle\\ (.+?)\\ s\\)$",
+   "● LIVE (every $1 s)"
+  ],
+  [
+   "^von\\ (.+?)\\ ·\\ (.+?)\\ %$",
+   "of $1 · $2 %"
+  ],
+  [
+   "^Werte\\ der\\ Box: (.+)$",
+   "Values of the box: $1"
+  ],
+  [
+   "^Im\\ Standby:\\ (.+?)$",
+   "In standby: $1"
+  ],
+  [
+   "^Account:\\ (.+?)$",
+   "Account: $1"
+  ],
+  [
+   "^(.+) Prozesse$",
+   "$1 processes"
+  ]
+ ],
+ "keep": [
+  "Account: ...",
+  "Status",
+  "✖ Zombie",
+  "Snapshots: Browser",
+  "Snapshots: 🏠 \u0000/\u0000/\u0000",
+  "· Swap \u0000",
+  "Mbit/s",
+  "Kernel",
+  "SysMon",
+  "⚙️ System (",
+  "🧵 Kernel ("
+ ]
+}

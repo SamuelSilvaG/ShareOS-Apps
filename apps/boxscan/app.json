@@ -1,7 +1,7 @@
 {
   "id": "boxscan",
   "name": "BoxScan",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "UniqueDroid",
   "description": {
     "de": "Mobiler Dokumenten-Scanner & Belegablage mit Bildoptimierung und ShareOS.fs Speicherung.",

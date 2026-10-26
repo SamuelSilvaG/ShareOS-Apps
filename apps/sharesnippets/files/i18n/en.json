@@ -1,0 +1,80 @@
+{
+ "exact": {
+  "Kein persönlicher Ordner auf der Box gefunden.": "No personal folder found on the box.",
+  "Speichern fehlgeschlagen:": "Saving failed:",
+  "Bearbeiten": "Edit",
+  "In Zwischenablage kopieren": "Copy to the clipboard",
+  "📋 Kopieren": "📋 Copy",
+  "Aktualisieren": "Refresh",
+  "Alle": "All",
+  "Löschen": "Delete",
+  "Abbrechen": "Cancel",
+  "Speichern": "Save",
+  "Verbinde mit Box-Dateisystem...": "Connecting to the box file system...",
+  "Bereinigt alle unbenutzten Container, Images und Volumes auf dem Server.": "Removes all unused containers, images and volumes on the server.",
+  "Git Letzten Commit widerrufen (Soft)": "Git: undo the last commit (soft)",
+  "Nimmt den Commit zurück, behält alle Dateiänderungen in der Staging-Area.": "Takes back the commit, keeps all file changes in the staging area.",
+  "SSH Tunnel & Port-Forwarding": "SSH tunnel & port forwarding",
+  "Leitet den Remote-Port 80 sicher auf den lokalen Port 8080 weiter.": "Forwards the remote port 80 securely to the local port 8080.",
+  "Basis-Vorlage für Self-Hosting Stacks.": "Base template for self-hosting stacks.",
+  "Snippet bearbeiten": "Edit snippet",
+  "Neues Snippet erstellen": "New snippet",
+  "Snippet aktualisiert.": "Snippet updated.",
+  "Snippet gespeichert!": "Snippet saved!",
+  "Dieses Snippet wirklich unwiderruflich löschen?": "Really delete this snippet for good?",
+  "Snippet gelöscht.": "Snippet deleted.",
+  "Snippets, Tags & Befehle suchen...": "Search snippets, tags & commands...",
+  "z. B. Docker Compose Nginx Proxy, Git Undo Commit": "e.g. Docker Compose Nginx proxy, Git undo commit",
+  "Kurze Notiz zu Parametern oder Anwendung...": "Short note on parameters or usage...",
+  "ShareSnippets - Code- & Textbausteine": "ShareSnippets - code & text snippets",
+  "➕ Neues Snippet": "➕ New snippet",
+  "📝 Text / Notiz": "📝 Text / note",
+  "Keine Snippets gefunden": "No snippets found",
+  "Klicke oben auf „Neues Snippet“, um wichtige Befehle, Skripte oder Textbausteine zu sichern!": "Click “New snippet” above to keep important commands, scripts or text snippets!",
+  "Titel / Verwendungszweck": "Title / purpose",
+  "Sprache / Typ": "Language / type",
+  "Klartext": "Plain text",
+  "Tags (kommagetrennt)": "Tags (comma-separated)",
+  "Code / Befehl": "Code / command",
+  "Erklärung / Notiz (optional)": "Explanation / note (optional)",
+  "0 Bausteine": "0 snippets",
+  "# Befehl oder Konfiguration hier einfügen...": "# Paste a command or configuration here..."
+ },
+ "patterns": [
+  [
+   "^Speicher:\\ Browser\\ \\(LocalStorage:\\ (.+?)\\)$",
+   "Storage: browser (LocalStorage: $1)"
+  ],
+  [
+   "^Speichern\\ fehlgeschlagen: (.+)$",
+   "Saving failed: $1"
+  ],
+  [
+   "^(.+?)\\ von\\ (.+?)\\ Bausteine$",
+   "$1 of $2 snippets"
+  ],
+  [
+   "^Box:\\ 🏠\\ (.+?)/(.+?)/(.+?)$",
+   "Box: 🏠 $1/$2/$3"
+  ],
+  [
+   "^Account:\\ (.+?)$",
+   "Account: $1"
+  ]
+ ],
+ "keep": [
+  "Account: ...",
+  "Docker",
+  "Docker System Prune",
+  "Docker Compose Traefik & Nextcloud",
+  "ShareSnippets",
+  "🐚 Bash / Shell",
+  "🐳 Docker",
+  "🐙 Git",
+  "📄 YAML / Config",
+  "Bash / Shell",
+  "Git",
+  "YAML / Compose",
+  "Python"
+ ]
+}

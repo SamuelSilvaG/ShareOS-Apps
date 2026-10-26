@@ -1,0 +1,59 @@
+{
+ "exact": {
+  "Speichern fehlgeschlagen:": "Saving failed:",
+  "Speichern": "Save",
+  "Bereit": "Ready",
+  "Erst Zellen markieren – oder unter einer Zahlenspalte klicken.": "Select cells first – or click below a column of numbers.",
+  "Ungespeicherte Änderungen verwerfen?": "Discard unsaved changes?",
+  "Datei nicht lesbar:": "File not readable:",
+  "Neue leere Tabelle? Die Datei auf der Box bleibt unverändert.": "New empty table? The file on the box stays unchanged.",
+  "Tabelle wirklich leeren?": "Really clear the table?",
+  "CSV speichert nur Werte – Formeln werden dabei durch ihr Ergebnis ersetzt (wie in anderen Tabellenprogrammen). Für Formeln zusätzlich „JSON ⭳“ nutzen.\n\nTrotzdem speichern?": "CSV only stores values – formulas are replaced by their result (as in other spreadsheet programs). For formulas also use “JSON ⭳”.  Save anyway?",
+  "Speichere …": "Saving …",
+  "Strg+S speichert zurück auf die Box.": "Ctrl+S saves back to the box.",
+  "Nur lesen.": "Read only.",
+  "Datei konnte nicht geöffnet werden:": "The file could not be opened:",
+  "Neue, leere Tabelle": "New empty table",
+  "CSV- oder JSON-Datei öffnen": "Open a CSV or JSON file",
+  "Zurück auf die Box speichern (Strg+S)": "Save back to the box (Ctrl+S)",
+  "Als CSV herunterladen (Werte)": "Download as CSV (values)",
+  "Als JSON herunterladen (mit Formeln)": "Download as JSON (with formulas)",
+  "Trennzeichen für CSV": "Separator for CSV",
+  "Summe der markierten oder darüberliegenden Zellen": "Sum of the selected cells or the cells above",
+  "Mittelwert": "Average",
+  "Kleinster Wert": "Smallest value",
+  "Größter Wert": "Largest value",
+  "Neu": "New",
+  "Öffnen …": "Open …",
+  "Wert oder Formel, z. B. =SUM(A1:A5)*2 oder =IF(B2>100;\"hoch\";\"ok\")": "Value or formula, e.g. =SUM(A1:A5)*2 or =IF(B2>100;\"high\";\"ok\")"
+ },
+ "patterns": [
+  [
+   "^Summe\\ (.+?)\\ ·\\ Mittelwert\\ (.+?)\\ ·\\ Anzahl\\ (.+?)$",
+   "Sum $1 · average $2 · count $3"
+  ],
+  [
+   "^Datei\\ konnte\\ nicht\\ geöffnet\\ werden: (.+)$",
+   "The file could not be opened: $1"
+  ],
+  [
+   "^Speichern\\ fehlgeschlagen: (.+)$",
+   "Saving failed: $1"
+  ],
+  [
+   "^Datei\\ nicht\\ lesbar: (.+)$",
+   "File not readable: $1"
+  ],
+  [
+   "^(.+?)\\ geöffnet\\.$",
+   "$1 opened."
+  ]
+ ],
+ "keep": [
+  "Home",
+  "PageDown",
+  "PageUp",
+  "– SheetOS",
+  "SheetOS – ShareOS"
+ ]
+}

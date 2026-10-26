@@ -1,7 +1,7 @@
 {
   "id": "pillclock",
   "name": "PillClock",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "UniqueDroid",
   "description": {
     "de": "Diskreter Medikamenten-Einnahmeplan & Vitalwerte-Tracker (Blutdruck, Puls, Gewicht) mit ShareOS.fs Speicherung.",

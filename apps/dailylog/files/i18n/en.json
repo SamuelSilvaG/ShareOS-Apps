@@ -1,0 +1,156 @@
+{
+ "exact": {
+  "Gut": "Good",
+  "Verbinde mit Box-Dateisystem...": "Connecting to the box file system...",
+  "Sonntag": "Sunday",
+  "Montag": "Monday",
+  "Dienstag": "Tuesday",
+  "Mittwoch": "Wednesday",
+  "Donnerstag": "Thursday",
+  "Freitag": "Friday",
+  "Samstag": "Saturday",
+  "Januar": "January",
+  "Februar": "February",
+  "März": "March",
+  "Mai": "May",
+  "Juni": "June",
+  "Juli": "July",
+  "Oktober": "October",
+  "Dezember": "December",
+  "Heute,": "Today,",
+  "Kein Zugriff auf die Ordner der Box. Administrator kann „Dateien“ unter Benutzer aktivieren.": "No access to the box's folders. An administrator can switch on “Files” under Users.",
+  "Kein persönlicher Ordner auf der Box gefunden.": "No personal folder found on the box.",
+  "Gespeichert": "Saved",
+  "Speichern fehlgeschlagen:": "Saving failed:",
+  "Überschrift": "Heading",
+  "Unterüberschrift": "Subheading",
+  "Aufgabe": "Task",
+  "Listenpunkt": "List item",
+  "Zitat": "Quote",
+  "Vorheriger Tag": "Previous day",
+  "Nächster Tag": "Next day",
+  "Überschrift 1": "Heading 1",
+  "Überschrift 2": "Heading 2",
+  "Fett": "Bold",
+  "Kursiv": "Italic",
+  "To-Do Kästchen": "To-do checkbox",
+  "Aufzählung": "Bullet list",
+  "Sehr gut": "Very good",
+  "Nachdenklich": "Thoughtful",
+  "Produktiv": "Productive",
+  "Wie war dein Tag? Halte deine Gedanken, Aufgaben und Erfolge fest...": "How was your day? Capture your thoughts, tasks and achievements...",
+  "DailyLog - Tagebuch & Bullet Journal": "DailyLog - diary & bullet journal",
+  "Heute, 23. Oktober 2026": "Today, 23 October 2026",
+  "Heute": "Today",
+  "Oktober 2026": "October 2026",
+  "Schnellbausteine": "Quick blocks",
+  "🎯 Ziele": "🎯 Goals",
+  "🌟 Dankbarkeit": "🌟 Gratitude",
+  "📝 Notizen": "📝 Notes",
+  "Letzte Einträge": "Recent entries",
+  "☑️ Aufgabe": "☑️ Task",
+  "• Liste": "• List",
+  "❝ Zitat": "❝ Quote",
+  "Stimmung:": "Mood:",
+  "0 Wörter • 0 Zeichen": "0 words • 0 characters"
+ },
+ "patterns": [
+  [
+   "^Speicher:\\ Browser\\ \\(LocalStorage:\\ (.+?)\\)$",
+   "Storage: browser (LocalStorage: $1)"
+  ],
+  [
+   "^(.+?)\\ Wörter\\ •\\ (.+?)\\ Zeichen$",
+   "$1 words • $2 characters"
+  ],
+  [
+   "^Speichern\\ fehlgeschlagen: (.+)$",
+   "Saving failed: $1"
+  ],
+  [
+   "^Stimmung\\ gesetzt:\\ (.+?)$",
+   "Mood set: $1"
+  ],
+  [
+   "^Account:\\ (.+?)$",
+   "Account: $1"
+  ],
+  [
+   "^Heute, (.+)$",
+   "Today, $1"
+  ]
+ ],
+ "keep": [
+  "Account: ...",
+  "April",
+  "August",
+  "September",
+  "November",
+  "Box: 🏠 \u0000/\u0000/",
+  "Neutral",
+  "DailyLog",
+  "\\n\">💡 Erkenntnis"
+ ],
+ "words": [
+  [
+   "(^|[^\\wäöüÄÖÜß])Sonntag(?![\\wäöüÄÖÜß])",
+   "$1Sunday"
+  ],
+  [
+   "(^|[^\\wäöüÄÖÜß])Montag(?![\\wäöüÄÖÜß])",
+   "$1Monday"
+  ],
+  [
+   "(^|[^\\wäöüÄÖÜß])Dienstag(?![\\wäöüÄÖÜß])",
+   "$1Tuesday"
+  ],
+  [
+   "(^|[^\\wäöüÄÖÜß])Mittwoch(?![\\wäöüÄÖÜß])",
+   "$1Wednesday"
+  ],
+  [
+   "(^|[^\\wäöüÄÖÜß])Donnerstag(?![\\wäöüÄÖÜß])",
+   "$1Thursday"
+  ],
+  [
+   "(^|[^\\wäöüÄÖÜß])Freitag(?![\\wäöüÄÖÜß])",
+   "$1Friday"
+  ],
+  [
+   "(^|[^\\wäöüÄÖÜß])Samstag(?![\\wäöüÄÖÜß])",
+   "$1Saturday"
+  ],
+  [
+   "(^|[^\\wäöüÄÖÜß])Januar(?![\\wäöüÄÖÜß])",
+   "$1January"
+  ],
+  [
+   "(^|[^\\wäöüÄÖÜß])Februar(?![\\wäöüÄÖÜß])",
+   "$1February"
+  ],
+  [
+   "(^|[^\\wäöüÄÖÜß])März(?![\\wäöüÄÖÜß])",
+   "$1March"
+  ],
+  [
+   "(^|[^\\wäöüÄÖÜß])Mai(?![\\wäöüÄÖÜß])",
+   "$1May"
+  ],
+  [
+   "(^|[^\\wäöüÄÖÜß])Juni(?![\\wäöüÄÖÜß])",
+   "$1June"
+  ],
+  [
+   "(^|[^\\wäöüÄÖÜß])Juli(?![\\wäöüÄÖÜß])",
+   "$1July"
+  ],
+  [
+   "(^|[^\\wäöüÄÖÜß])Oktober(?![\\wäöüÄÖÜß])",
+   "$1October"
+  ],
+  [
+   "(^|[^\\wäöüÄÖÜß])Dezember(?![\\wäöüÄÖÜß])",
+   "$1December"
+  ]
+ ]
+}

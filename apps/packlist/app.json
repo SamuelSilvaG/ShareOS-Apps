@@ -1,7 +1,7 @@
 {
   "id": "packlist",
   "name": "PackList",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "UniqueDroid",
   "description": {
     "de": "Smarte Reise-, Camping- & Einkaufs-Packlisten mit Fortschrittsanzeige und ShareOS.fs Speicherung.",

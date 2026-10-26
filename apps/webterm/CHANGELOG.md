@@ -1,3 +1,7 @@
+## 1.2.1
+
+- Englisch, wenn die ShareOS-Oberfläche nicht auf Deutsch steht ([#74](https://github.com/UniqueDroid/ShareOS/issues/74)).
+
 ## 1.2.0
 
 - `webpad <file>` opens a closed Webpad in its **own window** instead of a browser tab (with ShareOS 0.2.0-beta.2 through `ShareOS.openApp`, with look, language and account).

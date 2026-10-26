@@ -1,7 +1,7 @@
 {
   "id": "speedcheck",
   "name": "SpeedCheck",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "publisher": "UniqueDroid",
   "description": {
     "de": "Verbindung zwischen diesem Gerät und der Box messen – zu Hause oder unterwegs über VPN: Ping, Jitter und Durchsatz, mit Protokoll auf der Box.",

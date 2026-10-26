@@ -1,0 +1,112 @@
+{
+ "exact": {
+  "Länge": "Length",
+  "Kein persönlicher Ordner auf der Box gefunden.": "No personal folder found on the box.",
+  "Speichern fehlgeschlagen:": "Saving failed:",
+  "Verbinde mit Box-Dateisystem...": "Connecting to the box file system...",
+  "Millimeter (mm)": "Millimetres (mm)",
+  "Zentimeter (cm)": "Centimetres (cm)",
+  "Meter (m)": "Metres (m)",
+  "Kilometer (km)": "Kilometres (km)",
+  "Zoll / Inch (in)": "Inches (in)",
+  "Fuß / Feet (ft)": "Feet (ft)",
+  "Meilen (mi)": "Miles (mi)",
+  "Seemeilen (NM)": "Nautical miles (NM)",
+  "Masse & Gewicht": "Mass & weight",
+  "Milligramm (mg)": "Milligrams (mg)",
+  "Gramm (g)": "Grams (g)",
+  "Kilogramm (kg)": "Kilograms (kg)",
+  "Tonne (t)": "Tonnes (t)",
+  "Unzen (oz)": "Ounces (oz)",
+  "Pfund (lbs)": "Pounds (lbs)",
+  "Daten & Speicher": "Data & storage",
+  "Temperatur": "Temperature",
+  "Grad Celsius (°C)": "Degrees Celsius (°C)",
+  "Grad Fahrenheit (°F)": "Degrees Fahrenheit (°F)",
+  "Geschwindigkeit": "Speed",
+  "Meilen/h (mph)": "Miles/h (mph)",
+  "Knoten (kn)": "Knots (kn)",
+  "Druck & Reifen": "Pressure & tyres",
+  "Phys. Atmosphäre (atm)": "Phys. atmosphere (atm)",
+  "Währung (Offline Cache)": "Currency (offline cache)",
+  "Schweizer Franken (CHF)": "Swiss franc (CHF)",
+  "Britisches Pfund (GBP £)": "British pound (GBP £)",
+  "Japanischer Yen (JPY ¥)": "Japanese yen (JPY ¥)",
+  "Bar ➔ PSI (Reifendruck)": "Bar ➔ PSI (tyre pressure)",
+  "GB ➔ GiB (Dateigrößen)": "GB ➔ GiB (file sizes)",
+  "°C ➔ °F (US-Reisen)": "°C ➔ °F (US trips)",
+  "Favorit entfernen": "Remove favourite",
+  "Favorit entfernt.": "Favourite removed.",
+  "Dieser Favorit existiert bereits.": "This favourite exists already.",
+  "Zu Favoriten hinzugefügt!": "Added to the favourites!",
+  "Einheiten vertauschen": "Swap units",
+  "Als Favorit auf der Box sichern": "Save as favourite on the box",
+  "Neu laden": "Reload",
+  "Eingabe leeren": "Clear input",
+  "Einheiten tauschen": "Swap units",
+  "Ergebnis kopieren": "Copy result",
+  "QuickUnit - Offline Einheitenrechner": "QuickUnit - offline unit converter",
+  "⇄ Tauschen": "⇄ Swap",
+  "⭐ Favorit": "⭐ Favourite",
+  "📏 Länge": "📏 Length",
+  "⚖️ Masse / Gewicht": "⚖️ Mass / weight",
+  "💾 Daten & Speicher": "💾 Data & storage",
+  "🌡️ Temperatur": "🌡️ Temperature",
+  "⚡ Tempo / Speed": "⚡ Speed",
+  "🎈 Druck & Reifen": "🎈 Pressure & tyres",
+  "💶 Währung (Offline)": "💶 Currency (offline)",
+  "Eingabe": "Input",
+  "Ergebnis": "Result",
+  "0 Favoriten": "0 favourites"
+ },
+ "patterns": [
+  [
+   "^⭐ (.+)$",
+   "⭐ $1"
+  ],
+  [
+   "^Speicher:\\ Browser\\ \\(LocalStorage:\\ (.+?)\\)$",
+   "Storage: browser (LocalStorage: $1)"
+  ],
+  [
+   "^Speichern\\ fehlgeschlagen: (.+)$",
+   "Saving failed: $1"
+  ],
+  [
+   "^Ergebnis\\ '(.+?)'\\ kopiert!$",
+   "Result '$1' copied!"
+  ],
+  [
+   "^Box:\\ 🏠\\ (.+?)/(.+?)/(.+?)$",
+   "Box: 🏠 $1/$2/$3"
+  ],
+  [
+   "^(.+?)\\ Favoriten$",
+   "$1 favourites"
+  ],
+  [
+   "^Account:\\ (.+?)$",
+   "Account: $1"
+  ]
+ ],
+ "keep": [
+  "Account: ...",
+  "Yard (yd)",
+  "Byte (B)",
+  "Kilobyte (KB - 1000)",
+  "Megabyte (MB - 1000²)",
+  "Gigabyte (GB - 1000³)",
+  "Terabyte (TB - 1000⁴)",
+  "Kibibyte (KiB - 1024)",
+  "Mebibyte (MiB - 1024²)",
+  "Gibibyte (GiB - 1024³)",
+  "Tebibyte (TiB - 1024⁴)",
+  "GiB",
+  "Kelvin (K)",
+  "Bar (bar)",
+  "Kilopascal (kPa)",
+  "Euro (EUR €)",
+  "US Dollar (USD $)",
+  "QuickUnit"
+ ]
+}

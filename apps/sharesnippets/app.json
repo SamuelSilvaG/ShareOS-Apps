@@ -1,7 +1,7 @@
 {
   "id": "sharesnippets",
   "name": "ShareSnippets",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "UniqueDroid",
   "description": {
     "de": "Code- & Textbaustein-Manager für Befehle, Konfigurationen und Vorlagen mit ShareOS.fs Speicherung.",

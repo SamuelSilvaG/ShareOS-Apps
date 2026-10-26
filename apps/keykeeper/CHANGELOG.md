@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.0.1] - 2026-10-26
+### Geändert
+- Folgt den Farben von ShareOS: hell/dunkel und Akzentfarbe (bisher immer das eigene dunkle Farbschema); das Layout bleibt.
+- Englisch, wenn die ShareOS-Oberfläche nicht auf Deutsch steht ([#74](https://github.com/UniqueDroid/ShareOS/issues/74)).
+
 ## [2.0.0] - 2026-10-24
 ### Sicherheit
 - **Alles verschlüsselt:** Schlüssel, Tokens und Zertifikate liegen nur noch verschlüsselt auf der Box (`security/keykeeper.enc`, AES-GCM-256, Schlüssel aus dem Master-Passwort mit PBKDF2-SHA256 und 250 000 Runden). Vorher standen sie im Klartext in `security/credentials.json` und im Browser.

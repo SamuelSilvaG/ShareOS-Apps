@@ -1,0 +1,81 @@
+{
+ "exact": {
+  "Speicher: Browser (Fallback)": "Storage: browser (fallback)",
+  "Kein Zugriff auf die Ordner der Box. Administrator kann „Dateien“ unter Benutzer aktivieren.": "No access to the box's folders. An administrator can switch on “Files” under Users.",
+  "Kein persönlicher Ordner auf der Box gefunden.": "No personal folder found on the box.",
+  "Speichern fehlgeschlagen:": "Saving failed:",
+  "Heute": "Today",
+  "Datum": "Date",
+  "⭐ Favorit": "⭐ Favourite",
+  "Abbrechen": "Cancel",
+  "Verbinde mit Box-Dateisystem...": "Connecting to the box file system...",
+  "⏳ Lade...": "⏳ Loading...",
+  "Aktualisiere Feeds...": "Refreshing feeds...",
+  "Ohne Titel": "Untitled",
+  "🔄 Abrufen": "🔄 Fetch",
+  "Keine neuen Artikel.": "No new articles.",
+  "Feed entfernen": "Remove feed",
+  "Keine Vorschau verfügbar. Nutze den Link unten, um den ganzen Artikel zu lesen.": "No preview available. Use the link below to read the whole article.",
+  "⭐ Favorisiert": "⭐ Favourite",
+  "☆ Zu Favoriten": "☆ Add to favourites",
+  "Diesen Feed und dessen Artikel wirklich entfernen?": "Really remove this feed and its articles?",
+  "Feed entfernt.": "Feed removed.",
+  "Feeds aktualisieren": "Refresh feeds",
+  "z. B. Heise Online, Tagesschau...": "e.g. Heise Online, Tagesschau...",
+  "ShareFeed - RSS Reader": "ShareFeed - RSS reader",
+  "➕ Feed hinzufügen": "➕ Add feed",
+  "Übersicht": "Overview",
+  "📰 Alle Artikel": "📰 All articles",
+  "⭐ Favoriten": "⭐ Favourites",
+  "Abonnierte Feeds": "Subscribed feeds",
+  "Keine Artikel gefunden": "No articles found",
+  "Füge neue RSS-Feeds hinzu oder klicke oben auf „Abrufen“, um aktuelle Nachrichten zu laden!": "Add new RSS feeds or click “Fetch” above to load the latest news!",
+  "Wähle einen Artikel aus der Liste aus": "Choose an article from the list",
+  "Titel des Artikels": "Title of the article",
+  "Quelle": "Source",
+  "🔗 Im Browser öffnen": "🔗 Open in the browser",
+  "Neuen RSS-Feed abonnieren": "Subscribe to a new RSS feed",
+  "RSS / Atom Feed-URL": "RSS / Atom feed URL",
+  "Bezeichnung (optional)": "Label (optional)",
+  "Abonnieren": "Subscribe",
+  "0 Artikel": "0 articles"
+ },
+ "patterns": [
+  [
+   "^(.+?)\\ neue\\(r\\)\\ Artikel\\ geladen!$",
+   "$1 new article(s) loaded!"
+  ],
+  [
+   "^Speichern\\ fehlgeschlagen: (.+)$",
+   "Saving failed: $1"
+  ],
+  [
+   "^Feed\\ '(.+?)'\\ hinzugefügt!$",
+   "Feed '$1' added!"
+  ],
+  [
+   "^Box:\\ 🏠\\ (.+?)/(.+?)/(.+?)$",
+   "Box: 🏠 $1/$2/$3"
+  ],
+  [
+   "^Fehler\\ bei\\ Feed\\ (.+?):$",
+   "Error with feed $1:"
+  ],
+  [
+   "^Account:\\ (.+?)$",
+   "Account: $1"
+  ],
+  [
+   "^(.+?)\\ Artikel$",
+   "$1 articles"
+  ]
+ ],
+ "keep": [
+  "Account: ...",
+  "Tagesschau",
+  "Heise Online",
+  "pubDate, updated",
+  "RSS Feed",
+  "ShareFeed"
+ ]
+}

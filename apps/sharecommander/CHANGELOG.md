@@ -1,3 +1,7 @@
+## 1.3.1
+
+- Englisch, wenn die ShareOS-Oberfläche nicht auf Deutsch steht ([#74](https://github.com/UniqueDroid/ShareOS/issues/74)).
+
 ## 1.3.0
 
 - Inside ShareOS **both panes start on the box**: left the personal folder, right the next folder (a share). The browser storage (VFS) is still in the drive list, now named "Browser-Speicher (nur dieser Browser)" and listed last.

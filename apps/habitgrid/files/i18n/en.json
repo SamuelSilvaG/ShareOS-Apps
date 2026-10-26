@@ -1,0 +1,133 @@
+{
+ "exact": {
+  "Kein persönlicher Ordner auf der Box gefunden.": "No personal folder found on the box.",
+  "Speichern fehlgeschlagen:": "Saving failed:",
+  "Januar": "January",
+  "Februar": "February",
+  "März": "March",
+  "Mai": "May",
+  "Juni": "June",
+  "Juli": "July",
+  "Oktober": "October",
+  "Dezember": "December",
+  "Aktualisieren": "Refresh",
+  "Oktober 2026": "October 2026",
+  "Verbinde mit Box-Dateisystem...": "Connecting to the box file system...",
+  "2 Liter Wasser trinken": "Drink 2 litres of water",
+  "Gesundheit": "Health",
+  "30 Minuten Fokus & Lesen": "30 minutes of focus & reading",
+  "Produktivität": "Productivity",
+  "Abendliche Meditation & Dehnen": "Evening meditation & stretching",
+  "Achtsamkeit": "Mindfulness",
+  "Bearbeiten": "Edit",
+  "Erledigt": "Done",
+  "Offen": "Open",
+  "Gewohnheit bearbeiten": "Edit habit",
+  "Neue Gewohnheit anlegen": "New habit",
+  "Gewohnheit aktualisiert.": "Habit updated.",
+  "Gewohnheit hinzugefügt!": "Habit added!",
+  "Diese Gewohnheit wirklich löschen?": "Really delete this habit?",
+  "Gewohnheit gelöscht.": "Habit deleted.",
+  "Vorheriger Monat": "Previous month",
+  "Nächster Monat": "Next month",
+  "z. B. 2L Wasser trinken, 30 Min lesen": "e.g. drink 2 l of water, read 30 min",
+  "HabitGrid - Gewohnheiten & Routinen": "HabitGrid - habits & routines",
+  "➕ Neue Gewohnheit": "➕ New habit",
+  "Alle Gewohnheiten (": "All habits (",
+  "💪 Gesundheit (": "💪 Health (",
+  "🎯 Produktivität (": "🎯 Productivity (",
+  "🧘 Achtsamkeit (": "🧘 Mindfulness (",
+  "Keine Gewohnheiten in dieser Kategorie": "No habits in this category",
+  "Klicke oben auf „Neue Gewohnheit“, um deine täglichen Routinen und Streaks aufzubauen!": "Click “New habit” above to build your daily routines and streaks!",
+  "Name der Gewohnheit": "Name of the habit",
+  "Icon / Emoji": "Icon / emoji",
+  "Kategorie": "Category",
+  "💪 Gesundheit": "💪 Health",
+  "🎯 Produktivität": "🎯 Productivity",
+  "🧘 Achtsamkeit": "🧘 Mindfulness",
+  "✨ Sonstiges": "✨ Other",
+  "Akzentfarbe": "Accent colour",
+  "🟢 Smaragdgrün": "🟢 Emerald",
+  "🔵 Himmelblau": "🔵 Sky blue",
+  "🟣 Violett": "🟣 Violet",
+  "🟡 Bernstein": "🟡 Amber",
+  "🔴 Koralle": "🔴 Coral",
+  "Ziel-Tage pro Woche": "Target days per week",
+  "Löschen": "Delete",
+  "Abbrechen": "Cancel",
+  "Speichern": "Save",
+  "0 Gewohnheiten aktiv": "0 habits active"
+ },
+ "patterns": [
+  [
+   "^Speicher:\\ Browser\\ \\(LocalStorage:\\ (.+?)\\)$",
+   "Storage: browser (LocalStorage: $1)"
+  ],
+  [
+   "^Speichern\\ fehlgeschlagen: (.+)$",
+   "Saving failed: $1"
+  ],
+  [
+   "^(.+?)\\ Gewohnheit\\(en\\)\\ aktiv$",
+   "$1 habit(s) active"
+  ],
+  [
+   "^Box:\\ 🏠\\ (.+?)/(.+?)/(.+?)$",
+   "Box: 🏠 $1/$2/$3"
+  ],
+  [
+   "^(.+?)\\ •\\ (.+?)x\\ /\\ Woche$",
+   "$1 • $2x / week"
+  ],
+  [
+   "^Account:\\ (.+?)$",
+   "Account: $1"
+  ],
+  [
+   "^🔥\\ (.+?)\\ Tage$",
+   "🔥 $1 days"
+  ]
+ ],
+ "words": [
+  [
+   "(^|[^\\wäöüÄÖÜß])Januar(?![\\wäöüÄÖÜß])",
+   "$1January"
+  ],
+  [
+   "(^|[^\\wäöüÄÖÜß])Februar(?![\\wäöüÄÖÜß])",
+   "$1February"
+  ],
+  [
+   "(^|[^\\wäöüÄÖÜß])März(?![\\wäöüÄÖÜß])",
+   "$1March"
+  ],
+  [
+   "(^|[^\\wäöüÄÖÜß])Mai(?![\\wäöüÄÖÜß])",
+   "$1May"
+  ],
+  [
+   "(^|[^\\wäöüÄÖÜß])Juni(?![\\wäöüÄÖÜß])",
+   "$1June"
+  ],
+  [
+   "(^|[^\\wäöüÄÖÜß])Juli(?![\\wäöüÄÖÜß])",
+   "$1July"
+  ],
+  [
+   "(^|[^\\wäöüÄÖÜß])Oktober(?![\\wäöüÄÖÜß])",
+   "$1October"
+  ],
+  [
+   "(^|[^\\wäöüÄÖÜß])Dezember(?![\\wäöüÄÖÜß])",
+   "$1December"
+  ]
+ ],
+ "keep": [
+  "April",
+  "August",
+  "September",
+  "November",
+  "Account: ...",
+  "HabitGrid"
+ ]
+}

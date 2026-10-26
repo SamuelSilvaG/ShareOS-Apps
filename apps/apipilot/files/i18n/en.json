@@ -1,0 +1,127 @@
+{
+ "exact": {
+  "Beliebiger Text": "Any text",
+  "gültiges JSON": "valid JSON",
+  "kein gültiges JSON": "not valid JSON",
+  "Variablen: kein gültiges JSON": "Variables: not valid JSON",
+  "Noch keine Anfragen.": "No requests yet.",
+  "Anfrage aus dem Verlauf geladen.": "Request loaded from the history.",
+  "Anfrage unvollständig:": "Request incomplete:",
+  "Ungültige Adresse.": "Invalid address.",
+  "✖ ABBRECHEN": "✖ CANCEL",
+  "(HEAD: keine Antwort-Daten)": "(HEAD: no response data)",
+  "Abgebrochen": "Cancelled",
+  "Netzwerkfehler": "Network error",
+  "Zeit: – ms": "Time: – ms",
+  "Größe: –": "Size: –",
+  "Die Anfrage wurde abgebrochen.": "The request was cancelled.",
+  "- Diese Seite läuft über HTTPS, die Adresse ist http:// – der Browser blockiert das (gemischte Inhalte). https:// verwenden.": "- This page runs over HTTPS, the address is http:// – the browser blocks that (mixed content). Use https://.",
+  "- Der Server erlaubt keine Anfragen aus dem Browser (CORS). API-Pilot sendet direkt aus dem Browser, nicht über die Box.": "- The server does not allow requests from the browser (CORS). API-Pilot sends directly from the browser, not through the box.",
+  "- Adresse falsch, Server nicht erreichbar oder Zertifikat ungültig.": "- Wrong address, server not reachable or invalid certificate.",
+  "Anfrage fehlgeschlagen.": "Request failed.",
+  "Fehler": "Error",
+  "Beispiel geladen – SENDEN drücken.": "Example loaded – press SEND.",
+  "Noch keine Antwort.": "No response yet.",
+  "Kopieren nicht möglich.": "Copying not possible.",
+  "Antwort in die Zwischenablage kopiert.": "Response copied to the clipboard.",
+  "Antwort auf der Box speichern": "Save the response on the box",
+  "Speichern:": "Save:",
+  "An Webpad geschickt.": "Sent to Webpad.",
+  "Änderungen aus Webpad übernommen.": "Changes taken over from Webpad.",
+  "HTTP-Methode": "HTTP method",
+  "Ein Header pro Zeile: Name: Wert\nAccept: application/json": "One header per line: Name: Value Accept: application/json",
+  "Token / API-Key": "Token / API key",
+  "Benutzer": "User",
+  "Passwort": "Password",
+  "Antwort in die Zwischenablage": "Response to the clipboard",
+  "Antwort als Datei auf der Box speichern": "Save the response as a file on the box",
+  "Antwort herunterladen": "Download the response",
+  "Antwort in Webpad öffnen": "Open the response in Webpad",
+  "Hier erscheint die Antwort …": "The response appears here …",
+  "Antwort-Header …": "Response headers …",
+  "cURL und fetch für die aktuelle Anfrage …": "cURL and fetch for the current request …",
+  "Query-Parameter": "Query parameters",
+  "Verlauf": "History",
+  "Keine": "None",
+  "Bearer-Token": "Bearer token",
+  "Basic (Benutzer + Passwort)": "Basic (user + password)",
+  "Token und Passwort werden nicht im Verlauf gespeichert.": "Token and password are not stored in the history.",
+  "Art:": "Type:",
+  "Formular (x-www-form-urlencoded)": "Form (x-www-form-urlencoded)",
+  "Die letzten 30 Anfragen (in diesem Browser, je Konto)": "The last 30 requests (in this browser, per account)",
+  "Leeren": "Clear",
+  "Beispiele:": "Examples:",
+  "POST-Test": "POST test",
+  "GraphQL (Länder)": "GraphQL (countries)",
+  "Meine IP": "My IP",
+  "📋 Kopieren": "📋 Copy",
+  "💾 Auf der Box": "💾 On the box",
+  "Antwort": "Response",
+  "Antwort-Header": "Response headers",
+  "Bereit": "Ready",
+  "Ein Parameter pro Zeile: Schlüssel=Wert\nuserId=1\nq=hallo welt": "One parameter per line: key=value\nuserId=1\nq=hello world"
+ },
+ "patterns": [
+  [
+   "^(.+?):\\ Fenster\\ blockiert\\ –\\ Pop\\-ups\\ für\\ diese\\ Seite\\ erlauben\\.$",
+   "$1: window blocked – allow pop-ups for this page."
+  ],
+  [
+   "^(.+?)\\ meldet\\ sich\\ nicht\\ –\\ ist\\ die\\ App\\ installiert\\?$",
+   "$1 does not answer – is the app installed?"
+  ],
+  [
+   "^Empfangen:\\ (.+?)\\ (.+?)\\ in\\ (.+?)\\ ms$",
+   "Received: $1 $2 in $3 ms"
+  ],
+  [
+   "^Anfrage\\ unvollständig: (.+)$",
+   "Request incomplete: $1"
+  ],
+  [
+   "^Gespeichert:\\ (.+?)(.+?)$",
+   "Saved: $1$2"
+  ],
+  [
+   "^Sende\\ (.+?)\\ (.+?)\\ …$",
+   "Sending $1 $2 …"
+  ],
+  [
+   "^Zeit:\\ (.+?)\\ ms$",
+   "Time: $1 ms"
+  ],
+  [
+   "^Speichern: (.+)$",
+   "Save: $1"
+  ],
+  [
+   "^Größe:\\ (.+?)$",
+   "Size: $1"
+  ]
+ ],
+ "keep": [
+  "BroadcastChannel",
+  "Bearer",
+  "Basic",
+  "Content-Type",
+  "Status: \u0000 \u0000",
+  "AbortError",
+  "Fehler: \u0000nnMögliche Gründe:n",
+  "Enter",
+  "Accept: application/json",
+  "Webpad",
+  "API-Pilot – ShareOS",
+  "Header (",
+  "Auth",
+  "Body",
+  "Authorization:",
+  "GraphQL",
+  "Text",
+  "JSONPlaceholder",
+  "Status: –",
+  "⬇ Download",
+  "📝 In Webpad",
+  "Code (cURL / fetch)",
+  "REST & GraphQL"
+ ]
+}

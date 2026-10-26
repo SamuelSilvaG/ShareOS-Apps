@@ -1,7 +1,7 @@
 {
   "id": "dockerdeck",
   "name": "DockerDeck",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "publisher": "UniqueDroid",
   "description": {
     "de": "Docker-Container deiner Server über die Box: Zustand, Stacks (Compose), Ports, Starten/Stoppen/Neustart, Protokoll mit CPU und RAM – über die Docker-API der Hosts. Nur für Administratoren.",

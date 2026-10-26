@@ -1,7 +1,7 @@
 {
 	"id": "beatbox",
 	"name": "BeatBox Studio",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"publisher": "UniqueDroid",
 	"description": {
 		"de": "16-Step-Drum-Sequencer mit Synthesizer im Stil von FL Studio / LMMS: Kick, Snare, Hi-Hat, Clap und Bass, spielbare Klaviatur, Oszilloskop. Projekte und WAV-Loops auf der Box speichern oder direkt im WinWeb Player abspielen.",

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.1
+
+- Folgt den Farben von ShareOS: hell/dunkel und Akzentfarbe (bisher immer das eigene dunkle Farbschema); das Layout bleibt.
+- Englisch, wenn die ShareOS-Oberfläche nicht auf Deutsch steht ([#74](https://github.com/UniqueDroid/ShareOS/issues/74)).
+
 ## 1.0.0
 
 - First release (draft by Jan, made to work with the box): the box itself is the VPN client – OpenVPN from the system app `openvpn` (`"requires"`), controlled through `ShareOS.vpn` (permission `vpn`, admin accounts only, ShareOS 0.2.0-beta.6+). Shown inside the ShareOS interface (`embed`).

@@ -1,0 +1,58 @@
+{
+ "exact": {
+  "Speicher: Browser-Cache (Fallback)": "Storage: browser cache (fallback)",
+  "Kein Zugriff auf die Ordner der Box. Administrator kann „Dateien“ unter Benutzer aktivieren.": "No access to the box's folders. An administrator can switch on “Files” under Users.",
+  "Kein persönlicher Ordner auf der Box gefunden.": "No personal folder found on the box.",
+  "🗑 Löschen": "🗑 Delete",
+  "Verbinde mit Box-Dateisystem...": "Connecting to the box file system...",
+  "Fehler beim Auflisten der Fotos:": "Error listing the photos:",
+  "Foto auf der Box gelöscht.": "Photo deleted on the box.",
+  "Foto entfernt.": "Photo removed.",
+  "Galerie neu laden": "Reload the gallery",
+  "Vollbild": "Full screen",
+  "Fotos hochladen": "Upload photos",
+  "Fotos hier hineinziehen oder tippen": "Drag photos here or tap",
+  "Bilder werden automatisch im Monatsordner auf deiner Box abgelegt": "Pictures are stored automatically in the month's folder on your box",
+  "Keine Fotos im Ordner gefunden. Lade deine ersten Urlaubsbilder oder Schnappschüsse hoch!": "No photos found in the folder. Upload your first holiday pictures or snapshots!",
+  "0 Fotos": "0 photos"
+ },
+ "patterns": [
+  [
+   "^(.+?)\\ Foto\\(s\\)\\ werden\\ hochgeladen\\.\\.\\.$",
+   "Uploading $1 photo(s)..."
+  ],
+  [
+   "^(.+?)\\ Foto\\(s\\)\\ erfolgreich\\ gespeichert!$",
+   "$1 photo(s) saved!"
+  ],
+  [
+   "^Soll\\ '(.+?)'\\ wirklich\\ gelöscht\\ werden\\?$",
+   "Really delete '$1'?"
+  ],
+  [
+   "^Konnte\\ Bild\\ (.+?)\\ nicht\\ öffnen:$",
+   "Could not open picture $1:"
+  ],
+  [
+   "^Löschen\\ fehlgeschlagen:\\ (.+?)$",
+   "Deleting failed: $1"
+  ],
+  [
+   "^Fehler\\ bei\\ (.+?):\\ (.+?)$",
+   "Error with $1: $2"
+  ],
+  [
+   "^(.+?)\\ Foto\\(s\\)$",
+   "$1 photo(s)"
+  ],
+  [
+   "^Account:\\ (.+?)$",
+   "Account: $1"
+  ]
+ ],
+ "keep": [
+  "Box: 🏠 \u0000/\u0000/",
+  "Account: ...",
+  "PhotoDrop"
+ ]
+}

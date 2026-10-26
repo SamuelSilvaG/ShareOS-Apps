@@ -1,0 +1,115 @@
+{
+ "exact": {
+  "Kein Zugriff: DockerDeck ist nur für Administratoren.": "No access: DockerDeck is for administrators only.",
+  "Docker-Hosts:": "Docker hosts:",
+  "kein Docker-Host eingetragen": "no Docker host set up",
+  "⚪ Gestoppt": "⚪ Stopped",
+  "⚪ Erstellt": "⚪ Created",
+  "⏸ Pausiert": "⏸ Paused",
+  "🔁 Startet neu": "🔁 Restarting",
+  "✖ Tot": "✖ Dead",
+  "✖ Wird entfernt": "✖ Being removed",
+  "Noch kein Docker-Host": "No Docker host yet",
+  "Kein Container passt zum Filter": "No container matches the filter",
+  "Keine Container gefunden": "No containers found",
+  "⏹️ Stoppen": "⏹️ Stop",
+  "▶️ Starten": "▶️ Start",
+  "🔄 Neustart": "🔄 Restart",
+  "📜 Protokoll": "📜 Log",
+  "neu gestartet": "restarted",
+  "Lade …": "Loading …",
+  "(keine Ausgabe)": "(no output)",
+  "Fehler:": "Error:",
+  "· Zertifikat ungeprüft": "· certificate not verified",
+  "Host entfernen": "Remove host",
+  "Noch kein Host eingetragen.": "No host set up yet.",
+  "Host gespeichert – verbinde …": "Host saved – connecting …",
+  "DockerDeck braucht ShareOS 0.2.0-beta.11 oder neuer und ein Administratorkonto (Berechtigung „docker“).": "DockerDeck needs ShareOS 0.2.0-beta.11 or newer and an administrator account (permission “docker”).",
+  "Container, Images, Stacks & Ports durchsuchen...": "Search containers, images, stacks & ports...",
+  "Docker-Hosts verwalten": "Manage Docker hosts",
+  "z. B. Proxmox-VM Docker": "e.g. Proxmox VM Docker",
+  "Zeilen": "Lines",
+  "DockerDeck - Container Manager": "DockerDeck - container manager",
+  "Alle Container (": "All containers (",
+  "⚪ Gestoppt (": "⚪ Stopped (",
+  "Läuft (Running)": "Running",
+  "🔄 Aktualisieren": "🔄 Refresh",
+  "Trage unter „🖥️ Hosts“ einen Server mit Docker ein. Die Box spricht mit seiner Docker-API (z. B. http://server:2375).": "Add a server with Docker under “🖥️ Hosts”. The box talks to its Docker API (e.g. http://server:2375).",
+  "Docker-Hosts": "Docker hosts",
+  "Kurzname": "Short name",
+  "Bezeichnung": "Label",
+  "Adresse der Docker-API": "Address of the Docker API",
+  "HTTPS mit eigenem Zertifikat (nicht prüfen)": "HTTPS with its own certificate (do not verify)",
+  "Am Server die API freigeben, z. B. in": "Open the API on the server, e.g. in",
+  "– nur im Heimnetz, die API hat keine Anmeldung. Wer sie erreicht, kann alle Container steuern.": "– home network only, the API has no login. Whoever reaches it can control all containers.",
+  "Schließen": "Close",
+  "Host speichern": "Save host",
+  "Protokoll": "Log",
+  "100 Zeilen": "100 lines",
+  "300 Zeilen": "300 lines",
+  "1000 Zeilen": "1000 lines",
+  "Docker-API über die Box (ShareOS.docker)": "Docker API through the box (ShareOS.docker)"
+ },
+ "patterns": [
+  [
+   "^Host\\ „(.+?)“\\ aus\\ DockerDeck\\ entfernen\\?\\ \\(Am\\ Server\\ ändert\\ sich\\ nichts\\.\\)$",
+   "Remove host “$1” from DockerDeck? (Nothing changes on the server.)"
+  ],
+  [
+   "^(.+) HTTPS\\ mit\\ eigenem\\ Zertifikat\\ \\(nicht\\ prüfen\\)$",
+   "$1 HTTPS with its own certificate (do not verify)"
+  ],
+  [
+   "^Am\\ Server\\ die\\ API\\ freigeben,\\ z\\.\\ B\\.\\ in (.+)$",
+   "Open the API on the server, e.g. in $1"
+  ],
+  [
+   "^Gespeichert,\\ aber\\ nicht\\ erreichbar:\\ (.+?)$",
+   "Saved, but not reachable: $1"
+  ],
+  [
+   "^(.+?)\\ Docker\\-Host(.+?)\\ eingetragen$",
+   "$1 Docker host$2 set up"
+  ],
+  [
+   "^Container\\ „(.+?)“\\ stoppen\\?$",
+   "Stop container “$1”?"
+  ],
+  [
+   "^(.+) ·\\ Zertifikat\\ ungeprüft$",
+   "$1 · certificate not verified"
+  ],
+  [
+   "^Verbunden:\\ Docker\\ (.+?)$",
+   "Connected: Docker $1"
+  ],
+  [
+   "^Docker\\-Hosts: (.+)$",
+   "Docker hosts: $1"
+  ],
+  [
+   "^Protokoll\\ ·\\ (.+?)$",
+   "Log · $1"
+  ],
+  [
+   "^Account:\\ (.+?)$",
+   "Account: $1"
+  ],
+  [
+   "^Fehler: (.+)$",
+   "Error: $1"
+  ]
+ ],
+ "keep": [
+  "Account: ...",
+  "● Running",
+  "Ports: \u0000",
+  "Docker-Host",
+  "DockerDeck",
+  "🖥️ Hosts",
+  "🟢 Running (",
+  "Stacks (Compose)",
+  "Images",
+  "Docker"
+ ]
+}

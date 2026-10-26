@@ -1,0 +1,112 @@
+{
+ "exact": {
+  "Kein persönlicher Ordner auf der Box gefunden.": "No personal folder found on the box.",
+  "Speichern fehlgeschlagen:": "Saving failed:",
+  "Sonstiges": "Other",
+  "Löschen": "Delete",
+  "Abbrechen": "Cancel",
+  "Verbinde mit Box-Dateisystem...": "Connecting to the box file system...",
+  "✈️ Sommerurlaub & Reisen": "✈️ Summer holiday & travel",
+  "Reisepass / Personalausweis": "Passport / ID card",
+  "Dokumente & Geld": "Documents & money",
+  "Krankenversicherungskarte & Auslandsschutz": "Health insurance card & travel cover",
+  "Kreditkarte / Notfall-Bargeld": "Credit card / emergency cash",
+  "Smartphone & USB-C Ladekabel": "Smartphone & USB-C charging cable",
+  "Elektronik & Kabel": "Electronics & cables",
+  "Powerbank (im Handgepäck)": "Power bank (in hand luggage)",
+  "Reiseadapter / Steckdosenleiste": "Travel adapter / power strip",
+  "T-Shirts & kurze Hosen": "T-shirts & shorts",
+  "Kleidung": "Clothing",
+  "Badesachen & Strandtuch": "Swimwear & beach towel",
+  "Zahnbürste & Zahnpasta": "Toothbrush & toothpaste",
+  "Hygiene & Apotheke": "Hygiene & pharmacy",
+  "Sonnencreme & Mückenschutz": "Sunscreen & insect repellent",
+  "Erste-Hilfe-Set & Schmerzmittel": "First aid kit & painkillers",
+  "Keine Liste": "No list",
+  "Eintrag gelöscht.": "Entry deleted.",
+  "Gegenstand hinzugefügt!": "Item added!",
+  "Liste erfolgreich zurückgesetzt!": "List reset!",
+  "Reisepass / Ausweis": "Passport / ID",
+  "Flug-/Bahntickets": "Flight / train tickets",
+  "Smartphone & Ladekabel": "Smartphone & charging cable",
+  "Kopfhörer": "Headphones",
+  "Kleidung für Reisezeitraum": "Clothes for the trip",
+  "Kulturbeutel & Zahnbürste": "Toiletry bag & toothbrush",
+  "Zelt, Heringe & Gummihammer": "Tent, pegs & rubber mallet",
+  "Outdoor & Sonstiges": "Outdoor & other",
+  "Schlafsack & Isomatte": "Sleeping bag & mat",
+  "Gaskocher & Geschirr": "Gas stove & dishes",
+  "Taschenlampe / Stirnlampe": "Torch / head torch",
+  "Taschenmesser / Multi-Tool": "Pocket knife / multi-tool",
+  "Wanderschuhe & Regenjacke": "Hiking boots & rain jacket",
+  "Laptop & Netzteil": "Laptop & power supply",
+  "Maus & USB-Hub": "Mouse & USB hub",
+  "Powerbank & Ladekabel": "Power bank & charging cable",
+  "YubiKey / 2FA-Token": "YubiKey / 2FA token",
+  "VPN-Zugangsdaten bereit": "VPN credentials ready",
+  "Aktive Packliste wählen": "Choose the active packing list",
+  "Neue Liste anlegen": "Create a new list",
+  "Alle Haken zurücksetzen": "Reset all ticks",
+  "Gegenstand hinzufügen (z. B. Reisepass, Sonnencreme, Ladekabel)...": "Add an item (e.g. passport, sunscreen, charging cable)...",
+  "z. B. Italien Roadtrip, Camping Wochenende": "e.g. Italy road trip, camping weekend",
+  "PackList - Reise- & Checklisten": "PackList - travel & checklists",
+  "➕ Neue Liste": "➕ New list",
+  "Reise-Packliste": "Travel packing list",
+  "0 von 0 eingepackt (0%)": "0 of 0 packed (0%)",
+  "🛂 Dokumente & Geld": "🛂 Documents & money",
+  "🔌 Elektronik & Kabel": "🔌 Electronics & cables",
+  "👕 Kleidung": "👕 Clothing",
+  "🧴 Hygiene & Apotheke": "🧴 Hygiene & pharmacy",
+  "⛺ Outdoor & Sonstiges": "⛺ Outdoor & other",
+  "Hinzufügen": "Add",
+  "Keine Gegenstände auf dieser Liste": "No items on this list",
+  "Füge oben Gegenstände hinzu oder wähle eine fertige Vorlage!": "Add items above or choose a ready template!",
+  "Name der Packliste": "Name of the packing list",
+  "Vorlage wählen": "Choose a template",
+  "✈️ Standard Urlaubsreise (Dokumente, Kleidung, Technik)": "✈️ Standard holiday (documents, clothing, tech)",
+  "⛺ Camping & Outdoor (Zelt, Kocher, Erste Hilfe)": "⛺ Camping & outdoor (tent, stove, first aid)",
+  "💻 Digital Nomad & IT (Kabel, VPN, Powerbank)": "💻 Digital nomad & IT (cables, VPN, power bank)",
+  "📄 Leere Liste erstellen": "📄 Create an empty list",
+  "Erstellen": "Create",
+  "1 Liste aktiv": "1 list active"
+ },
+ "patterns": [
+  [
+   "^Möchtest\\ du\\ alle\\ Haken\\ bei\\ '(.+?)'\\ für\\ die\\ nächste\\ Reise\\ zurücksetzen\\?$",
+   "Reset all ticks of '$1' for the next trip?"
+  ],
+  [
+   "^Speicher:\\ Browser\\ \\(LocalStorage:\\ (.+?)\\)$",
+   "Storage: browser (LocalStorage: $1)"
+  ],
+  [
+   "^(.+?)\\ von\\ (.+?)\\ eingepackt\\ \\((.+?)%\\)$",
+   "$1 of $2 packed ($3%)"
+  ],
+  [
+   "^Speichern\\ fehlgeschlagen: (.+)$",
+   "Saving failed: $1"
+  ],
+  [
+   "^(.+?)\\ Liste\\(n\\)\\ verfügbar$",
+   "$1 list(s) available"
+  ],
+  [
+   "^Box:\\ 🏠\\ (.+?)/(.+?)/(.+?)$",
+   "Box: 🏠 $1/$2/$3"
+  ],
+  [
+   "^Liste\\ '(.+?)'\\ angelegt!$",
+   "List '$1' created!"
+  ],
+  [
+   "^Account:\\ (.+?)$",
+   "Account: $1"
+  ]
+ ],
+ "keep": [
+  "Account: ...",
+  "PackList",
+  "🔄 Reset"
+ ]
+}

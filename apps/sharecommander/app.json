@@ -1,7 +1,7 @@
 {
 	"id": "sharecommander",
 	"name": "ShareCommander",
-	"version": "1.3.0",
+	"version": "1.3.1",
 	"publisher": "UniqueDroid",
 	"description": {
 		"de": "Zwei-Spalten-Dateimanager im Stil von Total Commander: Kopieren und Verschieben mit F5/F6, ZIP packen und entpacken, Mehrfach-Umbenennen, Vorschau mit Hex-Ansicht. Arbeitet mit den Ordnern der Box (mit den Rechten des Benutzers) und dem Browser-Dateisystem, das sich WebTerm und Webpad teilen.",

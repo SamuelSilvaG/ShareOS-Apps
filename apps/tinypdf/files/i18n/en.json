@@ -1,0 +1,83 @@
+{
+ "exact": {
+  "Bereit": "Ready",
+  "💾 Speichern": "💾 Save",
+  "Löschen": "Delete",
+  "Abbrechen": "Cancel",
+  "Das ist kein lesbares PDF:": "This is not a readable PDF:",
+  "Seite": "page",
+  "Seiten": "pages",
+  "Der Dateidialog der Box braucht ShareOS 0.2.0-beta.1 und die Berechtigung „Dateien“.": "The box's file dialog needs ShareOS 0.2.0-beta.1 and the permission “Files”.",
+  "PDF öffnen": "Open PDF",
+  "Öffnen fehlgeschlagen:": "Opening failed:",
+  "Bitte zuerst unterschreiben.": "Please sign first.",
+  "Unterschrift an die richtige Stelle ziehen, dann „Speichern“.": "Drag the signature to the right place, then “Save”.",
+  "PDF konnte nicht erzeugt werden:": "The PDF could not be created:",
+  "PDF speichern": "Save PDF",
+  "Speichern auf der Box fehlgeschlagen – lade herunter:": "Saving on the box failed – downloading:",
+  "Datei aus ShareOS:": "File from ShareOS:",
+  "Ohne „Dateien“: PDFs vom Gerät öffnen, Ergebnis wird heruntergeladen": "Without “Files”: open PDFs from the device, the result is downloaded",
+  "Unterschrift auf die Seite setzen": "Put the signature on the page",
+  "Vorherige Seite": "Previous page",
+  "Nächste Seite": "Next page",
+  "Verkleinern": "Zoom out",
+  "Vergrößern": "Zoom in",
+  "Ganze Seite": "Whole page",
+  "Unterschrift kleiner": "Smaller signature",
+  "Unterschrift größer": "Larger signature",
+  "Unterschrift entfernen": "Remove signature",
+  "Unterschrift": "Signature",
+  "TinyPDF - PDF Viewer & Signatur": "TinyPDF - PDF viewer & signature",
+  "📁 Von der Box": "📁 From the box",
+  "📂 Vom Gerät": "📂 From the device",
+  "✍️ Unterschreiben": "✍️ Sign",
+  "Seite – von –": "Page – of –",
+  "Kein PDF geöffnet": "No PDF open",
+  "Öffne ein PDF von der Box oder von deinem Gerät – oder im Dateibrowser von ShareOS mit „In TinyPDF öffnen“. Zum Unterschreiben die Unterschrift zeichnen und auf der Seite an die richtige Stelle ziehen.": "Open a PDF from the box or from your device – or in the ShareOS file browser with “Open in TinyPDF”. To sign, draw the signature and drag it to the right place on the page.",
+  "Unterschrift zeichnen": "Draw signature",
+  "Zeichne deine Unterschrift mit der Maus, dem Finger oder einem Stift. Danach erscheint sie auf der aktuellen Seite und lässt sich verschieben.": "Draw your signature with the mouse, a finger or a pen. Then it appears on the current page and can be moved.",
+  "Auf die Seite setzen": "Put on the page"
+ },
+ "patterns": [
+  [
+   "^Speichern\\ auf\\ der\\ Box\\ fehlgeschlagen\\ –\\ lade\\ herunter: (.+)$",
+   "Saving on the box failed – downloading: $1"
+  ],
+  [
+   "^PDF\\ konnte\\ nicht\\ erzeugt\\ werden: (.+)$",
+   "The PDF could not be created: $1"
+  ],
+  [
+   "^Das\\ ist\\ kein\\ lesbares\\ PDF: (.+)$",
+   "This is not a readable PDF: $1"
+  ],
+  [
+   "^Öffnen\\ fehlgeschlagen: (.+)$",
+   "Opening failed: $1"
+  ],
+  [
+   "^Datei\\ aus\\ ShareOS: (.+)$",
+   "File from ShareOS: $1"
+  ],
+  [
+   "^Seite\\ (.+?)\\ von\\ (.+?)$",
+   "Page $1 of $2"
+  ],
+  [
+   "^Gespeichert:\\ (.+?)$",
+   "Saved: $1"
+  ],
+  [
+   "^Account:\\ (.+?)$",
+   "Account: $1"
+  ]
+ ],
+ "keep": [
+  "PageDown",
+  "PageUp",
+  "Account: ...",
+  "\u0000 – TinyPDF",
+  "RenderingCancelledException",
+  "TinyPDF"
+ ]
+}

@@ -1,7 +1,7 @@
 {
   "id": "smartbudget",
   "name": "SmartBudget",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "UniqueDroid",
   "description": {
     "de": "Strom-, Gas- und Energiekosten-Tracker mit Zählerstandserfassung, Kostenprognose und ShareOS.fs Speicherung.",

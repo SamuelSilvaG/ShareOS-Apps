@@ -1,0 +1,16 @@
+{
+ "exact": {
+  "Entf": "Del"
+ },
+ "patterns": [],
+ "keep": [
+  "Webpad",
+  "Normal",
+  "Base64 Encode",
+  "Base64 Decode",
+  "URL Encode",
+  "URL Decode",
+  "Minify",
+  "Name"
+ ]
+}

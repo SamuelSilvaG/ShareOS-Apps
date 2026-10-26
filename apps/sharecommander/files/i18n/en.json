@@ -1,0 +1,379 @@
+{
+ "exact": {
+  "Lade …": "Loading …",
+  "Typ": "Type",
+  "Löschen": "Delete",
+  "Willkommen im ShareCommander (Total Commander Style)!\n\nTastenkürzel:\n- Tab: Zwischen linkem und rechtem Fenster wechseln\n- Pfeile, Pos1, Ende, Bild auf/ab: Cursor bewegen\n- Enter: Ordner öffnen / Datei anzeigen\n- Einfg oder Leertaste: markieren\n- F2: Umbenennen\n- F3: Datei-Schnellvorschau\n- F4: Datei direkt in Webpad bearbeiten\n- F5: Kopieren ins andere Fenster\n- F6: Verschieben ins andere Fenster\n- F7: Neuer Ordner\n- F8: Neue Datei\n- Entf: Löschen\n- Strg+M: Mehrfach umbenennen": "Welcome to ShareCommander (Total Commander style)!  Shortcuts: - Tab: switch between the left and right pane - Arrows, Home, End, Page up/down: move the cursor - Enter: open folder / show file - Insert or space: select - F2: rename - F3: quick file preview - F4: edit the file in Webpad - F5: copy to the other pane - F6: move to the other pane - F7: new folder - F8: new file - Del: delete - Ctrl+M: multi-rename",
+  "Browser-Speicher voll – Änderung nicht gespeichert. Große Dateien löschen oder herunterladen.": "Browser storage full – change not saved. Delete or download large files.",
+  "Persönlicher Ordner": "Personal folder",
+  "💻 Browser-Speicher (nur dieser Browser)": "💻 Browser storage (this browser only)",
+  "Browser-Speicher voll": "Browser storage full",
+  ", Quelle bleibt": ", source stays",
+  "Verschieben": "Move",
+  "Kopieren": "Copy",
+  "Keine Dateien oder Ordner ausgewählt.": "No files or folders selected.",
+  "Quell- und Zielverzeichnis sind identisch!": "Source and target folder are the same!",
+  "Ungültiger Name (kein „/“, nicht leer, höchstens 128 Zeichen).": "Invalid name (no “/”, not empty, at most 128 characters).",
+  "Neuer Ordnername:": "New folder name:",
+  "Dieser Ordner ist schreibgeschützt.": "This folder is read-only.",
+  "Existiert bereits!": "Exists already!",
+  "Neuer Dateiname (z. B. notiz.txt):": "New file name (e.g. note.txt):",
+  "Neuer Name:": "New name:",
+  "Schreibgeschützt.": "Read-only.",
+  "Dieser Browser kann nicht entpacken (DecompressionStream fehlt).": "This browser cannot unpack (DecompressionStream missing).",
+  "Keine ZIP-Datei.": "Not a ZIP file.",
+  "ZIP-Verzeichnis beschädigt.": "ZIP directory damaged.",
+  "Bitte markiere Dateien zum Packen.": "Please select files to pack.",
+  "Name des ZIP-Archivs:": "Name of the ZIP archive:",
+  "Keine packbaren Dateien gefunden.": "No files to pack found.",
+  "Packe …": "Packing …",
+  "zusammen über 200 MB – dafür ist der Browser nicht gedacht": "over 200 MB together – the browser is not made for that",
+  "Packen fehlgeschlagen:": "Packing failed:",
+  "Das Archiv ist zum Entpacken im Browser zu groß (über 200 MB).": "The archive is too large to unpack in the browser (over 200 MB).",
+  "Entpacke …": "Unpacking …",
+  "Entpacken fehlgeschlagen:": "Unpacking failed:",
+  "Bitte wähle zuerst eine .zip-Datei aus!": "Please select a .zip file first!",
+  "OPFS wird von diesem Browser nicht unterstützt.": "This browser does not support OPFS.",
+  "Der OPFS-Abgleich gilt für das Browser-Dateisystem (VFS).": "The OPFS sync applies to the browser file system (VFS).",
+  "Ordner-Auswahl nur in Chrome/Edge – nutze stattdessen „Import“.": "Folder selection only in Chrome/Edge – use “Import” instead.",
+  "Ordner:": "Folder:",
+  "Ordner-Zugriff abgebrochen.": "Folder access cancelled.",
+  "KEINE AUSWAHL": "NO SELECTION",
+  "Wähle eine Datei in der Liste aus.": "Select a file in the list.",
+  "… (gekürzt)": "… (shortened)",
+  "(Leere Datei)": "(Empty file)",
+  "Vorschau nicht möglich:": "Preview not possible:",
+  "Für Webpad zu groß (über 5 MB).": "Too large for Webpad (over 5 MB).",
+  "Bitte wähle eine Textdatei für Webpad aus.": "Please select a text file for Webpad.",
+  "Bitte eine Audio- oder Videodatei wählen.": "Please choose an audio or video file.",
+  "Bitte markiere zuerst Dateien für das Mehrfach-Umbenennen.": "Please select files for multi-rename first.",
+  "ungültig": "invalid",
+  "Bitte erst die markierten Konflikte lösen.": "Please resolve the marked conflicts first.",
+  "Umbenennen:": "Rename:",
+  "Hochladen:": "Upload:",
+  "nur lesen – hier darfst du nichts ändern": "read only – you may not change anything here",
+  "keine Berechtigung": "no permission",
+  "nicht gefunden": "not found",
+  "das Laufwerk ist voll": "the drive is full",
+  "dein Speicherlimit ist erreicht": "your storage limit is reached",
+  "unbekannter Ordner": "unknown folder",
+  "Für dein Konto gibt es auf der Box weder einen persönlichen Ordner noch eine Freigabe. Bis dahin zeigt ShareCommander nur den Speicher dieses Browsers.": "There is neither a personal folder nor a share for your account on the box. Until then ShareCommander only shows this browser's storage.",
+  "Kein Zugriff auf die Ordner der Box: Der Administrator kann ihn unter Benutzer → „Dateien“ für dein Konto einschalten. Bis dahin zeigt ShareCommander nur den Speicher dieses Browsers.": "No access to the box's folders: the administrator can switch it on for your account under Users → “Files”. Until then ShareCommander only shows this browser's storage.",
+  "Lokale Dateien in aktives Panel importieren": "Import local files into the active pane",
+  "Einen Ordner deines Rechners in das aktive Panel kopieren (Chrome/Edge)": "Copy a folder of your computer into the active pane (Chrome/Edge)",
+  "Aktiven Ordner mit dem privaten Browser-Speicher (OPFS) abgleichen: hin und zurück": "Sync the active folder with the private browser storage (OPFS): both ways",
+  "Markierte Dateien als .zip Archiv packen": "Pack the selected files as a .zip archive",
+  "Ausgewählte .zip Datei entpacken": "Unpack the selected .zip file",
+  "Mehrfach-Umbenenn-Tool (Strg+M)": "Multi-rename tool (Ctrl+M)",
+  "Schnellvorschau-Panel umschalten (Strg+Q)": "Toggle the quick preview panel (Ctrl+Q)",
+  "Farbschema wechseln (ShareOS / Dark / Norton Blue / Matrix)": "Change the colour scheme (ShareOS / Dark / Norton Blue / Matrix)",
+  "Laufwerk: Browser-Dateisystem oder Ordner der Box": "Drive: browser file system or folders of the box",
+  "Zum Wurzelverzeichnis": "To the root folder",
+  "Home-Verzeichnis": "Home folder",
+  "Übergeordneter Ordner (Backspace)": "Parent folder (Backspace)",
+  "Alle auswählen": "Select all",
+  "z.B. Leerzeichen oder Text": "e.g. space or text",
+  "Ersatztext": "Replacement text",
+  "🖴 Ordner importieren": "🖴 Import folder",
+  "⚡ OPFS-Abgleich": "⚡ OPFS sync",
+  "📦 ZIP Packen": "📦 Pack ZIP",
+  "📂 ZIP Entpacken": "📂 Unpack ZIP",
+  "👁️ Vorschau (F3)": "👁️ Preview (F3)",
+  "Größe": "Size",
+  "Geändert": "Modified",
+  "0 markiert / 0 Dateien": "0 selected / 0 files",
+  "DATEI-VORSCHAU": "FILE PREVIEW",
+  "Wähle eine Datei aus und drücke": "Select a file and press",
+  "für die Vorschau (Text, Code, Bilder, Audio, Hex-Ansicht).": "for the preview (text, code, images, audio, hex view).",
+  "📝 In WebPad öffnen": "📝 Open in WebPad",
+  "🎵 In WinWeb abspielen": "🎵 Play in WinWeb",
+  "Umbenennen": "Rename",
+  "Ansicht": "View",
+  "Kopieren ➔": "Copy ➔",
+  "Bewegen ➔": "Move ➔",
+  "+Ordner": "+Folder",
+  "+Datei": "+File",
+  "Entf": "Del",
+  "✏️ Mehrfach-Umbenenn-Tool (Bulk Rename)": "✏️ Multi-rename tool (bulk rename)",
+  "Dateinamen-Maske (": "File name mask (",
+  "Suchen nach:": "Search for:",
+  "Ersetzen durch:": "Replace with:",
+  "Groß-/Kleinschreibung:": "Upper/lower case:",
+  "Unverändert lassen": "Leave unchanged",
+  "Aktueller Dateiname": "Current file name",
+  "➔ Neuer Dateiname (Vorschau)": "➔ New file name (preview)",
+  "✅ Umbenennen starten": "✅ Start renaming",
+  "verschoben": "moved",
+  "kopiert": "copied",
+  "verschieben": "move",
+  "kopieren": "copy",
+  "= Zähler):": "= counter):"
+ },
+ "patterns": [
+  [
+   "^(\\d+) markiert \\| (\\d+) Einträge \\((.+)\\)$",
+   "$1 selected | $2 entries ($3)"
+  ],
+  [
+   "^–\\ (.+?)\\ Datei\\(en\\)\\ zu\\ groß\\ für\\ den\\ Browser\\-Speicher\\ \\(über\\ 1\\ MB\\)\\ übersprungen(.+?)$",
+   "– $1 file(s) too large for the browser storage (over 1 MB) skipped$2"
+  ],
+  [
+   "^📝\\ '(.+?)'\\ von\\ der\\ Box\\ an\\ Webpad\\ gesendet\\ –\\ Speichern\\ dort\\ schreibt\\ auf\\ die\\ Box\\.$",
+   "📝 '$1' sent from the box to Webpad – saving there writes to the box."
+  ],
+  [
+   "^(.+?)\\ meldet\\ sich\\ nicht\\ –\\ ist\\ die\\ App\\ installiert\\ \\(und\\ aktuell\\)\\?$",
+   "$1 does not answer – is the app installed (and up to date)?"
+  ],
+  [
+   "^ZIP\\ '(.+?)'\\ heruntergeladen\\ \\(für\\ den\\ Browser\\-Speicher\\ zu\\ groß\\)\\.$",
+   "ZIP '$1' downloaded (too large for the browser storage)."
+  ],
+  [
+   "^(.+) für\\ die\\ Vorschau\\ \\(Text,\\ Code,\\ Bilder,\\ Audio,\\ Hex\\-Ansicht\\)\\.$",
+   "$1 for the preview (text, code, images, audio, hex view)."
+  ],
+  [
+   "^(.+?):\\ Fenster\\ blockiert\\ –\\ Pop\\-ups\\ für\\ diese\\ Seite\\ erlauben\\.$",
+   "$1: window blocked – allow pop-ups for this page."
+  ],
+  [
+   "^ZIP\\ '(.+?)'\\ auf\\ der\\ Box\\ angelegt\\ \\((.+?)\\ Datei\\(en\\)\\)\\.$",
+   "ZIP '$1' created on the box ($2 file(s))."
+  ],
+  [
+   "^Ordner\\ '(.+?)'\\ auf\\ die\\ Box\\ kopiert:\\ (.+?)\\ Datei\\(en\\)\\.$",
+   "Folder '$1' copied to the box: $2 file(s)."
+  ],
+  [
+   "^Zu\\ groß\\ für\\ den\\ Browser\\-Speicher\\ \\(über\\ 1\\ MB\\):\\ (.+?)$",
+   "Too large for the browser storage (over 1 MB): $1"
+  ],
+  [
+   "^–\\ (.+?)\\ übersprungen\\ \\(zu\\ groß\\ oder\\ ungültiger\\ Name\\)$",
+   "– $1 skipped (too large or invalid name)"
+  ],
+  [
+   "^'(.+?)':\\ Packverfahren\\ (.+?)\\ wird\\ nicht\\ unterstützt\\.$",
+   "'$1': compression method $2 is not supported."
+  ],
+  [
+   "^ZIP\\ '(.+?)'\\ im\\ VFS\\ gespeichert\\ und\\ heruntergeladen\\.$",
+   "ZIP '$1' saved in the VFS and downloaded."
+  ],
+  [
+   "^'(.+?)'\\ kann\\ nicht\\ in\\ sich\\ selbst\\ (.+?)\\ werden\\.$",
+   "'$1' cannot be $2 into itself."
+  ],
+  [
+   "^'(.+?)'\\ ist\\ schreibgeschützt\\ –\\ nicht\\ übernommen\\.$",
+   "'$1' is read-only – not taken over."
+  ],
+  [
+   "^(.+?)\\ ist\\ schreibgeschützt\\ –\\ nur\\ Kopieren\\ geht\\.$",
+   "$1 is read-only – only copying works."
+  ],
+  [
+   "^Speichern\\ auf\\ der\\ Box\\ fehlgeschlagen:\\ (.+?)$",
+   "Saving on the box failed: $1"
+  ],
+  [
+   "^Ordner\\ '(.+?)'\\ importiert:\\ (.+?)\\ Datei\\(en\\)$",
+   "Folder '$1' imported: $2 file(s)"
+  ],
+  [
+   "^⚡\\ OPFS:\\ (.+?)\\ Datei\\(en\\)\\ gesichert(.+?)\\.$",
+   "⚡ OPFS: $1 file(s) saved$2."
+  ],
+  [
+   "^(.+?)\\ Datei\\(en\\)\\ entpackt\\ nach\\ '(.+?)/'$",
+   "$1 file(s) unpacked to '$2/'"
+  ],
+  [
+   "^–\\ (.+?)\\ übersprungen\\ \\(ungültiger\\ Name\\)$",
+   "– $1 skipped (invalid name)"
+  ],
+  [
+   "^(.+?)\\ Datei\\(en\\)\\ auf\\ die\\ Box\\ geladen\\.$",
+   "$1 file(s) uploaded to the box."
+  ],
+  [
+   "^'(.+?)'\\ gibt\\ es\\ schon\\.\\ Überschreiben\\?$",
+   "'$1' exists already. Overwrite?"
+  ],
+  [
+   "^(.+?)\\ Datei\\(en\\)\\ in\\ (.+?)\\ importiert\\.$",
+   "$1 file(s) imported into $2."
+  ],
+  [
+   "^🎵\\ '(.+?)'\\ an\\ WinWeb\\ Player\\ gesendet\\.$",
+   "🎵 '$1' sent to WinWeb Player."
+  ],
+  [
+   "^Wähle\\ eine\\ Datei\\ aus\\ und\\ drücke (.+)$",
+   "Select a file and press $1"
+  ],
+  [
+   "^Auf\\ der\\ Box\\ gespeichert:\\ (.+?)/(.+?)$",
+   "Saved on the box: $1/$2"
+  ],
+  [
+   "^(.+?)\\ Element\\(e\\)\\ (.+?)\\ nach\\ (.+?)$",
+   "$1 item(s) $2 to $3"
+  ],
+  [
+   "^(.+?)\\ Element\\(e\\)\\ werden\\ (.+?)\\ …$",
+   "$1 item(s) being $2 …"
+  ],
+  [
+   "^,\\ (.+?)\\ zu\\ groß\\ \\(über\\ 1\\ MB\\)$",
+   ", $1 too large (over 1 MB)"
+  ],
+  [
+   "^📝\\ '(.+?)'\\ an\\ Webpad\\ gesendet\\.$",
+   "📝 '$1' sent to Webpad."
+  ],
+  [
+   "^(.+?)\\ Element\\(e\\)\\ umbenannt\\.$",
+   "$1 item(s) renamed."
+  ],
+  [
+   "^(.+?)\\ Element\\(e\\)\\ gelöscht\\.$",
+   "$1 item(s) deleted."
+  ],
+  [
+   "^Entpacken\\ fehlgeschlagen: (.+)$",
+   "Unpacking failed: $1"
+  ],
+  [
+   "^(.+?)\\ ist\\ schreibgeschützt\\.$",
+   "$1 is read-only."
+  ],
+  [
+   "^Vorschau\\ nicht\\ möglich: (.+)$",
+   "Preview not possible: $1"
+  ],
+  [
+   "^'(.+?)'\\ ist\\ verschlüsselt\\.$",
+   "'$1' is encrypted."
+  ],
+  [
+   "^Packen\\ fehlgeschlagen: (.+)$",
+   "Packing failed: $1"
+  ],
+  [
+   "^Datei\\ aktualisiert:\\ (.+?)$",
+   "File updated: $1"
+  ],
+  [
+   "^Ordner\\ '(.+?)'\\ erstellt\\.$",
+   "Folder '$1' created."
+  ],
+  [
+   "^(.+?)\\ Element\\(e\\)\\ (.+?)$",
+   "$1 item(s) $2"
+  ],
+  [
+   "^Datei\\ '(.+?)'\\ angelegt\\.$",
+   "File '$1' created."
+  ],
+  [
+   "^'(.+?)'\\ überschreiben\\?$",
+   "Overwrite '$1'?"
+  ],
+  [
+   "^,\\ (.+?)\\ zurückgeholt$",
+   ", $1 brought back"
+  ],
+  [
+   "^OPFS\\-Fehler:\\ (.+?)$",
+   "OPFS error: $1"
+  ],
+  [
+   "^Lade\\ (.+?)\\ hoch\\ …$",
+   "Uploading $1 …"
+  ],
+  [
+   "^Verzeichnis:\\ (.+?)$",
+   "Directory: $1"
+  ],
+  [
+   "^Umbenennen:\\ (.+?)$",
+   "Rename: $1"
+  ],
+  [
+   "^Umbenennen: (.+)$",
+   "Rename: $1"
+  ],
+  [
+   "^(.+) Kopieren\\ ➔$",
+   "$1 Copy ➔"
+  ],
+  [
+   "^Löschen:\\ (.+?)$",
+   "Delete: $1"
+  ],
+  [
+   "^Hochladen: (.+)$",
+   "Upload: $1"
+  ],
+  [
+   "^(.+) Umbenennen$",
+   "$1 Rename"
+  ],
+  [
+   "^(.+) Bewegen\\ ➔$",
+   "$1 Move ➔"
+  ],
+  [
+   "^Ordner:\\ (.+?)$",
+   "Folder: $1"
+  ],
+  [
+   "^Datei:\\ (.+?)$",
+   "File: $1"
+  ],
+  [
+   "^(.+) \\+Ordner$",
+   "$1 +Folder"
+  ],
+  [
+   "^Ordner: (.+)$",
+   "Folder: $1"
+  ],
+  [
+   "^(.+) Ansicht$",
+   "$1 View"
+  ],
+  [
+   "^(.+) \\+Datei$",
+   "$1 +File"
+  ],
+  [
+   "^(.+) Löschen$",
+   "$1 Delete"
+  ]
+ ],
+ "keep": [
+  "Box: \u0000",
+  "Webpad",
+  "WinWeb Player",
+  "Name",
+  "💾 Download",
+  "Im Ziel gibt es schon: \u0000nnÜberschreiben?",
+  "DecompressionStream",
+  "nnEnthält \u0000 direkte Unterelemente.nGeändert: \u0000",
+  "nnGeändert: \u0000",
+  "n… (gekürzt, \u0000)",
+  "Webpad:",
+  "Player:",
+  "Download:",
+  "Box:",
+  "ShareCommander – ShareOS",
+  "📥 Import",
+  "✏️ Multi-Rename",
+  "🎨 Theme",
+  "WebPad Edit"
+ ]
+}
