@@ -12,7 +12,6 @@ window.I18N = (function () {
       'conn.not_installed': 'autobrr Not Installed',
       'conn.no_drive': 'Apps Drive Missing',
       'conn.no_access': 'Admin Access Only',
-      'conn.standalone': 'Standalone Demo Mode',
 
       // Menu
       'menu.file': 'File',
@@ -56,6 +55,9 @@ window.I18N = (function () {
       'col.status': 'Filter Status',
       'col.action': 'Client Action',
       'col.actions': 'Actions',
+      'releases.empty': 'No releases yet.',
+      'releases.no_match': 'No releases match the criteria.',
+      'releases.no_access': 'No releases yet (admins only).',
 
       // Status badges
       'status.APPROVED': 'Approved',
@@ -65,6 +67,7 @@ window.I18N = (function () {
       'status.PENDING': 'Processing',
       'status.active': 'Active',
       'status.inactive': 'Disabled',
+      'status.stopped': 'Stopped',
 
       // Action buttons
       'btn.send_transmission': 'Push to Transmission',
@@ -85,7 +88,8 @@ window.I18N = (function () {
 
       // Filters View
       'filters.title': 'Active Filter Rules',
-      'filters.empty': 'No filters configured yet. Create a filter to start capturing torrents.',
+      'filters.empty': 'No filters yet.',
+      'filters.no_access': 'No filters yet (admins only).',
       'filters.new_title': 'Create New Filter',
       'filters.edit_title': 'Edit Filter',
       'filters.name': 'Filter Name',
@@ -99,7 +103,8 @@ window.I18N = (function () {
 
       // IRC & Indexers View
       'irc.title': 'Monitored Networks & IRC Channels',
-      'irc.empty': 'No IRC networks connected in autobrr.',
+      'irc.empty': 'No IRC networks connected yet.',
+      'irc.no_access': 'No IRC networks connected yet (admins only).',
       'irc.server': 'Network / Server',
       'irc.channel': 'Announce Channel',
       'irc.bot': 'Announce Bot',
@@ -109,6 +114,7 @@ window.I18N = (function () {
       'irc.disconnected': 'Disconnected',
       'indexers.title': 'Configured Indexers & Trackers',
       'indexers.empty': 'No indexers configured yet.',
+      'indexers.no_access': 'No indexers configured yet (admins only).',
       'indexers.name': 'Indexer Name',
       'indexers.identifier': 'Identifier',
       'indexers.type': 'Type',
@@ -145,6 +151,8 @@ window.I18N = (function () {
       'settings.password_label': 'New Password',
       'settings.password_placeholder': 'Enter at least 8 characters',
       'settings.log_section': 'Daemon Log Viewer',
+      'log.no_access': 'autobrr daemon logs are accessible to administrator accounts only.',
+      'log.offline': 'autobrr service is not connected.',
 
       // Banners
       'banner.offline_title': 'autobrr Service Stopped',
@@ -155,14 +163,18 @@ window.I18N = (function () {
       'banner.no_drive_desc': 'autobrr needs an active storage drive (Storage) to store its database and downloads.',
       'banner.no_access_title': 'Administrator Access Required',
       'banner.no_access_desc': 'autobrr is a box-wide service and can only be configured by administrator accounts.',
-      'banner.standalone_title': 'Standalone Demo Mode',
-      'banner.standalone_desc': 'Running outside ShareOS. Displaying simulated sample data.',
 
       // Statusbar
       'sb.releases_count': '{count} releases monitored',
       'sb.filters_count': '{count} active filters',
       'sb.account': 'Handover: {account}',
-      'sb.updated': 'Updated: {time}'
+      'sb.updated': 'Updated: {time}',
+
+      // Messages and Errors
+      'err.service_not_ready': 'autobrr service is not running or not ready.',
+      'toast.torrent_dispatched': 'Torrent dispatched to Transmission drop folder!',
+      'toast.filter_deleted': 'Filter deleted',
+      'toast.filter_created': 'Filter created successfully'
     },
 
     de: {
@@ -174,7 +186,6 @@ window.I18N = (function () {
       'conn.not_installed': 'autobrr nicht installiert',
       'conn.no_drive': 'Apps-Laufwerk fehlt',
       'conn.no_access': 'Nur für Administratoren',
-      'conn.standalone': 'Demo-Modus',
 
       // Menu
       'menu.file': 'Datei',
@@ -218,6 +229,9 @@ window.I18N = (function () {
       'col.status': 'Filter-Status',
       'col.action': 'Client-Aktion',
       'col.actions': 'Aktionen',
+      'releases.empty': 'Noch keine Releases.',
+      'releases.no_match': 'Keine Releases entsprechen den Suchkriterien.',
+      'releases.no_access': 'Noch keine Releases (nur für Administratoren).',
 
       // Status badges
       'status.APPROVED': 'Akzeptiert',
@@ -227,6 +241,7 @@ window.I18N = (function () {
       'status.PENDING': 'Wird verarbeitet',
       'status.active': 'Aktiv',
       'status.inactive': 'Deaktiviert',
+      'status.stopped': 'Gestoppt',
 
       // Action buttons
       'btn.send_transmission': 'An Transmission senden',
@@ -247,7 +262,8 @@ window.I18N = (function () {
 
       // Filters View
       'filters.title': 'Aktive Filterregeln',
-      'filters.empty': 'Noch keine Filter eingerichtet. Erstelle einen Filter, um Torrents abzufangen.',
+      'filters.empty': 'Noch keine Filter eingerichtet.',
+      'filters.no_access': 'Noch keine Filter eingerichtet (nur für Administratoren).',
       'filters.new_title': 'Neuen Filter erstellen',
       'filters.edit_title': 'Filter bearbeiten',
       'filters.name': 'Filtername',
@@ -261,7 +277,8 @@ window.I18N = (function () {
 
       // IRC & Indexers View
       'irc.title': 'Überwachte Netzwerke & IRC-Kanäle',
-      'irc.empty': 'Keine IRC-Netzwerke in autobrr verbunden.',
+      'irc.empty': 'Noch keine IRC-Netzwerke verbunden.',
+      'irc.no_access': 'Noch keine IRC-Netzwerke verbunden (nur für Administratoren).',
       'irc.server': 'Netzwerk / Server',
       'irc.channel': 'Ankündigungskanal',
       'irc.bot': 'Ankündigungs-Bot',
@@ -271,6 +288,7 @@ window.I18N = (function () {
       'irc.disconnected': 'Getrennt',
       'indexers.title': 'Eingerichtete Indexer & Tracker',
       'indexers.empty': 'Noch keine Indexer eingerichtet.',
+      'indexers.no_access': 'Noch keine Indexer eingerichtet (nur für Administratoren).',
       'indexers.name': 'Indexer-Name',
       'indexers.identifier': 'Kennung',
       'indexers.type': 'Typ',
@@ -307,6 +325,8 @@ window.I18N = (function () {
       'settings.password_label': 'Neues Passwort',
       'settings.password_placeholder': 'Mindestens 8 Zeichen eingeben',
       'settings.log_section': 'Dienstprotokoll',
+      'log.no_access': 'Dienstprotokolle von autobrr sind nur für Administratoren zugänglich.',
+      'log.offline': 'autobrr-Dienst ist nicht verbunden.',
 
       // Banners
       'banner.offline_title': 'autobrr-Dienst gestoppt',
@@ -317,14 +337,18 @@ window.I18N = (function () {
       'banner.no_drive_desc': 'autobrr benötigt ein eingerichtetes Apps-Laufwerk für die Datenbank und Downloads.',
       'banner.no_access_title': 'Administratorenzugriff erforderlich',
       'banner.no_access_desc': 'autobrr ist ein Dienst der gesamten Box und kann nur von Administratoren eingerichtet werden.',
-      'banner.standalone_title': 'Demo-Modus',
-      'banner.standalone_desc': 'Wird außerhalb von ShareOS ausgeführt. Zeigt simulierte Beispieldaten an.',
 
       // Statusbar
       'sb.releases_count': '{count} Releases überwacht',
       'sb.filters_count': '{count} aktive Filter',
       'sb.account': 'Konto: {account}',
-      'sb.updated': 'Aktualisiert: {time}'
+      'sb.updated': 'Aktualisiert: {time}',
+
+      // Messages and Errors
+      'err.service_not_ready': 'autobrr-Dienst läuft nicht oder ist noch nicht bereit.',
+      'toast.torrent_dispatched': 'Torrent an Transmission-Übergabeordner übergeben!',
+      'toast.filter_deleted': 'Filter gelöscht',
+      'toast.filter_created': 'Filter erfolgreich erstellt'
     },
 
     pt: {
@@ -336,7 +360,6 @@ window.I18N = (function () {
       'conn.not_installed': 'autobrr Não Instalado',
       'conn.no_drive': 'Disco de Apps Ausente',
       'conn.no_access': 'Apenas Administradores',
-      'conn.standalone': 'Modo Demonstração',
 
       // Menu
       'menu.file': 'Arquivo',
@@ -380,6 +403,9 @@ window.I18N = (function () {
       'col.status': 'Status do Filtro',
       'col.action': 'Ação do Cliente',
       'col.actions': 'Ações',
+      'releases.empty': 'Nenhum release ainda.',
+      'releases.no_match': 'Nenhum release corresponde aos critérios.',
+      'releases.no_access': 'Nenhum release ainda (apenas administradores).',
 
       // Status badges
       'status.APPROVED': 'Aprovado',
@@ -389,6 +415,7 @@ window.I18N = (function () {
       'status.PENDING': 'Processando',
       'status.active': 'Ativo',
       'status.inactive': 'Desativado',
+      'status.stopped': 'Parado',
 
       // Action buttons
       'btn.send_transmission': 'Enviar ao Transmission',
@@ -409,7 +436,8 @@ window.I18N = (function () {
 
       // Filters View
       'filters.title': 'Regras de Filtragem Ativas',
-      'filters.empty': 'Nenhum filtro configurado. Crie um filtro para capturar torrents automaticamente.',
+      'filters.empty': 'Nenhum filtro ainda.',
+      'filters.no_access': 'Nenhum filtro ainda (apenas administradores).',
       'filters.new_title': 'Criar Novo Filtro',
       'filters.edit_title': 'Editar Filtro',
       'filters.name': 'Nome do Filtro',
@@ -423,7 +451,8 @@ window.I18N = (function () {
 
       // IRC & Indexers View
       'irc.title': 'Redes Monitoradas & Canais IRC',
-      'irc.empty': 'Nenhuma rede IRC conectada no momento.',
+      'irc.empty': 'Nenhuma rede IRC conectada ainda.',
+      'irc.no_access': 'Nenhuma rede IRC conectada ainda (apenas administradores).',
       'irc.server': 'Rede / Servidor',
       'irc.channel': 'Canal de Anúncios',
       'irc.bot': 'Bot de Anúncios',
@@ -433,6 +462,7 @@ window.I18N = (function () {
       'irc.disconnected': 'Desconectado',
       'indexers.title': 'Indexadores & Trackers Configurados',
       'indexers.empty': 'Nenhum indexador configurado ainda.',
+      'indexers.no_access': 'Nenhum indexador configurado ainda (apenas administradores).',
       'indexers.name': 'Nome do Indexador',
       'indexers.identifier': 'Identificador',
       'indexers.type': 'Tipo',
@@ -469,6 +499,8 @@ window.I18N = (function () {
       'settings.password_label': 'Nova Senha',
       'settings.password_placeholder': 'Digite ao menos 8 caracteres',
       'settings.log_section': 'Visualizador de Log do Serviço',
+      'log.no_access': 'Logs do serviço autobrr estão acessíveis apenas para administradores.',
+      'log.offline': 'Serviço autobrr não está conectado.',
 
       // Banners
       'banner.offline_title': 'Serviço autobrr Parado',
@@ -479,14 +511,18 @@ window.I18N = (function () {
       'banner.no_drive_desc': 'O autobrr necessita de um disco configurado para guardar o banco de dados e arquivos.',
       'banner.no_access_title': 'Acesso Restrito a Administradores',
       'banner.no_access_desc': 'O autobrr é um serviço global da box e só pode ser configurado por administradores.',
-      'banner.standalone_title': 'Modo Demonstração',
-      'banner.standalone_desc': 'Executando fora do ShareOS. Exibindo dados simulados de teste.',
 
       // Statusbar
       'sb.releases_count': '{count} releases monitorados',
       'sb.filters_count': '{count} filtros ativos',
       'sb.account': 'Entrega: {account}',
-      'sb.updated': 'Atualizado: {time}'
+      'sb.updated': 'Atualizado: {time}',
+
+      // Messages and Errors
+      'err.service_not_ready': 'Serviço autobrr não está em execução ou não está pronto.',
+      'toast.torrent_dispatched': 'Torrent enviado para a pasta de entrega do Transmission!',
+      'toast.filter_deleted': 'Filtro excluído',
+      'toast.filter_created': 'Filtro criado com sucesso'
     }
   };
 

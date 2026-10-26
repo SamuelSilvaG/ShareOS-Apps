@@ -107,7 +107,7 @@ def check(app_dir):
     err += check_jobs(a, files) + check_ui(a)
     req = a.get('requires', [])
     if not isinstance(req, list) or len(req) > 5: err.append('requires: a list of at most 5 app ids')
-    else: err += ['requires: invalid app id %r' % r for r in req if not isinstance(r, str) or not ID_RE.match(r) or (r == a.get('id') and a.get('type') == 'system')]
+    else: err += ['requires: invalid app id %r' % r for r in req if not isinstance(r, str) or not ID_RE.match(r) or r == a.get('id')]
     return a, err
 
 

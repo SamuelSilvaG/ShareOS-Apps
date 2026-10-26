@@ -5,7 +5,6 @@
 (function () {
   const SOS = window.ShareOS || null;
   const AB = SOS && SOS.autobrr;
-  const TOR = SOS && SOS.torrent;
 
   const $ = (id) => document.getElementById(id);
   const t = (key, vars) => (window.I18N ? I18N.t(key, vars) : key);
@@ -19,102 +18,6 @@
   let accounts = [];
   let editingFilterId = null;
   let pollTimer = null;
-
-  // Fallback demo data for standalone / preview outside ShareOS
-  const DEMO_RELEASES = [
-    {
-      id: 1,
-      timestamp: '14:20',
-      indexer: 'TorrentLeech',
-      channel: '#tl-announces',
-      name: 'Cyberpunk.Edgerunners.S01.1080p.NF.WEB-DL.DDP5.1.Atmos.x264-FLUX',
-      status: 'PUSH_APPROVED',
-      action: 'Watch dir (.torrent)',
-      size: '14.2 GB',
-      downloadUrl: 'https://example.com/torrent/1'
-    },
-    {
-      id: 2,
-      timestamp: '14:05',
-      indexer: 'TorrentLeech',
-      channel: '#tl-announces',
-      name: 'The.Batman.2022.2160p.UHD.BluRay.x265-SURCODE',
-      status: 'FILTER_REJECTED',
-      action: 'Rejected (Size > Max)',
-      size: '48.6 GB',
-      downloadUrl: ''
-    },
-    {
-      id: 3,
-      timestamp: '13:41',
-      indexer: 'Nebulance',
-      channel: '#nbl-announces',
-      name: 'Severance.S01E09.1080p.ATVP.WEB-DL.DDP5.1.Atmos.H.264-NTb',
-      status: 'PUSH_APPROVED',
-      action: 'Watch dir (.torrent)',
-      size: '2.8 GB',
-      downloadUrl: 'https://example.com/torrent/3'
-    },
-    {
-      id: 4,
-      timestamp: '12:15',
-      indexer: 'Redacted',
-      channel: '#red-announces',
-      name: 'Daft_Punk-Discovery-REMASTERED-CD-FLAC-2001-PERFECT',
-      status: 'APPROVED',
-      action: 'Pending Transmission',
-      size: '412 MB',
-      downloadUrl: 'https://example.com/torrent/4'
-    }
-  ];
-
-  const DEMO_FILTERS = [
-    {
-      id: 1,
-      name: 'Series-1080p-HighQuality',
-      indexers: ['TorrentLeech', 'Nebulance'],
-      match_releases: '*1080p*, *WEB-DL*, *BluRay*',
-      except_releases: '*CAM*, *TS*, *HDCAM*',
-      min_size: '500MB',
-      max_size: '18GB',
-      freeleech: false,
-      enabled: true
-    },
-    {
-      id: 2,
-      name: 'Movies-4K-Freeleech',
-      indexers: ['TorrentLeech'],
-      match_releases: '*2160p*, *UHD*',
-      except_releases: '',
-      min_size: '10GB',
-      max_size: '65GB',
-      freeleech: true,
-      enabled: true
-    }
-  ];
-
-  const DEMO_IRC = [
-    {
-      server: 'irc.torrentleech.org:7011 (TLS)',
-      channel: '#tl-announces',
-      bot: 'TL-Announce',
-      nick: 'shareos-box',
-      status: 'irc.connected'
-    },
-    {
-      server: 'irc.nebulance.io:6697 (TLS)',
-      channel: '#nbl-announces',
-      bot: 'NBL-Bot',
-      nick: 'shareos-box',
-      status: 'irc.connected'
-    }
-  ];
-
-  const DEMO_INDEXERS = [
-    { name: 'TorrentLeech', identifier: 'torrentleech', type: 'Torznab / IRC', status: 'active' },
-    { name: 'Nebulance', identifier: 'nebulance', type: 'IRC Announce', status: 'active' },
-    { name: 'Redacted', identifier: 'redacted', type: 'Gazelle / IRC', status: 'active' }
-  ];
 
   // Toast feedback
   function toast(msg, isError = false) {
@@ -170,13 +73,28 @@
   // Fetch daemon status from ShareOS.autobrr
   async function refreshStatus() {
     if (!AB) {
+      serviceStatus = null;
       if (SOS) {
         updateConnBadge('offline', t('conn.no_access'));
         updateBanner('no_access', t('banner.no_access_title'), t('banner.no_access_desc'));
       } else {
-        updateConnBadge('standalone');
-        updateBanner('standalone', t('banner.standalone_title'), t('banner.standalone_desc'));
+        updateConnBadge('offline', t('conn.offline'));
+        updateBanner('offline', t('banner.offline_title'), t('banner.offline_desc'));
       }
+
+      if ($('trans-drop-path')) $('trans-drop-path').textContent = '–';
+      if ($('trans-drop-account')) $('trans-drop-account').textContent = '–';
+      if ($('drop-status-badge')) {
+        $('drop-status-badge').textContent = t('status.inactive');
+        $('drop-status-badge').className = 'badge warn';
+      }
+      if ($('daemon-state-badge')) {
+        $('daemon-state-badge').textContent = t('status.stopped');
+        $('daemon-state-badge').className = 'badge err';
+      }
+      if ($('webui-link-container')) $('webui-link-container').style.display = 'none';
+      if ($('sb-account')) $('sb-account').textContent = t('sb.account', { account: '–' });
+
       return false;
     }
 
@@ -214,7 +132,7 @@
       if ($('cfg-autostart')) $('cfg-autostart').checked = !!st.enabled;
       if ($('cfg-webui-enable')) $('cfg-webui-enable').checked = !!st.ui;
       if ($('daemon-state-badge')) {
-        $('daemon-state-badge').textContent = st.running ? (st.ready ? 'Online' : 'Starting...') : 'Stopped';
+        $('daemon-state-badge').textContent = st.running ? (st.ready ? 'Online' : 'Starting...') : t('status.stopped');
         $('daemon-state-badge').className = 'badge ' + (st.running ? 'ok' : 'err');
       }
 
@@ -246,12 +164,12 @@
   // Fetch accounts list for handover
   async function refreshAccounts() {
     if (!AB || !AB.accounts) {
-      accounts = [{ name: 'root', fullname: 'Administrator' }];
+      accounts = [];
     } else {
       try {
         accounts = await AB.accounts();
       } catch (_) {
-        accounts = [{ name: 'root', fullname: 'Administrator' }];
+        accounts = [];
       }
     }
 
@@ -259,6 +177,14 @@
     if (!sel) return;
     sel.innerHTML = '';
     const current = (serviceStatus && serviceStatus.account) || 'root';
+
+    if (!accounts.length) {
+      const opt = document.createElement('option');
+      opt.value = current;
+      opt.textContent = current;
+      sel.appendChild(opt);
+      return;
+    }
 
     for (const acc of accounts) {
       const opt = document.createElement('option');
@@ -283,12 +209,15 @@
           releases = resp;
         } else if (resp && Array.isArray(resp.data)) {
           releases = resp.data;
+        } else {
+          releases = [];
         }
       } catch (err) {
         console.warn('Failed to fetch releases:', err);
+        releases = [];
       }
-    } else if (!releases.length) {
-      releases = [...DEMO_RELEASES];
+    } else {
+      releases = [];
     }
     renderReleases();
   }
@@ -310,7 +239,13 @@
 
     if (filtered.length === 0) {
       const tr = document.createElement('tr');
-      tr.innerHTML = `<td colspan="6" style="text-align: center; color: var(--sos-muted); padding: 24px;">No releases match the criteria.</td>`;
+      let msg = t('releases.empty');
+      if (query) {
+        msg = t('releases.no_match');
+      } else if (!AB && SOS) {
+        msg = t('releases.no_access');
+      }
+      tr.innerHTML = `<td colspan="6" style="text-align: center; color: var(--sos-muted); padding: 24px;">${escapeHtml(msg)}</td>`;
       tbody.appendChild(tr);
       return;
     }
@@ -363,32 +298,27 @@
     const item = releases.find((r) => r.id === releaseId);
     if (!item) return;
 
+    if (!AB || !serviceStatus || !serviceStatus.ready) {
+      toast(t('err.service_not_ready'), true);
+      return;
+    }
+
     toast(`Sending ${item.torrent_name || item.name} to Transmission drop folder...`);
 
     // Call autobrr's action API (triggers configured Watch dir action)
-    if (AB && serviceStatus && serviceStatus.ready) {
+    try {
       try {
-        try {
-          await AB.api('POST', `/api/release/${releaseId}/action`);
-        } catch (_) {
-          await AB.api('POST', `/api/releases/${releaseId}/action`);
-        }
-        toast(`Torrent dispatched to Transmission drop folder!`);
-        item.status = 'PUSH_APPROVED';
-        item.action = 'Watch dir (' + (serviceStatus.account || 'root') + ')';
-        renderReleases();
-        return;
-      } catch (err) {
-        toast(`autobrr action error: ${err.message}`, true);
-        return;
+        await AB.api('POST', `/api/release/${releaseId}/action`);
+      } catch (_) {
+        await AB.api('POST', `/api/releases/${releaseId}/action`);
       }
+      toast(t('toast.torrent_dispatched'));
+      item.status = 'PUSH_APPROVED';
+      item.action = 'Watch dir (' + (serviceStatus.account || 'root') + ')';
+      renderReleases();
+    } catch (err) {
+      toast(`autobrr action error: ${err.message}`, true);
     }
-
-    // Standalone fallback
-    item.status = 'PUSH_APPROVED';
-    item.action = 'Watch dir (Simulated)';
-    toast(`[Demo] Release dispatched to drop folder!`);
-    renderReleases();
   }
 
   // Fetch filters from autobrr
@@ -398,17 +328,15 @@
         const resp = await AB.api('GET', '/api/filters');
         if (Array.isArray(resp)) {
           filters = resp;
+        } else {
+          filters = [];
         }
       } catch (err) {
         console.warn('Failed to fetch filters:', err);
+        filters = [];
       }
-    } else if (!filters.length) {
-      try {
-        const saved = localStorage.getItem('autobrr_filters_demo');
-        filters = saved ? JSON.parse(saved) : [...DEMO_FILTERS];
-      } catch (_) {
-        filters = [...DEMO_FILTERS];
-      }
+    } else {
+      filters = [];
     }
     renderFilters();
   }
@@ -420,7 +348,8 @@
     container.innerHTML = '';
 
     if (filters.length === 0) {
-      container.innerHTML = `<div style="grid-column: 1 / -1; color: var(--sos-muted); padding: 24px; text-align: center;">${t('filters.empty')}</div>`;
+      const msg = (!AB && SOS) ? t('filters.no_access') : t('filters.empty');
+      container.innerHTML = `<div style="grid-column: 1 / -1; color: var(--sos-muted); padding: 24px; text-align: center;">${escapeHtml(msg)}</div>`;
       return;
     }
 
@@ -479,25 +408,21 @@
   async function toggleFilter(idStr) {
     const filter = filters.find((f) => String(f.id) === String(idStr));
     if (!filter) return;
-    const newState = !filter.enabled;
 
-    if (AB && serviceStatus && serviceStatus.ready) {
-      try {
-        await AB.api('PUT', `/api/filters/${filter.id}`, { ...filter, enabled: newState });
-        filter.enabled = newState;
-        toast(`Filter "${filter.name}" ${newState ? 'enabled' : 'disabled'}`);
-        renderFilters();
-        return;
-      } catch (err) {
-        toast(`Error updating filter: ${err.message}`, true);
-        return;
-      }
+    if (!AB || !serviceStatus || !serviceStatus.ready) {
+      toast(t('err.service_not_ready'), true);
+      return;
     }
 
-    filter.enabled = newState;
-    localStorage.setItem('autobrr_filters_demo', JSON.stringify(filters));
-    toast(`[Demo] Filter ${newState ? 'enabled' : 'disabled'}`);
-    renderFilters();
+    const newState = !filter.enabled;
+    try {
+      await AB.api('PUT', `/api/filters/${filter.id}`, { ...filter, enabled: newState });
+      filter.enabled = newState;
+      toast(`Filter "${filter.name}" ${newState ? 'enabled' : 'disabled'}`);
+      renderFilters();
+    } catch (err) {
+      toast(`Error updating filter: ${err.message}`, true);
+    }
   }
 
   // Delete filter
@@ -506,25 +431,20 @@
     if (!filter) return;
     if (!confirm(`Delete filter "${filter.name}"?`)) return;
 
-    if (AB && serviceStatus && serviceStatus.ready) {
-      try {
-        await AB.api('DELETE', `/api/filters/${filter.id}`);
-        filters = filters.filter((f) => String(f.id) !== String(idStr));
-        toast(`Filter deleted`);
-        renderFilters();
-        updateStatusbar();
-        return;
-      } catch (err) {
-        toast(`Error deleting filter: ${err.message}`, true);
-        return;
-      }
+    if (!AB || !serviceStatus || !serviceStatus.ready) {
+      toast(t('err.service_not_ready'), true);
+      return;
     }
 
-    filters = filters.filter((f) => String(f.id) !== String(idStr));
-    localStorage.setItem('autobrr_filters_demo', JSON.stringify(filters));
-    toast('Filter deleted');
-    renderFilters();
-    updateStatusbar();
+    try {
+      await AB.api('DELETE', `/api/filters/${filter.id}`);
+      filters = filters.filter((f) => String(f.id) !== String(idStr));
+      toast(t('toast.filter_deleted'));
+      renderFilters();
+      updateStatusbar();
+    } catch (err) {
+      toast(`Error deleting filter: ${err.message}`, true);
+    }
   }
 
   // Filter modal logic
@@ -574,6 +494,11 @@
       return;
     }
 
+    if (!AB || !serviceStatus || !serviceStatus.ready) {
+      toast(t('err.service_not_ready'), true);
+      return;
+    }
+
     const idxStr = ($('filter-indexers').value || '').trim();
     const indexersArr = idxStr ? idxStr.split(',').map((s) => s.trim()).filter(Boolean) : [];
     const minS = parseInt($('filter-min-size').value, 10) || 0;
@@ -606,38 +531,20 @@
       ];
     }
 
-    if (AB && serviceStatus && serviceStatus.ready) {
-      try {
-        if (editingFilterId) {
-          await AB.api('PUT', `/api/filters/${editingFilterId}`, payload);
-          toast(t('btn.save'));
-        } else {
-          await AB.api('POST', '/api/filters', payload);
-          toast('Filter created successfully');
-        }
-        closeFilterModal();
-        await refreshFilters();
-        updateStatusbar();
-        return;
-      } catch (err) {
-        toast(`Error saving filter: ${err.message}`, true);
-        return;
+    try {
+      if (editingFilterId) {
+        await AB.api('PUT', `/api/filters/${editingFilterId}`, payload);
+        toast(t('btn.save'));
+      } else {
+        await AB.api('POST', '/api/filters', payload);
+        toast(t('toast.filter_created'));
       }
+      closeFilterModal();
+      await refreshFilters();
+      updateStatusbar();
+    } catch (err) {
+      toast(`Error saving filter: ${err.message}`, true);
     }
-
-    // Standalone fallback
-    if (editingFilterId) {
-      const idx = filters.findIndex((f) => String(f.id) === String(editingFilterId));
-      if (idx >= 0) filters[idx] = { id: editingFilterId, ...payload };
-    } else {
-      payload.id = Date.now();
-      filters.push(payload);
-    }
-    localStorage.setItem('autobrr_filters_demo', JSON.stringify(filters));
-    toast(t('btn.save'));
-    closeFilterModal();
-    renderFilters();
-    updateStatusbar();
   }
 
   // Fetch IRC networks & indexers
@@ -652,12 +559,15 @@
           fetchIrc(),
           AB.api('GET', '/api/indexer').catch(() => null)
         ]);
-        if (Array.isArray(irc)) ircNetworks = irc;
-        if (Array.isArray(idx)) indexers = idx;
-      } catch (_) {}
+        ircNetworks = Array.isArray(irc) ? irc : [];
+        indexers = Array.isArray(idx) ? idx : [];
+      } catch (_) {
+        ircNetworks = [];
+        indexers = [];
+      }
     } else {
-      ircNetworks = [...DEMO_IRC];
-      indexers = [...DEMO_INDEXERS];
+      ircNetworks = [];
+      indexers = [];
     }
 
     renderIRC();
@@ -670,7 +580,8 @@
     tbody.innerHTML = '';
 
     if (ircNetworks.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--sos-muted); padding: 20px;">${t('irc.empty')}</td></tr>`;
+      const msg = (!AB && SOS) ? t('irc.no_access') : t('irc.empty');
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--sos-muted); padding: 20px;">${escapeHtml(msg)}</td></tr>`;
       return;
     }
 
@@ -704,7 +615,8 @@
     tbody.innerHTML = '';
 
     if (indexers.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--sos-muted); padding: 20px;">${t('indexers.empty')}</td></tr>`;
+      const msg = (!AB && SOS) ? t('indexers.no_access') : t('indexers.empty');
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--sos-muted); padding: 20px;">${escapeHtml(msg)}</td></tr>`;
       return;
     }
 
@@ -731,7 +643,7 @@
     if (!box) return;
 
     if (!AB || !AB.log) {
-      box.textContent = '[Standalone Demo] autobrr logs available when running on ShareOS with the autobrr system service.';
+      box.textContent = (!AB && SOS) ? t('log.no_access') : t('log.offline');
       return;
     }
 
@@ -747,7 +659,7 @@
   // Service control actions
   async function startService() {
     if (!AB) {
-      toast('ShareOS.autobrr SDK not available', true);
+      toast(t('conn.no_access'), true);
       return;
     }
     try {
@@ -844,7 +756,7 @@
 
   // Refresh everything
   async function refreshAll() {
-    const isReady = await refreshStatus();
+    await refreshStatus();
     await refreshAccounts();
     await refreshReleases();
     await refreshFilters();
