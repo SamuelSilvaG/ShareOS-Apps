@@ -49,6 +49,7 @@ browser's storage without it.
 | [Transmission](apps/transmission) | BitTorrent client by @SamuelSilvaG: every user has their own Transmission service (system app `transmission-daemon`), downloads into their folders |
 | [NetTunnel](apps/nettunnel) | VPN for the box (OpenVPN, system app `openvpn`): as client import profiles and connect; as server reach home from anywhere with a ready-made profile per device; admins only, shown inside ShareOS |
 | [Tailscale](apps/tailscale) | WireGuard-based mesh VPN client by @SamuelSilvaG: secure zero-config remote access to your box, files (SMB) and web apps from anywhere – connects the box through the ShareOS system app `tailscaled` (admins, ShareOS 0.2.0-beta.8+) |
+| [autobrr](apps/autobrr-ui) | Download automation for IRC announces and RSS feeds by @SamuelSilvaG: filters releases in real time and sends torrents to Transmission (admins, ShareOS 0.2.0-beta.9+) |
 | [SpeedCheck](apps/speedcheck) | Latency, jitter and transfer rate between your device and the box (at home, over VPN), with a log |
 | [HomePing](apps/homeping) | Reachability of your homelab, checked from the box: ping, port or web address, automatically, with a history per host (admins, permission `netcheck`) |
 | [SysMon](apps/sysmon) | System monitor and task manager of the box: CPU, memory, temperature, fan, drives and every process live; end processes (admins, permission `sysinfo`) |

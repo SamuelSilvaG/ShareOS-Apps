@@ -1,0 +1,30 @@
+{
+	"id": "autobrr-ui",
+	"name": "autobrr",
+	"version": "1.0.0",
+	"publisher": "SamuelSilvaG",
+	"description": {
+		"de": "Download-Automatik für IRC-Ankündigungen und RSS-Feeds: Filtert Releases in Echtzeit und übergibt passende Torrents an Transmission. Läuft über den Systemdienst autobrr (Administratoren, ShareOS 0.2.0-beta.9+).",
+		"en": "Download automation for IRC announces and RSS feeds: filters releases in real time and hands matching torrents to Transmission. Runs via the autobrr system service (admins, ShareOS 0.2.0-beta.9+).",
+		"pt": "Automação de downloads para anúncios IRC e feeds RSS: filtra releases em tempo real e entrega torrents correspondentes ao Transmission. Executado via serviço de sistema autobrr (administradores, ShareOS 0.2.0-beta.9+)."
+	},
+	"type": "webapp",
+	"entry": "index.html",
+	"icon": "icon.svg",
+	"category": "network",
+	"license": "GPL-2.0-or-later",
+	"homepage": "https://autobrr.com/",
+	"min_shareos": "0.2.0-beta.9",
+	"permissions": [
+		"files",
+		"autobrr"
+	],
+	"requires": [
+		"autobrr"
+	],
+	"internet": true,
+	"window": {
+		"width": 1080,
+		"height": 720
+	}
+}
