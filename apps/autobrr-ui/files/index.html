@@ -198,14 +198,14 @@
                 <span style="font-size: 20px;">⚡</span>
                 <div class="card-title" data-i18n="trans.daemon_card">Transmission Daemon</div>
               </div>
-              <span class="badge ok" id="trans-daemon-badge">Ready</span>
+              <span class="badge ok" id="trans-daemon-badge">Checking...</span>
             </div>
             <div class="card-desc" style="font-size: 12px;" data-i18n="trans.daemon_desc">
               Native ShareOS BitTorrent daemon running per-user with isolated file permissions.
             </div>
             <div style="margin-top: 14px; display: flex; gap: 8px;">
               <button id="btn-test-transmission" class="sos-btn sos-btn-sm" data-i18n="btn.test_rpc">Test Transmission RPC</button>
-              <button id="btn-open-trans-app" class="sos-btn sos-btn-sm sos-btn-accent" data-i18n="btn.open_trans_app">Open Transmission</button>
+              <a id="btn-open-trans-app" href="/transmission/index.html" class="sos-btn sos-btn-sm sos-btn-accent" style="text-decoration:none;" data-i18n="btn.open_trans_app">Open Transmission</a>
             </div>
           </div>
         </div>
@@ -275,10 +275,11 @@
             </label>
           </div>
 
-          <div id="webui-link-container" style="display: none; margin-top: 10px;">
-            <a id="btn-link-webui" href="#" target="_blank" class="sos-btn sos-btn-accent sos-btn-sm" style="text-decoration:none;">
-              <span>🔗</span> <span data-i18n="settings.webui_open">Open autobrr Web Interface</span>
+          <div id="webui-link-container" style="margin-top: 10px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <a id="btn-link-webui" href="#" target="_blank" rel="noopener noreferrer" class="sos-btn sos-btn-accent sos-btn-sm" style="text-decoration:none;">
+              <span>🌐</span> <span data-i18n="settings.webui_open">Open autobrr Web Interface</span>
             </a>
+            <code id="webui-url-text" style="font-size: 12px; color: var(--sos-muted, #8b949e); padding: 4px 8px; background: rgba(0,0,0,0.2); border-radius: 4px;">http://...:7474</code>
           </div>
 
           <div class="info-box" style="margin-top: 14px;">

@@ -137,17 +137,14 @@
       }
 
       // Web UI link
-      const linkContainer = $('webui-link-container');
+      const webuiUrl = getWebUIUrl();
       const linkBtn = $('btn-link-webui');
-      if (linkContainer && linkBtn) {
-        if (st.ui && st.running) {
-          linkContainer.style.display = 'block';
-          const host = st.host || window.location.hostname || 'shareos';
-          linkBtn.href = `http://${host}:${st.port || 7474}`;
-        } else {
-          linkContainer.style.display = 'none';
-        }
-      }
+      const urlText = $('webui-url-text');
+      if (linkBtn) linkBtn.href = webuiUrl;
+      if (urlText) urlText.textContent = webuiUrl;
+
+      // Check Transmission status
+      checkTransmissionStatus();
 
       if ($('sb-account')) {
         $('sb-account').textContent = t('sb.account', { account: st.account || '–' });
@@ -790,26 +787,150 @@
     if (btn) btn.click();
   }
 
+  // Determine correct Native Web UI URL reachable from the client browser
+  function getWebUIUrl() {
+    const port = (serviceStatus && serviceStatus.port) || 7474;
+    let host = window.location.hostname;
+    if (!host || host === '0.0.0.0') {
+      host = (serviceStatus && serviceStatus.host && serviceStatus.host !== '0.0.0.0') ? serviceStatus.host : '127.0.0.1';
+    }
+    return `http://${host}:${port}`;
+  }
+
+  // Open the Native autobrr Web UI (port 7474)
   async function openAdvancedWebUI() {
+    const url = getWebUIUrl();
     if (!AB) {
-      toast('ShareOS.autobrr is not available (admin accounts only)', true);
+      window.open(url, '_blank', 'noopener,noreferrer');
       return;
     }
-    const host = (serviceStatus && serviceStatus.host) || window.location.hostname || 'shareos';
-    const port = (serviceStatus && serviceStatus.port) || 7474;
-    const url = `http://${host}:${port}`;
 
-    if (!serviceStatus || !serviceStatus.ui) {
+    if (!serviceStatus || !serviceStatus.running) {
+      toast('Starting autobrr service...', false);
       try {
-        toast('Enabling native Web UI on 0.0.0.0:7474...');
-        await AB.set({ ui: true });
+        await AB.start();
         await refreshStatus();
-      } catch (err) {
-        toast(`Failed to enable Web UI: ${err.message}`, true);
+      } catch (e) {
+        toast(`Could not start autobrr service: ${e.message}`, true);
         return;
       }
     }
-    window.open(url, '_blank');
+
+    if (!serviceStatus || !serviceStatus.ui) {
+      try {
+        toast('Enabling Web UI on 0.0.0.0:7474...');
+        await AB.set({ ui: true });
+        await refreshStatus();
+      } catch (e) {
+        console.warn('Could not set ui:true', e);
+      }
+    }
+
+    const win = window.open(url, '_blank', 'noopener,noreferrer');
+    if (!win) {
+      switchTab('tab-settings');
+      toast(`Please open Web UI: ${url}`, false);
+      const linkBtn = $('btn-link-webui');
+      if (linkBtn) {
+        linkBtn.scrollIntoView({ behavior: 'smooth' });
+        linkBtn.focus();
+      }
+    }
+  }
+
+  // Open the Transmission web app
+  function openTransmission(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    const size = { width: 1050, height: 720 };
+    if (SOS && SOS.openApp) {
+      try {
+        const w = SOS.openApp('transmission', size);
+        if (w) return;
+      } catch (err) {
+        console.warn('SOS.openApp transmission failed:', err);
+      }
+    }
+    // Fallback: direct web app paths
+    const candidates = [
+      new URL('/transmission/index.html', window.location.origin).href,
+      new URL('../transmission/index.html', window.location.href).href,
+      new URL('/transmission/', window.location.origin).href
+    ];
+    const targetUrl = candidates[0];
+    const w = window.open(targetUrl, 'sosapp-transmission', `popup,width=${size.width},height=${size.height}`);
+    if (!w) {
+      window.open(targetUrl, '_blank');
+    }
+  }
+
+  // Background Transmission status check
+  async function checkTransmissionStatus() {
+    const badge = $('trans-daemon-badge');
+    if (!badge) return;
+    const TOR = SOS && SOS.torrent;
+    if (TOR && TOR.rpc) {
+      try {
+        const res = await TOR.rpc('session-get');
+        if (res && (res.result === 'success' || res.arguments)) {
+          const v = res.arguments && res.arguments.version ? `v${res.arguments.version}` : 'Active';
+          badge.textContent = `Online (${v})`;
+          badge.className = 'badge ok';
+          return;
+        }
+      } catch (e) {
+        badge.textContent = 'Offline';
+        badge.className = 'badge warn';
+        return;
+      }
+    }
+    if (serviceStatus && serviceStatus.drop) {
+      badge.textContent = 'Handover Ready';
+      badge.className = 'badge ok';
+    } else {
+      badge.textContent = 'Offline / Standby';
+      badge.className = 'badge warn';
+    }
+  }
+
+  // Explicit Transmission connection test via RPC
+  async function testTransmissionRPC() {
+    const badge = $('trans-daemon-badge');
+    if (badge) {
+      badge.textContent = 'Connecting...';
+      badge.className = 'badge warn';
+    }
+    const TOR = SOS && SOS.torrent;
+    if (TOR && TOR.rpc) {
+      try {
+        toast('Testing Transmission RPC connection...');
+        const res = await TOR.rpc('session-get');
+        if (res && (res.result === 'success' || res.arguments)) {
+          const ver = res.arguments && res.arguments.version ? `v${res.arguments.version}` : '';
+          const downDir = res.arguments && res.arguments['download-dir'] ? res.arguments['download-dir'] : '';
+          toast(`Transmission Connected! ${ver} (Download Dir: ${downDir})`);
+          if (badge) {
+            badge.textContent = `Connected ${ver}`;
+            badge.className = 'badge ok';
+          }
+          return;
+        }
+      } catch (err) {
+        console.warn('RPC test failed:', err);
+      }
+    }
+    if (serviceStatus && serviceStatus.drop) {
+      toast(`Handover drop folder active: ${serviceStatus.drop} (user: ${serviceStatus.account || 'root'})`);
+      if (badge) {
+        badge.textContent = 'Handover Ready';
+        badge.className = 'badge ok';
+      }
+    } else {
+      toast('Transmission daemon offline or drop folder unconfigured.', true);
+      if (badge) {
+        badge.textContent = 'Disconnected';
+        badge.className = 'badge err';
+      }
+    }
   }
 
   // ShareOS Desktop Menubar
@@ -858,16 +979,8 @@
     ]);
   }
 
-  function openTransmission() {
-    if (SOS && SOS.openApp) {
-      SOS.openApp('transmission', { width: 1050, height: 720 });
-    } else {
-      window.open('../transmission/index.html', 'transmission');
-    }
-  }
-
-  // App Initialization
-  document.addEventListener('DOMContentLoaded', () => {
+  // Safe App Initialization
+  function init() {
     if (window.I18N) I18N.apply();
     setupTabs();
     setupMenu();
@@ -887,13 +1000,7 @@
     if ($('btn-save-account')) $('btn-save-account').onclick = saveHandoverAccount;
     if ($('btn-save-admin-pw')) $('btn-save-admin-pw').onclick = saveAdminPassword;
     if ($('btn-refresh-log')) $('btn-refresh-log').onclick = refreshLog;
-    if ($('btn-test-transmission')) $('btn-test-transmission').onclick = () => {
-      if (serviceStatus && serviceStatus.drop) {
-        toast(`Drop folder active: ${serviceStatus.drop} (account: ${serviceStatus.account || 'root'})`);
-      } else {
-        toast('Drop folder is not yet configured. Please select a user account in Settings.', true);
-      }
-    };
+    if ($('btn-test-transmission')) $('btn-test-transmission').onclick = testTransmissionRPC;
 
     // Checkboxes
     if ($('cfg-autostart')) {
@@ -923,5 +1030,11 @@
     // Initial load and periodic polling every 12 seconds
     refreshAll();
     pollTimer = setInterval(refreshAll, 12000);
-  });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 })();
