@@ -17,9 +17,6 @@
 
 ## 1.2.0
 
-- Multilingual user interface: Portuguese, English, and German (`pt`, `en`, `de`).
-- Automatic language detection (saved choice → `ShareOS.lang` → browser locale, fallback to English).
-- New "Language" / "Sprache" / "Idioma" menu in the menu bar to manually switch and persist language in `localStorage`.
 - Portuguese description and "Open with" label in `app.json`.
 
 ## 1.1.0

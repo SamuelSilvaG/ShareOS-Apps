@@ -1521,20 +1521,7 @@
   });
 
   // ShareOS Menu Bar
-  function switchLang(code) {
-    if (!window.I18N || I18N.lang === code) return;
-    I18N.setLang(code);
-    location.reload();
-  }
-
   if (window.ShareOS && ShareOS.menu) {
-    const langItems = window.I18N
-      ? I18N.supported.map((code) => ({
-          label: (I18N.lang === code ? '✓ ' : '   ') + I18N.names[code],
-          action: () => switchLang(code)
-        }))
-      : [];
-
     ShareOS.menu($('menu'), [
       {
         label: t('menu.torrent'),
@@ -1574,10 +1561,6 @@
           { label: t('menu.stats'), action: () => $('btn-stats').click() },
           { label: t('menu.settings'), action: () => $('btn-settings').click() }
         ]
-      },
-      {
-        label: t('menu.language'),
-        items: langItems
       },
       {
         label: t('menu.help'),

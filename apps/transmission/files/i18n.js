@@ -961,15 +961,10 @@
     }
   };
 
-  // Helper for language handling
-  let currentLang = 'en';
+  // Helper for language handling: automatically follow ShareOS.lang or browser locale
+  let currentLang = FALLBACK;
 
   function initLang() {
-    const saved = localStorage.getItem('transmission_lang');
-    if (saved && SUPPORTED.includes(saved)) {
-      currentLang = saved;
-      return;
-    }
     if (window.ShareOS && ShareOS.lang && SUPPORTED.includes(ShareOS.lang)) {
       currentLang = ShareOS.lang;
       return;
@@ -986,20 +981,6 @@
 
   window.I18N = {
     lang: currentLang,
-    supported: SUPPORTED,
-    names: {
-      pt: 'Português',
-      en: 'English',
-      de: 'Deutsch'
-    },
-    setLang(code) {
-      if (SUPPORTED.includes(code)) {
-        currentLang = code;
-        this.lang = code;
-        localStorage.setItem('transmission_lang', code);
-        document.documentElement.lang = code;
-      }
-    },
     t(key, vars = {}) {
       const dict = STRINGS[currentLang] || STRINGS[FALLBACK];
       let str = dict[key] || STRINGS[FALLBACK][key] || key;
