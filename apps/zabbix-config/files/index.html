@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Zabbix Agent Config - ShareOS</title>
+	<link rel="stylesheet" href="app.css">
+	<link rel="icon" type="image/svg+xml" href="icon.svg">
+</head>
+<body>
+
+	<!-- App Header -->
+	<header class="app-header">
+		<div class="brand-section">
+			<div class="brand-icon">
+				<svg viewBox="0 0 24 24">
+					<path d="M4 4h16v3.2L8.5 17H20v3H4v-3.2L15.5 7H4V4z"/>
+				</svg>
+			</div>
+			<div class="brand-text">
+				<h1>
+					<span data-i18n="app_name">Zabbix Agent Config</span>
+					<span class="version-badge">v1.0.0</span>
+				</h1>
+				<div class="brand-subtitle" data-i18n="app_subtitle">ShareOS Active Monitoring Agent</div>
+			</div>
+		</div>
+
+		<div class="header-actions">
+			<div class="status-pill running" id="statusPill">
+				<span class="status-indicator"></span>
+				<span id="statusText" data-i18n="status_running">Running</span>
+			</div>
+
+			<select class="lang-selector" id="langSelector" aria-label="Select Language">
+				<option value="en">EN</option>
+				<option value="pt">PT</option>
+				<option value="de">DE</option>
+			</select>
+
+			<button class="btn btn-secondary btn-sm" id="btnRefresh" data-i18n-title="refresh">
+				<svg viewBox="0 0 24 24">
+					<path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+				</svg>
+				<span data-i18n="refresh">Refresh Status</span>
+			</button>
+		</div>
+	</header>
+
+	<!-- Tabs Navigation -->
+	<nav class="tabs-nav">
+		<button class="tab-btn active" data-tab="config">
+			<svg viewBox="0 0 24 24">
+				<path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+			</svg>
+			<span data-i18n="tab_config">Agent Setup</span>
+		</button>
+		<button class="tab-btn" data-tab="template">
+			<svg viewBox="0 0 24 24">
+				<path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+			</svg>
+			<span data-i18n="tab_template">Zabbix Template</span>
+		</button>
+		<button class="tab-btn" data-tab="metrics">
+			<svg viewBox="0 0 24 24">
+				<path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
+			</svg>
+			<span data-i18n="tab_metrics">ShareOS Metrics</span>
+		</button>
+		<button class="tab-btn" data-tab="cli">
+			<svg viewBox="0 0 24 24">
+				<path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-8 12.5v-1.5h6v1.5h-6zm-4.71-.29L3.59 12.5l3.71-3.71 1.06 1.06-2.65 2.65 2.65 2.65-1.07 1.06z"/>
+			</svg>
+			<span data-i18n="tab_cli">CLI & Audit</span>
+		</button>
+	</nav>
+
+	<!-- Main Body Container -->
+	<main class="app-body">
+
+		<!-- TAB 1: CONFIG -->
+		<section class="tab-panel active" id="panel-config">
+			<!-- Autostart / Enabled Card -->
+			<div class="card">
+				<div class="switch-group">
+					<label class="switch-label-wrap" for="fieldEnabled">
+						<span class="switch-title" data-i18n="lbl_enabled">Enable Zabbix Agent (Autostart on boot)</span>
+						<span class="switch-desc" data-i18n="desc_enabled">When enabled, the Zabbix agent daemon starts automatically on system boot.</span>
+					</label>
+					<label class="switch">
+						<input type="checkbox" id="fieldEnabled" checked>
+						<span class="slider"></span>
+					</label>
+				</div>
+			</div>
+
+			<!-- Active Mode Settings -->
+			<div class="card">
+				<div class="card-header">
+					<h2 class="card-title" data-i18n="sec_active">Active Server Configuration</h2>
+				</div>
+				<p class="card-desc" data-i18n="desc_active">ShareOS Zabbix Agent operates primarily in active mode, sending discovery and collected metrics directly to your Zabbix Server or Zabbix Proxy.</p>
+
+				<div class="form-grid">
+					<div class="form-group full-width">
+						<label class="form-label" for="fieldServer">
+							<span data-i18n="lbl_server">Zabbix Server / Proxy (Active)</span>
+						</label>
+						<input type="text" id="fieldServer" class="form-input" placeholder="zabbix.example.com:10051, 192.168.1.50">
+						<span class="form-hint" data-i18n="hint_server">Comma-separated list of host[:port] (e.g. zabbix.example.com or 192.168.1.50:10051). Maximum 8 servers.</span>
+					</div>
+
+					<div class="form-group">
+						<label class="form-label" for="fieldHostname">
+							<span data-i18n="lbl_hostname">Host Name in Zabbix</span>
+						</label>
+						<input type="text" id="fieldHostname" class="form-input" placeholder="shareos-box">
+						<span class="form-hint" data-i18n="hint_hostname">The unique host name as registered in Zabbix. Leave blank to automatically use this ShareOS box hostname.</span>
+					</div>
+
+					<div class="form-group">
+						<label class="form-label" for="fieldMetadata">
+							<span data-i18n="lbl_metadata">Host Metadata (Auto-Registration)</span>
+						</label>
+						<input type="text" id="fieldMetadata" class="form-input" value="ShareOS" placeholder="ShareOS">
+						<span class="form-hint" data-i18n="hint_metadata">Used by Zabbix Server auto-registration action. Default is "ShareOS". Maximum 255 characters.</span>
+					</div>
+				</div>
+			</div>
+
+			<!-- TLS-PSK Encryption Settings -->
+			<div class="card">
+				<div class="card-header">
+					<h2 class="card-title" data-i18n="sec_encryption">TLS-PSK Encryption</h2>
+				</div>
+				<p class="card-desc" data-i18n="desc_encryption">Pre-Shared Key (PSK) encryption secures all metric data transmitted between this ShareOS box and your Zabbix Server.</p>
+
+				<div class="form-grid">
+					<div class="form-group">
+						<label class="form-label" for="fieldPskIdentity">
+							<span data-i18n="lbl_psk_identity">PSK Identity</span>
+						</label>
+						<input type="text" id="fieldPskIdentity" class="form-input" placeholder="PSK-SHAREOS-01">
+						<span class="form-hint" data-i18n="hint_psk_identity">Unique identifier for the key (e.g. "PSK-SHAREOS-01"). Max 128 characters.</span>
+					</div>
+
+					<div class="form-group">
+						<label class="form-label" for="fieldPskKey">
+							<span data-i18n="lbl_psk_key">Pre-Shared Key (Hex)</span>
+						</label>
+						<div class="input-group">
+							<input type="text" id="fieldPskKey" class="form-input mono" placeholder="64 hex characters (256-bit key)">
+							<button type="button" class="btn btn-secondary btn-sm" id="btnGenPsk" data-i18n="btn_generate_psk">Generate</button>
+							<button type="button" class="btn btn-secondary btn-sm" id="btnCopyPsk" data-i18n="btn_copy_psk">Copy</button>
+						</div>
+						<span class="form-hint" data-i18n="hint_psk_key">Hexadecimal key (32 to 512 hex digits; 64 hex characters = 256 bits).</span>
+					</div>
+				</div>
+			</div>
+
+			<!-- Passive & SMART Intervals Grid -->
+			<div class="form-grid">
+				<!-- Passive Mode -->
+				<div class="card">
+					<div class="card-header">
+						<h2 class="card-title" data-i18n="sec_passive">Passive Checks (Optional)</h2>
+					</div>
+					<div class="switch-group" style="margin-bottom: 14px;">
+						<label class="switch-label-wrap" for="fieldPassive">
+							<span class="switch-title" data-i18n="lbl_passive">Enable Passive Listener</span>
+							<span class="switch-desc" data-i18n="desc_passive">Allows Zabbix Server or Proxy to query this agent directly on the configured listen port.</span>
+						</label>
+						<label class="switch">
+							<input type="checkbox" id="fieldPassive">
+							<span class="slider"></span>
+						</label>
+					</div>
+
+					<div class="form-group" style="margin-bottom: 12px;">
+						<label class="form-label" for="fieldAllow">
+							<span data-i18n="lbl_allow">Allowed Server IPs / CIDRs</span>
+						</label>
+						<input type="text" id="fieldAllow" class="form-input" placeholder="127.0.0.1, 192.168.1.0/24">
+						<span class="form-hint" data-i18n="hint_allow">Comma-separated list of IP addresses or CIDR subnets allowed to query this agent (max 16).</span>
+					</div>
+
+					<div class="form-group">
+						<label class="form-label" for="fieldPort">
+							<span data-i18n="lbl_port">Listen Port</span>
+						</label>
+						<input type="number" id="fieldPort" class="form-input" value="10050" min="1024" max="65535">
+						<span class="form-hint" data-i18n="hint_port">Default is 10050 (range 1024-65535).</span>
+					</div>
+				</div>
+
+				<!-- SMART Cache Interval -->
+				<div class="card">
+					<div class="card-header">
+						<h2 class="card-title" data-i18n="sec_intervals">SMART & Hardware Polling</h2>
+					</div>
+					<div class="form-group">
+						<label class="form-label" for="fieldDiskInterval">
+							<span data-i18n="lbl_disk_interval">SMART Cache Interval</span>
+						</label>
+						<select id="fieldDiskInterval" class="form-select">
+							<option value="10" data-i18n="min_10">10 minutes</option>
+							<option value="15" data-i18n="min_15">15 minutes</option>
+							<option value="20" data-i18n="min_20">20 minutes</option>
+							<option value="30" selected data-i18n="min_30">30 minutes (Default)</option>
+							<option value="60" data-i18n="min_60">60 minutes (Power Saver)</option>
+						</select>
+						<span class="form-hint" data-i18n="desc_disk_interval">Interval between disk health SMART scans to avoid waking sleeping drives unnecessarily.</span>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- TAB 2: TEMPLATE -->
+		<section class="tab-panel" id="panel-template">
+			<div class="card template-card">
+				<div class="card-header">
+					<h2 class="card-title">
+						<span data-i18n="tmpl_title">Official ShareOS Zabbix Template</span>
+						<span class="pill-badge green" data-i18n="tmpl_badge">Zabbix 7.0+ Ready</span>
+					</h2>
+					<div style="display: flex; gap: 8px;">
+						<button class="btn btn-primary btn-sm" id="btnDownloadTemplate">
+							<svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
+							<span data-i18n="btn_download_tmpl">Download shareos_template.yaml</span>
+						</button>
+						<button class="btn btn-secondary btn-sm" id="btnCopyTemplate">
+							<svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+							<span data-i18n="btn_copy_tmpl">Copy Template YAML</span>
+						</button>
+					</div>
+				</div>
+				<p class="card-desc" data-i18n="tmpl_desc">Template designed specifically for ShareOS active monitoring. It automatically discovers storage drives, SMART metrics, software RAID arrays, box temperature, and fan telemetry.</p>
+
+				<h3 style="font-size: 0.88rem; margin: 16px 0 8px;" data-i18n="tmpl_requirements_title">Template Linking Requirements</h3>
+				<ul class="step-list">
+					<li class="step-item">
+						<span class="step-num">1</span>
+						<span data-i18n="tmpl_req_1">Link "Linux by Zabbix agent active" as parent template.</span>
+					</li>
+					<li class="step-item">
+						<span class="step-num">2</span>
+						<span data-i18n="tmpl_req_2">Link "ShareOS by Zabbix agent active" to monitor box hardware, fan, temperature, disks, and RAID.</span>
+					</li>
+					<li class="step-item">
+						<span class="step-num">3</span>
+						<span data-i18n="tmpl_req_3">Configure Host Name and HostMetadata ("ShareOS") in your auto-registration rules.</span>
+					</li>
+				</ul>
+
+				<h3 style="font-size: 0.88rem; margin: 20px 0 8px;" data-i18n="tmpl_quick_guide">Quick Import Instructions</h3>
+				<ul class="step-list">
+					<li class="step-item">
+						<span class="step-num">1</span>
+						<span data-i18n="tmpl_step_1">Open your Zabbix Web UI and navigate to Data collection → Templates.</span>
+					</li>
+					<li class="step-item">
+						<span class="step-num">2</span>
+						<span data-i18n="tmpl_step_2">Click the "Import" button at top right and upload the downloaded YAML file.</span>
+					</li>
+					<li class="step-item">
+						<span class="step-num">3</span>
+						<span data-i18n="tmpl_step_3">Create or update your Host with the Host name matching this configuration.</span>
+					</li>
+					<li class="step-item">
+						<span class="step-num">4</span>
+						<span data-i18n="tmpl_step_4">In Host Encryption tab, enable PSK connections and enter the exact PSK Identity and Key configured here.</span>
+					</li>
+				</ul>
+			</div>
+		</section>
+
+		<!-- TAB 3: METRICS -->
+		<section class="tab-panel" id="panel-metrics">
+			<div class="card">
+				<div class="card-header">
+					<h2 class="card-title" data-i18n="metrics_title">Live Hardware & Storage Metrics</h2>
+					<span class="pill-badge green" id="metricRefreshBadge">Live</span>
+				</div>
+				<p class="card-desc" data-i18n="metrics_desc">Live telemetry exposed natively by the ShareOS daemon to the Zabbix agent items.</p>
+
+				<div class="metrics-grid">
+					<div class="metric-box">
+						<div class="metric-label" data-i18n="metric_box_temp">Box Temperature</div>
+						<div class="metric-val highlight" id="mTemp">-- °C</div>
+						<div class="metric-sub">shareos.box[temperature]</div>
+					</div>
+					<div class="metric-box">
+						<div class="metric-label" data-i18n="metric_fan_rpm">Fan Speed</div>
+						<div class="metric-val" id="mFanRpm">-- RPM</div>
+						<div class="metric-sub">shareos.box[fan_rpm]</div>
+					</div>
+					<div class="metric-box">
+						<div class="metric-label" data-i18n="metric_fan_pwm">Fan PWM Duty</div>
+						<div class="metric-val" id="mFanPwm">-- %</div>
+						<div class="metric-sub">shareos.box[fan_pwm]</div>
+					</div>
+					<div class="metric-box">
+						<div class="metric-label" data-i18n="metric_board">Hardware Board</div>
+						<div class="metric-val" style="font-size: 1.1rem;" id="mBoard">ShareOS Box</div>
+						<div class="metric-sub">shareos.box[board]</div>
+					</div>
+				</div>
+
+				<h3 style="font-size: 0.88rem; margin: 20px 0 10px;" data-i18n="metric_disks">Monitored Storage Drives</h3>
+				<table class="telemetry-table" id="disksTable">
+					<thead>
+						<tr>
+							<th>Drive Device</th>
+							<th>Model / Serial</th>
+							<th>SMART Health</th>
+							<th>Temperature</th>
+							<th>State</th>
+						</tr>
+					</thead>
+					<tbody id="disksTableBody">
+						<tr>
+							<td>/dev/sda</td>
+							<td>Seagate IronWolf 4TB (ST4000VN006)</td>
+							<td><span class="pill-badge green">PASSED</span></td>
+							<td>32 °C</td>
+							<td><span class="pill-badge green">Active</span></td>
+						</tr>
+						<tr>
+							<td>/dev/sdb</td>
+							<td>Seagate IronWolf 4TB (ST4000VN006)</td>
+							<td><span class="pill-badge green">PASSED</span></td>
+							<td>33 °C</td>
+							<td><span class="pill-badge green">Active</span></td>
+						</tr>
+					</tbody>
+				</table>
+
+				<h3 style="font-size: 0.88rem; margin: 24px 0 10px;" data-i18n="metric_raid">RAID Arrays</h3>
+				<table class="telemetry-table" id="raidTable">
+					<thead>
+						<tr>
+							<th>Array Device</th>
+							<th>Level</th>
+							<th>Health</th>
+							<th>Working / Disks</th>
+							<th>Sync Status</th>
+						</tr>
+					</thead>
+					<tbody id="raidTableBody">
+						<tr>
+							<td>/dev/md0</td>
+							<td>RAID-1 (Mirror)</td>
+							<td><span class="pill-badge green">Healthy</span></td>
+							<td>2 / 2</td>
+							<td>Synchronized (100%)</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</section>
+
+		<!-- TAB 4: CLI -->
+		<section class="tab-panel" id="panel-cli">
+			<div class="card">
+				<div class="card-header">
+					<h2 class="card-title" data-i18n="cli_title">ShareOS CLI & Service Audit</h2>
+					<button class="btn btn-secondary btn-sm" id="btnCopyCli">
+						<svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+						<span data-i18n="btn_copy_cli">Copy Command</span>
+					</button>
+				</div>
+				<p class="card-desc" data-i18n="cli_desc">The configuration above translates directly into standard ShareOS Zabbix daemon commands. You can review or copy the command to execute via SSH or terminal.</p>
+
+				<div class="code-snippet" id="cliPreview">echo '{"enabled":true,"server":"zabbix.example.com","hostname":"","metadata":"ShareOS","psk_identity":"","psk":"","passive":false,"port":10050,"disk_interval":30}' | shareos-zabbix set</div>
+
+				<h3 style="font-size: 0.88rem; margin: 24px 0 10px;" data-i18n="cli_ref_title">Command Reference (`shareos-zabbix`)</h3>
+				<table class="telemetry-table">
+					<thead>
+						<tr>
+							<th>Command</th>
+							<th>Description</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td><code>shareos-zabbix status</code></td>
+							<td data-i18n="cli_ref_status">Check agent installation, process state, and current settings</td>
+						</tr>
+						<tr>
+							<td><code>shareos-zabbix set</code></td>
+							<td data-i18n="cli_ref_set">Apply configuration from JSON payload via stdin</td>
+						</tr>
+						<tr>
+							<td><code>shareos-zabbix restart</code></td>
+							<td data-i18n="cli_ref_restart">Restart the Zabbix agent daemon</td>
+						</tr>
+						<tr>
+							<td><code>shareos-zabbix logs</code></td>
+							<td data-i18n="cli_ref_logs">View recent agent log entries</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</section>
+
+	</main>
+
+	<!-- Footer with Action Controls -->
+	<footer class="app-footer">
+		<div class="footer-info">
+			<span>ShareOS Zabbix Agent v7.0.32</span> &bull; 
+			<span id="footerHostStatus">Active Mode</span>
+		</div>
+		<button class="btn btn-primary" id="btnApply">
+			<svg viewBox="0 0 24 24">
+				<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+			</svg>
+			<span data-i18n="apply_changes">Save & Apply</span>
+		</button>
+	</footer>
+
+	<!-- Toast Container -->
+	<div class="toast-container" id="toastContainer"></div>
+
+	<!-- Scripts -->
+	<script src="i18n.js"></script>
+	<script src="app.js"></script>
+</body>
+</html>

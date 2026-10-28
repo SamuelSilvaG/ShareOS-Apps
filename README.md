@@ -14,7 +14,7 @@ installs them with one click – the same way it offers firmware updates.
 
 ## Apps
 
-38 web apps. Most save their data in the personal folder of the signed-in
+39 web apps. Most save their data in the personal folder of the signed-in
 account on the box (permission `files`, `ShareOS.fs`) and fall back to the
 browser's storage without it.
 
@@ -50,6 +50,7 @@ browser's storage without it.
 | [NetTunnel](apps/nettunnel) | VPN for the box (OpenVPN, system app `openvpn`): as client import profiles and connect; as server reach home from anywhere with a ready-made profile per device; admins only, shown inside ShareOS |
 | [Tailscale](apps/tailscale) | WireGuard-based mesh VPN client by @SamuelSilvaG: secure zero-config remote access to your box, files (SMB) and web apps from anywhere – connects the box through the ShareOS system app `tailscaled` (admins, ShareOS 0.2.0-beta.8+) |
 | [autobrr](apps/autobrr-ui) | Download automation for IRC announces and RSS feeds by @SamuelSilvaG: filters releases in real time and sends torrents to Transmission (admins, ShareOS 0.2.0-beta.9+) |
+| [Zabbix Agent Config](apps/zabbix-config) | Configuration dashboard for the Zabbix agent on the box by @SamuelSilvaG: active servers, TLS-PSK encryption, template and metrics (ShareOS 0.2.0-beta.15+) |
 | [SpeedCheck](apps/speedcheck) | Latency, jitter and transfer rate between your device and the box (at home, over VPN), with a log |
 | [HomePing](apps/homeping) | Reachability of your homelab, checked from the box: ping, port or web address, automatically, with a history per host (admins, permission `netcheck`) |
 | [SysMon](apps/sysmon) | System monitor and task manager of the box: CPU, memory, temperature, fan, drives and every process live; end processes (admins, permission `sysinfo`) |
