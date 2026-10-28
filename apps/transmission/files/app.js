@@ -1546,16 +1546,6 @@
         ]
       },
       {
-        label: t('menu.view'),
-        items: [
-          { label: t('menu.refresh'), kbd: 'F5', action: refresh },
-          { label: t('menu.sidebar'), action: () => $('btn-toggle-sidebar').click() },
-          '-',
-          { label: t('menu.light'), action: () => document.documentElement.setAttribute('data-theme', 'light') },
-          { label: t('menu.dark'), action: () => document.documentElement.setAttribute('data-theme', 'dark') }
-        ]
-      },
-      {
         label: t('menu.options'),
         items: [
           { label: t('menu.stats'), action: () => $('btn-stats').click() },
@@ -1573,6 +1563,7 @@
 
   // Keyboard Shortcuts
   window.addEventListener('keydown', (e) => {
+    if (e.key === 'F5') { e.preventDefault(); refresh(); }
     if ((e.ctrlKey || e.metaKey) && e.key === 'o') { e.preventDefault(); $('btn-add').click(); }
     if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
       if (!['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
@@ -1620,7 +1611,26 @@
     }
   }
 
+  // Theme Synchronization with ShareOS
+  function initTheme() {
+    const params = new URLSearchParams(window.location.search);
+    const theme = params.get('theme') || (window.ShareOS && window.ShareOS.theme);
+    if (theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+    } else if (!document.documentElement.hasAttribute('data-theme')) {
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+    }
+    if (window.ShareOS && typeof window.ShareOS.onTheme === 'function') {
+      window.ShareOS.onTheme((t, a) => {
+        if (t) document.documentElement.setAttribute('data-theme', t);
+        if (a) document.documentElement.setAttribute('data-accent', a);
+      });
+    }
+  }
+
   // Init
+  initTheme();
   refresh();
   checkOpenedFile();
   refreshTimer = setInterval(refresh, 2000);
