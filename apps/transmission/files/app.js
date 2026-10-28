@@ -1,4 +1,4 @@
-// Transmission ShareOS Web Client - Transgui Desktop Interface
+// Transmission ShareOS Web Client - Desktop Interface
 // Fully integrated with ShareOS.torrent RPC and ShareOS.fs
 'use strict';
 
@@ -1362,7 +1362,7 @@
     }
   });
 
-  // Modal: Settings (transgui tabs)
+  // Modal: Settings
   $('btn-settings').addEventListener('click', () => {
     if (!serverSession) return;
     $('cfg-download-dir').value = serverSession['download-dir'] || '';

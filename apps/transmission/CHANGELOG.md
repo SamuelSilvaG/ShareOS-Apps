@@ -2,7 +2,7 @@
 
 ## 1.3.0
 
-- Transmission Remote GUI (transgui) layout: category navigation sidebar (status, trackers, directories) with live count badges.
+- Category navigation sidebar: filter by status, trackers, and directories with live count badges.
 - Advanced torrent table: sortable columns, multi-selection, and queue position indicators.
 - Right-click context menu: start now (force), pause, verify data, reannounce, queue moves, set location, rename, copy magnet/hash, and properties.
 - Granular file management: select individual files to download (wanted/unwanted) and set file priority (High, Normal, Low).

@@ -1,4 +1,4 @@
-/* Transmission App Styles for ShareOS - Transgui Theme */
+/* Transmission App Styles for ShareOS */
 :root {
   --row-hover: rgba(255, 255, 255, 0.05);
   --row-selected: rgba(var(--sos-accent-rgb, 58, 123, 213), 0.22);
@@ -216,7 +216,7 @@ html, body {
   position: relative;
 }
 
-/* Left Sidebar (transgui style) */
+/* Left Sidebar (Category Navigation) */
 .sidebar-panel {
   width: var(--sidebar-w);
   min-width: 150px;
