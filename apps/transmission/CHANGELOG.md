@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.3.0
+
+- Transmission Remote GUI (transgui) layout: category navigation sidebar (status, trackers, directories) with live count badges.
+- Advanced torrent table: sortable columns, multi-selection, and queue position indicators.
+- Right-click context menu: start now (force), pause, verify data, reannounce, queue moves, set location, rename, copy magnet/hash, and properties.
+- Granular file management: select individual files to download (wanted/unwanted) and set file priority (High, Normal, Low).
+- Interactive pieces visualizer: canvas-based piece map showing piece availability and completion.
+- Advanced tracker manager: inspect announce states, seeders/leechers, and add/edit/remove trackers.
+- Complete Transmission preferences: downloading folders (incomplete dir), global/alternative limits, port test, max peers, encryption, DHT/PEX/LPD, queue limits, and seed ratio.
+- Detailed server & session statistics dialog.
+
 ## 1.2.1
 
 - On phones the toolbar wraps instead of scrolling sideways.

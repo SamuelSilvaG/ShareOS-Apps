@@ -16,7 +16,7 @@
     <div class="titlebar-left">
       <img src="icon.svg" class="app-icon" alt="Transmission Logo">
       <span class="app-title">Transmission</span>
-      <span class="version-tag">1.2.1</span>
+      <span class="version-tag">1.3.0</span>
     </div>
     <div class="titlebar-right">
       <span id="conn-badge" class="conn-badge checking" data-i18n="conn.checking">Checking connection...</span>
@@ -30,16 +30,36 @@
   <div class="sos-toolbar">
     <div class="tb-group">
       <button id="btn-add" class="sos-btn sos-btn-accent" data-i18n-title="tb.add.title">
-        <span class="btn-icon">＋</span> Torrent
+        <span class="btn-icon">＋</span> <span data-i18n="tb.add">Torrent</span>
       </button>
       <button id="btn-start" class="sos-btn" data-i18n-title="tb.start.title" disabled>
         <span class="btn-icon">▶</span> <span data-i18n="tb.start">Start</span>
+      </button>
+      <button id="btn-force" class="sos-btn" data-i18n-title="tb.force.title" disabled>
+        <span class="btn-icon">⏩</span> <span data-i18n="tb.force">Force</span>
       </button>
       <button id="btn-pause" class="sos-btn" data-i18n-title="tb.pause.title" disabled>
         <span class="btn-icon">⏸</span> <span data-i18n="tb.pause">Pause</span>
       </button>
       <button id="btn-remove" class="sos-btn sos-btn-danger" data-i18n-title="tb.remove.title" disabled>
         <span class="btn-icon">✕</span> <span data-i18n="tb.remove">Delete</span>
+      </button>
+      <button id="btn-verify" class="sos-btn" data-i18n-title="tb.verify.title" disabled>
+        <span class="btn-icon">✓</span> <span data-i18n="tb.verify">Verify</span>
+      </button>
+    </div>
+
+    <div class="tb-divider"></div>
+
+    <div class="tb-group">
+      <button id="btn-queue-up" class="sos-btn" data-i18n-title="tb.queueUp.title" disabled>
+        <span class="btn-icon">▲</span>
+      </button>
+      <button id="btn-queue-down" class="sos-btn" data-i18n-title="tb.queueDown.title" disabled>
+        <span class="btn-icon">▼</span>
+      </button>
+      <button id="btn-reannounce" class="sos-btn" data-i18n-title="tb.reannounce.title" disabled>
+        <span class="btn-icon">📡</span>
       </button>
     </div>
 
@@ -49,6 +69,9 @@
       <button id="btn-turtle" class="sos-btn" data-i18n-title="tb.turtle.title">
         <span class="btn-icon">🐢</span> <span data-i18n="tb.turtle">Throttle</span>
       </button>
+      <button id="btn-stats" class="sos-btn" data-i18n-title="tb.stats.title">
+        <span class="btn-icon">📊</span>
+      </button>
       <button id="btn-settings" class="sos-btn" data-i18n-title="tb.settings">
         <span class="btn-icon">⚙</span> <span data-i18n="tb.settings">Settings</span>
       </button>
@@ -57,14 +80,10 @@
     <div class="tb-spacer"></div>
 
     <div class="tb-group">
-      <select id="filter-status" class="sos-input filter-select">
-        <option value="all" data-i18n="filter.all">All torrents</option>
-        <option value="downloading" data-i18n="filter.downloading">Downloading</option>
-        <option value="seeding" data-i18n="filter.seeding">Seeding</option>
-        <option value="paused" data-i18n="filter.paused">Paused</option>
-        <option value="active" data-i18n="filter.active">Active</option>
-      </select>
       <input type="search" id="search-input" class="sos-input search-box" data-i18n-placeholder="search.placeholder" placeholder="Search...">
+      <button id="btn-toggle-sidebar" class="sos-btn" data-i18n-title="tb.sidebar">
+        <span class="btn-icon">☰</span>
+      </button>
     </div>
   </div>
 
@@ -79,49 +98,167 @@
     </div>
   </div>
 
-  <!-- Main Content -->
+  <!-- Main Content Workspace (Transgui Splitter Layout) -->
   <main class="sos-main">
-    <div class="main-layout">
-      <!-- Torrent List Table -->
-      <div class="torrent-table-wrap">
-        <table class="torrent-table" id="torrent-table">
-          <thead>
-            <tr>
-              <th class="th-sel"><input type="checkbox" id="select-all"></th>
-              <th class="th-status" data-i18n="col.status">Status</th>
-              <th class="th-name" data-i18n="col.name">Name</th>
-              <th class="th-progress" data-i18n="col.progress">Progress</th>
-              <th class="th-size" data-i18n="col.size">Size</th>
-              <th class="th-rates" data-i18n="col.rates">Download / Upload</th>
-              <th class="th-eta" data-i18n="col.eta">Remaining</th>
-              <th class="th-peers" data-i18n="col.peers">Peers</th>
-            </tr>
-          </thead>
-          <tbody id="torrent-rows">
-            <tr>
-              <td colspan="8" class="empty-state" data-i18n="list.loading">Loading torrents...</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+    <div class="main-container" id="main-container">
 
-      <!-- Details Drawer -->
-      <div id="details-drawer" class="details-drawer" style="display:none;">
-        <div class="drawer-header">
-          <div class="drawer-tabs">
-            <button class="d-tab active" data-tab="general" data-i18n="tab.general">General</button>
-            <button class="d-tab" data-tab="files" data-i18n="tab.files">Files</button>
-            <button class="d-tab" data-tab="peers" data-i18n="tab.peers">Peers</button>
-            <button class="d-tab" data-tab="trackers" data-i18n="tab.trackers">Trackers</button>
+      <!-- Left Sidebar (Category Navigation) -->
+      <aside class="sidebar-panel" id="sidebar">
+        <div class="sidebar-scroll">
+          <!-- Status Group -->
+          <div class="sidebar-group">
+            <div class="sidebar-group-title" data-i18n="sidebar.status">Status</div>
+            <ul class="sidebar-list">
+              <li class="sidebar-item active" data-filter="all">
+                <span class="sidebar-icon">📁</span>
+                <span class="sidebar-label" data-i18n="filter.all">All torrents</span>
+                <span class="sidebar-badge" id="badge-all">0</span>
+              </li>
+              <li class="sidebar-item" data-filter="downloading">
+                <span class="sidebar-icon">📥</span>
+                <span class="sidebar-label" data-i18n="filter.downloading">Downloading</span>
+                <span class="sidebar-badge badge-dl" id="badge-downloading">0</span>
+              </li>
+              <li class="sidebar-item" data-filter="seeding">
+                <span class="sidebar-icon">📤</span>
+                <span class="sidebar-label" data-i18n="filter.seeding">Seeding</span>
+                <span class="sidebar-badge badge-seed" id="badge-seeding">0</span>
+              </li>
+              <li class="sidebar-item" data-filter="active">
+                <span class="sidebar-icon">⚡</span>
+                <span class="sidebar-label" data-i18n="filter.active">Active</span>
+                <span class="sidebar-badge" id="badge-active">0</span>
+              </li>
+              <li class="sidebar-item" data-filter="paused">
+                <span class="sidebar-icon">⏸</span>
+                <span class="sidebar-label" data-i18n="filter.paused">Paused</span>
+                <span class="sidebar-badge" id="badge-paused">0</span>
+              </li>
+              <li class="sidebar-item" data-filter="finished">
+                <span class="sidebar-icon">✓</span>
+                <span class="sidebar-label" data-i18n="filter.finished">Finished</span>
+                <span class="sidebar-badge" id="badge-finished">0</span>
+              </li>
+              <li class="sidebar-item" data-filter="error">
+                <span class="sidebar-icon">⚠️</span>
+                <span class="sidebar-label" data-i18n="filter.error">Error</span>
+                <span class="sidebar-badge badge-err" id="badge-error">0</span>
+              </li>
+            </ul>
           </div>
-          <button id="btn-close-drawer" class="sos-btn sos-btn-sm" data-i18n-title="drawer.close">✕</button>
+
+          <!-- Trackers Group -->
+          <div class="sidebar-group">
+            <div class="sidebar-group-title" data-i18n="sidebar.trackers">Trackers</div>
+            <ul class="sidebar-list" id="sidebar-trackers">
+              <li class="sidebar-item active" data-tracker="all">
+                <span class="sidebar-icon">🌐</span>
+                <span class="sidebar-label" data-i18n="sidebar.allTrackers">All trackers</span>
+                <span class="sidebar-badge" id="badge-trackers-all">0</span>
+              </li>
+              <!-- Dynamic tracker items inserted here -->
+            </ul>
+          </div>
+
+          <!-- Directories Group -->
+          <div class="sidebar-group">
+            <div class="sidebar-group-title" data-i18n="sidebar.directories">Directories</div>
+            <ul class="sidebar-list" id="sidebar-dirs">
+              <li class="sidebar-item active" data-dir="all">
+                <span class="sidebar-icon">📂</span>
+                <span class="sidebar-label" data-i18n="sidebar.allDirs">All directories</span>
+                <span class="sidebar-badge" id="badge-dirs-all">0</span>
+              </li>
+              <!-- Dynamic directory items inserted here -->
+            </ul>
+          </div>
         </div>
-        <div class="drawer-content">
-          <div id="tab-general" class="tab-panel active"></div>
-          <div id="tab-files" class="tab-panel"></div>
-          <div id="tab-peers" class="tab-panel"></div>
-          <div id="tab-trackers" class="tab-panel"></div>
+      </aside>
+
+      <!-- Sidebar Divider / Handle -->
+      <div class="split-divider-v" id="sidebar-resizer"></div>
+
+      <!-- Center Pane (Torrent Table + Bottom Details Panel) -->
+      <div class="center-pane" id="center-pane">
+
+        <!-- Torrent Table Wrap -->
+        <div class="torrent-table-wrap" id="torrent-table-wrap">
+          <table class="torrent-table" id="torrent-table">
+            <thead>
+              <tr>
+                <th class="th-sel"><input type="checkbox" id="select-all"></th>
+                <th class="th-order sortable" data-sort="queuePosition" data-i18n="col.order">#</th>
+                <th class="th-name sortable" data-sort="name" data-i18n="col.name">Name</th>
+                <th class="th-size sortable" data-sort="totalSize" data-i18n="col.size">Size</th>
+                <th class="th-progress sortable" data-sort="percentDone" data-i18n="col.progress">Progress</th>
+                <th class="th-status sortable" data-sort="status" data-i18n="col.status">Status</th>
+                <th class="th-seeds sortable" data-sort="peersSendingToUs" data-i18n="col.seeds">Seeds</th>
+                <th class="th-peers sortable" data-sort="peersConnected" data-i18n="col.peers">Peers</th>
+                <th class="th-down sortable" data-sort="rateDownload" data-i18n="col.downSpeed">Down Speed</th>
+                <th class="th-up sortable" data-sort="rateUpload" data-i18n="col.upSpeed">Up Speed</th>
+                <th class="th-eta sortable" data-sort="eta" data-i18n="col.eta">Remaining</th>
+                <th class="th-ratio sortable" data-sort="uploadRatio" data-i18n="col.ratio">Ratio</th>
+                <th class="th-uploaded sortable" data-sort="uploadedEver" data-i18n="col.uploaded">Uploaded</th>
+                <th class="th-added sortable" data-sort="addedDate" data-i18n="col.added">Added Date</th>
+              </tr>
+            </thead>
+            <tbody id="torrent-rows">
+              <tr>
+                <td colspan="14" class="empty-state" data-i18n="list.loading">Loading torrents...</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
+
+        <!-- Horizontal Resizer -->
+        <div class="split-divider-h" id="pane-resizer"></div>
+
+        <!-- Details Drawer / Bottom Panel -->
+        <div id="details-drawer" class="details-drawer">
+          <div class="drawer-header">
+            <div class="drawer-tabs">
+              <button class="d-tab active" data-tab="general" data-i18n="tab.general">General</button>
+              <button class="d-tab" data-tab="files" data-i18n="tab.files">Files</button>
+              <button class="d-tab" data-tab="peers" data-i18n="tab.peers">Peers</button>
+              <button class="d-tab" data-tab="trackers" data-i18n="tab.trackers">Trackers</button>
+              <button class="d-tab" data-tab="pieces" data-i18n="tab.pieces">Pieces</button>
+              <button class="d-tab" data-tab="stats" data-i18n="tab.stats">Statistics</button>
+            </div>
+            <button id="btn-close-drawer" class="sos-btn sos-btn-sm" data-i18n-title="drawer.close">✕</button>
+          </div>
+          <div class="drawer-content">
+            <!-- Tab General -->
+            <div id="tab-general" class="tab-panel active">
+              <div class="empty-detail-hint">Select a torrent to view details.</div>
+            </div>
+
+            <!-- Tab Files -->
+            <div id="tab-files" class="tab-panel">
+              <div class="empty-detail-hint">Select a torrent to view files.</div>
+            </div>
+
+            <!-- Tab Peers -->
+            <div id="tab-peers" class="tab-panel">
+              <div class="empty-detail-hint">Select a torrent to view peers.</div>
+            </div>
+
+            <!-- Tab Trackers -->
+            <div id="tab-trackers" class="tab-panel">
+              <div class="empty-detail-hint">Select a torrent to view trackers.</div>
+            </div>
+
+            <!-- Tab Pieces -->
+            <div id="tab-pieces" class="tab-panel">
+              <div class="empty-detail-hint">Select a torrent to view piece map.</div>
+            </div>
+
+            <!-- Tab Stats -->
+            <div id="tab-stats" class="tab-panel">
+              <div class="empty-detail-hint">Loading stats...</div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </main>
@@ -134,10 +271,40 @@
       <span id="sb-rates">↓ 0 B/s   ↑ 0 B/s</span>
     </div>
     <div class="sb-right">
+      <span id="sb-port" class="port-tag">Port: –</span>
+      <span class="sb-sep">|</span>
       <span id="sb-turtle-status" class="turtle-tag" style="display:none;" data-i18n="sb.turtle">🐢 Throttling active</span>
       <span class="sb-sep" id="sb-turtle-sep" style="display:none;">|</span>
       <span id="sb-status" data-i18n="sb.ready">Ready</span>
     </div>
+  </div>
+
+  <!-- Right-Click Context Menu -->
+  <div id="context-menu" class="context-menu" style="display:none;">
+    <div class="ctx-item" id="ctx-start" data-i18n="ctx.start">Start</div>
+    <div class="ctx-item" id="ctx-force" data-i18n="ctx.forceStart">Force Start (Start Now)</div>
+    <div class="ctx-item" id="ctx-pause" data-i18n="ctx.pause">Pause</div>
+    <div class="ctx-item" id="ctx-verify" data-i18n="ctx.verify">Verify Local Data</div>
+    <div class="ctx-item" id="ctx-reannounce" data-i18n="ctx.reannounce">Ask Tracker for More Peers</div>
+    <div class="ctx-divider"></div>
+    <div class="ctx-submenu-parent">
+      <div class="ctx-item ctx-has-sub"><span data-i18n="ctx.queue">Queue</span> <span class="sub-arrow">▶</span></div>
+      <div class="ctx-submenu">
+        <div class="ctx-item" id="ctx-q-top" data-i18n="ctx.moveTop">Move to Top</div>
+        <div class="ctx-item" id="ctx-q-up" data-i18n="ctx.moveUp">Move Up</div>
+        <div class="ctx-item" id="ctx-q-down" data-i18n="ctx.moveDown">Move Down</div>
+        <div class="ctx-item" id="ctx-q-bottom" data-i18n="ctx.moveBottom">Move to Bottom</div>
+      </div>
+    </div>
+    <div class="ctx-divider"></div>
+    <div class="ctx-item" id="ctx-location" data-i18n="ctx.setLocation">Set Location / Move Data...</div>
+    <div class="ctx-item" id="ctx-rename" data-i18n="ctx.rename">Rename...</div>
+    <div class="ctx-divider"></div>
+    <div class="ctx-item" id="ctx-copy-magnet" data-i18n="ctx.copyMagnet">Copy Magnet Link</div>
+    <div class="ctx-item" id="ctx-copy-hash" data-i18n="ctx.copyHash">Copy Hash</div>
+    <div class="ctx-divider"></div>
+    <div class="ctx-item" id="ctx-props" data-i18n="ctx.properties">Torrent Properties...</div>
+    <div class="ctx-item ctx-danger" id="ctx-delete" data-i18n="ctx.delete">Delete...</div>
   </div>
 
   <!-- Modal: Add Torrent -->
@@ -149,8 +316,9 @@
       </div>
       <div class="modal-body">
         <div class="modal-tabs">
-          <button class="m-tab active" id="mtab-link">Magnet / URL</button>
-          <button class="m-tab" id="mtab-file" data-i18n="add.tabFile">Torrent file</button>
+          <button class="m-tab active" id="mtab-link" data-i18n="add.tabLink">Magnet / URL</button>
+          <button class="m-tab" id="mtab-file" data-i18n="add.tabFile">Torrent file (PC)</button>
+          <button class="m-tab" id="mtab-box" data-i18n="add.tabBox">ShareOS Storage</button>
         </div>
         <div id="mcontent-link" class="tab-content active">
           <label class="form-label" for="torrent-url" data-i18n="add.urlLabel">Magnet link or URL to the .torrent file:</label>
@@ -159,8 +327,11 @@
         <div id="mcontent-file" class="tab-content">
           <label class="form-label" data-i18n="add.fileLabel">Select a .torrent file from your computer:</label>
           <input type="file" id="torrent-file-input" class="sos-input" accept=".torrent">
-          <div class="or-separator" data-i18n="add.or">or</div>
-          <button type="button" id="btn-pick-box" class="sos-btn" data-i18n="add.pickBox">Choose from ShareOS storage...</button>
+          <div id="picked-local-name" class="picked-name"></div>
+        </div>
+        <div id="mcontent-box" class="tab-content">
+          <label class="form-label" data-i18n="add.tabBox">Select from NAS shares:</label>
+          <button type="button" id="btn-pick-box" class="sos-btn sos-btn-accent" data-i18n="add.pickBox">Choose file from ShareOS storage...</button>
           <div id="picked-file-name" class="picked-name"></div>
         </div>
         <div class="form-group" style="margin-top:16px;">
@@ -170,11 +341,21 @@
             <button type="button" id="btn-browse-dest" class="sos-btn" data-i18n-title="add.browse.title" data-i18n="add.browse">Browse</button>
           </div>
         </div>
-        <div class="form-group checkbox-group">
-          <label class="chk-label">
-            <input type="checkbox" id="torrent-start-now" checked>
-            <span data-i18n="add.startNow">Start download immediately</span>
-          </label>
+        <div class="grid-2" style="margin-top:12px;">
+          <div class="form-group checkbox-group">
+            <label class="chk-label">
+              <input type="checkbox" id="torrent-start-now" checked>
+              <span data-i18n="add.startNow">Start download immediately</span>
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="torrent-prio" data-i18n="add.priority">Bandwidth priority:</label>
+            <select id="torrent-prio" class="sos-input">
+              <option value="1" data-i18n="det.prioHigh">High</option>
+              <option value="0" selected data-i18n="det.prioNormal">Normal</option>
+              <option value="-1" data-i18n="det.prioLow">Low</option>
+            </select>
+          </div>
         </div>
       </div>
       <div class="modal-footer">
@@ -207,56 +388,289 @@
     </div>
   </div>
 
-  <!-- Modal: Settings -->
-  <div id="modal-settings" class="modal-backdrop" style="display:none;">
+  <!-- Modal: Set Location / Move Data -->
+  <div id="modal-location" class="modal-backdrop" style="display:none;">
     <div class="sos-dialog modal-card">
+      <div class="modal-header">
+        <h3 data-i18n="loc.title">Set Torrent Location</h3>
+        <button class="modal-close" id="modal-loc-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label" for="loc-new-path" data-i18n="loc.newPath">New destination directory:</label>
+          <div class="input-with-button">
+            <input type="text" id="loc-new-path" class="sos-input">
+            <button type="button" id="btn-loc-browse" class="sos-btn" data-i18n="add.browse">Browse</button>
+          </div>
+        </div>
+        <div class="form-group checkbox-group" style="margin-top:12px;">
+          <label class="chk-label">
+            <input type="checkbox" id="loc-move-data" checked>
+            <span data-i18n="loc.moveData">Move downloaded data to new location</span>
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="modal-loc-cancel" class="sos-btn" data-i18n="btn.cancel">Cancel</button>
+        <button id="modal-loc-submit" class="sos-btn sos-btn-accent" data-i18n="loc.submit">Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Rename Torrent -->
+  <div id="modal-rename" class="modal-backdrop" style="display:none;">
+    <div class="sos-dialog modal-card modal-sm">
+      <div class="modal-header">
+        <h3 data-i18n="rename.title">Rename Torrent</h3>
+        <button class="modal-close" id="modal-rename-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label" for="rename-input" data-i18n="rename.label">New torrent name:</label>
+          <input type="text" id="rename-input" class="sos-input">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="modal-rename-cancel" class="sos-btn" data-i18n="btn.cancel">Cancel</button>
+        <button id="modal-rename-submit" class="sos-btn sos-btn-accent" data-i18n="rename.submit">Rename</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Torrent Properties -->
+  <div id="modal-props" class="modal-backdrop" style="display:none;">
+    <div class="sos-dialog modal-card">
+      <div class="modal-header">
+        <h3 data-i18n="prop.title">Torrent Properties</h3>
+        <button class="modal-close" id="modal-props-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="cfg-section">
+          <h4 data-i18n="prop.bandwidth">Bandwidth & Speed Limits</h4>
+          <div class="grid-2">
+            <div>
+              <label class="form-label" for="prop-prio" data-i18n="prop.prio">Bandwidth priority:</label>
+              <select id="prop-prio" class="sos-input">
+                <option value="1" data-i18n="det.prioHigh">High</option>
+                <option value="0" data-i18n="det.prioNormal">Normal</option>
+                <option value="-1" data-i18n="det.prioLow">Low</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label" for="prop-max-peers" data-i18n="prop.maxPeers">Maximum peers:</label>
+              <input type="number" id="prop-max-peers" class="sos-input" min="1" max="1000">
+            </div>
+          </div>
+          <div class="grid-2" style="margin-top:10px;">
+            <div>
+              <label class="chk-label"><input type="checkbox" id="prop-limit-down-en"> <span data-i18n="prop.limitDown">Download limit (KB/s):</span></label>
+              <input type="number" id="prop-limit-down" class="sos-input" min="0" step="10">
+            </div>
+            <div>
+              <label class="chk-label"><input type="checkbox" id="prop-limit-up-en"> <span data-i18n="prop.limitUp">Upload limit (KB/s):</span></label>
+              <input type="number" id="prop-limit-up" class="sos-input" min="0" step="10">
+            </div>
+          </div>
+        </div>
+
+        <div class="cfg-section">
+          <h4 data-i18n="prop.ratio">Upload Ratio Limit</h4>
+          <div class="form-group">
+            <label class="radio-label">
+              <input type="radio" name="prop-ratio-mode" value="0" id="prop-ratio-m0">
+              <span data-i18n="prop.ratioGlobal">Use global default</span>
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="radio-label">
+              <input type="radio" name="prop-ratio-mode" value="1" id="prop-ratio-m1">
+              <span data-i18n="prop.ratioStop">Stop seeding at ratio:</span>
+            </label>
+            <input type="number" id="prop-ratio-val" class="sos-input inline-num" min="0" step="0.1" style="width:100px; display:inline-block; margin-left:8px;">
+          </div>
+          <div class="form-group">
+            <label class="radio-label">
+              <input type="radio" name="prop-ratio-mode" value="2" id="prop-ratio-m2">
+              <span data-i18n="prop.ratioUnlimited">Unlimited</span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="modal-props-cancel" class="sos-btn" data-i18n="btn.cancel">Cancel</button>
+        <button id="modal-props-submit" class="sos-btn sos-btn-accent" data-i18n="btn.save">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Statistics -->
+  <div id="modal-stats" class="modal-backdrop" style="display:none;">
+    <div class="sos-dialog modal-card">
+      <div class="modal-header">
+        <h3 data-i18n="stats.title">Transmission Statistics</h3>
+        <button class="modal-close" id="modal-stats-close">✕</button>
+      </div>
+      <div class="modal-body" id="stats-modal-body">
+        <div class="loading-spinner">Loading statistics...</div>
+      </div>
+      <div class="modal-footer">
+        <button id="modal-stats-close-btn" class="sos-btn sos-btn-accent" data-i18n="btn.close">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Settings / Preferences (transgui style) -->
+  <div id="modal-settings" class="modal-backdrop" style="display:none;">
+    <div class="sos-dialog modal-card modal-lg">
       <div class="modal-header">
         <h3 data-i18n="cfg.title">Transmission settings</h3>
         <button class="modal-close" id="modal-cfg-close">✕</button>
       </div>
       <div class="modal-body">
-        <div class="cfg-section">
-          <h4 data-i18n="cfg.downloadDir">Download directory</h4>
-          <div class="input-with-button">
-            <input type="text" id="cfg-download-dir" class="sos-input">
-            <button type="button" id="btn-cfg-browse" class="sos-btn" data-i18n="add.browse">Browse</button>
-          </div>
+        <div class="settings-tabs">
+          <button class="s-tab active" data-stab="dl" data-i18n="cfg.tabDownloading">Downloading</button>
+          <button class="s-tab" data-stab="speed" data-i18n="cfg.tabSpeed">Speed Limits</button>
+          <button class="s-tab" data-stab="net" data-i18n="cfg.tabNetwork">Network & Peers</button>
+          <button class="s-tab" data-stab="queue" data-i18n="cfg.tabQueue">Queue & Seeding</button>
         </div>
-        <div class="cfg-section">
-          <h4 data-i18n="cfg.limits">Speed limits (KB/s)</h4>
-          <div class="grid-2">
-            <div>
-              <label class="chk-label"><input type="checkbox" id="cfg-speed-down-enabled"> <span data-i18n="cfg.limitDown">Limit download:</span></label>
-              <input type="number" id="cfg-speed-down" class="sos-input" min="0" step="10">
-            </div>
-            <div>
-              <label class="chk-label"><input type="checkbox" id="cfg-speed-up-enabled"> <span data-i18n="cfg.limitUp">Limit upload:</span></label>
-              <input type="number" id="cfg-speed-up" class="sos-input" min="0" step="10">
+
+        <!-- Settings: Downloading Tab -->
+        <div id="stab-dl" class="stab-content active">
+          <div class="cfg-section">
+            <h4 data-i18n="cfg.downloadDir">Default download directory:</h4>
+            <div class="input-with-button">
+              <input type="text" id="cfg-download-dir" class="sos-input">
+              <button type="button" id="btn-cfg-browse" class="sos-btn" data-i18n="add.browse">Browse</button>
             </div>
           </div>
-        </div>
-        <div class="cfg-section">
-          <h4 data-i18n="cfg.alt">Alternative limits (turtle mode, KB/s)</h4>
-          <div class="grid-2">
-            <div>
-              <label class="form-label" for="cfg-alt-down" data-i18n="cfg.altDown">Download (throttled):</label>
-              <input type="number" id="cfg-alt-down" class="sos-input" min="0" step="10">
+          <div class="cfg-section">
+            <label class="chk-label">
+              <input type="checkbox" id="cfg-incomplete-enabled">
+              <span data-i18n="cfg.useIncomplete">Keep incomplete downloads in separate directory</span>
+            </label>
+            <div class="input-with-button" style="margin-top:8px;">
+              <input type="text" id="cfg-incomplete-dir" class="sos-input">
+              <button type="button" id="btn-cfg-incomplete-browse" class="sos-btn" data-i18n="add.browse">Browse</button>
             </div>
-            <div>
-              <label class="form-label" for="cfg-alt-up" data-i18n="cfg.altUp">Upload (throttled):</label>
-              <input type="number" id="cfg-alt-up" class="sos-input" min="0" step="10">
+          </div>
+          <div class="cfg-section">
+            <label class="chk-label">
+              <input type="checkbox" id="cfg-start-added" checked>
+              <span data-i18n="cfg.startAdded">Start added torrents immediately</span>
+            </label>
+            <label class="chk-label" style="margin-top:8px;">
+              <input type="checkbox" id="cfg-append-part" checked>
+              <span data-i18n="cfg.appendPart">Append .part to incomplete files</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Settings: Speed Limits Tab -->
+        <div id="stab-speed" class="stab-content">
+          <div class="cfg-section">
+            <h4 data-i18n="cfg.limits">Global speed limits (KB/s)</h4>
+            <div class="grid-2">
+              <div>
+                <label class="chk-label"><input type="checkbox" id="cfg-speed-down-enabled"> <span data-i18n="cfg.limitDown">Limit download:</span></label>
+                <input type="number" id="cfg-speed-down" class="sos-input" min="0" step="10">
+              </div>
+              <div>
+                <label class="chk-label"><input type="checkbox" id="cfg-speed-up-enabled"> <span data-i18n="cfg.limitUp">Limit upload:</span></label>
+                <input type="number" id="cfg-speed-up" class="sos-input" min="0" step="10">
+              </div>
+            </div>
+          </div>
+          <div class="cfg-section">
+            <h4 data-i18n="cfg.alt">Alternative limits (turtle mode, KB/s)</h4>
+            <div class="grid-2">
+              <div>
+                <label class="form-label" for="cfg-alt-down" data-i18n="cfg.altDown">Download (throttled):</label>
+                <input type="number" id="cfg-alt-down" class="sos-input" min="0" step="10">
+              </div>
+              <div>
+                <label class="form-label" for="cfg-alt-up" data-i18n="cfg.altUp">Upload (throttled):</label>
+                <input type="number" id="cfg-alt-up" class="sos-input" min="0" step="10">
+              </div>
             </div>
           </div>
         </div>
-        <div class="cfg-section">
-          <h4 data-i18n="cfg.conn">Connection &amp; port</h4>
-          <div class="grid-2">
-            <div>
-              <label class="form-label" for="cfg-peer-port" data-i18n="cfg.peerPort">Peer port (for port forwarding in the router):</label>
-              <input type="number" id="cfg-peer-port" class="sos-input" readonly>
+
+        <!-- Settings: Network & Peers Tab -->
+        <div id="stab-net" class="stab-content">
+          <div class="cfg-section">
+            <h4 data-i18n="cfg.conn">Connection & Ports</h4>
+            <div class="grid-2">
+              <div>
+                <label class="form-label" for="cfg-peer-port" data-i18n="cfg.peerPort">Peer port:</label>
+                <div class="input-with-button">
+                  <input type="number" id="cfg-peer-port" class="sos-input" min="1024" max="65535">
+                  <button type="button" id="btn-test-port" class="sos-btn" data-i18n="cfg.testPort">Test Port</button>
+                </div>
+                <div id="port-test-result" class="port-result"></div>
+              </div>
+              <div>
+                <label class="chk-label" style="margin-top:24px;">
+                  <input type="checkbox" id="cfg-port-forward">
+                  <span data-i18n="cfg.portForward">Enable port forwarding (UPnP / NAT-PMP)</span>
+                </label>
+                <label class="chk-label" style="margin-top:8px;">
+                  <input type="checkbox" id="cfg-random-port">
+                  <span data-i18n="cfg.randomPort">Random port on daemon start</span>
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="cfg-section">
+            <div class="grid-2">
+              <div>
+                <label class="form-label" for="cfg-max-peers-global" data-i18n="cfg.maxPeersGlobal">Maximum global peers:</label>
+                <input type="number" id="cfg-max-peers-global" class="sos-input" min="1" max="5000">
+              </div>
+              <div>
+                <label class="form-label" for="cfg-max-peers-torrent" data-i18n="cfg.maxPeersTorrent">Maximum peers per torrent:</label>
+                <input type="number" id="cfg-max-peers-torrent" class="sos-input" min="1" max="1000">
+              </div>
+            </div>
+          </div>
+          <div class="cfg-section">
+            <div class="grid-2">
+              <div>
+                <label class="form-label" for="cfg-encryption" data-i18n="cfg.encryption">Encryption:</label>
+                <select id="cfg-encryption" class="sos-input">
+                  <option value="tolerated" data-i18n="cfg.encTolerated">Tolerated</option>
+                  <option value="preferred" data-i18n="cfg.encPreferred">Preferred</option>
+                  <option value="required" data-i18n="cfg.encRequired">Required</option>
+                </select>
+              </div>
+              <div style="padding-top:18px;">
+                <label class="chk-label"><input type="checkbox" id="cfg-dht"> <span data-i18n="cfg.enableDht">Enable DHT</span></label>
+                <label class="chk-label" style="margin-top:6px;"><input type="checkbox" id="cfg-pex"> <span data-i18n="cfg.enablePex">Enable PEX</span></label>
+                <label class="chk-label" style="margin-top:6px;"><input type="checkbox" id="cfg-lpd"> <span data-i18n="cfg.enableLpd">Enable LPD</span></label>
+              </div>
             </div>
           </div>
         </div>
+
+        <!-- Settings: Queue & Seeding Tab -->
+        <div id="stab-queue" class="stab-content">
+          <div class="cfg-section">
+            <div class="grid-2">
+              <div>
+                <label class="form-label" for="cfg-dl-queue" data-i18n="cfg.downloadQueueSize">Maximum active downloads:</label>
+                <input type="number" id="cfg-dl-queue" class="sos-input" min="1" max="100">
+              </div>
+              <div>
+                <label class="form-label" for="cfg-seed-queue" data-i18n="cfg.seedQueueSize">Maximum active seeds:</label>
+                <input type="number" id="cfg-seed-queue" class="sos-input" min="1" max="100">
+              </div>
+            </div>
+          </div>
+          <div class="cfg-section">
+            <label class="chk-label"><input type="checkbox" id="cfg-ratio-limited"> <span data-i18n="cfg.seedRatioLimited">Stop seeding at ratio:</span></label>
+            <input type="number" id="cfg-ratio-limit" class="sos-input inline-num" min="0" step="0.1" style="width:120px; margin-top:8px;">
+          </div>
+        </div>
+
       </div>
       <div class="modal-footer">
         <button id="modal-cfg-cancel" class="sos-btn" data-i18n="btn.cancel">Cancel</button>
