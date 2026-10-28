@@ -1,0 +1,29 @@
+{
+	"id": "zabbix-config",
+	"name": "Zabbix Agent Config",
+	"version": "1.0.0",
+	"publisher": "SamuelSilvaG",
+	"description": {
+		"de": "Konfiguration und Steuerung des Zabbix-Agents auf der Box: Server, Hostname, TLS-PSK-Verschlüsselung, passive Prüfungen und SMART-Intervall grafisch einrichten. Enthält die Vorlage für Zabbix 7.0 und Live-Werte (System-App zabbix-agent, ShareOS 0.2.0-beta.15+).",
+		"en": "Configuration and control for the Zabbix agent on the box: configure active servers, hostname, TLS-PSK encryption, passive checks, and SMART interval with a graphical interface. Includes Zabbix 7.0 template and live metric diagnostics (system app zabbix-agent, ShareOS 0.2.0-beta.15+).",
+		"pt": "Configuração e controle do agente Zabbix na box: configure servidores ativos, hostname, criptografia TLS-PSK, checagens passivas e intervalo SMART com interface gráfica. Inclui template para Zabbix 7.0 e diagnóstico de métricas ao vivo (app de sistema zabbix-agent, ShareOS 0.2.0-beta.15+)."
+	},
+	"type": "webapp",
+	"entry": "index.html",
+	"icon": "icon.svg",
+	"category": "system",
+	"license": "GPL-2.0-or-later",
+	"homepage": "https://www.zabbix.com/",
+	"min_shareos": "0.2.0-beta.15",
+	"permissions": [
+		"files",
+		"sysinfo"
+	],
+	"requires": [
+		"zabbix-agent"
+	],
+	"window": {
+		"width": 1040,
+		"height": 720
+	}
+}
