@@ -1,4 +1,4 @@
-# autobrr for ShareOS
+# autobrr-ui for ShareOS
 
 Download automation for IRC announces and RSS feeds designed for the ShareOS ecosystem (D-Link DNS-320L, DNS-320 rev B, DNS-325). It monitors indexers in real time and automatically dispatches matching torrents to the local **Transmission** client.
 
