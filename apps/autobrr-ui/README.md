@@ -18,7 +18,7 @@ autobrr runs as a native box-wide service (system app `autobrr`, version 1.89.0)
    - Matching torrents dropped into this folder are automatically imported and downloaded by Transmission.
 
 3. **ShareOS App SDK (`window.ShareOS.autobrr`):**
-   - Requires permissions `files` and `autobrr` (admin accounts only, ShareOS 0.2.0-beta.9+).
+   - Requires permissions `files`, `autobrr`, and `torrent` (admin accounts only, ShareOS 0.2.0-beta.9+).
    - `.status()`: reports daemon state, ports, drop directory, and active account.
    - `.start()`: starts the background daemon.
    - `.set({ enabled, ui, account })`: updates boot configuration, external web UI access, and handover user.
@@ -29,11 +29,50 @@ autobrr runs as a native box-wide service (system app `autobrr`, version 1.89.0)
 
 ---
 
+## Native Web Interface Access & Password Setup (:7474)
+
+autobrr includes its official native web interface on port **7474**.
+
+### 1. Network Access (IP Address vs Hostname)
+- By default, autobrr binds strictly to `127.0.0.1:7474` to conserve sockets and memory.
+- To open it from other devices on your local network (PC, laptop, smartphone):
+  1. Open **autobrr-ui** in ShareOS.
+  2. Go to the **Settings** tab.
+  3. Under **Native autobrr Web Interface (Port 7474)**, enable **"Expose Web UI on local network (0.0.0.0:7474)"**.
+  4. Access the web interface using the **NAS IP address** (e.g., `http://192.168.1.50:7474`).
+  > **Note:** Many home routers do not resolve local hostnames like `http://shareos:7474`. Always prefer using your box's static or DHCP IP address to connect reliably.
+
+### 2. Default Username and Admin Password Setup
+autobrr does **not** have an insecure pre-configured default password. You must set an admin password before logging in for the first time:
+
+- **Default Username:** `admin`
+- **Setting the Password via the App (Recommended):**
+  1. In **autobrr-ui**, navigate to the **Settings** tab.
+  2. Scroll down to **Admin Web UI Password**.
+  3. Enter your desired password in **New Password** (minimum 8 characters, maximum 128 characters).
+  4. Click **Update Password** (or *Salvar Senha*).
+  5. The app executes `ShareOS.autobrr.password(pw)`, registering the hashed credentials for user `admin`.
+  6. Open `http://<NAS_IP>:7474` and log in with username `admin` and your newly created password.
+
+- **Setting the Password via SSH / Terminal (Alternative):**
+  If accessing the box shell as `root`:
+  ```sh
+  /usr/sbin/shareos-autobrr password "YourSecretPassword"
+  ```
+  The configuration and SQLite database are stored at:
+  ```sh
+  /mnt/<storage-volume>/.shareos/autobrr/config.toml
+  /mnt/<storage-volume>/.shareos/autobrr/autobrr.db
+  ```
+
+---
+
 ## Features
 
 - **Real-Time Release Monitoring:** Captures releases from IRC channels and RSS feeds.
 - **Filter Management:** Create, edit, toggle, and delete filters (resolutions, codecs, wildcards, freeleech, size constraints).
 - **IRC & Indexers Status:** Live diagnostics for announce channels and trackers.
+- **Transmission Integration:** Direct launcher and live RPC connection testing.
 - **Service & Security Controls:** Start/stop daemon, toggle autostart on boot, view logs, and manage the native web UI.
 - **Native ShareOS UI:** Supports ShareOS dark/light themes, accent colors, menu bar, and localized translations (English, German, Portuguese).
 

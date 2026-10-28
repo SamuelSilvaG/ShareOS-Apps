@@ -791,8 +791,15 @@
   function getWebUIUrl() {
     const port = (serviceStatus && serviceStatus.port) || 7474;
     let host = window.location.hostname;
+    // If running in local loopback, 0.0.0.0 or unspecified, fallback safely
     if (!host || host === '0.0.0.0') {
-      host = (serviceStatus && serviceStatus.host && serviceStatus.host !== '0.0.0.0') ? serviceStatus.host : '127.0.0.1';
+      if (serviceStatus && serviceStatus.ip && serviceStatus.ip !== '0.0.0.0') {
+        host = serviceStatus.ip;
+      } else if (serviceStatus && serviceStatus.host && !['0.0.0.0', '127.0.0.1'].includes(serviceStatus.host)) {
+        host = serviceStatus.host;
+      } else {
+        host = '127.0.0.1';
+      }
     }
     return `http://${host}:${port}`;
   }
@@ -1001,6 +1008,18 @@
     if ($('btn-save-admin-pw')) $('btn-save-admin-pw').onclick = saveAdminPassword;
     if ($('btn-refresh-log')) $('btn-refresh-log').onclick = refreshLog;
     if ($('btn-test-transmission')) $('btn-test-transmission').onclick = testTransmissionRPC;
+    if ($('webui-url-text')) {
+      $('webui-url-text').style.cursor = 'pointer';
+      $('webui-url-text').title = 'Click to copy URL';
+      $('webui-url-text').onclick = async () => {
+        try {
+          await navigator.clipboard.writeText(getWebUIUrl());
+          toast('Web UI URL copied to clipboard!');
+        } catch (e) {
+          toast(getWebUIUrl());
+        }
+      };
+    }
 
     // Checkboxes
     if ($('cfg-autostart')) {
