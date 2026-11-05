@@ -1,0 +1,59 @@
+html, body { height: 100%; margin: 0; }
+body.sos-app { display: flex; flex-direction: column; background: var(--sos-bg); color: var(--sos-text); font: 13px var(--sos-font); }
+
+.sos-titlebar { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--sos-bar); border-bottom: 1px solid var(--sos-line); }
+.tb-left { display: flex; align-items: center; gap: 8px; }
+.app-icon { width: 22px; height: 22px; }
+.app-title { font-weight: 600; }
+.badge { font-size: 12px; padding: 2px 10px; border-radius: 10px; border: 1px solid var(--sos-line); color: var(--sos-muted); }
+.badge.online { color: var(--sos-ok); border-color: var(--sos-ok); }
+.badge.offline { color: var(--sos-err); border-color: var(--sos-err); }
+
+.sos-toolbar { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 12px; background: var(--sos-panel); border-bottom: 1px solid var(--sos-line); }
+.sos-btn-sm { min-height: 26px; padding: 0 9px; font-size: 12px; }
+.sos-btn-danger:hover:not(:disabled) { border-color: var(--sos-err); color: var(--sos-err); }
+
+#main { flex: 1; overflow: auto; padding: 12px; }
+.notice { padding: 10px 12px; margin-bottom: 12px; border: 1px solid var(--sos-err); border-radius: var(--sos-radius); color: var(--sos-err); }
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 760px) { .cols { grid-template-columns: 1fr; } }
+h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--sos-muted); margin: 4px 0 8px; }
+.list { display: flex; flex-direction: column; gap: 8px; }
+.card { background: var(--sos-panel); border: 1px solid var(--sos-line); border-radius: var(--sos-radius); padding: 10px 12px; }
+.card-head { display: flex; align-items: center; gap: 8px; }
+.card-head b { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.meta { color: var(--sos-muted); font-size: 12px; margin-top: 4px; overflow-wrap: anywhere; }
+.card-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--sos-muted); flex: none; }
+.dot.ok { background: var(--sos-ok); } .dot.busy { background: var(--sos-accent); } .dot.warn { background: var(--sos-warn); }
+.dot.error { background: var(--sos-err); } .dot.off, .dot.paused, .dot.unknown { background: var(--sos-dim); }
+.state { font-size: 12px; color: var(--sos-muted); }
+.state.ok { color: var(--sos-ok); } .state.busy { color: var(--sos-accent); } .state.warn { color: var(--sos-warn); } .state.error { color: var(--sos-err); }
+.empty { color: var(--sos-muted); margin: 4px 0; }
+
+#pending:not(:empty) { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.req { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px 12px; border: 1px solid var(--sos-accent); border-radius: var(--sos-radius); background: rgba(var(--sos-rgb), .08); }
+.req > span:first-child { flex: 1; min-width: 220px; }
+.req-actions { display: flex; gap: 6px; }
+
+.mono { font-family: var(--sos-font); }
+.small { font-size: 11px; overflow-wrap: anywhere; }
+
+dialog.sos-dialog { width: min(520px, calc(100vw - 32px)); box-sizing: border-box; }
+dialog h3 { margin: 0 0 10px; }
+dialog label { display: block; margin: 10px 0 4px; color: var(--sos-muted); font-size: 12px; }
+dialog label.check { display: flex; align-items: center; gap: 8px; color: var(--sos-text); font-size: 13px; margin: 6px 0; }
+dialog .sos-input { width: 100%; box-sizing: border-box; }
+dialog textarea.sos-input { padding: 6px 10px; resize: vertical; }
+.row { display: flex; gap: 8px; align-items: flex-end; }
+.grow { flex: 1; min-width: 0; }
+.hint { color: var(--sos-muted); font-size: 12px; margin: 4px 0; }
+.err { color: var(--sos-err); min-height: 1em; margin: 8px 0 0; }
+.actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+.checks { max-height: 160px; overflow: auto; }
+.id-box { padding: 10px; border: 1px solid var(--sos-line); border-radius: var(--sos-radius); background: var(--sos-bg); overflow-wrap: anywhere; user-select: all; }
+.qr { display: block; width: 200px; height: 200px; margin: 12px auto 0; background: #fff; image-rendering: pixelated; }
+.qr:not([src]) { visibility: hidden; }
+
+.toast { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); padding: 8px 14px; border-radius: var(--sos-radius); background: var(--sos-panel); border: 1px solid var(--sos-accent); box-shadow: 0 6px 24px rgba(0, 0, 0, .35); z-index: 10; }
+.toast.err { border-color: var(--sos-err); color: var(--sos-err); }

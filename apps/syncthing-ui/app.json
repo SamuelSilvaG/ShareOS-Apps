@@ -1,0 +1,30 @@
+{
+	"id": "syncthing-ui",
+	"name": "Syncthing",
+	"version": "1.0.0",
+	"publisher": "UniqueDroid",
+	"description": {
+		"de": "Ordner zwischen der Box, PCs und Handys synchron halten – direkt von Gerät zu Gerät, ohne Cloud. Jeder Benutzer hat seinen eigenen Syncthing-Dienst mit eigenen Geräten; synchronisiert werden nur Ordner, auf die er Zugriff hat. Braucht die System-App „syncthing“.",
+		"en": "Keep folders in sync between the box, PCs and phones – directly from device to device, without a cloud. Every user has their own Syncthing service with their own devices; only folders they have access to are synced. Needs the system app “syncthing”.",
+		"pt": "Mantenha pastas sincronizadas entre a caixa, PCs e celulares – direto de dispositivo para dispositivo, sem nuvem. Cada usuário tem seu próprio serviço Syncthing com seus próprios dispositivos; só são sincronizadas pastas às quais ele tem acesso. Requer o app de sistema “syncthing”."
+	},
+	"type": "webapp",
+	"entry": "index.html",
+	"icon": "icon.svg",
+	"category": "network",
+	"license": "GPL-2.0-only",
+	"homepage": "https://syncthing.net/",
+	"min_shareos": "0.2.0-beta.20",
+	"permissions": [
+		"files",
+		"syncthing"
+	],
+	"requires": [
+		"syncthing"
+	],
+	"internet": true,
+	"window": {
+		"width": 980,
+		"height": 700
+	}
+}

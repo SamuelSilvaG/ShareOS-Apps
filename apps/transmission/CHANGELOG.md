@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.1
+
+- Preferences: µTP can be switched on and off. ShareOS 0.2.0-beta.20 turns it off by default on new setups, because on the 800 MHz DNS-320L it costs more CPU than all TCP peers together ([ShareOS#115](https://github.com/UniqueDroid/ShareOS/issues/115)).
+
 ## 1.3.0
 
 - Category navigation sidebar: filter by status, trackers, and directories with live count badges.

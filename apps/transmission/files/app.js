@@ -1387,6 +1387,7 @@
     $('cfg-dht').checked = serverSession['dht-enabled'] !== false;
     $('cfg-pex').checked = serverSession['pex-enabled'] !== false;
     $('cfg-lpd').checked = !!serverSession['lpd-enabled'];
+    $('cfg-utp').checked = !!serverSession['utp-enabled'];
 
     $('cfg-dl-queue').value = serverSession['download-queue-size'] || 5;
     $('cfg-seed-queue').value = serverSession['seed-queue-size'] || 10;
@@ -1456,6 +1457,7 @@
       'dht-enabled': $('cfg-dht').checked,
       'pex-enabled': $('cfg-pex').checked,
       'lpd-enabled': $('cfg-lpd').checked,
+      'utp-enabled': $('cfg-utp').checked,
 
       'download-queue-size': parseInt($('cfg-dl-queue').value, 10) || 5,
       'seed-queue-size': parseInt($('cfg-seed-queue').value, 10) || 10,
