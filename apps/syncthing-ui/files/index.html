@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Syncthing</title>
+<link rel="stylesheet" href="/_shareos/theme.css">
+<link rel="stylesheet" href="app.css">
+<script src="/_shareos/app.js"></script>
+<script src="i18n.js"></script>
+</head>
+<body class="sos-app">
+
+<div class="sos-titlebar">
+  <div class="tb-left">
+    <img src="icon.svg" class="app-icon" alt="">
+    <span class="app-title">Syncthing</span>
+  </div>
+  <span id="badge" class="badge" data-i18n="conn.checking">Connecting …</span>
+</div>
+
+<nav id="menu" class="sos-menubar"></nav>
+
+<div class="sos-toolbar">
+  <button id="btn-add-folder" class="sos-btn sos-btn-accent">＋ <span data-i18n="tb.folder">Folder</span></button>
+  <button id="btn-add-device" class="sos-btn">＋ <span data-i18n="tb.device">Device</span></button>
+  <button id="btn-my-id" class="sos-btn" data-i18n="tb.myId">This device's ID</button>
+  <button id="btn-rescan" class="sos-btn" data-i18n="tb.rescan">Rescan all</button>
+  <button id="btn-settings" class="sos-btn" data-i18n="tb.settings">Settings</button>
+</div>
+
+<main id="main">
+  <div id="notice" class="notice" hidden></div>
+  <section id="pending"></section>
+  <div class="cols">
+    <section>
+      <h2 data-i18n="h.folders">Folders</h2>
+      <div id="folders" class="list"></div>
+    </section>
+    <section>
+      <h2 data-i18n="h.devices">Devices</h2>
+      <div id="devices" class="list"></div>
+    </section>
+  </div>
+</main>
+
+<div class="sos-statusbar">
+  <span id="sb-rates">↓ – ↑ –</span>
+  <span id="sb-name"></span>
+  <span id="sb-version"></span>
+</div>
+
+<!-- this device -->
+<dialog id="dlg-id" class="sos-dialog">
+  <h3 data-i18n="id.title">This device</h3>
+  <p class="hint" data-i18n="id.hint">Enter this ID on the other device (or scan the code with the Syncthing app on the phone).</p>
+  <div class="id-box"><code id="my-id"></code></div>
+  <img id="my-qr" class="qr" alt="">
+  <div class="actions">
+    <button class="sos-btn" id="btn-copy-id" data-i18n="btn.copy">Copy</button>
+    <button class="sos-btn sos-btn-accent" data-close data-i18n="btn.close">Close</button>
+  </div>
+</dialog>
+
+<!-- add / edit device -->
+<dialog id="dlg-device" class="sos-dialog">
+  <h3 id="dev-title" data-i18n="dev.add">Add device</h3>
+  <label data-i18n="dev.id">Device ID</label>
+  <textarea id="dev-id" class="sos-input mono" rows="2" spellcheck="false" placeholder="XXXXXXX-XXXXXXX-…"></textarea>
+  <label data-i18n="dev.name">Name</label>
+  <input id="dev-name" class="sos-input" maxlength="64">
+  <label data-i18n="dev.addresses">Addresses</label>
+  <input id="dev-addr" class="sos-input mono" placeholder="dynamic">
+  <p class="hint" data-i18n="dev.addrHint">"dynamic" finds the device by itself; or e.g. tcp://192.168.1.20:22000</p>
+  <label class="check"><input type="checkbox" id="dev-intro"> <span data-i18n="dev.introducer">Introducer (take over its devices)</span></label>
+  <label class="check"><input type="checkbox" id="dev-autoaccept"> <span data-i18n="dev.autoAccept">Accept its folders automatically (into the personal folder)</span></label>
+  <p id="dev-err" class="err"></p>
+  <div class="actions">
+    <button class="sos-btn" data-close data-i18n="btn.cancel">Cancel</button>
+    <button class="sos-btn sos-btn-accent" id="btn-dev-save" data-i18n="btn.save">Save</button>
+  </div>
+</dialog>
+
+<!-- add / edit folder -->
+<dialog id="dlg-folder" class="sos-dialog">
+  <h3 id="fol-title" data-i18n="fol.add">Add folder</h3>
+  <label data-i18n="fol.label">Name</label>
+  <input id="fol-label" class="sos-input" maxlength="64">
+  <label data-i18n="fol.path">Folder on the box</label>
+  <div class="row">
+    <input id="fol-path" class="sos-input mono grow" placeholder="home/Sync">
+    <button class="sos-btn" id="btn-fol-pick" data-i18n="btn.choose">Choose …</button>
+  </div>
+  <p class="hint" data-i18n="fol.pathHint">A folder that does not exist yet is created.</p>
+  <label data-i18n="fol.id">Folder ID</label>
+  <input id="fol-id" class="sos-input mono" maxlength="64">
+  <p class="hint" data-i18n="fol.idHint">Must be the same on all devices.</p>
+  <label data-i18n="fol.type">Type</label>
+  <select id="fol-type" class="sos-input">
+    <option value="sendreceive" data-i18n="type.sendreceive">Send &amp; receive</option>
+    <option value="sendonly" data-i18n="type.sendonly">Send only</option>
+    <option value="receiveonly" data-i18n="type.receiveonly">Receive only</option>
+  </select>
+  <label data-i18n="fol.versioning">Keep old versions</label>
+  <select id="fol-versioning" class="sos-input">
+    <option value="" data-i18n="ver.none">No</option>
+    <option value="trashcan" data-i18n="ver.trashcan">Trash can (30 days)</option>
+    <option value="simple" data-i18n="ver.simple">Last 5 versions</option>
+    <option value="staggered" data-i18n="ver.staggered">Staggered (up to a year)</option>
+  </select>
+  <label data-i18n="fol.share">Share with</label>
+  <div id="fol-devices" class="checks"></div>
+  <p id="fol-err" class="err"></p>
+  <div class="actions">
+    <button class="sos-btn" data-close data-i18n="btn.cancel">Cancel</button>
+    <button class="sos-btn sos-btn-accent" id="btn-fol-save" data-i18n="btn.save">Save</button>
+  </div>
+</dialog>
+
+<!-- settings -->
+<dialog id="dlg-settings" class="sos-dialog">
+  <h3 data-i18n="set.title">Settings</h3>
+  <label data-i18n="set.name">Name of this device</label>
+  <input id="set-name" class="sos-input" maxlength="64">
+  <div class="row">
+    <div class="grow"><label data-i18n="set.down">Download limit (KiB/s, 0 = none)</label><input id="set-down" type="number" min="0" class="sos-input"></div>
+    <div class="grow"><label data-i18n="set.up">Upload limit (KiB/s, 0 = none)</label><input id="set-up" type="number" min="0" class="sos-input"></div>
+  </div>
+  <label class="check"><input type="checkbox" id="set-lan"> <span data-i18n="set.lan">Limits also in the home network</span></label>
+  <label class="check"><input type="checkbox" id="set-global"> <span data-i18n="set.global">Find devices over the internet (global discovery)</span></label>
+  <label class="check"><input type="checkbox" id="set-local"> <span data-i18n="set.local">Find devices in the home network (local discovery)</span></label>
+  <label class="check"><input type="checkbox" id="set-relays"> <span data-i18n="set.relays">Relays when no direct connection is possible</span></label>
+  <label class="check"><input type="checkbox" id="set-nat"> <span data-i18n="set.nat">Open the port on the router (UPnP/NAT-PMP)</span></label>
+  <p id="set-err" class="err"></p>
+  <div class="actions">
+    <button class="sos-btn" data-close data-i18n="btn.cancel">Cancel</button>
+    <button class="sos-btn sos-btn-accent" id="btn-set-save" data-i18n="btn.save">Save</button>
+  </div>
+</dialog>
+
+<div id="toast" class="toast" hidden></div>
+<script src="app.js"></script>
+</body>
+</html>
