@@ -257,6 +257,7 @@
       'cfg.enableDht': 'Habilitar DHT (Distributed Hash Table)',
       'cfg.enablePex': 'Habilitar PEX (Peer Exchange)',
       'cfg.enableLpd': 'Habilitar LPD (Local Peer Discovery)',
+      'cfg.enableUtp': 'Habilitar µTP (usa mais CPU em caixas pequenas)',
 
       'cfg.downloadQueueSize': 'Downloads simultâneos máximos:',
       'cfg.seedQueueSize': 'Seeds simultâneos máximos:',
@@ -569,6 +570,7 @@
       'cfg.enableDht': 'Enable DHT (Distributed Hash Table)',
       'cfg.enablePex': 'Enable PEX (Peer Exchange)',
       'cfg.enableLpd': 'Enable LPD (Local Peer Discovery)',
+      'cfg.enableUtp': 'Enable µTP (costs more CPU on small boxes)',
 
       'cfg.downloadQueueSize': 'Maximum active downloads:',
       'cfg.seedQueueSize': 'Maximum active seeds:',
@@ -881,6 +883,7 @@
       'cfg.enableDht': 'DHT (Distributed Hash Table) aktivieren',
       'cfg.enablePex': 'PEX (Peer Exchange) aktivieren',
       'cfg.enableLpd': 'LPD (Local Peer Discovery) aktivieren',
+      'cfg.enableUtp': 'µTP aktivieren (kostet auf kleinen Boxen mehr CPU)',
 
       'cfg.downloadQueueSize': 'Maximale gleichzeitige Downloads:',
       'cfg.seedQueueSize': 'Maximale gleichzeitige Seeds:',
