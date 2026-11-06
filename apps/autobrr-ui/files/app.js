@@ -15,8 +15,11 @@
   let filters = [];
   let ircNetworks = [];
   let indexers = [];
+  let indexerSchemas = [];
   let accounts = [];
   let editingFilterId = null;
+  let editingIndexerId = null;
+  let editingIrcId = null;
   let pollTimer = null;
 
   // Toast feedback
@@ -571,6 +574,269 @@
     renderIndexers();
   }
 
+  // Load indexer schemas/presets from autobrr
+  async function fetchIndexerSchemas() {
+    if (!AB || !serviceStatus || !serviceStatus.ready) return;
+    if (indexerSchemas.length > 0) return;
+    try {
+      const data = await AB.api('GET', '/api/indexer/schema');
+      if (Array.isArray(data)) {
+        indexerSchemas = data;
+        populateIndexerPresets();
+      }
+    } catch (e) {
+      console.warn('Could not load indexer schemas:', e);
+    }
+  }
+
+  function populateIndexerPresets() {
+    const sel = $('indexer-preset');
+    if (!sel) return;
+    const currentVal = sel.value;
+    sel.innerHTML = `<option value="">${escapeHtml(t('indexers.custom_preset'))}</option>`;
+    const sorted = [...indexerSchemas].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    for (const schema of sorted) {
+      const opt = document.createElement('option');
+      opt.value = schema.identifier;
+      opt.textContent = schema.name || schema.identifier;
+      sel.appendChild(opt);
+    }
+    if (currentVal) sel.value = currentVal;
+  }
+
+  // Indexer Modal handlers
+  function openIndexerModal(indexer = null) {
+    editingIndexerId = indexer ? indexer.id : null;
+    const modal = $('indexer-modal');
+    if (!modal) return;
+
+    fetchIndexerSchemas();
+
+    if ($('indexer-modal-title')) {
+      $('indexer-modal-title').textContent = editingIndexerId ? t('indexers.edit_title') : t('indexers.new_title');
+    }
+    if ($('indexer-preset')) $('indexer-preset').value = (indexer && indexer.identifier) || '';
+    if ($('indexer-name')) $('indexer-name').value = (indexer && indexer.name) || '';
+    if ($('indexer-identifier')) $('indexer-identifier').value = (indexer && indexer.identifier) || '';
+    if ($('indexer-url')) $('indexer-url').value = (indexer && (indexer.base_url || (indexer.settings && indexer.settings.base_url))) || '';
+    if ($('indexer-apikey')) $('indexer-apikey').value = '';
+    if ($('indexer-enabled')) $('indexer-enabled').checked = indexer ? (indexer.enabled !== false) : true;
+
+    modal.style.display = 'flex';
+    setTimeout(() => {
+      if ($('indexer-name')) $('indexer-name').focus();
+    }, 50);
+  }
+
+  function closeIndexerModal() {
+    const modal = $('indexer-modal');
+    if (modal) modal.style.display = 'none';
+    editingIndexerId = null;
+  }
+
+  async function saveIndexerFromModal() {
+    if (!AB || !serviceStatus || !serviceStatus.ready) {
+      toast(t('err.service_not_ready'), true);
+      return;
+    }
+
+    const name = ($('indexer-name') ? $('indexer-name').value : '').trim();
+    const identifier = ($('indexer-identifier') ? $('indexer-identifier').value : '').trim().toLowerCase();
+    const url = ($('indexer-url') ? $('indexer-url').value : '').trim();
+    const apikey = ($('indexer-apikey') ? $('indexer-apikey').value : '').trim();
+    const enabled = $('indexer-enabled') ? $('indexer-enabled').checked : true;
+
+    if (!name || !identifier) {
+      toast('Name and Identifier are required', true);
+      return;
+    }
+
+    const payload = {
+      name,
+      identifier,
+      enabled,
+      settings: {}
+    };
+
+    if (url) {
+      payload.base_url = url;
+      payload.settings.base_url = url;
+    }
+    if (apikey) {
+      payload.settings.api_key = apikey;
+      payload.settings.passkey = apikey;
+      payload.settings.apikey = apikey;
+    }
+
+    try {
+      if (editingIndexerId) {
+        payload.id = editingIndexerId;
+        await AB.api('PUT', `/api/indexer/${editingIndexerId}`, payload);
+        toast(t('btn.save'));
+      } else {
+        await AB.api('POST', '/api/indexer', payload);
+        toast(t('toast.indexer_created'));
+      }
+      closeIndexerModal();
+      await refreshIRCAndIndexers();
+    } catch (err) {
+      toast(`Error saving indexer: ${err.message}`, true);
+    }
+  }
+
+  async function deleteIndexer(id, name) {
+    if (!AB) return;
+    if (!confirm(t('indexers.confirm_delete', { name: name || id }))) return;
+    try {
+      await AB.api('DELETE', `/api/indexer/${id}`);
+      toast(t('toast.indexer_deleted'));
+      await refreshIRCAndIndexers();
+    } catch (err) {
+      toast(`Error deleting indexer: ${err.message}`, true);
+    }
+  }
+
+  async function testIndexer(id) {
+    if (!AB) return;
+    try {
+      toast('Testing indexer API connection...');
+      await AB.api('POST', `/api/indexer/${id}/api/test`, { id });
+      toast(t('toast.indexer_tested'));
+    } catch (err) {
+      toast(`Indexer test failed: ${err.message}`, true);
+    }
+  }
+
+  // IRC Modal handlers
+  function openIRCModal(net = null) {
+    editingIrcId = net ? net.id : null;
+    const modal = $('irc-modal');
+    if (!modal) return;
+
+    if ($('irc-modal-title')) {
+      $('irc-modal-title').textContent = editingIrcId ? t('irc.edit_title') : t('irc.new_title');
+    }
+    if ($('irc-name')) $('irc-name').value = (net && net.name) || '';
+    if ($('irc-server')) $('irc-server').value = (net && net.server) || '';
+    if ($('irc-port')) $('irc-port').value = (net && net.port) || 6697;
+    if ($('irc-tls')) $('irc-tls').checked = net ? !!net.tls : true;
+    if ($('irc-tls-skip')) $('irc-tls-skip').checked = net ? !!net.tls_skip_verify : false;
+    if ($('irc-enabled')) $('irc-enabled').checked = net ? (net.enabled !== false) : true;
+    if ($('irc-nick')) $('irc-nick').value = (net && net.nick) || '';
+
+    const authMech = (net && net.auth && net.auth.mechanism) || 'SASL_PLAIN';
+    if ($('irc-auth-mech')) $('irc-auth-mech').value = authMech;
+    if ($('irc-auth-user')) $('irc-auth-user').value = (net && net.auth && net.auth.account) || '';
+    if ($('irc-auth-pass')) $('irc-auth-pass').value = '';
+    if ($('irc-server-pass')) $('irc-server-pass').value = '';
+
+    const firstChannel = (net && net.channels && net.channels[0]) || null;
+    if ($('irc-channel-name')) $('irc-channel-name').value = (firstChannel && (firstChannel.name || firstChannel)) || '';
+    if ($('irc-channel-pass')) $('irc-channel-pass').value = '';
+
+    modal.style.display = 'flex';
+    setTimeout(() => {
+      if ($('irc-name')) $('irc-name').focus();
+    }, 50);
+  }
+
+  function closeIRCModal() {
+    const modal = $('irc-modal');
+    if (modal) modal.style.display = 'none';
+    editingIrcId = null;
+  }
+
+  async function saveIRCFromModal() {
+    if (!AB || !serviceStatus || !serviceStatus.ready) {
+      toast(t('err.service_not_ready'), true);
+      return;
+    }
+
+    const name = ($('irc-name') ? $('irc-name').value : '').trim();
+    const server = ($('irc-server') ? $('irc-server').value : '').trim();
+    const port = parseInt($('irc-port') ? $('irc-port').value : '6697', 10) || 6697;
+    const nick = ($('irc-nick') ? $('irc-nick').value : '').trim();
+    const tls = $('irc-tls') ? $('irc-tls').checked : true;
+    const tlsSkip = $('irc-tls-skip') ? $('irc-tls-skip').checked : false;
+    const enabled = $('irc-enabled') ? $('irc-enabled').checked : true;
+    const authMech = $('irc-auth-mech') ? $('irc-auth-mech').value : 'NONE';
+    const authUser = ($('irc-auth-user') ? $('irc-auth-user').value : '').trim();
+    const authPass = ($('irc-auth-pass') ? $('irc-auth-pass').value : '').trim();
+    const serverPass = ($('irc-server-pass') ? $('irc-server-pass').value : '').trim();
+    const channelName = ($('irc-channel-name') ? $('irc-channel-name').value : '').trim();
+    const channelPass = ($('irc-channel-pass') ? $('irc-channel-pass').value : '').trim();
+
+    if (!name || !server) {
+      toast('Network name and server are required', true);
+      return;
+    }
+
+    const channels = [];
+    if (channelName) {
+      channels.push({
+        name: channelName,
+        password: channelPass || '',
+        enabled: true
+      });
+    }
+
+    const payload = {
+      name,
+      server,
+      port,
+      tls,
+      tls_skip_verify: tlsSkip,
+      nick: nick || 'autobrr',
+      pass: serverPass || '',
+      enabled,
+      auth: {
+        mechanism: authMech,
+        account: authUser || '',
+        password: authPass || ''
+      },
+      channels
+    };
+
+    try {
+      if (editingIrcId) {
+        payload.id = editingIrcId;
+        await AB.api('PUT', `/api/irc/network/${editingIrcId}`, payload);
+        toast(t('btn.save'));
+      } else {
+        await AB.api('POST', '/api/irc', payload);
+        toast(t('toast.irc_created'));
+      }
+      closeIRCModal();
+      await refreshIRCAndIndexers();
+    } catch (err) {
+      toast(`Error saving IRC network: ${err.message}`, true);
+    }
+  }
+
+  async function deleteIRCNetwork(id, name) {
+    if (!AB) return;
+    if (!confirm(t('irc.confirm_delete', { name: name || id }))) return;
+    try {
+      await AB.api('DELETE', `/api/irc/network/${id}`);
+      toast(t('toast.irc_deleted'));
+      await refreshIRCAndIndexers();
+    } catch (err) {
+      toast(`Error deleting IRC network: ${err.message}`, true);
+    }
+  }
+
+  async function restartIRCNetwork(id, name) {
+    if (!AB) return;
+    if (!confirm(t('irc.confirm_restart', { name: name || id }))) return;
+    try {
+      toast(t('toast.irc_restarted'));
+      await AB.api('POST', `/api/irc/network/${id}/restart`);
+      await refreshIRCAndIndexers();
+    } catch (err) {
+      toast(`Error restarting IRC network: ${err.message}`, true);
+    }
+  }
+
   function renderIRC() {
     const tbody = $('irc-rows');
     if (!tbody) return;
@@ -578,7 +844,7 @@
 
     if (ircNetworks.length === 0) {
       const msg = (!AB && SOS) ? t('irc.no_access') : t('irc.empty');
-      tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--sos-muted); padding: 20px;">${escapeHtml(msg)}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--sos-muted); padding: 20px;">${escapeHtml(msg)}</td></tr>`;
       return;
     }
 
@@ -601,9 +867,27 @@
             ● ${isConn ? t('irc.connected') : t('irc.disconnected')}
           </span>
         </td>
+        <td style="white-space: nowrap;">
+          <button class="sos-btn sos-btn-sm btn-restart-irc" data-id="${net.id}" data-name="${escapeHtml(net.name || '')}" title="${t('irc.restart')}">↻</button>
+          <button class="sos-btn sos-btn-sm sos-btn-danger btn-del-irc" data-id="${net.id}" data-name="${escapeHtml(net.name || '')}" title="${t('btn.delete')}">✕</button>
+        </td>
       `;
       tbody.appendChild(tr);
     }
+
+    tbody.querySelectorAll('.btn-restart-irc').forEach((btn) => {
+      btn.onclick = () => {
+        const id = parseInt(btn.dataset.id, 10);
+        restartIRCNetwork(id, btn.dataset.name);
+      };
+    });
+
+    tbody.querySelectorAll('.btn-del-irc').forEach((btn) => {
+      btn.onclick = () => {
+        const id = parseInt(btn.dataset.id, 10);
+        deleteIRCNetwork(id, btn.dataset.name);
+      };
+    });
   }
 
   function renderIndexers() {
@@ -613,7 +897,7 @@
 
     if (indexers.length === 0) {
       const msg = (!AB && SOS) ? t('indexers.no_access') : t('indexers.empty');
-      tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--sos-muted); padding: 20px;">${escapeHtml(msg)}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--sos-muted); padding: 20px;">${escapeHtml(msg)}</td></tr>`;
       return;
     }
 
@@ -629,9 +913,27 @@
             ${isEnabled ? t('status.active') : t('status.inactive')}
           </span>
         </td>
+        <td style="white-space: nowrap;">
+          <button class="sos-btn sos-btn-sm btn-test-indexer" data-id="${idx.id}" title="${t('indexers.test')}">⚡</button>
+          <button class="sos-btn sos-btn-sm sos-btn-danger btn-del-indexer" data-id="${idx.id}" data-name="${escapeHtml(idx.name || '')}" title="${t('btn.delete')}">✕</button>
+        </td>
       `;
       tbody.appendChild(tr);
     }
+
+    tbody.querySelectorAll('.btn-test-indexer').forEach((btn) => {
+      btn.onclick = () => {
+        const id = parseInt(btn.dataset.id, 10);
+        testIndexer(id);
+      };
+    });
+
+    tbody.querySelectorAll('.btn-del-indexer').forEach((btn) => {
+      btn.onclick = () => {
+        const id = parseInt(btn.dataset.id, 10);
+        deleteIndexer(id, btn.dataset.name);
+      };
+    });
   }
 
   // Fetch daemon log
@@ -787,56 +1089,101 @@
     if (btn) btn.click();
   }
 
+  function cleanHost(raw) {
+    return String(raw || '').trim().replace(/^\[|\]$/g, '');
+  }
+
+  function isUsableIp(raw) {
+    const h = cleanHost(raw);
+    if (!h || h === '0.0.0.0' || h === '::' || h === '127.0.0.1' || h === '::1') return false;
+    if (/^\d{1,3}(\.\d{1,3}){3}$/.test(h)) return true;
+    return h.includes(':');
+  }
+
+  function isUsableHost(raw) {
+    const h = cleanHost(raw);
+    return !!h && h !== '0.0.0.0' && h !== '::';
+  }
+
   // Determine correct Native Web UI URL reachable from the client browser
   function getWebUIUrl() {
     const port = (serviceStatus && serviceStatus.port) || 7474;
-    let host = window.location.hostname;
-    // If running in local loopback, 0.0.0.0 or unspecified, fallback safely
-    if (!host || host === '0.0.0.0') {
-      if (serviceStatus && serviceStatus.ip && serviceStatus.ip !== '0.0.0.0') {
-        host = serviceStatus.ip;
-      } else if (serviceStatus && serviceStatus.host && !['0.0.0.0', '127.0.0.1'].includes(serviceStatus.host)) {
-        host = serviceStatus.host;
-      } else {
-        host = '127.0.0.1';
+
+    let originHost = '';
+    try {
+      const originParam = new URLSearchParams(window.location.search).get('origin');
+      if (originParam) {
+        originHost = new URL(originParam).hostname;
       }
+    } catch (_) { }
+
+    const locHost = window.location.hostname || '';
+    const statusIp = (serviceStatus && serviceStatus.ip) || '';
+
+    // 1. Prefer an actual LAN/reachable IP (from ?origin= or location.hostname) so we never fail on "shareos" DNS
+    let host = [originHost, locHost, statusIp].map(cleanHost).find(isUsableIp);
+
+    // 2. Otherwise prefer a real domain/host over the generic "shareos" box hostname
+    if (!host) {
+      host = [originHost, locHost].map(cleanHost).find((h) => isUsableHost(h) && h.toLowerCase() !== 'shareos');
     }
-    return `http://${host}:${port}`;
+
+    // 3. Fallback to any usable browser host, or loopback in local dev
+    if (!host) {
+      host = [originHost, locHost].map(cleanHost).find(isUsableHost) || '127.0.0.1';
+    }
+
+    const formattedHost = host.includes(':') ? `[${host}]` : host;
+    return `http://${formattedHost}:${port}`;
   }
 
   // Open the Native autobrr Web UI (port 7474)
   async function openAdvancedWebUI() {
-    const url = getWebUIUrl();
     if (!AB) {
-      window.open(url, '_blank', 'noopener,noreferrer');
+      window.open(getWebUIUrl(), '_blank', 'noopener,noreferrer');
       return;
     }
 
-    if (!serviceStatus || !serviceStatus.running) {
-      toast('Starting autobrr service...', false);
-      try {
-        await AB.start();
-        await refreshStatus();
-      } catch (e) {
-        toast(`Could not start autobrr service: ${e.message}`, true);
-        return;
-      }
+    if (serviceStatus && !serviceStatus.installed) {
+      toast(t('banner.not_installed_desc'), true);
+      return;
+    }
+    if (serviceStatus && !serviceStatus.drive) {
+      toast(t('banner.no_drive_desc'), true);
+      return;
     }
 
-    if (!serviceStatus || !serviceStatus.ui) {
-      try {
-        toast('Enabling Web UI on 0.0.0.0:7474...');
-        await AB.set({ ui: true });
-        await refreshStatus();
-      } catch (e) {
-        console.warn('Could not set ui:true', e);
+    // Fast path: service is already running and exposed on 0.0.0.0:7474
+    if (serviceStatus && serviceStatus.running && serviceStatus.ui) {
+      const url = getWebUIUrl();
+      const win = window.open(url, '_blank', 'noopener,noreferrer');
+      if (!win) {
+        switchTab('tab-settings');
+        toast(t('err.popup_blocked'), true);
       }
+      return;
     }
 
-    const win = window.open(url, '_blank', 'noopener,noreferrer');
-    if (!win) {
+    // Open blank tab synchronously during user gesture to avoid popup blockers while starting/rebinding
+    const win = window.open('about:blank', '_blank');
+
+    try {
+      toast('Enabling Web UI on 0.0.0.0:7474...');
+      await AB.set({ enabled: true, ui: true });
+      await refreshStatus();
+    } catch (e) {
+      if (win && !win.closed) win.close();
+      toast(`Could not open Web UI: ${e.message}`, true);
+      return;
+    }
+
+    const url = getWebUIUrl();
+    if (win && !win.closed) {
+      try { win.opener = null; } catch (_) { }
+      win.location.href = url;
+    } else {
       switchTab('tab-settings');
-      toast(`Please open Web UI: ${url}`, false);
+      toast(t('err.popup_blocked'), true);
       const linkBtn = $('btn-link-webui');
       if (linkBtn) {
         linkBtn.scrollIntoView({ behavior: 'smooth' });
@@ -850,20 +1197,16 @@
     if (e && e.preventDefault) e.preventDefault();
     const size = { width: 1050, height: 720 };
     if (SOS && SOS.openApp) {
-      try {
-        const w = SOS.openApp('transmission', size);
-        if (w) return;
-      } catch (err) {
-        console.warn('SOS.openApp transmission failed:', err);
+      const w = SOS.openApp('transmission', size);
+      if (!w) {
+        toast(t('err.popup_blocked'), true);
+      } else if (typeof w.focus === 'function') {
+        w.focus();
       }
+      return;
     }
-    // Fallback: direct web app paths
-    const candidates = [
-      new URL('/transmission/index.html', window.location.origin).href,
-      new URL('../transmission/index.html', window.location.href).href,
-      new URL('/transmission/', window.location.origin).href
-    ];
-    const targetUrl = candidates[0];
+    // Standalone preview outside ShareOS only (inside ShareOS, SOS.openApp is required for ?fs= grant)
+    const targetUrl = new URL('../transmission/index.html', window.location.href).href;
     const w = window.open(targetUrl, 'sosapp-transmission', `popup,width=${size.width},height=${size.height}`);
     if (!w) {
       window.open(targetUrl, '_blank');
@@ -878,8 +1221,9 @@
     if (TOR && TOR.rpc) {
       try {
         const res = await TOR.rpc('session-get');
-        if (res && (res.result === 'success' || res.arguments)) {
-          const v = res.arguments && res.arguments.version ? `v${res.arguments.version}` : 'Active';
+        const session = (res && res.arguments) ? res.arguments : res;
+        if (session && typeof session === 'object') {
+          const v = session.version ? `v${session.version}` : 'Active';
           badge.textContent = `Online (${v})`;
           badge.className = 'badge ok';
           return;
@@ -911,12 +1255,13 @@
       try {
         toast('Testing Transmission RPC connection...');
         const res = await TOR.rpc('session-get');
-        if (res && (res.result === 'success' || res.arguments)) {
-          const ver = res.arguments && res.arguments.version ? `v${res.arguments.version}` : '';
-          const downDir = res.arguments && res.arguments['download-dir'] ? res.arguments['download-dir'] : '';
-          toast(`Transmission Connected! ${ver} (Download Dir: ${downDir})`);
+        const session = (res && res.arguments) ? res.arguments : res;
+        if (session && typeof session === 'object') {
+          const ver = session.version ? `v${session.version}` : '';
+          const downDir = session['download-dir'] || '';
+          toast(`Transmission Connected! ${ver}${downDir ? ` (Download Dir: ${downDir})` : ''}`);
           if (badge) {
-            badge.textContent = `Connected ${ver}`;
+            badge.textContent = ver ? `Connected (${ver})` : 'Connected';
             badge.className = 'badge ok';
           }
           return;
@@ -980,7 +1325,7 @@
         label: t('menu.help'),
         items: [
           { label: t('menu.docs'), action: () => window.open('https://autobrr.com/', '_blank') },
-          { label: t('menu.about'), action: () => alert('autobrr for ShareOS v1.0.0\nIntegrated via ShareOS.autobrr\nPublisher: @SamuelSilvaG') }
+          { label: t('menu.about'), action: () => alert('autobrr-ui for ShareOS v1.0.1\nIntegrated via ShareOS.autobrr\nPublisher: @SamuelSilvaG') }
         ]
       }
     ]);
@@ -1008,7 +1353,19 @@
     if ($('btn-save-admin-pw')) $('btn-save-admin-pw').onclick = saveAdminPassword;
     if ($('btn-refresh-log')) $('btn-refresh-log').onclick = refreshLog;
     if ($('btn-test-transmission')) $('btn-test-transmission').onclick = testTransmissionRPC;
+    if ($('btn-link-webui')) {
+      $('btn-link-webui').href = getWebUIUrl();
+      $('btn-link-webui').onclick = (e) => {
+        if (AB && (!serviceStatus || !serviceStatus.running || !serviceStatus.ui)) {
+          e.preventDefault();
+          openAdvancedWebUI();
+        } else {
+          $('btn-link-webui').href = getWebUIUrl();
+        }
+      };
+    }
     if ($('webui-url-text')) {
+      $('webui-url-text').textContent = getWebUIUrl();
       $('webui-url-text').style.cursor = 'pointer';
       $('webui-url-text').title = 'Click to copy URL';
       $('webui-url-text').onclick = async () => {
@@ -1038,6 +1395,33 @@
     if ($('modal-close-btn')) $('modal-close-btn').onclick = closeFilterModal;
     if ($('modal-cancel-btn')) $('modal-cancel-btn').onclick = closeFilterModal;
     if ($('modal-save-btn')) $('modal-save-btn').onclick = saveFilterFromModal;
+
+    // Indexer panel & modal
+    if ($('btn-new-indexer-panel')) $('btn-new-indexer-panel').onclick = () => openIndexerModal();
+    if ($('indexer-modal-close-btn')) $('indexer-modal-close-btn').onclick = closeIndexerModal;
+    if ($('indexer-modal-cancel-btn')) $('indexer-modal-cancel-btn').onclick = closeIndexerModal;
+    if ($('indexer-modal-save-btn')) $('indexer-modal-save-btn').onclick = saveIndexerFromModal;
+    if ($('indexer-preset')) {
+      $('indexer-preset').onchange = () => {
+        const id = $('indexer-preset').value;
+        const schema = indexerSchemas.find((s) => s.identifier === id);
+        if (schema) {
+          if (!$('indexer-name').value || $('indexer-name').value === $('indexer-identifier').value) {
+            $('indexer-name').value = schema.name || schema.identifier;
+          }
+          $('indexer-identifier').value = schema.identifier;
+          if (schema.urls && schema.urls[0] && !$('indexer-url').value) {
+            $('indexer-url').value = schema.urls[0];
+          }
+        }
+      };
+    }
+
+    // IRC panel & modal
+    if ($('btn-new-irc-panel')) $('btn-new-irc-panel').onclick = () => openIRCModal();
+    if ($('irc-modal-close-btn')) $('irc-modal-close-btn').onclick = closeIRCModal;
+    if ($('irc-modal-cancel-btn')) $('irc-modal-cancel-btn').onclick = closeIRCModal;
+    if ($('irc-modal-save-btn')) $('irc-modal-save-btn').onclick = saveIRCFromModal;
 
     // Listen to theme changes from ShareOS
     if (SOS && SOS.onTheme) {
