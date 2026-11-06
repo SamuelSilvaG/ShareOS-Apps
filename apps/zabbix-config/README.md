@@ -26,6 +26,6 @@ The underlying service is provided by the classic C Zabbix agent (`zabbix_agentd
 
 ## Requirements
 
-- **Firmware:** ShareOS 0.2.0-beta.15 or newer.
+- **Firmware:** ShareOS 0.2.0-beta.20 or newer.
 - **System App:** `zabbix-agent` (installed via Store → System Apps).
 - **Permissions:** `files` (administered by box admins).
