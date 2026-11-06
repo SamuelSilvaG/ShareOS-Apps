@@ -150,6 +150,60 @@ body {
 	box-shadow: 0 0 8px var(--sos-success);
 }
 
+.status-pill.neutral .status-indicator {
+	background: var(--sos-warning);
+}
+
+.notice-card {
+	background: rgba(245, 158, 11, 0.08);
+	border: 1px solid rgba(245, 158, 11, 0.25);
+	border-radius: var(--sos-radius-md);
+	padding: 16px;
+	display: flex;
+	align-items: flex-start;
+	gap: 14px;
+	margin-bottom: 20px;
+}
+
+.notice-card svg {
+	width: 22px;
+	height: 22px;
+	flex-shrink: 0;
+	fill: var(--sos-warning);
+	margin-top: 2px;
+}
+
+.notice-body {
+	flex: 1;
+}
+
+.notice-title {
+	font-size: 0.88rem;
+	font-weight: 600;
+	margin-bottom: 4px;
+	color: var(--sos-text);
+}
+
+.notice-desc {
+	font-size: 0.78rem;
+	color: var(--sos-text-muted);
+	line-height: 1.45;
+	margin-bottom: 12px;
+}
+
+.alert-banner {
+	background: rgba(239, 68, 68, 0.1);
+	border: 1px solid rgba(239, 68, 68, 0.3);
+	color: #fca5a5;
+	padding: 12px 16px;
+	border-radius: var(--sos-radius-md);
+	font-size: 0.8rem;
+	margin-bottom: 16px;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
 .status-pill.running .status-indicator::after {
 	content: '';
 	position: absolute;

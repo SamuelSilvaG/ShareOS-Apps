@@ -20,13 +20,12 @@ The underlying service is provided by the classic C Zabbix agent (`zabbix_agentd
    - **Host Setup Checklist:** Step-by-step guidance showing the exact host name, linked templates (`Linux by Zabbix agent active` and `ShareOS by Zabbix agent active`), and encryption parameters.
 
 3. **Metrics Diagnostics Preview:**
-   - Live diagnostics showing the exact metrics that the agent delivers:
-     - Box temperature (°C) and fan speed (RPM and PWM).
-     - Individual bay hard drive / SSD health (SMART rating, temperature, power cycles, reallocated sectors, and standby state).
-     - RAID array status (level, healthy disks, rebuild / sync progress).
+   - Live diagnostics showing real box hardware metrics delivered to Zabbix:
+     - Box temperature (°C) and fan PWM duty (%) via `ShareOS.sysinfo.info()` (hardware does not report RPM).
+     - Storage drive status and software RAID array health.
 
-4. **CLI Command Sync:**
-   - Real-time command generator creating the exact `echo '...' | shareos-zabbix set` command for terminal/SSH auditing.
+4. **Honest CLI Command Sync:**
+   - Real-time command generator creating the exact `echo '...' | shareos-zabbix set` command to apply settings via System → Terminal or SSH (until native `ShareOS.zabbix` integration is released in firmware).
 
 ---
 
