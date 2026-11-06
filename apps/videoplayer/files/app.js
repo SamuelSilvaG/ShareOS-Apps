@@ -63,6 +63,7 @@
   let currentIndex = -1;
   let detectedSubtitles = []; // array of { label, url, blobUrl, lang }
   let activeSubTrackIndex = -1; // -1 = off
+  let lastSubTrackIndex = 0;
   let externalAudio = null;
   let externalAudioUrl = null;
   let autohideTimer = null;
@@ -523,11 +524,45 @@
   // Set Active Subtitle Track (-1 = Off)
   function setSubtitleTrack(index) {
     activeSubTrackIndex = index;
+    if (index >= 0) lastSubTrackIndex = index;
     for (let i = 0; i < video.textTracks.length; i++) {
       video.textTracks[i].mode = (i === index) ? 'showing' : 'disabled';
     }
     renderSubtitleMenu();
     menuSubtitles.classList.remove('show');
+    if (index === -1) {
+      flashCenter(t('sub.none'));
+    } else if (detectedSubtitles[index]) {
+      flashCenter(detectedSubtitles[index].label);
+    }
+  }
+
+  // Toggle Subtitles On/Off
+  function toggleSubtitles() {
+    if (activeSubTrackIndex !== -1) {
+      setSubtitleTrack(-1);
+    } else if (detectedSubtitles.length > 0) {
+      const idx = (lastSubTrackIndex >= 0 && lastSubTrackIndex < detectedSubtitles.length) ? lastSubTrackIndex : 0;
+      setSubtitleTrack(idx);
+    }
+  }
+
+  // Sync embedded subtitles from container (MKV/MP4 internal tracks)
+  function syncEmbeddedSubtitleTracks() {
+    if (!video.textTracks || video.textTracks.length === 0) return;
+    for (let i = 0; i < video.textTracks.length; i++) {
+      const tr = video.textTracks[i];
+      const exists = detectedSubtitles.some((s) => s.trackIndex === i);
+      if (!exists) {
+        const label = tr.label || (tr.language ? `Subtitle (${tr.language.toUpperCase()})` : `Subtitle ${i + 1}`);
+        detectedSubtitles.push({
+          label,
+          trackIndex: i,
+          blobUrl: null
+        });
+      }
+    }
+    renderSubtitleMenu();
   }
 
   // Open Custom Subtitle Picker
@@ -812,6 +847,7 @@
   function onLoadedMetadata() {
     updateTimeDisplay();
     updateAudioTracks();
+    syncEmbeddedSubtitleTracks();
   }
 
   function onTimeUpdate() {
@@ -997,11 +1033,7 @@
       case 'c':
       case 'C':
         e.preventDefault();
-        if (detectedSubtitles.length > 0) {
-          const next = activeSubTrackIndex === -1 ? 0 : -1;
-          setSubtitleTrack(next);
-          flashCenter(next === -1 ? t('sub.none') : detectedSubtitles[next].label);
-        }
+        toggleSubtitles();
         break;
       case '[':
         e.preventDefault();
