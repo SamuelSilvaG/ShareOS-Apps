@@ -37,6 +37,10 @@
   const centerIcon = $('center-icon');
 
   // Extra menus
+  const audioAnchor = $('audio-track-anchor');
+  const btnAudio = $('btn-audio');
+  const menuAudio = $('menu-audio');
+  const audioTracksList = $('audio-tracks-list');
   const btnSubtitles = $('btn-subtitles');
   const menuSubtitles = $('menu-subtitles');
   const subTracksList = $('sub-tracks-list');
@@ -53,11 +57,14 @@
   // State
   const VIDEO_EXTS = ['.mp4', '.m4v', '.webm', '.mov', '.ogv', '.mkv'];
   const SUB_EXTS = ['.srt', '.vtt'];
+  const AUDIO_EXTS = ['.m4a', '.mp3', '.aac', '.opus', '.ogg', '.wav', '.flac'];
   let currentFolder = { root: '', path: '' };
   let playlist = []; // array of { name, size, root, path, url }
   let currentIndex = -1;
   let detectedSubtitles = []; // array of { label, url, blobUrl, lang }
   let activeSubTrackIndex = -1; // -1 = off
+  let externalAudio = null;
+  let externalAudioUrl = null;
   let autohideTimer = null;
   let isSeeking = false;
   let centerFlashTimer = null;
@@ -145,21 +152,34 @@
     overlay.addEventListener('mouseenter', () => clearTimeout(autohideTimer));
 
     // Menus
+    btnAudio.addEventListener('click', (e) => {
+      e.stopPropagation();
+      menuSubtitles.classList.remove('show');
+      menuSpeed.classList.remove('show');
+      menuAudio.classList.toggle('show');
+    });
     btnSubtitles.addEventListener('click', (e) => {
       e.stopPropagation();
+      menuAudio.classList.remove('show');
       menuSpeed.classList.remove('show');
       menuSubtitles.classList.toggle('show');
     });
     btnSpeed.addEventListener('click', (e) => {
       e.stopPropagation();
+      menuAudio.classList.remove('show');
       menuSubtitles.classList.remove('show');
       menuSpeed.classList.toggle('show');
     });
 
     document.addEventListener('click', () => {
+      menuAudio.classList.remove('show');
       menuSubtitles.classList.remove('show');
       menuSpeed.classList.remove('show');
     });
+
+    // Audio options
+    $('btn-load-custom-audio').addEventListener('click', openCustomAudioPicker);
+    $('local-audio-input').addEventListener('change', onLocalAudioSelected);
 
     // Speed options
     menuSpeed.querySelectorAll('.menu-item').forEach((item) => {
@@ -364,6 +384,7 @@
 
     // Clear old subtitle tracks
     clearSubtitles();
+    disableExternalAudio();
 
     // Get streaming URL
     let streamUrl = item.url;
@@ -543,9 +564,123 @@
     try { localStorage.setItem('vp_sub_size', size); } catch (_) {}
   }
 
+  // --- Audio Tracks Management ---
+  function updateAudioTracks() {
+    audioTracksList.innerHTML = '';
+    const tracks = video.audioTracks;
+    const hasMultiple = tracks && tracks.length > 1;
+
+    if (hasMultiple || externalAudio) {
+      audioAnchor.style.display = 'block';
+    } else {
+      audioAnchor.style.display = 'none';
+      return;
+    }
+
+    if (hasMultiple) {
+      for (let i = 0; i < tracks.length; i++) {
+        const tr = tracks[i];
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'menu-item' + (tr.enabled && !externalAudio ? ' active' : '');
+        const label = tr.label || (tr.language ? `${t('audio.track', { num: i + 1 })} (${tr.language.toUpperCase()})` : t('audio.track', { num: i + 1 }));
+        btn.textContent = label;
+        btn.addEventListener('click', () => {
+          disableExternalAudio();
+          for (let j = 0; j < tracks.length; j++) {
+            tracks[j].enabled = (j === i);
+          }
+          updateAudioTracks();
+          flashCenter(label);
+          toast(t('audio.loaded', { name: label }));
+          menuAudio.classList.remove('show');
+        });
+        audioTracksList.appendChild(btn);
+      }
+    } else if (externalAudio) {
+      const btnDef = document.createElement('button');
+      btnDef.type = 'button';
+      btnDef.className = 'menu-item' + (!externalAudio ? ' active' : '');
+      btnDef.textContent = t('audio.default');
+      btnDef.addEventListener('click', () => {
+        disableExternalAudio();
+        updateAudioTracks();
+        menuAudio.classList.remove('show');
+      });
+      audioTracksList.appendChild(btnDef);
+    }
+
+    if (externalAudio) {
+      const btnExt = document.createElement('button');
+      btnExt.type = 'button';
+      btnExt.className = 'menu-item active';
+      btnExt.textContent = externalAudio.label;
+      audioTracksList.appendChild(btnExt);
+    }
+  }
+
+  function disableExternalAudio() {
+    if (externalAudio) {
+      externalAudio.pause();
+      externalAudio = null;
+      video.muted = false;
+      btnAudio.classList.remove('active');
+    }
+  }
+
+  async function openCustomAudioPicker() {
+    menuAudio.classList.remove('show');
+    if (SOS && SOS.fs && SOS.fs.pick) {
+      try {
+        const picked = await SOS.fs.pick({
+          title: t('audio.loadExternal'),
+          ext: AUDIO_EXTS
+        });
+        if (picked && picked[0]) {
+          const handle = await SOS.fs.open(picked[0].root, picked[0].path || '', picked[0].name);
+          setExternalAudio(picked[0].name, handle.url);
+        }
+      } catch (err) {
+        toast(t('toast.error') + err.message, true);
+      }
+    } else {
+      $('local-audio-input').click();
+    }
+  }
+
+  function setExternalAudio(name, url) {
+    disableExternalAudio();
+    const aud = new Audio(url);
+    aud.label = name;
+    aud.currentTime = video.currentTime;
+    aud.playbackRate = video.playbackRate;
+    aud.volume = video.volume;
+    aud.muted = video.muted;
+
+    video.muted = true;
+    externalAudio = aud;
+
+    if (!video.paused) {
+      aud.play().catch(() => {});
+    }
+
+    btnAudio.classList.add('active');
+    updateAudioTracks();
+    toast(t('audio.loaded', { name }));
+    flashCenter(name);
+  }
+
+  function onLocalAudioSelected(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    setExternalAudio(file.name, url);
+  }
+
   // Playback Speed
   function setSpeed(speed) {
     video.playbackRate = speed;
+    if (externalAudio) externalAudio.playbackRate = speed;
     speedLabel.textContent = speed + 'x';
     menuSpeed.querySelectorAll('.menu-item').forEach((item) => {
       const sp = parseFloat(item.dataset.speed);
@@ -606,6 +741,7 @@
   }
 
   function onPlay() {
+    if (externalAudio) externalAudio.play().catch(() => {});
     iconPlay.style.display = 'none';
     iconPause.style.display = 'inline';
     btnPlayPause.setAttribute('title', t('btn.pause'));
@@ -614,6 +750,7 @@
   }
 
   function onPause() {
+    if (externalAudio) externalAudio.pause();
     iconPlay.style.display = 'inline';
     iconPause.style.display = 'none';
     btnPlayPause.setAttribute('title', t('btn.play'));
@@ -648,6 +785,7 @@
   // Volume
   function toggleMute() {
     video.muted = !video.muted;
+    if (externalAudio) externalAudio.muted = video.muted;
     updateVolumeUI();
     flashCenter(video.muted ? 'muted' : Math.round(video.volume * 100) + '%');
   }
@@ -655,6 +793,10 @@
   function onVolumeChange(e) {
     video.volume = parseFloat(e.target.value);
     video.muted = false;
+    if (externalAudio) {
+      externalAudio.volume = video.volume;
+      externalAudio.muted = false;
+    }
     updateVolumeUI();
     try { localStorage.setItem('vp_volume', video.volume); } catch (_) {}
   }
@@ -669,6 +811,7 @@
   // Time & Progress
   function onLoadedMetadata() {
     updateTimeDisplay();
+    updateAudioTracks();
   }
 
   function onTimeUpdate() {
@@ -740,6 +883,7 @@
     const pos = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
     if (video.duration) {
       video.currentTime = pos * video.duration;
+      if (externalAudio) externalAudio.currentTime = video.currentTime;
       progressFilled.style.width = (pos * 100) + '%';
       progressThumb.style.left = (pos * 100) + '%';
       updateTimeDisplay();
@@ -751,6 +895,7 @@
     const pos = Math.max(0, Math.min(1, (touch.clientX - rect.left) / rect.width));
     if (video.duration) {
       video.currentTime = pos * video.duration;
+      if (externalAudio) externalAudio.currentTime = video.currentTime;
       progressFilled.style.width = (pos * 100) + '%';
       progressThumb.style.left = (pos * 100) + '%';
       updateTimeDisplay();
@@ -894,12 +1039,18 @@
 
       const videoFile = Array.from(files).find((f) => VIDEO_EXTS.some((x) => f.name.toLowerCase().endsWith(x)));
       const subFile = Array.from(files).find((f) => SUB_EXTS.some((x) => f.name.toLowerCase().endsWith(x)));
+      const audioFile = Array.from(files).find((f) => AUDIO_EXTS.some((x) => f.name.toLowerCase().endsWith(x)));
 
       if (videoFile) {
         const url = URL.createObjectURL(videoFile);
         playlist.unshift({ name: videoFile.name, size: videoFile.size, url });
         renderPlaylist();
         playVideoAtIndex(0);
+      }
+
+      if (audioFile) {
+        const url = URL.createObjectURL(audioFile);
+        setExternalAudio(audioFile.name, url);
       }
 
       if (subFile) {

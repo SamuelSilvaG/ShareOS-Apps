@@ -19,7 +19,12 @@ Designed specifically for low-power Kirkwood ARMv5 NAS devices (800 MHz / 1.0 GH
    - Allows loading external subtitle files from the box or local computer with one click.
    - Adjustable subtitle font sizes (Small, Normal, Large) with high-contrast cinema backgrounds (`::cue`).
 
-3. **Responsive Dark Cinema Interface:**
+3. **Multiple Audio Track Switching:**
+   - Detects multiple embedded audio tracks (e.g. Dual Audio: Portuguese Dubbed / English Original).
+   - Instant track switching through native HTML5 `video.audioTracks`.
+   - Allows loading external synchronized audio files (`.m4a`, `.mp3`, `.aac`, `.opus`, `.ogg`).
+
+4. **Responsive Dark Cinema Interface:**
    - Sleek dark-mode interface styled with ShareOS design tokens (`var(--sos-*)`).
    - Collapsible Media Library sidebar with folder scanning, video count, file size indicators, and real-time title search.
    - Aspect ratio toggle: Fit to screen (`contain`), 16:9 Widescreen (`fill`), Fill/Crop (`cover`), and Original (`scale-down`).

@@ -145,6 +145,22 @@
               </div>
 
               <div class="controls-right">
+                <!-- Audio Tracks Dropdown -->
+                <div class="menu-anchor" id="audio-track-anchor" style="display:none;">
+                  <button type="button" id="btn-audio" class="ctrl-btn" data-i18n-title="btn.audio" title="Audio Tracks">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M9 18V5l12-2v13"></path>
+                      <circle cx="6" cy="18" r="3"></circle>
+                      <circle cx="18" cy="16" r="3"></circle>
+                    </svg>
+                  </button>
+                  <div class="dropdown-menu" id="menu-audio" style="min-width: 180px;">
+                    <div class="menu-title" data-i18n="audio.title">Audio Tracks</div>
+                    <div id="audio-tracks-list"></div>
+                    <button type="button" class="menu-item" id="btn-load-custom-audio" style="margin-top:4px;" data-i18n="audio.loadExternal">Load External Audio...</button>
+                  </div>
+                </div>
+
                 <!-- Subtitles Dropdown -->
                 <div class="menu-anchor">
                   <button type="button" id="btn-subtitles" class="ctrl-btn" data-i18n-title="btn.subtitles" title="Subtitles">
@@ -219,6 +235,7 @@
   <!-- Hidden File Pickers (for local drag & drop or fallback) -->
   <input type="file" id="local-video-input" accept="video/mp4,video/webm,video/ogg,.mp4,.webm,.mkv,.mov" hidden>
   <input type="file" id="local-sub-input" accept=".srt,.vtt" hidden>
+  <input type="file" id="local-audio-input" accept="audio/*,.m4a,.mp3,.aac,.opus,.ogg" hidden>
 
   <!-- Keyboard Shortcuts Modal -->
   <div class="modal-backdrop" id="modal-help">
