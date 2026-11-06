@@ -1,13 +1,12 @@
 /**
  * Zabbix Agent Config - Main Application Logic
- * Integrates with ShareOS zabbix-agent service and APIs
+ * Integrates with ShareOS zabbix-agent service and CLI workflow
  */
 (function() {
 	'use strict';
 
 	const SOS = window.ShareOS || null;
 	const ZBX = SOS && SOS.zabbix ? SOS.zabbix : null;
-	const SYS = SOS && SOS.sysinfo ? SOS.sysinfo : null;
 
 	// State
 	const state = {
@@ -59,27 +58,8 @@
 		btnCopyCli: document.getElementById('btnCopyCli'),
 		btnDownloadTemplate: document.getElementById('btnDownloadTemplate'),
 		btnCopyTemplate: document.getElementById('btnCopyTemplate'),
-		// Metrics
-		mTemp: document.getElementById('mTemp'),
-		mFanRpm: document.getElementById('mFanRpm'),
-		mFanPwm: document.getElementById('mFanPwm'),
-		mBoard: document.getElementById('mBoard'),
-		disksTableBody: document.getElementById('disksTableBody'),
-		raidTableBody: document.getElementById('raidTableBody'),
-		telemetryNotice: document.getElementById('telemetryNotice'),
-		telemetryNoticeText: document.getElementById('telemetryNoticeText'),
 		toastContainer: document.getElementById('toastContainer')
 	};
-
-	function escapeHTML(str) {
-		if (str == null) return '';
-		return String(str)
-			.replace(/&/g, '&amp;')
-			.replace(/</g, '&lt;')
-			.replace(/>/g, '&gt;')
-			.replace(/"/g, '&quot;')
-			.replace(/'/g, '&#39;');
-	}
 
 	// Toast Notification
 	function showToast(message, type = 'success') {
@@ -179,7 +159,7 @@
 				if (els.btnApply) els.btnApply.style.display = 'inline-flex';
 				if (els.btnCopyCliFooter) els.btnCopyCliFooter.style.display = 'none';
 			} else {
-				// No firmware API yet: version A (CLI command workflow)
+				// Version A: honest CLI command workflow (no simulated apply / no localStorage fallback)
 				state.running = false;
 				if (els.cliNoticeCard) els.cliNoticeCard.style.display = 'flex';
 				if (els.btnApply) els.btnApply.style.display = 'none';
@@ -200,7 +180,6 @@
 
 			updateStatusBadge();
 			updateCliPreview();
-			await loadTelemetry();
 		} catch (err) {
 			console.error('Failed to load configuration:', err);
 		}
@@ -317,125 +296,6 @@
 		document.body.removeChild(a);
 		URL.revokeObjectURL(url);
 		showToast('Template downloaded: shareos_template.yaml', 'success');
-	}
-
-	// Render Disks in telemetry table
-	function renderDisks(disks) {
-		if (!els.disksTableBody) return;
-		if (!disks || !Array.isArray(disks) || disks.length === 0) {
-			els.disksTableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--sos-text-muted); padding:16px;">–</td></tr>`;
-			return;
-		}
-
-		els.disksTableBody.innerHTML = disks.map(d => {
-			const devName = escapeHTML(d.name ? `/dev/${d.name}` : (d.dev || '–'));
-			const model = escapeHTML(d.model || d.vendor || '–');
-			const smart = escapeHTML(d.smart || d.health || 'PASSED');
-			const temp = d.temp != null ? `${d.temp} °C` : '–';
-			const isStandby = !!d.standby;
-			const stateBadge = isStandby
-				? `<span class="pill-badge yellow">${I18n.t('drive_standby', 'Standby')}</span>`
-				: `<span class="pill-badge green">${I18n.t('drive_healthy', 'Active')}</span>`;
-
-			return `<tr>
-				<td><code>${devName}</code></td>
-				<td>${model}</td>
-				<td><span class="pill-badge green">${smart}</span></td>
-				<td>${temp}</td>
-				<td>${stateBadge}</td>
-			</tr>`;
-		}).join('');
-	}
-
-	// Render RAID in telemetry table
-	function renderRaid(raid) {
-		if (!els.raidTableBody) return;
-		if (!raid || !Array.isArray(raid) || raid.length === 0) {
-			els.raidTableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--sos-text-muted); padding:16px;">–</td></tr>`;
-			return;
-		}
-
-		els.raidTableBody.innerHTML = raid.map(r => {
-			const dev = escapeHTML(r.dev || r.name || '–');
-			const level = escapeHTML(r.level || 'RAID');
-			const health = escapeHTML(r.health || 'Healthy');
-			const disks = escapeHTML(r.disks || `${r.working || 0} / ${r.total || 0}`);
-			const sync = escapeHTML(r.sync || '100%');
-
-			return `<tr>
-				<td><code>${dev}</code></td>
-				<td>${level}</td>
-				<td><span class="pill-badge green">${health}</span></td>
-				<td>${disks}</td>
-				<td>${sync}</td>
-			</tr>`;
-		}).join('');
-	}
-
-	// Telemetry / Metrics loader using ShareOS.sysinfo.info()
-	async function loadTelemetry() {
-		if (!SYS || typeof SYS.info !== 'function') {
-			// Honest empty values when API is unavailable
-			els.mTemp.textContent = '–';
-			els.mFanRpm.textContent = '–';
-			els.mFanPwm.textContent = '–';
-			els.mBoard.textContent = '–';
-			renderDisks(null);
-			renderRaid(null);
-			if (els.telemetryNotice) {
-				els.telemetryNotice.style.display = 'flex';
-				if (els.telemetryNoticeText) {
-					els.telemetryNoticeText.textContent = I18n.t('telemetry_admin_required', 'Administrator access required for hardware telemetry.');
-				}
-			}
-			return;
-		}
-
-		try {
-			const info = await SYS.info();
-			if (els.telemetryNotice) {
-				els.telemetryNotice.style.display = 'none';
-			}
-
-			// Temperature is in m°C -> divide by 1000
-			if (info.temperature != null) {
-				const tempC = info.temperature / 1000;
-				els.mTemp.textContent = `${tempC.toFixed(1)} °C`;
-			} else {
-				els.mTemp.textContent = '–';
-			}
-
-			// fan_rpm does not exist on ShareOS hardware -> always show "–"
-			els.mFanRpm.textContent = '–';
-
-			// fan_pwm is 0–255 -> convert to percentage
-			if (info.fan_pwm != null) {
-				const pwmPct = Math.round((info.fan_pwm / 255) * 100);
-				els.mFanPwm.textContent = `${pwmPct} %`;
-			} else {
-				els.mFanPwm.textContent = '–';
-			}
-
-			els.mBoard.textContent = info.board || info.model || '–';
-
-			renderDisks(info.disks);
-			renderRaid(info.raid);
-		} catch (err) {
-			console.warn('sysinfo.info() call failed:', err);
-			els.mTemp.textContent = '–';
-			els.mFanRpm.textContent = '–';
-			els.mFanPwm.textContent = '–';
-			els.mBoard.textContent = '–';
-			renderDisks(null);
-			renderRaid(null);
-
-			if (els.telemetryNotice) {
-				els.telemetryNotice.style.display = 'flex';
-				if (els.telemetryNoticeText) {
-					els.telemetryNoticeText.textContent = I18n.t('telemetry_admin_required', 'Administrator access required for hardware telemetry.');
-				}
-			}
-		}
 	}
 
 	// Event Listeners

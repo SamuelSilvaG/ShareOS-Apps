@@ -61,12 +61,6 @@
 			</svg>
 			<span data-i18n="tab_template">Zabbix Template</span>
 		</button>
-		<button class="tab-btn" data-tab="metrics">
-			<svg viewBox="0 0 24 24">
-				<path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
-			</svg>
-			<span data-i18n="tab_metrics">ShareOS Metrics</span>
-		</button>
 		<button class="tab-btn" data-tab="cli">
 			<svg viewBox="0 0 24 24">
 				<path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-8 12.5v-1.5h6v1.5h-6zm-4.71-.29L3.59 12.5l3.71-3.71 1.06 1.06-2.65 2.65 2.65 2.65-1.07 1.06z"/>
@@ -289,83 +283,7 @@
 			</div>
 		</section>
 
-		<!-- TAB 3: METRICS -->
-		<section class="tab-panel" id="panel-metrics">
-			<div class="card">
-				<div class="card-header">
-					<h2 class="card-title" data-i18n="metrics_title">Live Hardware & Storage Metrics</h2>
-					<span class="pill-badge green" id="metricRefreshBadge">Live</span>
-				</div>
-				<p class="card-desc" data-i18n="metrics_desc">Live telemetry exposed natively by the ShareOS daemon to the Zabbix agent items.</p>
-
-				<!-- Telemetry Notice / Admin Warning Banner -->
-				<div class="alert-banner" id="telemetryNotice" style="display: none;">
-					<svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: currentColor; flex-shrink: 0;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-					<span id="telemetryNoticeText" data-i18n="telemetry_admin_required">Administrator access required for hardware telemetry.</span>
-				</div>
-
-				<div class="metrics-grid">
-					<div class="metric-box">
-						<div class="metric-label" data-i18n="metric_box_temp">Box Temperature</div>
-						<div class="metric-val highlight" id="mTemp">–</div>
-						<div class="metric-sub">shareos.box[temperature]</div>
-					</div>
-					<div class="metric-box">
-						<div class="metric-label" data-i18n="metric_fan_rpm">Fan Speed</div>
-						<div class="metric-val" id="mFanRpm">–</div>
-						<div class="metric-sub" data-i18n="rpm_not_supported">Not supported by hardware</div>
-					</div>
-					<div class="metric-box">
-						<div class="metric-label" data-i18n="metric_fan_pwm">Fan PWM Duty</div>
-						<div class="metric-val" id="mFanPwm">–</div>
-						<div class="metric-sub">shareos.box[fan_pwm]</div>
-					</div>
-					<div class="metric-box">
-						<div class="metric-label" data-i18n="metric_board">Hardware Board</div>
-						<div class="metric-val" style="font-size: 1.1rem;" id="mBoard">–</div>
-						<div class="metric-sub">shareos.box[board]</div>
-					</div>
-				</div>
-
-				<h3 style="font-size: 0.88rem; margin: 20px 0 10px;" data-i18n="metric_disks">Monitored Storage Drives</h3>
-				<table class="telemetry-table" id="disksTable">
-					<thead>
-						<tr>
-							<th>Drive Device</th>
-							<th>Model / Serial</th>
-							<th>SMART Health</th>
-							<th>Temperature</th>
-							<th>State</th>
-						</tr>
-					</thead>
-					<tbody id="disksTableBody">
-						<tr>
-							<td colspan="5" style="text-align: center; color: var(--sos-text-muted); padding: 16px;">–</td>
-						</tr>
-					</tbody>
-				</table>
-
-				<h3 style="font-size: 0.88rem; margin: 24px 0 10px;" data-i18n="metric_raid">RAID Arrays</h3>
-				<table class="telemetry-table" id="raidTable">
-					<thead>
-						<tr>
-							<th>Array Device</th>
-							<th>Level</th>
-							<th>Health</th>
-							<th>Working / Disks</th>
-							<th>Sync Status</th>
-						</tr>
-					</thead>
-					<tbody id="raidTableBody">
-						<tr>
-							<td colspan="5" style="text-align: center; color: var(--sos-text-muted); padding: 16px;">–</td>
-						</tr>
-					</tbody>
-				</table>
-			</div>
-		</section>
-
-		<!-- TAB 4: CLI -->
+		<!-- TAB 3: CLI -->
 		<section class="tab-panel" id="panel-cli">
 			<div class="card">
 				<div class="card-header">

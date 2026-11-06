@@ -20,15 +20,9 @@
 			cli_notice_title: 'Apply via Terminal or SSH',
 			cli_notice_desc: 'Direct firmware API is not yet available in this release. Configure your settings below, then copy and run the generated command in System → Terminal or via SSH.',
 			copy_cli_apply_hint: 'Command copied! Run in System → Terminal or via SSH to apply settings.',
-			telemetry_admin_required: 'Administrator access required for hardware telemetry.',
-			telemetry_unavailable: 'Hardware telemetry not available on this device.',
-			no_disks: 'No drive readings available',
-			no_raid: 'No active RAID arrays detected',
-			rpm_not_supported: 'Not supported by hardware',
 
 			tab_config: 'Agent Setup',
 			tab_template: 'Zabbix Template',
-			tab_metrics: 'ShareOS Metrics',
 			tab_cli: 'CLI & Audit',
 
 			refresh: 'Refresh Status',
@@ -95,21 +89,6 @@
 			tmpl_step_3: 'Create or update your Host with the Host name matching this configuration.',
 			tmpl_step_4: 'In Host Encryption tab, enable PSK connections and enter the exact PSK Identity and Key configured here.',
 
-			// Metrics Tab
-			metrics_title: 'Live Hardware & Storage Metrics',
-			metrics_desc: 'Live telemetry exposed natively by the ShareOS daemon to the Zabbix agent items.',
-			metric_box_temp: 'Box Temperature',
-			metric_fan_rpm: 'Fan Speed',
-			metric_fan_pwm: 'Fan PWM Duty',
-			metric_board: 'Hardware Board',
-			metric_os_version: 'ShareOS Version',
-			metric_disks: 'Monitored Storage Drives',
-			metric_raid: 'RAID Arrays',
-			no_data: 'Awaiting agent data...',
-			drive_healthy: 'Healthy',
-			drive_standby: 'Standby / Spun Down',
-			raid_active: 'Active & In-Sync',
-
 			// CLI Tab
 			cli_title: 'ShareOS CLI & Service Audit',
 			cli_desc: 'The configuration above translates directly into standard ShareOS Zabbix daemon commands. You can review or copy the command to execute via SSH or terminal.',
@@ -135,15 +114,9 @@
 			cli_notice_title: 'Aplicação via Terminal ou SSH',
 			cli_notice_desc: 'A API direta do firmware ainda não está disponível nesta versão. Configure os parâmetros abaixo, copie o comando gerado e execute-o em Sistema → Terminal ou via SSH.',
 			copy_cli_apply_hint: 'Comando copiado! Execute em Sistema → Terminal ou via SSH para aplicar as configurações.',
-			telemetry_admin_required: 'Acesso de administrador necessário para telemetria de hardware.',
-			telemetry_unavailable: 'Telemetria de hardware indisponível neste dispositivo.',
-			no_disks: 'Nenhum disco detectado',
-			no_raid: 'Nenhum array RAID detectado',
-			rpm_not_supported: 'Não reportado pelo hardware',
 
 			tab_config: 'Configuração',
 			tab_template: 'Template Zabbix',
-			tab_metrics: 'Métricas ShareOS',
 			tab_cli: 'CLI & Auditoria',
 
 			refresh: 'Atualizar Status',
@@ -210,21 +183,6 @@
 			tmpl_step_3: 'Crie ou edite o Host com o mesmo nome configurado aqui.',
 			tmpl_step_4: 'Na aba Criptografia do Host no Zabbix, ative PSK e informe a mesma Identidade PSK e Chave configuradas aqui.',
 
-			// Metrics Tab
-			metrics_title: 'Métricas de Hardware & Armazenamento',
-			metrics_desc: 'Telemetria fornecida nativamente pelo serviço do ShareOS para as chaves do Zabbix.',
-			metric_box_temp: 'Temperatura da Box',
-			metric_fan_rpm: 'Velocidade da Ventoinha',
-			metric_fan_pwm: 'Controle PWM',
-			metric_board: 'Placa-Mãe / Modelo',
-			metric_os_version: 'Versão do ShareOS',
-			metric_disks: 'Discos Monitorados',
-			metric_raid: 'Arrays RAID',
-			no_data: 'Aguardando dados do agente...',
-			drive_healthy: 'Saudável',
-			drive_standby: 'Repouso / Standby',
-			raid_active: 'Ativo & Sincronizado',
-
 			// CLI Tab
 			cli_title: 'CLI do ShareOS & Auditoria',
 			cli_desc: 'As configurações acima se traduzem diretamente em comandos do utilitário `shareos-zabbix`. Você pode conferir ou copiar o comando para rodar manualmente via terminal ou SSH.',
@@ -250,15 +208,9 @@
 			cli_notice_title: 'Über Terminal oder SSH anwenden',
 			cli_notice_desc: 'Die direkte Firmware-API ist in dieser Version noch nicht verfügbar. Konfigurieren Sie die Einstellungen unten, kopieren Sie den Befehl und führen Sie ihn unter System → Terminal oder per SSH aus.',
 			copy_cli_apply_hint: 'Befehl kopiert! Unter System → Terminal oder per SSH ausführen, um Einstellungen anzuwenden.',
-			telemetry_admin_required: 'Administratorrechte für Hardware-Telemetrie erforderlich.',
-			telemetry_unavailable: 'Hardware-Telemetrie auf diesem Gerät nicht verfügbar.',
-			no_disks: 'Keine Laufwerksdaten verfügbar',
-			no_raid: 'Keine RAID-Verbünde erkannt',
-			rpm_not_supported: 'Wird von Hardware nicht erfasst',
 
 			tab_config: 'Konfiguration',
 			tab_template: 'Zabbix-Vorlage',
-			tab_metrics: 'ShareOS-Metriken',
 			tab_cli: 'CLI & Audit',
 
 			refresh: 'Status aktualisieren',
@@ -324,21 +276,6 @@
 			tmpl_step_2: 'Klicken Sie oben rechts auf "Importieren" und laden Sie die YAML-Datei hoch.',
 			tmpl_step_3: 'Erstellen oder bearbeiten Sie den Host mit dem konfigurierten Namen.',
 			tmpl_step_4: 'Aktivieren Sie im Host-Reiter "Verschlüsselung" PSK mit derselben Identität und demselben Schlüssel.',
-
-			// Metrics Tab
-			metrics_title: 'Live-Hardware- & Speichermetriken',
-			metrics_desc: 'Telemetrie, die der ShareOS-Dienst dem Zabbix-Agenten nativ bereitstellt.',
-			metric_box_temp: 'Box-Temperatur',
-			metric_fan_rpm: 'Lüfterdrehzahl',
-			metric_fan_pwm: 'Lüfter PWM',
-			metric_board: 'Hauptplatine',
-			metric_os_version: 'ShareOS-Version',
-			metric_disks: 'Überwachte Laufwerke',
-			metric_raid: 'RAID-Verbünde',
-			no_data: 'Warte auf Agenten-Daten...',
-			drive_healthy: 'Einwandfrei',
-			drive_standby: 'Standby / Im Ruhezustand',
-			raid_active: 'Aktiv & Synchron',
 
 			// CLI Tab
 			cli_title: 'ShareOS CLI & Audit',

@@ -618,48 +618,8 @@ input:checked + .slider:before {
 }
 
 /* ==========================================================================
-   Metrics Grid & Telemetry Badges
+   Reference Tables & Badges
    ========================================================================== */
-
-.metrics-grid {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-	gap: 16px;
-	margin-bottom: 20px;
-}
-
-.metric-box {
-	background: var(--sos-surface-alt);
-	border: 1px solid var(--sos-border);
-	border-radius: var(--sos-radius-md);
-	padding: 16px;
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-}
-
-.metric-label {
-	font-size: 0.74rem;
-	color: var(--sos-text-muted);
-	font-weight: 600;
-	text-transform: uppercase;
-	letter-spacing: 0.5px;
-}
-
-.metric-val {
-	font-size: 1.45rem;
-	font-weight: 700;
-	color: var(--sos-text);
-}
-
-.metric-val.highlight {
-	color: var(--sos-accent);
-}
-
-.metric-sub {
-	font-size: 0.72rem;
-	color: var(--sos-text-muted);
-}
 
 .telemetry-table {
 	width: 100%;
