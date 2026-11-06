@@ -151,6 +151,8 @@
       torrents = torrentData.torrents || [];
       serverSession = sessionData;
       setConnected(true);
+
+
       renderSidebar();
       renderTorrents();
       updateStatusbar();
@@ -1276,13 +1278,13 @@
     $('mcontent-file').classList.remove('active');
   });
 
-  async function pickFolder(input) {
+  async function pickFolder(input, title) {
     if (!(window.ShareOS && ShareOS.fs && ShareOS.fs.pick)) {
       toast(t('toast.noFolderPicker'), true);
       return;
     }
     try {
-      const picked = await ShareOS.fs.pick({ title: t('pick.destTitle'), folder: true });
+      const picked = await ShareOS.fs.pick({ title: title || t('pick.destTitle'), folder: true });
       if (picked && picked.length) {
         input.value = picked[0].path ? picked[0].root + '/' + picked[0].path : picked[0].root;
       }
@@ -1292,6 +1294,7 @@
   $('btn-browse-dest').addEventListener('click', () => pickFolder($('torrent-dest')));
   $('btn-cfg-browse').addEventListener('click', () => pickFolder($('cfg-download-dir')));
   $('btn-cfg-incomplete-browse').addEventListener('click', () => pickFolder($('cfg-incomplete-dir')));
+  $('btn-cfg-watch-browse').addEventListener('click', () => pickFolder($('cfg-watch-dir'), t('pick.watchTitle')));
 
   // Local file upload
   $('torrent-file-input').addEventListener('change', (e) => {
@@ -1368,6 +1371,13 @@
     $('cfg-download-dir').value = serverSession['download-dir'] || '';
     $('cfg-incomplete-enabled').checked = !!serverSession['incomplete-dir-enabled'];
     $('cfg-incomplete-dir').value = serverSession['incomplete-dir'] || '';
+    $('cfg-watch-enabled').checked = !!serverSession['watch-dir-enabled'];
+    $('cfg-watch-dir').value = serverSession['watch-dir'] || '';
+    const watchLocked = !!serverSession['watch-dir-autobrr'];
+    $('cfg-watch-enabled').disabled = watchLocked;
+    $('cfg-watch-dir').readOnly = watchLocked;
+    $('btn-cfg-watch-browse').disabled = watchLocked;
+    $('cfg-watch-autobrr').style.display = watchLocked ? 'block' : 'none';
     $('cfg-start-added').checked = serverSession['start-added-torrents'] !== false;
     $('cfg-append-part').checked = serverSession['rename-partial-files'] !== false;
 
@@ -1438,6 +1448,8 @@
       'download-dir': $('cfg-download-dir').value.trim(),
       'incomplete-dir-enabled': $('cfg-incomplete-enabled').checked,
       'incomplete-dir': $('cfg-incomplete-dir').value.trim(),
+      'watch-dir-enabled': $('cfg-watch-enabled').checked,
+      'watch-dir': $('cfg-watch-dir').value.trim(),
       'start-added-torrents': $('cfg-start-added').checked,
       'rename-partial-files': $('cfg-append-part').checked,
 
@@ -1468,6 +1480,25 @@
     if (!setArgs['download-dir']) delete setArgs['download-dir'];
     if (!setArgs['incomplete-dir']) delete setArgs['incomplete-dir'];
 
+    // Watch folder: the box restarts the account's daemon when it changes, so
+    // only send the two keys when they actually differ. When autobrr uses its
+    // hand-over folder for this account, the field is read-only.
+    const watchLocked = !!(serverSession && serverSession['watch-dir-autobrr']);
+    const watchChanged = !watchLocked && serverSession && (
+      setArgs['watch-dir-enabled'] !== !!serverSession['watch-dir-enabled'] ||
+      setArgs['watch-dir'] !== (serverSession['watch-dir'] || '')
+    );
+    if (!watchChanged) {
+      delete setArgs['watch-dir-enabled'];
+      delete setArgs['watch-dir'];
+    } else if (setArgs['watch-dir-enabled'] && !setArgs['watch-dir']) {
+      toast(t('toast.watchNeedDir'), true);
+      return;
+    }
+
+    const submitBtn = $('modal-cfg-submit');
+    submitBtn.disabled = true;
+    if (watchChanged) toast(t('toast.watchRestart'));
     try {
       await rpc('session-set', setArgs);
       $('modal-settings').style.display = 'none';
@@ -1475,6 +1506,8 @@
       refresh();
     } catch (e) {
       toast(t('toast.saveError') + e.message, true);
+    } finally {
+      submitBtn.disabled = false;
     }
   });
 

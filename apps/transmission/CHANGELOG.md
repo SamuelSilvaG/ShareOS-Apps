@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.2
+
+- Preferences: watch folder (`watch-dir`, `watch-dir-enabled`), chosen with the box's folder dialog as `<root>/<path>` (e.g. `home/Watch`). Transmission watches the folder itself and adds new `.torrent` files to the default download folder – also when the app is closed. Changing it restarts the account's service, so saving takes a few seconds; the two keys are only sent when they change.
+- When autobrr hands its torrents to this account (`watch-dir-autobrr`), the watch folder is shown read-only.
+- Needs ShareOS 0.2.0-beta.20+ ([ShareOS#121](https://github.com/UniqueDroid/ShareOS/pull/121)).
+
 ## 1.3.1
 
 - Preferences: µTP can be switched on and off. ShareOS 0.2.0-beta.20 turns it off by default on new setups, because on the 800 MHz DNS-320L it costs more CPU than all TCP peers together ([ShareOS#115](https://github.com/UniqueDroid/ShareOS/issues/115)).
