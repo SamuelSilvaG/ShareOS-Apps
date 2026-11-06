@@ -17,14 +17,6 @@
   let isConnected = false;
   let pendingFileMetainfo = null;
 
-  // Persistent Settings & Watch Folder State
-  const STORAGE_KEY = 'shareos_transmission_settings';
-  const CONFIG_DIR = 'system';
-  const CONFIG_FILE = 'transmission_settings.json';
-  let hasRestoredSettings = false;
-  let lastWatchCheck = 0;
-  let isWatchChecking = false;
-
   // Filter & Sort State
   let activeFilter = { type: 'status', val: 'all' }; // type: 'status' | 'tracker' | 'dir'
   let sortField = 'queuePosition';
@@ -136,182 +128,6 @@
     }
   }
 
-  // Persist settings locally and to user personal storage on Box via ShareOS.fs
-  async function savePersistentSettings(settings) {
-    if (!settings) return;
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
-    } catch (e) {
-      console.warn('localStorage save error:', e);
-    }
-
-    if (window.ShareOS && ShareOS.fs && typeof ShareOS.fs.roots === 'function') {
-      try {
-        const roots = await ShareOS.fs.roots();
-        if (roots && roots.length > 0) {
-          const homeRoot = (roots.find(r => r.home) || roots[0]).name;
-          await ShareOS.fs.mkdir(homeRoot, '', CONFIG_DIR).catch(() => {});
-          const handle = await ShareOS.fs.open(homeRoot, CONFIG_DIR, CONFIG_FILE, { write: true, create: true });
-          await handle.save(new Blob([JSON.stringify(settings, null, 2)], { type: 'application/json' }));
-        }
-      } catch (err) {
-        console.warn('ShareOS.fs save persistent settings error:', err);
-      }
-    }
-  }
-
-  // Load persisted settings from Box storage or localStorage fallback
-  async function loadPersistentSettings() {
-    let settings = null;
-    if (window.ShareOS && ShareOS.fs && typeof ShareOS.fs.roots === 'function') {
-      try {
-        const roots = await ShareOS.fs.roots();
-        if (roots && roots.length > 0) {
-          const homeRoot = (roots.find(r => r.home) || roots[0]).name;
-          const handle = await ShareOS.fs.open(homeRoot, CONFIG_DIR, CONFIG_FILE);
-          const text = await (await handle.blob()).text();
-          settings = JSON.parse(text);
-        }
-      } catch (err) {
-        // Not yet saved on Box, proceed to fallback
-      }
-    }
-
-    if (!settings) {
-      try {
-        const local = localStorage.getItem(STORAGE_KEY);
-        if (local) settings = JSON.parse(local);
-      } catch (e) {}
-    }
-    return settings;
-  }
-
-  // Auto-restore saved settings if daemon restarted/updated with defaults
-  async function restoreSavedSettingsOnConnect(session) {
-    try {
-      const saved = await loadPersistentSettings();
-      if (!saved) {
-        // First run on this version: snapshot existing daemon settings as baseline
-        const baseline = {
-          'download-dir': session['download-dir'] || '',
-          'incomplete-dir-enabled': !!session['incomplete-dir-enabled'],
-          'incomplete-dir': session['incomplete-dir'] || '',
-          'watch-dir-enabled': !!session['watch-dir-enabled'],
-          'watch-dir': session['watch-dir'] || '',
-          'start-added-torrents': session['start-added-torrents'] !== false,
-          'rename-partial-files': session['rename-partial-files'] !== false,
-          'speed-limit-down-enabled': !!session['speed-limit-down-enabled'],
-          'speed-limit-down': session['speed-limit-down'] || 0,
-          'speed-limit-up-enabled': !!session['speed-limit-up-enabled'],
-          'speed-limit-up': session['speed-limit-up'] || 0,
-          'peer-port': session['peer-port'] || 51413,
-          'port-forwarding-enabled': session['port-forwarding-enabled'] !== false,
-          'dht-enabled': session['dht-enabled'] !== false,
-          'pex-enabled': session['pex-enabled'] !== false,
-          'lpd-enabled': !!session['lpd-enabled'],
-          'utp-enabled': !!session['utp-enabled']
-        };
-        await savePersistentSettings(baseline);
-        return;
-      }
-
-      // Check if daemon has diverged from saved custom settings (e.g. after update or restart)
-      const restoreArgs = {};
-      let changed = false;
-
-      if (saved['download-dir'] && session['download-dir'] !== saved['download-dir']) {
-        restoreArgs['download-dir'] = saved['download-dir'];
-        changed = true;
-      }
-      if (saved['incomplete-dir-enabled'] != null && session['incomplete-dir-enabled'] !== saved['incomplete-dir-enabled']) {
-        restoreArgs['incomplete-dir-enabled'] = saved['incomplete-dir-enabled'];
-        changed = true;
-      }
-      if (saved['incomplete-dir'] && session['incomplete-dir'] !== saved['incomplete-dir']) {
-        restoreArgs['incomplete-dir'] = saved['incomplete-dir'];
-        changed = true;
-      }
-      if (saved['watch-dir-enabled'] != null && session['watch-dir-enabled'] !== saved['watch-dir-enabled']) {
-        restoreArgs['watch-dir-enabled'] = saved['watch-dir-enabled'];
-        changed = true;
-      }
-      if (saved['watch-dir'] && session['watch-dir'] !== saved['watch-dir']) {
-        restoreArgs['watch-dir'] = saved['watch-dir'];
-        changed = true;
-      }
-
-      if (changed) {
-        console.log('[Transmission] Daemon restored to user settings:', restoreArgs);
-        await rpc('session-set', restoreArgs);
-        Object.assign(session, restoreArgs);
-        toast(t('toast.settingsRestored'));
-      }
-    } catch (e) {
-      console.warn('[Transmission] restoreSavedSettings error:', e);
-    }
-  }
-
-  // Active Watch Folder Scanner (monitors watch-dir for new .torrent files)
-  async function runWatchFolderCheck() {
-    const now = Date.now();
-    if (isWatchChecking || now - lastWatchCheck < 8000) return;
-    if (!isConnected || !serverSession) return;
-    const watchEnabled = serverSession['watch-dir-enabled'];
-    const watchPath = serverSession['watch-dir'];
-    if (!watchEnabled || !watchPath || !window.ShareOS || !ShareOS.fs || !ShareOS.fs.list) return;
-
-    lastWatchCheck = now;
-    isWatchChecking = true;
-
-    try {
-      const parts = watchPath.replace(/^\/+/, '').split('/').filter(Boolean);
-      if (!parts.length) return;
-      const root = parts[0];
-      const subpath = parts.slice(1).join('/');
-
-      const res = await ShareOS.fs.list(root, subpath);
-      const entries = res.entries || (Array.isArray(res) ? res : []);
-      const torrentFiles = entries.filter(e => {
-        const name = (e.name || '').toLowerCase();
-        return (e.type === 'file' || !e.type) && name.endsWith('.torrent') && !name.endsWith('.torrent.added');
-      });
-
-      for (const file of torrentFiles) {
-        try {
-          const fileRef = await ShareOS.fs.open(root, subpath, file.name);
-          const blob = await fileRef.blob();
-          const b64 = await new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result.split(',')[1]);
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-          });
-
-          const addArgs = { metainfo: b64 };
-          if (serverSession['download-dir']) {
-            addArgs['download-dir'] = serverSession['download-dir'];
-          }
-
-          await rpc('torrent-add', addArgs);
-          toast(t('toast.watchAdded', { name: file.name }));
-
-          if (typeof ShareOS.fs.rename === 'function') {
-            await ShareOS.fs.rename(root, subpath, file.name, file.name + '.added').catch(() => {});
-          } else if (typeof ShareOS.fs.remove === 'function') {
-            await ShareOS.fs.remove(root, subpath, file.name).catch(() => {});
-          }
-          refresh();
-        } catch (addErr) {
-          console.warn('[Transmission] Failed to import watch file:', file.name, addErr);
-        }
-      }
-    } catch (err) {
-      // Ignore if folder not yet created or inaccessible
-    } finally {
-      isWatchChecking = false;
-    }
-  }
-
   // Refresh Torrent list and server state
   async function refresh() {
     try {
@@ -336,11 +152,6 @@
       serverSession = sessionData;
       setConnected(true);
 
-      if (!hasRestoredSettings && serverSession) {
-        hasRestoredSettings = true;
-        restoreSavedSettingsOnConnect(serverSession);
-      }
-      runWatchFolderCheck();
 
       renderSidebar();
       renderTorrents();
@@ -1562,6 +1373,11 @@
     $('cfg-incomplete-dir').value = serverSession['incomplete-dir'] || '';
     $('cfg-watch-enabled').checked = !!serverSession['watch-dir-enabled'];
     $('cfg-watch-dir').value = serverSession['watch-dir'] || '';
+    const watchLocked = !!serverSession['watch-dir-autobrr'];
+    $('cfg-watch-enabled').disabled = watchLocked;
+    $('cfg-watch-dir').readOnly = watchLocked;
+    $('btn-cfg-watch-browse').disabled = watchLocked;
+    $('cfg-watch-autobrr').style.display = watchLocked ? 'block' : 'none';
     $('cfg-start-added').checked = serverSession['start-added-torrents'] !== false;
     $('cfg-append-part').checked = serverSession['rename-partial-files'] !== false;
 
@@ -1663,16 +1479,35 @@
 
     if (!setArgs['download-dir']) delete setArgs['download-dir'];
     if (!setArgs['incomplete-dir']) delete setArgs['incomplete-dir'];
-    if (!setArgs['watch-dir']) delete setArgs['watch-dir'];
 
+    // Watch folder: the box restarts the account's daemon when it changes, so
+    // only send the two keys when they actually differ. When autobrr uses its
+    // hand-over folder for this account, the field is read-only.
+    const watchLocked = !!(serverSession && serverSession['watch-dir-autobrr']);
+    const watchChanged = !watchLocked && serverSession && (
+      setArgs['watch-dir-enabled'] !== !!serverSession['watch-dir-enabled'] ||
+      setArgs['watch-dir'] !== (serverSession['watch-dir'] || '')
+    );
+    if (!watchChanged) {
+      delete setArgs['watch-dir-enabled'];
+      delete setArgs['watch-dir'];
+    } else if (setArgs['watch-dir-enabled'] && !setArgs['watch-dir']) {
+      toast(t('toast.watchNeedDir'), true);
+      return;
+    }
+
+    const submitBtn = $('modal-cfg-submit');
+    submitBtn.disabled = true;
+    if (watchChanged) toast(t('toast.watchRestart'));
     try {
       await rpc('session-set', setArgs);
-      await savePersistentSettings(setArgs);
       $('modal-settings').style.display = 'none';
       toast(t('toast.saved'));
       refresh();
     } catch (e) {
       toast(t('toast.saveError') + e.message, true);
+    } finally {
+      submitBtn.disabled = false;
     }
   });
 

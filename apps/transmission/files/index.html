@@ -559,11 +559,14 @@
               <span data-i18n="cfg.watchEnabled">Enable watch directory (automatically add .torrent files)</span>
             </label>
             <div class="input-with-button" style="margin-top:8px;">
-              <input type="text" id="cfg-watch-dir" class="sos-input" placeholder="e.g. Volume_1/torrents-watch">
+              <input type="text" id="cfg-watch-dir" class="sos-input" placeholder="home/Watch">
               <button type="button" id="btn-cfg-watch-browse" class="sos-btn" data-i18n="add.browse">Browse</button>
             </div>
             <div style="font-size: 11px; color: var(--sos-muted, #8b949e); margin-top: 6px; line-height: 1.4;" data-i18n="cfg.watchHint">
-              Torrents placed in this directory will be automatically added and downloaded to the default download directory.
+              Transmission adds new .torrent files from this folder by itself – also when the app is closed. Changing it restarts the service (a few seconds).
+            </div>
+            <div id="cfg-watch-autobrr" style="display: none; font-size: 11px; margin-top: 6px; line-height: 1.4;" data-i18n="cfg.watchAutobrr">
+              This account receives the torrents of autobrr: the watch folder is autobrr's hand-over folder and can't be changed here.
             </div>
           </div>
           <div class="cfg-section">

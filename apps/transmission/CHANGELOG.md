@@ -2,8 +2,9 @@
 
 ## 1.3.2
 
-- Watch directory support: configure a folder to automatically monitor for new `.torrent` files and dispatch them to the default download directory, both via daemon RPC and active browser check via `ShareOS.fs`.
-- Resilient preferences persistence: automatically saves and restores user preferences (download directory, watch directory, speed limits, queues) to the user's personal storage (`system/transmission_settings.json` via `ShareOS.fs`) and browser storage, preventing directory resets when the app or daemon is updated.
+- Preferences: watch folder (`watch-dir`, `watch-dir-enabled`), chosen with the box's folder dialog as `<root>/<path>` (e.g. `home/Watch`). Transmission watches the folder itself and adds new `.torrent` files to the default download folder – also when the app is closed. Changing it restarts the account's service, so saving takes a few seconds; the two keys are only sent when they change.
+- When autobrr hands its torrents to this account (`watch-dir-autobrr`), the watch folder is shown read-only.
+- Needs ShareOS 0.2.0-beta.20+ ([ShareOS#121](https://github.com/UniqueDroid/ShareOS/pull/121)).
 
 ## 1.3.1
 

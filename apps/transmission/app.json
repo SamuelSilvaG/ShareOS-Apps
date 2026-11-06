@@ -14,7 +14,7 @@
 	"category": "network",
 	"license": "GPL-2.0-or-later",
 	"homepage": "https://transmissionbt.com/",
-	"min_shareos": "0.2.0-beta.4",
+	"min_shareos": "0.2.0-beta.20",
 	"permissions": [
 		"files",
 		"torrent"
