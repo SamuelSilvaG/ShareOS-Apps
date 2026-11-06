@@ -59,8 +59,10 @@
   const SUB_EXTS = ['.srt', '.vtt'];
   const AUDIO_EXTS = ['.m4a', '.mp3', '.aac', '.opus', '.ogg', '.wav', '.flac'];
   let currentFolder = { root: '', path: '' };
+  let currentFolderEntries = null;
   let playlist = []; // array of { name, size, root, path, url }
   let currentIndex = -1;
+  let currentVideoBlobUrl = null;
   let detectedSubtitles = []; // array of { label, url, blobUrl, lang }
   let activeSubTrackIndex = -1; // -1 = off
   let lastSubTrackIndex = 0;
@@ -69,6 +71,8 @@
   let autohideTimer = null;
   let isSeeking = false;
   let centerFlashTimer = null;
+  let lastReportedSec = -1;
+  let lastMouseMoveTime = 0;
 
   // Aspect ratios: 'fit', 'orig', 'wide', 'fill'
   const aspectModes = ['fit', 'wide', 'fill', 'orig'];
@@ -148,7 +152,7 @@
     document.addEventListener('touchend', onScrubTouchEnd);
 
     // Autohide controls on inactivity
-    stage.addEventListener('mousemove', resetAutohide);
+    stage.addEventListener('mousemove', onStageMouseMove);
     stage.addEventListener('touchstart', resetAutohide, { passive: true });
     overlay.addEventListener('mouseenter', () => clearTimeout(autohideTimer));
 
@@ -300,6 +304,7 @@
     try {
       const list = await SOS.fs.list(root, path);
       currentFolder = { root, path };
+      currentFolderEntries = list && list.entries ? list.entries : [];
       playlist = [];
       if (list && list.entries) {
         const files = list.entries.filter((e) => {
@@ -350,6 +355,7 @@
       return;
     }
 
+    const frag = document.createDocumentFragment();
     filtered.forEach((item) => {
       const div = document.createElement('div');
       div.className = 'playlist-item' + (item.originalIndex === currentIndex ? ' active' : '');
@@ -363,8 +369,9 @@
         </div>
       `;
       div.addEventListener('click', () => playVideoAtIndex(item.originalIndex));
-      playlistContainer.appendChild(div);
+      frag.appendChild(div);
     });
+    playlistContainer.appendChild(frag);
   }
 
   function filterPlaylist() {
@@ -383,9 +390,21 @@
     // Hide empty screen
     emptyScreen.style.display = 'none';
 
-    // Clear old subtitle tracks
+    // Clear old subtitle tracks and external audio
     clearSubtitles();
     disableExternalAudio();
+
+    // Clean up previous video blob URL if any
+    if (currentVideoBlobUrl) {
+      URL.revokeObjectURL(currentVideoBlobUrl);
+      currentVideoBlobUrl = null;
+    }
+
+    // Teardown previous decoder buffers
+    video.pause();
+    video.removeAttribute('src');
+    video.load();
+    lastReportedSec = -1;
 
     // Get streaming URL
     let streamUrl = item.url;
@@ -409,21 +428,31 @@
     video.load();
     video.play().catch(() => {});
 
-    // Look for matching subtitle files in the same directory
+    // Look for matching subtitle files in the same directory (using cached entries if available)
     if (item.root) {
       scanMatchingSubtitles(item.root, item.path || '', item.name);
     }
   }
 
-  // Scan Matching Subtitle files in the same directory
+  // Scan Matching Subtitle files in the same directory (cached to avoid redundant NAS I/O)
   async function scanMatchingSubtitles(root, path, videoName) {
     if (!SOS || !SOS.fs) return;
     try {
-      const list = await SOS.fs.list(root, path);
-      if (!list || !list.entries) return;
+      let entries = null;
+      if (currentFolderEntries && currentFolder.root === root && (currentFolder.path || '') === (path || '')) {
+        entries = currentFolderEntries;
+      } else {
+        const list = await SOS.fs.list(root, path);
+        if (list && list.entries) {
+          entries = list.entries;
+          currentFolderEntries = entries;
+        }
+      }
+
+      if (!entries) return;
 
       const baseName = videoName.replace(/\.[^.]+$/, '').toLowerCase();
-      const subEntries = list.entries.filter((e) => {
+      const subEntries = entries.filter((e) => {
         if (e.type !== 'file') return false;
         const lower = e.name.toLowerCase();
         const hasExt = SUB_EXTS.some((ext) => lower.endsWith(ext));
@@ -441,13 +470,11 @@
     } catch (_) {}
   }
 
-  // Convert SRT to WebVTT format
+  // Convert SRT to WebVTT format (fast single-pass)
   function srtToVtt(srt) {
-    let vtt = 'WEBVTT\n\n' + srt
+    return 'WEBVTT\n\n' + srt
       .replace(/\r\n|\r/g, '\n')
-      .replace(/^([0-9]+)\n([0-9]{2}:[0-9]{2}:[0-9]{2}),([0-9]{3})/gm, '$1\n$2.$3')
-      .replace(/([0-9]{2}:[0-9]{2}:[0-9]{2}),([0-9]{3})/g, '$1.$2');
-    return vtt;
+      .replace(/(\d{2}:\d{2}:\d{2}),(\d{3})/g, '$1.$2');
   }
 
   // Add Subtitle Track (SRT or VTT)
@@ -852,7 +879,11 @@
 
   function onTimeUpdate() {
     if (isSeeking) return;
-    updateTimeDisplay();
+    const curSec = Math.floor(video.currentTime || 0);
+    if (curSec !== lastReportedSec) {
+      lastReportedSec = curSec;
+      updateTimeDisplay();
+    }
     const pct = video.duration ? (video.currentTime / video.duration) * 100 : 0;
     progressFilled.style.width = pct + '%';
     progressThumb.style.left = pct + '%';
@@ -939,6 +970,14 @@
   }
 
   // Autohide Controls
+  function onStageMouseMove() {
+    const now = Date.now();
+    if (now - lastMouseMoveTime > 250) {
+      lastMouseMoveTime = now;
+      resetAutohide();
+    }
+  }
+
   function resetAutohide() {
     overlay.classList.remove('autohide');
     clearTimeout(autohideTimer);
@@ -1074,8 +1113,11 @@
       const audioFile = Array.from(files).find((f) => AUDIO_EXTS.some((x) => f.name.toLowerCase().endsWith(x)));
 
       if (videoFile) {
-        const url = URL.createObjectURL(videoFile);
-        playlist.unshift({ name: videoFile.name, size: videoFile.size, url });
+        if (currentVideoBlobUrl) {
+          URL.revokeObjectURL(currentVideoBlobUrl);
+        }
+        currentVideoBlobUrl = URL.createObjectURL(videoFile);
+        playlist.unshift({ name: videoFile.name, size: videoFile.size, url: currentVideoBlobUrl });
         renderPlaylist();
         playVideoAtIndex(0);
       }
@@ -1099,12 +1141,18 @@
   function onLocalVideoSelected(e) {
     const files = e.target.files;
     if (!files || !files.length) return;
+    if (currentVideoBlobUrl) {
+      URL.revokeObjectURL(currentVideoBlobUrl);
+      currentVideoBlobUrl = null;
+    }
     playlist = [];
     for (const f of files) {
+      const u = URL.createObjectURL(f);
+      currentVideoBlobUrl = u;
       playlist.push({
         name: f.name,
         size: f.size,
-        url: URL.createObjectURL(f)
+        url: u
       });
     }
     renderPlaylist();
