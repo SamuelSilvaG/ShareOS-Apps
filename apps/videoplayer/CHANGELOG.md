@@ -9,3 +9,4 @@
 - Modern dark-mode cinema UI with custom controls, autohide, volume scrub, and aspect ratio cycling.
 - Full TV Box and keyboard remote shortcut support.
 - Multilingual support: English, Portuguese, and German.
+

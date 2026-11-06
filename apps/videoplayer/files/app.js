@@ -120,6 +120,7 @@
     video.addEventListener('progress', onProgress);
     video.addEventListener('loadedmetadata', onLoadedMetadata);
     video.addEventListener('ended', onEnded);
+    video.addEventListener('error', onError);
     video.addEventListener('click', togglePlay);
     video.addEventListener('dblclick', toggleFullscreen);
 
@@ -639,6 +640,11 @@
     }
   }
 
+  function onError() {
+    if (!video.src) return;
+    toast(t('toast.unsupportedCodec'), true);
+  }
+
   // Volume
   function toggleMute() {
     video.muted = !video.muted;
@@ -965,3 +971,4 @@
     init();
   }
 })();
+

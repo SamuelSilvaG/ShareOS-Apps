@@ -28,3 +28,4 @@
   <circle cx="32" cy="31" r="10.5" fill="url(#vp-accent)" opacity="0.25"/>
   <polygon points="28,25 39,31 28,37" fill="url(#vp-play)"/>
 </svg>
+

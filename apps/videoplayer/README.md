@@ -49,3 +49,4 @@ Designed specifically for low-power Kirkwood ARMv5 NAS devices (800 MHz / 1.0 GH
 - **Firmware:** ShareOS 0.2.0-beta.1 or newer.
 - **Permissions:** `files` (to read media files from NAS storage).
 - **Supported Formats:** Standard HTML5 video containers and codecs supported by the client browser (e.g. H.264/AAC in `.mp4`, VP8/VP9/AV1 in `.webm`).
+

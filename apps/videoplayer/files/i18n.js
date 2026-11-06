@@ -49,6 +49,7 @@
       'sub.sizeLarge': 'Large',
       'toast.loading': 'Opening video...',
       'toast.error': 'Error loading video: ',
+      'toast.unsupportedCodec': 'Video or audio format not supported by this browser. Tip: If this MKV uses AC3/DTS audio, use MediaTranscoder to remux to MP4/AAC in seconds without re-encoding.',
       'toast.subError': 'Error loading subtitle: ',
       'toast.noBoxAccess': 'No permission to access box files. Ask administrator to grant Files permission.',
       'help.title': 'Keyboard & Remote Shortcuts',
@@ -110,6 +111,7 @@
       'sub.sizeLarge': 'Grande',
       'toast.loading': 'Abrindo vídeo...',
       'toast.error': 'Erro ao carregar vídeo: ',
+      'toast.unsupportedCodec': 'Formato de vídeo ou áudio não suportado por este navegador. Dica: Se este MKV usar áudio AC3/DTS, use o MediaTranscoder para remuxar para MP4/AAC em segundos sem recodificar o vídeo.',
       'toast.subError': 'Erro ao carregar legenda: ',
       'toast.noBoxAccess': 'Sem permissão para acessar os arquivos da box. O administrador pode habilitar em Usuários → Arquivos.',
       'help.title': 'Atalhos de Teclado e Controle',
@@ -171,6 +173,7 @@
       'sub.sizeLarge': 'Groß',
       'toast.loading': 'Video wird geöffnet...',
       'toast.error': 'Fehler beim Laden des Videos: ',
+      'toast.unsupportedCodec': 'Video- oder Audioformat wird von diesem Browser nicht unterstützt. Tipp: Wenn diese MKV AC3/DTS-Audio nutzt, mit MediaTranscoder in Sekunden ohne Neukodierung in MP4/AAC packen.',
       'toast.subError': 'Fehler beim Laden des Untertitels: ',
       'toast.noBoxAccess': 'Kein Zugriff auf die Ordner der Box – der Administrator kann ihn unter Benutzer → „Dateien“ einschalten.',
       'help.title': 'Tastatur- und Fernbedienungskürzel',
@@ -237,3 +240,4 @@
     applyDOM
   };
 })();
+
