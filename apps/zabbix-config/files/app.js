@@ -5,17 +5,22 @@
 (function() {
 	'use strict';
 
+	const SOS = window.ShareOS || null;
+	const ZBX = SOS && SOS.zabbix ? SOS.zabbix : null;
+	const SYS = SOS && SOS.sysinfo ? SOS.sysinfo : null;
+
 	// State
 	const state = {
 		installed: true,
 		enabled: true,
-		running: true,
+		running: false,
 		server: '',
 		hostname: '',
 		hostname_used: '',
 		metadata: 'ShareOS',
 		psk_identity: '',
 		psk: '',
+		psk_set: false,
 		passive: false,
 		allow: '',
 		port: 10050,
@@ -30,6 +35,10 @@
 		langSelector: document.getElementById('langSelector'),
 		btnRefresh: document.getElementById('btnRefresh'),
 		btnApply: document.getElementById('btnApply'),
+		btnCopyCliFooter: document.getElementById('btnCopyCliFooter'),
+		btnCopyCliTop: document.getElementById('btnCopyCliTop'),
+		cliNoticeCard: document.getElementById('cliNoticeCard'),
+		footerHostStatus: document.getElementById('footerHostStatus'),
 		tabBtns: document.querySelectorAll('.tab-btn'),
 		tabPanels: document.querySelectorAll('.tab-panel'),
 		// Form Fields
@@ -55,8 +64,22 @@
 		mFanRpm: document.getElementById('mFanRpm'),
 		mFanPwm: document.getElementById('mFanPwm'),
 		mBoard: document.getElementById('mBoard'),
+		disksTableBody: document.getElementById('disksTableBody'),
+		raidTableBody: document.getElementById('raidTableBody'),
+		telemetryNotice: document.getElementById('telemetryNotice'),
+		telemetryNoticeText: document.getElementById('telemetryNoticeText'),
 		toastContainer: document.getElementById('toastContainer')
 	};
+
+	function escapeHTML(str) {
+		if (str == null) return '';
+		return String(str)
+			.replace(/&/g, '&amp;')
+			.replace(/</g, '&lt;')
+			.replace(/>/g, '&gt;')
+			.replace(/"/g, '&quot;')
+			.replace(/'/g, '&#39;');
+	}
 
 	// Toast Notification
 	function showToast(message, type = 'success') {
@@ -121,7 +144,6 @@
 			disk_interval: parseInt(els.fieldDiskInterval.value, 10) || 30
 		};
 
-		// Filter empty fields for cleaner CLI display if desired, or keep standard schema
 		const jsonStr = JSON.stringify(payload);
 		els.cliPreview.textContent = `echo '${jsonStr}' | shareos-zabbix set`;
 		return payload;
@@ -144,25 +166,24 @@
 		});
 	}
 
-	// Load status and configuration from ShareOS backend / mock
+	// Load status and configuration
 	async function loadConfig() {
 		try {
-			// Check if running inside ShareOS Webview with native RPC
-			if (window.ShareOS && window.ShareOS.system && window.ShareOS.system.zabbixStatus) {
-				const res = await window.ShareOS.system.zabbixStatus();
+			if (ZBX && ZBX.status) {
+				const res = await ZBX.status();
 				if (res) {
 					Object.assign(state, res);
 				}
+				// Firmware API is present
+				if (els.cliNoticeCard) els.cliNoticeCard.style.display = 'none';
+				if (els.btnApply) els.btnApply.style.display = 'inline-flex';
+				if (els.btnCopyCliFooter) els.btnCopyCliFooter.style.display = 'none';
 			} else {
-				// Standalone / Storage fallback
-				const saved = localStorage.getItem('shareos_zabbix_cfg');
-				if (saved) {
-					try {
-						Object.assign(state, JSON.parse(saved));
-					} catch (e) {
-						console.error('Failed to parse local config', e);
-					}
-				}
+				// No firmware API yet: version A (CLI command workflow)
+				state.running = false;
+				if (els.cliNoticeCard) els.cliNoticeCard.style.display = 'flex';
+				if (els.btnApply) els.btnApply.style.display = 'none';
+				if (els.btnCopyCliFooter) els.btnCopyCliFooter.style.display = 'inline-flex';
 			}
 
 			// Populate UI fields
@@ -179,7 +200,7 @@
 
 			updateStatusBadge();
 			updateCliPreview();
-			loadTelemetry();
+			await loadTelemetry();
 		} catch (err) {
 			console.error('Failed to load configuration:', err);
 		}
@@ -188,6 +209,17 @@
 	// Update Status Pill
 	function updateStatusBadge() {
 		els.statusPill.className = 'status-pill';
+
+		if (!ZBX) {
+			// Honest CLI mode indicator when firmware API is not yet available
+			els.statusPill.classList.add('neutral');
+			els.statusText.textContent = I18n.t('status_cli_mode', 'CLI Mode');
+			if (els.footerHostStatus) {
+				els.footerHostStatus.textContent = I18n.t('footer_cli_mode', 'Terminal / SSH Mode');
+			}
+			return;
+		}
+
 		if (!state.installed) {
 			els.statusPill.classList.add('stopped');
 			els.statusText.textContent = I18n.t('status_not_installed', 'Not Installed');
@@ -200,6 +232,12 @@
 		} else {
 			els.statusPill.classList.add('stopped');
 			els.statusText.textContent = I18n.t('status_stopped', 'Stopped');
+		}
+
+		if (els.footerHostStatus) {
+			els.footerHostStatus.textContent = state.running
+				? I18n.t('status_connected', 'Active Mode Configured')
+				: I18n.t('status_stopped', 'Stopped');
 		}
 	}
 
@@ -223,19 +261,21 @@
 			return;
 		}
 
+		if (!ZBX) {
+			// Honest behaviour: no real API available, copy command to apply via Terminal/SSH
+			copyToClipboard(els.cliPreview.textContent, I18n.t('copy_cli_apply_hint', 'Command copied! Run in System → Terminal or SSH to apply settings.'));
+			return;
+		}
+
 		els.btnApply.disabled = true;
 		const originalText = els.btnApply.querySelector('span').textContent;
 		els.btnApply.querySelector('span').textContent = I18n.t('applying', 'Applying...');
 
 		try {
-			if (window.ShareOS && window.ShareOS.system && window.ShareOS.system.zabbixSet) {
-				await window.ShareOS.system.zabbixSet(payload);
-			} else {
-				localStorage.setItem('shareos_zabbix_cfg', JSON.stringify(payload));
-				// Simulate application delay
-				await new Promise(r => setTimeout(r, 600));
+			await ZBX.set(payload);
+			if (ZBX.restart) {
+				await ZBX.restart();
 			}
-
 			Object.assign(state, payload);
 			state.running = payload.enabled;
 			updateStatusBadge();
@@ -279,24 +319,122 @@
 		showToast('Template downloaded: shareos_template.yaml', 'success');
 	}
 
-	// Telemetry / Metrics loader
+	// Render Disks in telemetry table
+	function renderDisks(disks) {
+		if (!els.disksTableBody) return;
+		if (!disks || !Array.isArray(disks) || disks.length === 0) {
+			els.disksTableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--sos-text-muted); padding:16px;">–</td></tr>`;
+			return;
+		}
+
+		els.disksTableBody.innerHTML = disks.map(d => {
+			const devName = escapeHTML(d.name ? `/dev/${d.name}` : (d.dev || '–'));
+			const model = escapeHTML(d.model || d.vendor || '–');
+			const smart = escapeHTML(d.smart || d.health || 'PASSED');
+			const temp = d.temp != null ? `${d.temp} °C` : '–';
+			const isStandby = !!d.standby;
+			const stateBadge = isStandby
+				? `<span class="pill-badge yellow">${I18n.t('drive_standby', 'Standby')}</span>`
+				: `<span class="pill-badge green">${I18n.t('drive_healthy', 'Active')}</span>`;
+
+			return `<tr>
+				<td><code>${devName}</code></td>
+				<td>${model}</td>
+				<td><span class="pill-badge green">${smart}</span></td>
+				<td>${temp}</td>
+				<td>${stateBadge}</td>
+			</tr>`;
+		}).join('');
+	}
+
+	// Render RAID in telemetry table
+	function renderRaid(raid) {
+		if (!els.raidTableBody) return;
+		if (!raid || !Array.isArray(raid) || raid.length === 0) {
+			els.raidTableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--sos-text-muted); padding:16px;">–</td></tr>`;
+			return;
+		}
+
+		els.raidTableBody.innerHTML = raid.map(r => {
+			const dev = escapeHTML(r.dev || r.name || '–');
+			const level = escapeHTML(r.level || 'RAID');
+			const health = escapeHTML(r.health || 'Healthy');
+			const disks = escapeHTML(r.disks || `${r.working || 0} / ${r.total || 0}`);
+			const sync = escapeHTML(r.sync || '100%');
+
+			return `<tr>
+				<td><code>${dev}</code></td>
+				<td>${level}</td>
+				<td><span class="pill-badge green">${health}</span></td>
+				<td>${disks}</td>
+				<td>${sync}</td>
+			</tr>`;
+		}).join('');
+	}
+
+	// Telemetry / Metrics loader using ShareOS.sysinfo.info()
 	async function loadTelemetry() {
-		try {
-			if (window.ShareOS && window.ShareOS.sysinfo) {
-				const info = await window.ShareOS.sysinfo();
-				if (info.temperature) els.mTemp.textContent = `${info.temperature} °C`;
-				if (info.fan_rpm) els.mFanRpm.textContent = `${info.fan_rpm} RPM`;
-				if (info.fan_pwm) els.mFanPwm.textContent = `${info.fan_pwm} %`;
-				if (info.board) els.mBoard.textContent = info.board;
-			} else {
-				// Realistic simulated data for preview
-				els.mTemp.textContent = '38.5 °C';
-				els.mFanRpm.textContent = '1450 RPM';
-				els.mFanPwm.textContent = '42 %';
-				els.mBoard.textContent = 'ShareOS Box v1';
+		if (!SYS || typeof SYS.info !== 'function') {
+			// Honest empty values when API is unavailable
+			els.mTemp.textContent = '–';
+			els.mFanRpm.textContent = '–';
+			els.mFanPwm.textContent = '–';
+			els.mBoard.textContent = '–';
+			renderDisks(null);
+			renderRaid(null);
+			if (els.telemetryNotice) {
+				els.telemetryNotice.style.display = 'flex';
+				if (els.telemetryNoticeText) {
+					els.telemetryNoticeText.textContent = I18n.t('telemetry_admin_required', 'Administrator access required for hardware telemetry.');
+				}
 			}
-		} catch (e) {
-			console.warn('Telemetry load failed:', e);
+			return;
+		}
+
+		try {
+			const info = await SYS.info();
+			if (els.telemetryNotice) {
+				els.telemetryNotice.style.display = 'none';
+			}
+
+			// Temperature is in m°C -> divide by 1000
+			if (info.temperature != null) {
+				const tempC = info.temperature / 1000;
+				els.mTemp.textContent = `${tempC.toFixed(1)} °C`;
+			} else {
+				els.mTemp.textContent = '–';
+			}
+
+			// fan_rpm does not exist on ShareOS hardware -> always show "–"
+			els.mFanRpm.textContent = '–';
+
+			// fan_pwm is 0–255 -> convert to percentage
+			if (info.fan_pwm != null) {
+				const pwmPct = Math.round((info.fan_pwm / 255) * 100);
+				els.mFanPwm.textContent = `${pwmPct} %`;
+			} else {
+				els.mFanPwm.textContent = '–';
+			}
+
+			els.mBoard.textContent = info.board || info.model || '–';
+
+			renderDisks(info.disks);
+			renderRaid(info.raid);
+		} catch (err) {
+			console.warn('sysinfo.info() call failed:', err);
+			els.mTemp.textContent = '–';
+			els.mFanRpm.textContent = '–';
+			els.mFanPwm.textContent = '–';
+			els.mBoard.textContent = '–';
+			renderDisks(null);
+			renderRaid(null);
+
+			if (els.telemetryNotice) {
+				els.telemetryNotice.style.display = 'flex';
+				if (els.telemetryNoticeText) {
+					els.telemetryNoticeText.textContent = I18n.t('telemetry_admin_required', 'Administrator access required for hardware telemetry.');
+				}
+			}
 		}
 	}
 
@@ -354,9 +492,13 @@
 			copyToClipboard(key, 'PSK key copied to clipboard!');
 		});
 
-		els.btnCopyCli.addEventListener('click', () => {
-			copyToClipboard(els.cliPreview.textContent, 'CLI command copied!');
-		});
+		const handleCopyCommand = () => {
+			copyToClipboard(els.cliPreview.textContent, I18n.t('copy_cli_apply_hint', 'Command copied! Run in System → Terminal or SSH to apply settings.'));
+		};
+
+		els.btnCopyCli.addEventListener('click', handleCopyCommand);
+		if (els.btnCopyCliTop) els.btnCopyCliTop.addEventListener('click', handleCopyCommand);
+		if (els.btnCopyCliFooter) els.btnCopyCliFooter.addEventListener('click', handleCopyCommand);
 
 		els.btnCopyTemplate.addEventListener('click', async () => {
 			if (!state.templateContent) {
@@ -369,8 +511,8 @@
 
 		// Apply and Refresh
 		els.btnApply.addEventListener('click', saveConfig);
-		els.btnRefresh.addEventListener('click', () => {
-			loadConfig();
+		els.btnRefresh.addEventListener('click', async () => {
+			await loadConfig();
 			showToast('Status refreshed', 'success');
 		});
 	}

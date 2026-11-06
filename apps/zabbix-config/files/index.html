@@ -27,9 +27,9 @@
 		</div>
 
 		<div class="header-actions">
-			<div class="status-pill running" id="statusPill">
+			<div class="status-pill neutral" id="statusPill">
 				<span class="status-indicator"></span>
-				<span id="statusText" data-i18n="status_running">Running</span>
+				<span id="statusText" data-i18n="status_cli_mode">CLI Mode</span>
 			</div>
 
 			<select class="lang-selector" id="langSelector" aria-label="Select Language">
@@ -80,6 +80,21 @@
 
 		<!-- TAB 1: CONFIG -->
 		<section class="tab-panel active" id="panel-config">
+			<!-- CLI / Terminal Workflow Notice -->
+			<div class="notice-card" id="cliNoticeCard">
+				<svg viewBox="0 0 24 24">
+					<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+				</svg>
+				<div class="notice-body">
+					<div class="notice-title" data-i18n="cli_notice_title">Apply via Terminal or SSH</div>
+					<div class="notice-desc" data-i18n="cli_notice_desc">Direct firmware API is not yet available in this release. Configure your settings below, then copy and run the generated command in System → Terminal or via SSH.</div>
+					<button type="button" class="btn btn-secondary btn-sm" id="btnCopyCliTop">
+						<svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+						<span data-i18n="btn_copy_cli">Copy Command</span>
+					</button>
+				</div>
+			</div>
+
 			<!-- Autostart / Enabled Card -->
 			<div class="card">
 				<div class="switch-group">
@@ -283,25 +298,31 @@
 				</div>
 				<p class="card-desc" data-i18n="metrics_desc">Live telemetry exposed natively by the ShareOS daemon to the Zabbix agent items.</p>
 
+				<!-- Telemetry Notice / Admin Warning Banner -->
+				<div class="alert-banner" id="telemetryNotice" style="display: none;">
+					<svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: currentColor; flex-shrink: 0;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+					<span id="telemetryNoticeText" data-i18n="telemetry_admin_required">Administrator access required for hardware telemetry.</span>
+				</div>
+
 				<div class="metrics-grid">
 					<div class="metric-box">
 						<div class="metric-label" data-i18n="metric_box_temp">Box Temperature</div>
-						<div class="metric-val highlight" id="mTemp">-- °C</div>
+						<div class="metric-val highlight" id="mTemp">–</div>
 						<div class="metric-sub">shareos.box[temperature]</div>
 					</div>
 					<div class="metric-box">
 						<div class="metric-label" data-i18n="metric_fan_rpm">Fan Speed</div>
-						<div class="metric-val" id="mFanRpm">-- RPM</div>
-						<div class="metric-sub">shareos.box[fan_rpm]</div>
+						<div class="metric-val" id="mFanRpm">–</div>
+						<div class="metric-sub" data-i18n="rpm_not_supported">Not supported by hardware</div>
 					</div>
 					<div class="metric-box">
 						<div class="metric-label" data-i18n="metric_fan_pwm">Fan PWM Duty</div>
-						<div class="metric-val" id="mFanPwm">-- %</div>
+						<div class="metric-val" id="mFanPwm">–</div>
 						<div class="metric-sub">shareos.box[fan_pwm]</div>
 					</div>
 					<div class="metric-box">
 						<div class="metric-label" data-i18n="metric_board">Hardware Board</div>
-						<div class="metric-val" style="font-size: 1.1rem;" id="mBoard">ShareOS Box</div>
+						<div class="metric-val" style="font-size: 1.1rem;" id="mBoard">–</div>
 						<div class="metric-sub">shareos.box[board]</div>
 					</div>
 				</div>
@@ -319,18 +340,7 @@
 					</thead>
 					<tbody id="disksTableBody">
 						<tr>
-							<td>/dev/sda</td>
-							<td>Seagate IronWolf 4TB (ST4000VN006)</td>
-							<td><span class="pill-badge green">PASSED</span></td>
-							<td>32 °C</td>
-							<td><span class="pill-badge green">Active</span></td>
-						</tr>
-						<tr>
-							<td>/dev/sdb</td>
-							<td>Seagate IronWolf 4TB (ST4000VN006)</td>
-							<td><span class="pill-badge green">PASSED</span></td>
-							<td>33 °C</td>
-							<td><span class="pill-badge green">Active</span></td>
+							<td colspan="5" style="text-align: center; color: var(--sos-text-muted); padding: 16px;">–</td>
 						</tr>
 					</tbody>
 				</table>
@@ -348,11 +358,7 @@
 					</thead>
 					<tbody id="raidTableBody">
 						<tr>
-							<td>/dev/md0</td>
-							<td>RAID-1 (Mirror)</td>
-							<td><span class="pill-badge green">Healthy</span></td>
-							<td>2 / 2</td>
-							<td>Synchronized (100%)</td>
+							<td colspan="5" style="text-align: center; color: var(--sos-text-muted); padding: 16px;">–</td>
 						</tr>
 					</tbody>
 				</table>
@@ -409,9 +415,15 @@
 	<footer class="app-footer">
 		<div class="footer-info">
 			<span>ShareOS Zabbix Agent v7.0.32</span> &bull; 
-			<span id="footerHostStatus">Active Mode</span>
+			<span id="footerHostStatus" data-i18n="footer_cli_mode">Terminal / SSH Mode</span>
 		</div>
-		<button class="btn btn-primary" id="btnApply">
+		<button class="btn btn-secondary" id="btnCopyCliFooter">
+			<svg viewBox="0 0 24 24">
+				<path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+			</svg>
+			<span data-i18n="btn_copy_cli">Copy Command</span>
+		</button>
+		<button class="btn btn-primary" id="btnApply" style="display: none;">
 			<svg viewBox="0 0 24 24">
 				<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
 			</svg>
