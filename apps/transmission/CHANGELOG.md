@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.2
+
+- Watch directory support: configure a folder to automatically monitor for new `.torrent` files and dispatch them to the default download directory, both via daemon RPC and active browser check via `ShareOS.fs`.
+- Resilient preferences persistence: automatically saves and restores user preferences (download directory, watch directory, speed limits, queues) to the user's personal storage (`system/transmission_settings.json` via `ShareOS.fs`) and browser storage, preventing directory resets when the app or daemon is updated.
+
 ## 1.3.1
 
 - Preferences: µTP can be switched on and off. ShareOS 0.2.0-beta.20 turns it off by default on new setups, because on the 800 MHz DNS-320L it costs more CPU than all TCP peers together ([ShareOS#115](https://github.com/UniqueDroid/ShareOS/issues/115)).

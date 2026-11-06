@@ -230,6 +230,8 @@
       'cfg.downloadDir': 'Pasta padrão para downloads:',
       'cfg.incompleteDir': 'Pasta temporária para incompletos:',
       'cfg.useIncomplete': 'Manter downloads incompletos em pasta separada',
+      'cfg.watchEnabled': 'Monitorar pasta para novos arquivos .torrent (Watch folder)',
+      'cfg.watchHint': 'Os arquivos .torrent colocados nesta pasta serão adicionados e baixados automaticamente para a pasta padrão.',
       'cfg.startAdded': 'Iniciar downloads automaticamente ao adicionar',
       'cfg.appendPart': 'Adicionar extensão .part aos arquivos incompletos',
 
@@ -274,6 +276,8 @@
       'toast.turtleOff': 'Limite alternativo desativado',
       'toast.added': 'Torrent adicionado com sucesso',
       'toast.addedName': 'Torrent “{name}” adicionado!',
+      'toast.watchAdded': 'Torrent “{name}” adicionado da pasta monitorada!',
+      'toast.settingsRestored': 'Configurações e pastas do Transmission restauradas!',
       'toast.addError': 'Erro ao adicionar: ',
       'toast.saved': 'Configurações salvas com sucesso',
       'toast.saveError': 'Erro ao salvar: ',
@@ -297,6 +301,7 @@
       'path.home': 'Minha pasta',
 
       'pick.destTitle': 'Pasta para downloads',
+      'pick.watchTitle': 'Pasta monitorada (.torrent)',
       'pick.fileTitle': 'Selecionar arquivo .torrent',
       'pick.selected': 'Selecionado: {name}',
       'confirm.openFile': 'Deseja adicionar o arquivo “{name}” ao Transmission agora?',
@@ -543,6 +548,8 @@
       'cfg.downloadDir': 'Default download directory:',
       'cfg.incompleteDir': 'Incomplete downloads directory:',
       'cfg.useIncomplete': 'Keep incomplete downloads in separate directory',
+      'cfg.watchEnabled': 'Enable watch directory (automatically add .torrent files)',
+      'cfg.watchHint': 'Torrents placed in this directory will be automatically added and downloaded to the default download folder.',
       'cfg.startAdded': 'Start added torrents immediately',
       'cfg.appendPart': 'Append .part to incomplete files',
 
@@ -587,6 +594,8 @@
       'toast.turtleOff': 'Alternative limits disabled',
       'toast.added': 'Torrent added successfully',
       'toast.addedName': 'Torrent “{name}” added!',
+      'toast.watchAdded': 'Torrent “{name}” added from watch directory!',
+      'toast.settingsRestored': 'Restored saved Transmission directory & settings.',
       'toast.addError': 'Error adding torrent: ',
       'toast.saved': 'Settings saved successfully',
       'toast.saveError': 'Error saving settings: ',
@@ -610,6 +619,7 @@
       'path.home': 'My folder',
 
       'pick.destTitle': 'Download destination folder',
+      'pick.watchTitle': 'Watch directory for .torrent files',
       'pick.fileTitle': 'Select .torrent file',
       'pick.selected': 'Selected: {name}',
       'confirm.openFile': 'Do you want to add “{name}” to Transmission now?',
@@ -856,6 +866,8 @@
       'cfg.downloadDir': 'Standard-Downloadordner:',
       'cfg.incompleteDir': 'Ordner für unvollständige Downloads:',
       'cfg.useIncomplete': 'Unvollständige Downloads in separatem Ordner ablegen',
+      'cfg.watchEnabled': 'Überwachtes Verzeichnis aktivieren (.torrent-Dateien automatisch laden)',
+      'cfg.watchHint': 'In diesem Ordner abgelegte .torrent-Dateien werden automatisch hinzugefügt und in den Standardordner heruntergeladen.',
       'cfg.startAdded': 'Hinzugefügte Torrents sofort starten',
       'cfg.appendPart': '.part an unvollständige Dateien anhängen',
 
@@ -900,6 +912,8 @@
       'toast.turtleOff': 'Drosselmodus deaktiviert',
       'toast.added': 'Torrent erfolgreich hinzugefügt',
       'toast.addedName': 'Torrent „{name}“ hinzugefügt!',
+      'toast.watchAdded': 'Torrent „{name}“ aus überwachtem Ordner hinzugefügt!',
+      'toast.settingsRestored': 'Gespeicherte Transmission-Einstellungen und Zielordner wiederhergestellt.',
       'toast.addError': 'Fehler beim Hinzufügen: ',
       'toast.saved': 'Einstellungen erfolgreich gespeichert',
       'toast.saveError': 'Fehler beim Speichern: ',
@@ -923,6 +937,7 @@
       'path.home': 'Mein Ordner',
 
       'pick.destTitle': 'Download-Zielordner',
+      'pick.watchTitle': 'Überwachtes Verzeichnis für .torrent-Dateien',
       'pick.fileTitle': '.torrent-Datei auswählen',
       'pick.selected': 'Ausgewählt: {name}',
       'confirm.openFile': 'Möchten Sie „{name}“ jetzt zu Transmission hinzufügen?',

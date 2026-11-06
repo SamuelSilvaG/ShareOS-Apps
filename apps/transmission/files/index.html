@@ -16,7 +16,7 @@
     <div class="titlebar-left">
       <img src="icon.svg" class="app-icon" alt="Transmission Logo">
       <span class="app-title">Transmission</span>
-      <span class="version-tag">1.3.1</span>
+      <span class="version-tag">1.3.2</span>
     </div>
     <div class="titlebar-right">
       <span id="conn-badge" class="conn-badge checking" data-i18n="conn.checking">Checking connection...</span>
@@ -551,6 +551,19 @@
             <div class="input-with-button" style="margin-top:8px;">
               <input type="text" id="cfg-incomplete-dir" class="sos-input">
               <button type="button" id="btn-cfg-incomplete-browse" class="sos-btn" data-i18n="add.browse">Browse</button>
+            </div>
+          </div>
+          <div class="cfg-section">
+            <label class="chk-label">
+              <input type="checkbox" id="cfg-watch-enabled">
+              <span data-i18n="cfg.watchEnabled">Enable watch directory (automatically add .torrent files)</span>
+            </label>
+            <div class="input-with-button" style="margin-top:8px;">
+              <input type="text" id="cfg-watch-dir" class="sos-input" placeholder="e.g. Volume_1/torrents-watch">
+              <button type="button" id="btn-cfg-watch-browse" class="sos-btn" data-i18n="add.browse">Browse</button>
+            </div>
+            <div style="font-size: 11px; color: var(--sos-muted, #8b949e); margin-top: 6px; line-height: 1.4;" data-i18n="cfg.watchHint">
+              Torrents placed in this directory will be automatically added and downloaded to the default download directory.
             </div>
           </div>
           <div class="cfg-section">
