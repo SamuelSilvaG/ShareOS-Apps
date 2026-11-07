@@ -74,6 +74,7 @@
   let centerFlashTimer = null;
   let lastReportedSec = -1;
   let lastMouseMoveTime = 0;
+  let touchStartedWhileHidden = false;
 
   // Aspect ratios: 'fit', 'orig', 'wide', 'fill'
   const aspectModes = ['fit', 'wide', 'fill', 'orig'];
@@ -82,6 +83,10 @@
   // Initialize
   function init() {
     window.VPI18n.applyDOM();
+    if (window.innerWidth <= 768) {
+      sidebar.classList.add('collapsed');
+    }
+    updateSidebarToggleIcon();
     loadPreferences();
     bindEvents();
     checkOpenedFile();
@@ -122,6 +127,15 @@
 
     // Sidebar Toggle
     $('btn-toggle-sidebar').addEventListener('click', toggleSidebar);
+    if ($('btn-hdr-sidebar')) {
+      $('btn-hdr-sidebar').addEventListener('click', toggleSidebar);
+    }
+    if ($('sidebar-backdrop')) {
+      $('sidebar-backdrop').addEventListener('click', () => {
+        sidebar.classList.add('collapsed');
+        updateSidebarToggleIcon();
+      });
+    }
 
     // Search filter
     searchInput.addEventListener('input', filterPlaylist);
@@ -135,7 +149,13 @@
     video.addEventListener('loadeddata', onLoadedMetadata);
     video.addEventListener('ended', onEnded);
     video.addEventListener('error', onError);
-    video.addEventListener('click', togglePlay);
+    video.addEventListener('click', () => {
+      if (touchStartedWhileHidden) {
+        touchStartedWhileHidden = false;
+        return;
+      }
+      togglePlay();
+    });
     video.addEventListener('dblclick', toggleFullscreen);
 
     if (video.audioTracks && typeof video.audioTracks.addEventListener === 'function') {
@@ -166,7 +186,14 @@
 
     // Autohide controls on inactivity
     stage.addEventListener('mousemove', onStageMouseMove);
-    stage.addEventListener('touchstart', resetAutohide, { passive: true });
+    stage.addEventListener('touchstart', (e) => {
+      if ((e.target === video || e.target === stage) && overlay.classList.contains('autohide')) {
+        touchStartedWhileHidden = true;
+      } else {
+        touchStartedWhileHidden = false;
+      }
+      resetAutohide();
+    }, { passive: true });
     overlay.addEventListener('mouseenter', () => clearTimeout(autohideTimer));
 
     // Menus
@@ -399,6 +426,12 @@
 
     // Highlight in playlist
     renderPlaylist();
+
+    // Auto-collapse sidebar on mobile so video is visible
+    if (window.innerWidth <= 768) {
+      sidebar.classList.add('collapsed');
+      updateSidebarToggleIcon();
+    }
 
     // Hide empty screen
     emptyScreen.style.display = 'none';
@@ -815,11 +848,15 @@
 
   // Fullscreen
   function toggleFullscreen() {
-    if (!document.fullscreenElement) {
+    const fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+    if (!fsEl) {
       if (stage.requestFullscreen) stage.requestFullscreen();
+      else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
       else if (video.requestFullscreen) video.requestFullscreen();
+      else if (video.webkitEnterFullscreen) video.webkitEnterFullscreen();
     } else {
       if (document.exitFullscreen) document.exitFullscreen();
+      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
     }
   }
 

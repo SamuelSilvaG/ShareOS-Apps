@@ -14,6 +14,13 @@
     <!-- Header -->
     <header class="app-header">
       <div class="brand">
+        <button type="button" id="btn-hdr-sidebar" class="sos-btn sos-btn-icon" data-i18n-title="library.title" title="Media Library">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
         <img src="icon.svg" class="brand-icon" alt="VideoPlayer Icon">
         <span class="brand-title" data-i18n="app.title">VideoPlayer</span>
       </div>
@@ -55,6 +62,9 @@
           </div>
         </div>
       </aside>
+
+      <!-- Mobile Backdrop for Sidebar -->
+      <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
 
       <!-- Sidebar Toggle Pill -->
       <button type="button" id="btn-toggle-sidebar" class="sos-btn sos-btn-icon sidebar-toggle-pill" title="Toggle Sidebar">
