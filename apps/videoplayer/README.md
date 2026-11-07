@@ -24,8 +24,8 @@ Designed specifically for low-power Kirkwood ARMv5 NAS devices (800 MHz / 1.0 GH
    - Instant track switching through native HTML5 `video.audioTracks`.
    - Allows loading external synchronized audio files (`.m4a`, `.mp3`, `.aac`, `.opus`, `.ogg`).
 
-4. **Responsive Dark Cinema Interface:**
-   - Sleek dark-mode interface styled with ShareOS design tokens (`var(--sos-*)`).
+4. **Responsive Cinema Interface:**
+   - Follows the ShareOS theme (`/_shareos/theme.css`): light/dark mode and the accent colour of the box; the video stage and its controls stay cinema-black.
    - Collapsible Media Library sidebar with folder scanning, video count, file size indicators, and real-time title search.
    - Aspect ratio toggle: Fit to screen (`contain`), 16:9 Widescreen (`fill`), Fill/Crop (`cover`), and Original (`scale-down`).
    - Playback speed control (0.5x, 0.75x, 1x, 1.25x, 1.5x, 2x).
@@ -51,7 +51,7 @@ Designed specifically for low-power Kirkwood ARMv5 NAS devices (800 MHz / 1.0 GH
 
 ## Requirements
 
-- **Firmware:** ShareOS 0.2.0-beta.1 or newer.
+- **Firmware:** ShareOS 0.2.0-beta.9 or newer.
 - **Permissions:** `files` (to read media files from NAS storage).
 - **Supported Formats:** Standard HTML5 video containers and codecs supported by the client browser (e.g. H.264/AAC in `.mp4`, VP8/VP9/AV1 in `.webm`).
 
