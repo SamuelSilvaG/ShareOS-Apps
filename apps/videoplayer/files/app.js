@@ -131,10 +131,21 @@
     video.addEventListener('timeupdate', onTimeUpdate);
     video.addEventListener('progress', onProgress);
     video.addEventListener('loadedmetadata', onLoadedMetadata);
+    video.addEventListener('loadeddata', onLoadedMetadata);
     video.addEventListener('ended', onEnded);
     video.addEventListener('error', onError);
     video.addEventListener('click', togglePlay);
     video.addEventListener('dblclick', toggleFullscreen);
+
+    if (video.audioTracks && typeof video.audioTracks.addEventListener === 'function') {
+      video.audioTracks.addEventListener('addtrack', updateAudioTracks);
+      video.audioTracks.addEventListener('change', updateAudioTracks);
+    }
+    if (video.textTracks && typeof video.textTracks.addEventListener === 'function') {
+      video.textTracks.addEventListener('addtrack', syncEmbeddedSubtitleTracks);
+    }
+
+    updateAudioTracks();
 
     // Controls
     btnPlayPause.addEventListener('click', togglePlay);
@@ -629,28 +640,29 @@
   // --- Audio Tracks Management ---
   function updateAudioTracks() {
     audioTracksList.innerHTML = '';
+    audioAnchor.style.display = 'block';
     const tracks = video.audioTracks;
-    const hasMultiple = tracks && tracks.length > 1;
+    const hasTracks = tracks && tracks.length > 0;
 
-    if (hasMultiple || externalAudio) {
-      audioAnchor.style.display = 'block';
-    } else {
-      audioAnchor.style.display = 'none';
-      return;
-    }
-
-    if (hasMultiple) {
+    if (hasTracks) {
       for (let i = 0; i < tracks.length; i++) {
         const tr = tracks[i];
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'menu-item' + (tr.enabled && !externalAudio ? ' active' : '');
-        const label = tr.label || (tr.language ? `${t('audio.track', { num: i + 1 })} (${tr.language.toUpperCase()})` : t('audio.track', { num: i + 1 }));
+        const langTag = tr.language ? tr.language.toUpperCase() : '';
+        const label = tr.label
+          ? (langTag && !tr.label.toUpperCase().includes(langTag) ? `${tr.label} [${langTag}]` : tr.label)
+          : (langTag ? `${t('audio.track', { num: i + 1 })} (${langTag})` : t('audio.track', { num: i + 1 }));
         btn.textContent = label;
         btn.addEventListener('click', () => {
           disableExternalAudio();
           for (let j = 0; j < tracks.length; j++) {
             tracks[j].enabled = (j === i);
+          }
+          const ct = video.currentTime;
+          if (ct > 0) {
+            video.currentTime = ct;
           }
           updateAudioTracks();
           flashCenter(label);
@@ -659,7 +671,7 @@
         });
         audioTracksList.appendChild(btn);
       }
-    } else if (externalAudio) {
+    } else {
       const btnDef = document.createElement('button');
       btnDef.type = 'button';
       btnDef.className = 'menu-item' + (!externalAudio ? ' active' : '');
@@ -670,6 +682,29 @@
         menuAudio.classList.remove('show');
       });
       audioTracksList.appendChild(btnDef);
+
+      if (!('audioTracks' in HTMLMediaElement.prototype)) {
+        const isEdge = /Edg\//.test(navigator.userAgent);
+        const flagUrl = (isEdge ? 'edge' : 'chrome') + '://flags/#enable-experimental-web-platform-features';
+        const hintDiv = document.createElement('div');
+        hintDiv.style.cssText = 'padding: 6px 10px; font-size: 11px; color: var(--sos-muted); line-height: 1.35; border-top: 1px solid rgba(255,255,255,0.08); margin-top: 4px;';
+        hintDiv.textContent = t('audio.flagHint');
+        const flagBtn = document.createElement('button');
+        flagBtn.type = 'button';
+        flagBtn.className = 'sos-btn';
+        flagBtn.style.cssText = 'width: 100%; margin-top: 5px; font-size: 10px; font-family: monospace; padding: 4px 6px; word-break: break-all; text-align: left;';
+        flagBtn.textContent = flagUrl;
+        flagBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(flagUrl).catch(() => {});
+          }
+          toast(t('audio.flagCopied'));
+          menuAudio.classList.remove('show');
+        });
+        hintDiv.appendChild(flagBtn);
+        audioTracksList.appendChild(hintDiv);
+      }
     }
 
     if (externalAudio) {
