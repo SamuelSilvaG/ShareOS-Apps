@@ -33,6 +33,7 @@ Designed specifically for low-power Kirkwood ARMv5 NAS devices (800 MHz / 1.0 GH
 5. **TV Box & Remote Friendly:**
    - Full keyboard navigation and TV remote shortcut support:
      - `Space` / `K`: Play / Pause
+     - `S`: Stop playback & return to video list
      - `←` / `→`: Seek 5 seconds backward / forward
      - `J` / `L`: Seek 10 seconds backward / forward
      - `↑` / `↓`: Volume adjustment (5%)

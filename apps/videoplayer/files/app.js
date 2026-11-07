@@ -20,6 +20,7 @@
   const btnPlayPause = $('btn-play-pause');
   const iconPlay = $('icon-play');
   const iconPause = $('icon-pause');
+  const btnStop = $('btn-stop');
   const btnPrev = $('btn-prev');
   const btnNext = $('btn-next');
   const btnMute = $('btn-mute');
@@ -149,6 +150,7 @@
 
     // Controls
     btnPlayPause.addEventListener('click', togglePlay);
+    btnStop.addEventListener('click', stopVideo);
     btnPrev.addEventListener('click', playPrev);
     btnNext.addEventListener('click', playNext);
     btnMute.addEventListener('click', toggleMute);
@@ -851,9 +853,47 @@
     iconPlay.style.display = 'inline';
     iconPause.style.display = 'none';
     btnPlayPause.setAttribute('title', t('btn.play'));
-    flashCenter('pause');
+    if (video.getAttribute('src')) {
+      flashCenter('pause');
+    }
     clearTimeout(autohideTimer);
     overlay.classList.remove('autohide');
+  }
+
+  function stopVideo() {
+    if (document.fullscreenElement && document.exitFullscreen) {
+      document.exitFullscreen().catch(() => {});
+    }
+    if (document.pictureInPictureElement && document.exitPictureInPicture) {
+      document.exitPictureInPicture().catch(() => {});
+    }
+
+    video.pause();
+    video.removeAttribute('src');
+    video.load();
+
+    clearSubtitles();
+    disableExternalAudio();
+    updateAudioTracks();
+
+    lastReportedSec = -1;
+    currentIndex = -1;
+    progressFilled.style.width = '0%';
+    progressBuffered.style.width = '0%';
+    progressThumb.style.left = '0%';
+    timeDisplay.textContent = '00:00 / 00:00';
+
+    iconPlay.style.display = 'inline';
+    iconPause.style.display = 'none';
+    btnPlayPause.setAttribute('title', t('btn.play'));
+
+    clearTimeout(autohideTimer);
+    overlay.classList.remove('autohide');
+
+    emptyScreen.style.display = 'flex';
+    sidebar.classList.remove('collapsed');
+    updateSidebarToggleIcon();
+    renderPlaylist();
   }
 
   function playPrev() {
@@ -1044,6 +1084,17 @@
   // Sidebar Toggle
   function toggleSidebar() {
     sidebar.classList.toggle('collapsed');
+    updateSidebarToggleIcon();
+  }
+
+  function updateSidebarToggleIcon() {
+    const icon = $('icon-toggle-sidebar');
+    if (!icon) return;
+    if (sidebar.classList.contains('collapsed')) {
+      icon.innerHTML = '<line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line>';
+    } else {
+      icon.innerHTML = '<line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>';
+    }
   }
 
   // Keyboard Shortcuts
@@ -1057,6 +1108,11 @@
       case 'K':
         e.preventDefault();
         togglePlay();
+        break;
+      case 's':
+      case 'S':
+        e.preventDefault();
+        stopVideo();
         break;
       case 'ArrowLeft':
         e.preventDefault();
