@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="vp-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e1b4b"/>
+    </linearGradient>
+    <linearGradient id="vp-accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+    <linearGradient id="vp-play" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e0e7ff"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="56" height="56" rx="14" fill="url(#vp-bg)" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"/>
+  <!-- Film Clapperboard / Screen Frame -->
+  <rect x="11" y="14" width="42" height="36" rx="6" fill="#1e293b" stroke="url(#vp-accent)" stroke-width="1.5"/>
+  <!-- Top decorative clapper notches -->
+  <path d="M15 14 L19 19 H23 L19 14 Z" fill="url(#vp-accent)" opacity="0.8"/>
+  <path d="M27 14 L31 19 H35 L31 14 Z" fill="url(#vp-accent)" opacity="0.8"/>
+  <path d="M39 14 L43 19 H47 L43 14 Z" fill="url(#vp-accent)" opacity="0.8"/>
+  <line x1="11" y1="19" x2="53" y2="19" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+  <!-- Subtitle indicator line at bottom -->
+  <rect x="18" y="43" width="16" height="2" rx="1" fill="#94a3b8" opacity="0.7"/>
+  <rect x="36" y="43" width="10" height="2" rx="1" fill="#94a3b8" opacity="0.5"/>
+  <!-- Glowing Play Button -->
+  <circle cx="32" cy="31" r="10.5" fill="url(#vp-accent)" opacity="0.25"/>
+  <polygon points="28,25 39,31 28,37" fill="url(#vp-play)"/>
+</svg>
+

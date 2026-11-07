@@ -41,6 +41,7 @@ browser's storage without it.
 | [BeatBox Studio](apps/beatbox) | 16-step drum sequencer with synthesizer; projects (`.beatbox`) and WAV loops on the box, sends loops to WinWeb Player |
 | [PhotoDrop](apps/photodrop) | Upload photos from the phone straight to the box, with a gallery |
 | [ShareAudio](apps/shareaudio) | Voice memos and audio recordings saved on the box |
+| [VideoPlayer](apps/videoplayer) | Lightweight HTML5 cinema and video player: streams MP4/WebM with fast seeking, folder library and automatic external subtitle detection (.srt, .vtt) |
 
 **Network and system**
 

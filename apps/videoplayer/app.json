@@ -1,0 +1,44 @@
+{
+	"id": "videoplayer",
+	"name": "VideoPlayer",
+	"version": "1.0.0",
+	"publisher": "SamuelSilvaG",
+	"description": {
+		"de": "Leichter HTML5-Video- und Kinoplayer mit direktem Streaming von der Box, Ordnerbrowser, automatischer Erkennung externer Untertitel (.srt, .vtt) und clientseitiger Wiedergabe ohne Transkodierung.",
+		"en": "Lightweight HTML5 cinema and video player with instant streaming from the box, folder browsing, automatic external subtitle detection (.srt, .vtt), and client-side playback without transcoding.",
+		"pt": "Player de cinema e vídeo HTML5 leve com streaming instantâneo da box, navegador de pastas, detecção automática de legendas externas (.srt, .vtt) e reprodução no cliente sem transcodificação."
+	},
+	"type": "webapp",
+	"entry": "index.html",
+	"icon": "icon.svg",
+	"category": "media",
+	"license": "GPL-2.0-or-later",
+	"homepage": "https://github.com/UniqueDroid/ShareOS-Apps/tree/main/apps/videoplayer",
+	"min_shareos": "0.2.0-beta.9",
+	"permissions": [
+		"files"
+	],
+	"window": {
+		"width": 1060,
+		"height": 700
+	},
+	"opens": [
+		{
+			"ext": [
+				".mp4",
+				".m4v",
+				".webm",
+				".mkv",
+				".mov",
+				".ogv"
+			],
+			"mode": "view",
+			"label": {
+				"de": "In VideoPlayer abspielen",
+				"en": "Play in VideoPlayer",
+				"pt": "Reproduzir no VideoPlayer"
+			}
+		}
+	]
+}
+
