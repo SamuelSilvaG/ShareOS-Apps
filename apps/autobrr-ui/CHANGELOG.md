@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.2
+
+- Added Edit button (✏️) in the Indexers list table to allow modifying existing tracker indexers without duplicate insertion.
+- Prevent `UNIQUE constraint failed: indexer.identifier` errors: automatically switch to edit mode if the identifier matches an existing indexer.
+- Added quick link to the native autobrr Web UI (:7474) inside the indexer modal for trackers requiring complex IRC bot invites or custom schemas.
+
 ## 1.0.1
 
 - Display name aligned to **autobrr-ui** across UI title bar, menu bar and window title to clearly distinguish the web interface from the backend system daemon `autobrr`.

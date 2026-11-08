@@ -1,7 +1,7 @@
 {
 	"id": "autobrr-ui",
 	"name": "autobrr-ui",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"publisher": "SamuelSilvaG",
 	"description": {
 		"de": "Download-Automatik für IRC-Ankündigungen und RSS-Feeds: Filtert Releases in Echtzeit und übergibt passende Torrents an Transmission. Läuft über den Systemdienst autobrr (Administratoren, ShareOS 0.2.0-beta.9+).",

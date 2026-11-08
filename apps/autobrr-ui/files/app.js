@@ -651,6 +651,18 @@
       return;
     }
 
+    // Prevent duplicate identifier on create
+    if (!editingIndexerId) {
+      const existing = indexers.find((idx) => String(idx.identifier || '').toLowerCase() === identifier.toLowerCase());
+      if (existing) {
+        editingIndexerId = existing.id;
+        if ($('indexer-modal-title')) {
+          $('indexer-modal-title').textContent = t('indexers.edit_title');
+        }
+        toast(t('indexers.exists_switch', { id: identifier }));
+      }
+    }
+
     const payload = {
       name,
       identifier,
@@ -914,12 +926,21 @@
           </span>
         </td>
         <td style="white-space: nowrap;">
+          <button class="sos-btn sos-btn-sm btn-edit-indexer" data-id="${idx.id}" title="${t('btn.edit')}">✏️</button>
           <button class="sos-btn sos-btn-sm btn-test-indexer" data-id="${idx.id}" title="${t('indexers.test')}">⚡</button>
           <button class="sos-btn sos-btn-sm sos-btn-danger btn-del-indexer" data-id="${idx.id}" data-name="${escapeHtml(idx.name || '')}" title="${t('btn.delete')}">✕</button>
         </td>
       `;
       tbody.appendChild(tr);
     }
+
+    tbody.querySelectorAll('.btn-edit-indexer').forEach((btn) => {
+      btn.onclick = () => {
+        const id = parseInt(btn.dataset.id, 10);
+        const idx = indexers.find((item) => item.id === id);
+        if (idx) openIndexerModal(idx);
+      };
+    });
 
     tbody.querySelectorAll('.btn-test-indexer').forEach((btn) => {
       btn.onclick = () => {
@@ -1398,6 +1419,7 @@
 
     // Indexer panel & modal
     if ($('btn-new-indexer-panel')) $('btn-new-indexer-panel').onclick = () => openIndexerModal();
+    if ($('btn-indexer-open-webui')) $('btn-indexer-open-webui').onclick = openAdvancedWebUI;
     if ($('indexer-modal-close-btn')) $('indexer-modal-close-btn').onclick = closeIndexerModal;
     if ($('indexer-modal-cancel-btn')) $('indexer-modal-cancel-btn').onclick = closeIndexerModal;
     if ($('indexer-modal-save-btn')) $('indexer-modal-save-btn').onclick = saveIndexerFromModal;
