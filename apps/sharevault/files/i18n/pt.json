@@ -1,0 +1,136 @@
+{
+ "exact": {
+  "Kein persönlicher Ordner auf der Box gefunden.": "Nenhuma pasta pessoal encontrada na box.",
+  "Tresor anlegen": "Criar cofre",
+  "📋 Kopieren": "📋 Copiar",
+  "Alle": "Todos",
+  "Eintrag gelöscht.": "Entrada excluída.",
+  "Master-Passwort": "Senha mestra",
+  "Sperren": "Trancar",
+  "➕ Neuer Eintrag": "➕ Nova entrada",
+  "Verbinde mit Box-Dateisystem...": "Conectando ao sistema de arquivos da box...",
+  "Datei:": "Arquivo:",
+  "Passwort": "Senha",
+  "Passwort...": "Senha...",
+  "Löschen": "Excluir",
+  "Abbrechen": "Cancelar",
+  "Speichern": "Salvar",
+  "Hinzufügen": "Adicionar",
+  "Allgemein": "Geral",
+  "Banking & Finanzen": "Bancos & Finanças",
+  "Arbeit": "Trabalho",
+  "WLAN & Netzwerk": "Wi-Fi & Rede",
+  "Social Media": "Redes Sociais",
+  "Shopping": "Compras",
+  "Server & Homelab": "Servidor & Homelab",
+  "Streaming": "Streaming",
+  "E-Mail": "E-mail",
+  "name@beispiel.de": "nome@exemplo.com",
+  "ShareOS.fs Fehler:": "Erro do ShareOS.fs:",
+  "Neuen Tresor erstellen: Wähle ein sicheres Master-Passwort!": "Criar novo cofre: escolha uma senha mestra segura!",
+  "Gib dein Master-Passwort ein, um den Tresor zu entschlüsseln.": "Digite sua senha mestra para desbloquear o cofre.",
+  "Entschlüsseln": "Desbloquear",
+  "Box-Speicherfehler:": "Erro de armazenamento da box:",
+  "Berechne Schlüssel...": "Derivando chave...",
+  "Neuer Tresor erfolgreich angelegt!": "Novo cofre criado com sucesso!",
+  "Tresor erfolgreich entschlüsselt!": "Cofre desbloqueado com sucesso!",
+  "Falsches Master-Passwort oder beschädigte Datei!": "Senha mestra incorreta ou arquivo corrompido!",
+  "Tresor gesperrt.": "Cofre trancado.",
+  "Unbenannt": "Sem título",
+  "➕ Neue Rubrik …": "➕ Nova categoria …",
+  "Bitte einen Namen für die Rubrik eingeben.": "Por favor, digite um nome para a categoria.",
+  "Allgemein bleibt immer erhalten": "Geral sempre é mantida",
+  "Rubrik löschen": "Excluir categoria",
+  "Alle Beispiel-Rubriken sind schon da.": "Todas as categorias de exemplo já estão presentes.",
+  "Eintrag bearbeiten": "Editar entrada",
+  "Neuen Eintrag erfassen": "Nova entrada",
+  "Sicheres Passwort generiert!": "Senha segura gerada!",
+  "Eintrag aktualisiert.": "Entrada atualizada.",
+  "Neuer Eintrag gespeichert!": "Nova entrada salva!",
+  "Diesen Eintrag wirklich unwiderruflich löschen?": "Deseja realmente excluir esta entrada permanentemente?",
+  "UNGÜLTIG": "INVÁLIDO",
+  "Einträge & Dienste durchsuchen...": "Pesquisar entradas e serviços...",
+  "Tresor sperren": "Trancar cofre",
+  "Rubriken verwalten": "Gerenciar categorias",
+  "z. B. GitHub, Nextcloud, WLAN Heimnetz": "ex: GitHub, Nextcloud, Wi-Fi residencial",
+  "Symbol der neuen Rubrik": "Ícone da nova categoria",
+  "Name der neuen Rubrik": "Nome da nova categoria",
+  "Passwort anzeigen": "Exibir senha",
+  "Zusätzliche geheime Informationen...": "Informações secretas adicionais...",
+  "Neue Rubrik, z. B. Gaming": "Nova categoria, ex: Jogos",
+  "0 Einträge": "0 entradas",
+  "⚙️ Rubriken": "⚙️ Categorias",
+  "Keine Passwörter im Tresor": "Nenhuma senha no cofre",
+  "Klicke oben auf „➕ Neuer Eintrag“, um deinen ersten Account oder ein Server-Passwort hinzuzufügen.": "Clique acima em “➕ Nova entrada” para adicionar sua primeira conta ou senha de servidor.",
+  "Verschlüsselung: AES-GCM-256 via WebCrypto API.": "Criptografia: AES-GCM-256 via WebCrypto API.",
+  "auf deiner Box.": "na sua box.",
+  "Titel / Dienst": "Título / Serviço",
+  "Rubrik": "Categoria",
+  "Anlegen": "Criar",
+  "Benutzername / E-Mail": "Nome de usuário / E-mail",
+  "🎲 Generieren": "🎲 Gerar",
+  "URL / Adresse": "URL / Endereço",
+  "Sichere Notizen": "Notas seguras",
+  "Symbol und Name ändern sich sofort. Wird eine Rubrik gelöscht, wandern ihre Einträge nach „Allgemein“.": "O ícone e o nome mudam imediatamente. Se uma categoria for excluída, suas entradas irão para “Geral”.",
+  "Beispiele wiederherstellen": "Restaurar exemplos",
+  "Fertig": "Concluído"
+ },
+ "patterns": [
+  [
+   "^Rubrik\\ „(.+?)“\\ löschen\\?\\ Ihre\\ (.+?)\\ Einträge\\ wandern\\ nach\\ „Allgemein“\\.$",
+   "Excluir categoria “$1”? Suas $2 entradas irão para “Geral”."
+  ],
+  [
+   "^(.+?)\\ Beispiel\\-Rubriken\\ wiederhergestellt\\.$",
+   "$1 categorias de exemplo restauradas."
+  ],
+  [
+   "^Speicher:\\ Browser\\ \\(LocalStorage:\\ (.+?)\\)$",
+   "Armazenamento: navegador (LocalStorage: $1)"
+  ],
+  [
+   "^Passwort\\ für\\ '(.+?)'\\ kopiert!$",
+   "Senha de '$1' copiada!"
+  ],
+  [
+   "^Rubrik\\ „(.+?)“\\ angelegt\\.$",
+   "Categoria “$1” criada."
+  ],
+  [
+   "^Box:\\ 🏠\\ (.+?)/(.+?)/(.+?)$",
+   "Box: 🏠 $1/$2/$3"
+  ],
+  [
+   "^Box\\-Speicherfehler: (.+)$",
+   "Erro de armazenamento da box: $1"
+  ],
+  [
+   "^(.+) auf\\ deiner\\ Box\\.$",
+   "$1 na sua box."
+  ],
+  [
+   "^Symbol\\ von\\ (.+?)$",
+   "Ícone de $1"
+  ],
+  [
+   "^Account:\\ (.+?)$",
+   "Conta: $1"
+  ],
+  [
+   "^(.+?)\\ Einträge$",
+   "$1 entradas"
+  ],
+  [
+   "^Datei: (.+)$",
+   "Arquivo: $1"
+  ]
+ ],
+ "keep": [
+  "Name",
+  "Account: ...",
+  "Symbol",
+  "ShareVault",
+  "ShareVault (vault.enc via ShareOS.fs)",
+  "2FA / TOTP Secret (Base32)"
+ ]
+}
