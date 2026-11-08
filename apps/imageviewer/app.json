@@ -1,0 +1,46 @@
+{
+	"id": "imageviewer",
+	"name": "ImageViewer",
+	"version": "1.0.0",
+	"publisher": "SamuelSilvaG",
+	"description": {
+		"de": "Leichter und schneller Bildbetrachter und Galerie mit direktem Streaming von der Box, interaktivem Zoom & Schwenken, Rotation, Diashow, Ordnerbrowser und Tastaturnavigation.",
+		"en": "Lightweight and fast image viewer and gallery with instant streaming from the box, interactive zoom & pan, rotation, slideshow, folder browsing, and keyboard navigation.",
+		"pt": "Visualizador de imagens e galeria rápido e leve com streaming instantâneo da box, zoom interativo e pan, rotação, apresentação de slides, navegador de pastas e atalhos de teclado."
+	},
+	"type": "webapp",
+	"entry": "index.html",
+	"icon": "icon.svg",
+	"category": "media",
+	"license": "GPL-2.0-or-later",
+	"homepage": "https://github.com/UniqueDroid/ShareOS-Apps/tree/main/apps/imageviewer",
+	"min_shareos": "0.2.0-beta.9",
+	"permissions": [
+		"files"
+	],
+	"window": {
+		"width": 1080,
+		"height": 720
+	},
+	"opens": [
+		{
+			"ext": [
+				".jpg",
+				".jpeg",
+				".png",
+				".webp",
+				".gif",
+				".svg",
+				".bmp",
+				".ico",
+				".avif"
+			],
+			"mode": "view",
+			"label": {
+				"de": "In ImageViewer ansehen",
+				"en": "View in ImageViewer",
+				"pt": "Visualizar no ImageViewer"
+			}
+		}
+	]
+}
