@@ -388,8 +388,12 @@
     }
 
     document.title = name + ' – VideoPlayer';
+    currentFolder = { root: '', path: '' };
+    updateFolderLabels();
     playlist = [{ name, root: '', path: '', url, size }];
     renderPlaylist();
+    sidebar.classList.add('collapsed');
+    updateSidebarToggleIcon();
     playVideoAtIndex(0);
   }
 
@@ -537,8 +541,8 @@
     // Highlight in playlist
     renderPlaylist();
 
-    // Auto-collapse sidebar on mobile so video is visible
-    if (window.innerWidth <= 768) {
+    // Auto-collapse sidebar if only one video in playlist or on mobile/tablet so the cinema video takes full stage
+    if (playlist.length <= 1 || window.innerWidth <= 768) {
       sidebar.classList.add('collapsed');
       updateSidebarToggleIcon();
     }
@@ -1053,8 +1057,10 @@
     overlay.classList.remove('autohide');
 
     emptyScreen.style.display = 'flex';
-    sidebar.classList.remove('collapsed');
-    updateSidebarToggleIcon();
+    if (playlist.length > 1 && window.innerWidth > 768) {
+      sidebar.classList.remove('collapsed');
+      updateSidebarToggleIcon();
+    }
     renderPlaylist();
   }
 

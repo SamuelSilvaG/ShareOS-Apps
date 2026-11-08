@@ -5,6 +5,7 @@
 - Fixed autoplay when opening video files directly from ShareOS File Manager (`?file=<ticket>`).
 - Implemented policy-compliant autoplay fallback: attempts full unmuted playback first; if modern browser Autoplay Policy blocks unmuted media without prior gesture, immediately starts playing muted without delay and displays an unmute prompt (`#unmute-banner`) that restores audio on the first user interaction anywhere in the window.
 - Added direct ticket URL fallback and resilient `window.ShareOS` checking in `checkOpenedFile()`.
+- Automatically collapse the Media Library sidebar when playing a single video or opening a standalone video file, keeping the full viewport focused on cinema playback.
 
 ## 1.0.1
 
