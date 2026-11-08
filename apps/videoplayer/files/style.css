@@ -26,8 +26,9 @@ html, body {
 .app-wrapper {
   display: flex;
   flex-direction: column;
-  width: 100vw;
+  width: 100%;
   height: 100vh;
+  height: 100dvh;
 }
 
 /* Header Navbar */
@@ -138,6 +139,8 @@ html, body {
 .app-main {
   display: flex;
   flex: 1;
+  min-width: 0;
+  min-height: 0;
   overflow: hidden;
   position: relative;
 }
@@ -261,7 +264,11 @@ html, body {
   color: var(--sos-muted);
 }
 
-/* Sidebar Toggle Pill */
+/* Sidebar Toggle Pill & Mobile Backdrop */
+.sidebar-backdrop {
+  display: none;
+}
+
 .sidebar-toggle-pill {
   position: absolute;
   top: 12px;
@@ -277,6 +284,8 @@ html, body {
 /* Cinema Viewport / Video Player Container */
 .viewport {
   flex: 1;
+  min-width: 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   background: #000;
@@ -286,14 +295,21 @@ html, body {
 
 .video-stage {
   flex: 1;
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #000;
+  overflow: hidden;
 }
 
 #main-video {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   max-width: 100%;
@@ -333,6 +349,7 @@ video::cue {
   background: radial-gradient(circle at center, var(--sos-panel) 0%, var(--sos-bg) 100%);
   z-index: 10;
   gap: 16px;
+  overflow-y: auto;
 }
 
 .empty-icon {
@@ -722,30 +739,147 @@ video::cue {
 
 /* Responsive Styles */
 @media (max-width: 768px) {
+  .app-header {
+    padding: 6px 10px;
+    height: 44px;
+  }
+
+  .brand {
+    gap: 8px;
+  }
+
+  .header-actions {
+    gap: 6px;
+  }
+
+  .header-actions .sos-btn {
+    padding: 5px 10px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
   .sidebar {
     position: absolute;
     top: 0;
     bottom: 0;
     left: 0;
-    width: 260px;
+    width: min(280px, 82vw);
+    margin-left: 0;
+    transform: translateX(0);
+    transition: transform 0.25s ease;
     box-shadow: 10px 0 30px rgba(0, 0, 0, 0.7);
   }
 
   .sidebar.collapsed {
-    margin-left: -260px;
+    margin-left: 0;
+    transform: translateX(-105%);
+  }
+
+  .sidebar:not(.collapsed) ~ .sidebar-backdrop {
+    display: block;
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 18;
   }
 
   .sidebar-toggle-pill {
-    left: 270px;
+    display: none;
   }
 
-  .controls-row {
-    flex-wrap: wrap;
-    gap: 8px;
+  .empty-screen {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .empty-icon {
+    width: 52px;
+    height: 52px;
+  }
+
+  .empty-title {
+    font-size: 18px;
+  }
+
+  .empty-desc {
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .controls-overlay {
+    padding: 18px 10px 10px 10px;
+    gap: 6px;
+  }
+
+  .progress-bar-wrap {
+    height: 22px;
+  }
+
+  .progress-track {
+    height: 6px;
+  }
+
+  .progress-thumb {
+    opacity: 1;
+    width: 14px;
+    height: 14px;
   }
 
   .volume-wrap {
     display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .brand-title {
+    display: none;
+  }
+
+  .controls-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+  }
+
+  .controls-left {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 4px;
+  }
+
+  .time-display {
+    margin-left: auto;
+    font-size: 11px;
+  }
+
+  .controls-right {
+    width: 100%;
+    justify-content: space-between;
+    gap: 4px;
+  }
+
+  .ctrl-btn {
+    min-width: 36px;
+    height: 36px;
+    padding: 6px;
+  }
+
+  .dropdown-menu {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    bottom: 100px;
+    min-width: 0 !important;
+    width: auto;
+    max-height: 55dvh;
+    overflow-y: auto;
+    z-index: 150;
+  }
+
+  .toast-box {
+    left: 12px;
+    right: 12px;
+    bottom: 16px;
   }
 }
 

@@ -1,7 +1,7 @@
 {
 	"id": "videoplayer",
 	"name": "VideoPlayer",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"publisher": "SamuelSilvaG",
 	"description": {
 		"de": "Leichter HTML5-Video- und Kinoplayer mit direktem Streaming von der Box, Ordnerbrowser, automatischer Erkennung externer Untertitel (.srt, .vtt) und clientseitiger Wiedergabe ohne Transkodierung.",
