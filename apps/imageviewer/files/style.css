@@ -1,9 +1,5 @@
 :root {
-  --sos-panel-alt: var(--sos-panel);
-  --sos-accent-hover: var(--sos-soft);
-  --sos-btn: var(--sos-bar);
-  --sos-btn-hover: color-mix(in srgb, var(--sos-text) 12%, var(--sos-bar));
-  --sos-bad: var(--sos-err);
+  --iv-btn-hover: color-mix(in srgb, var(--sos-text) 12%, var(--sos-bar));
 }
 
 * {
@@ -16,7 +12,7 @@ html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background-color: #0b0f19;
+  background-color: var(--sos-bg);
   color: var(--sos-text);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   font-size: 14px;
@@ -74,7 +70,7 @@ html, body {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  background: var(--sos-btn);
+  background: var(--sos-bar);
   color: var(--sos-text);
   border: 1px solid var(--sos-line);
   border-radius: 6px;
@@ -88,7 +84,7 @@ html, body {
 }
 
 .sos-btn:hover:not(:disabled) {
-  background: var(--sos-btn-hover);
+  background: var(--iv-btn-hover);
   border-color: var(--sos-accent);
 }
 
@@ -98,12 +94,13 @@ html, body {
 
 .sos-btn-accent {
   background: var(--sos-accent);
-  color: var(--sos-accent-text, #ffffff);
+  color: var(--sos-bg);
   border-color: transparent;
 }
 
 .sos-btn-accent:hover:not(:disabled) {
-  background: var(--sos-accent-hover, var(--sos-accent));
+  background: var(--sos-soft);
+  color: var(--sos-bg);
   opacity: 0.92;
 }
 
@@ -226,7 +223,7 @@ html, body {
 }
 
 .playlist-item:hover {
-  background: var(--sos-btn-hover);
+  background: var(--iv-btn-hover);
 }
 
 .playlist-item.active {
@@ -504,13 +501,13 @@ html, body {
 
 .ctrl-btn:hover {
   background: var(--sos-accent);
-  color: var(--sos-accent-text, #ffffff);
+  color: var(--sos-bg);
   border-color: transparent;
 }
 
 .ctrl-btn.active {
   background: var(--sos-accent);
-  color: var(--sos-accent-text, #ffffff);
+  color: var(--sos-bg);
   border-color: transparent;
 }
 
@@ -537,7 +534,7 @@ html, body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: #090d16;
+  background: var(--sos-bg);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -644,7 +641,7 @@ html, body {
 .shortcuts-table td {
   padding: 8px 6px;
   font-size: 13px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--sos-line);
 }
 
 .key-badge {
@@ -737,3 +734,4 @@ html, body {
     top: 8px;
   }
 }
+

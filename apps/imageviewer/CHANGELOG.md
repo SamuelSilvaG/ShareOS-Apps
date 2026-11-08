@@ -12,3 +12,4 @@
 - Smart single-image mode: automatically collapses the sidebar gallery when opening a standalone image file, maximizing view area.
 - Fullscreen mode (`F`), image metadata badge (`I`) displaying resolution and size, and keyboard & remote shortcut support.
 - Multilingual support: English, Portuguese, and German.
+

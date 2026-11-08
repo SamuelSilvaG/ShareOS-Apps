@@ -10,6 +10,14 @@
 
   const IMAGE_EXTS = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg', '.bmp', '.ico', '.avif'];
 
+  // Extensions that /_shareos/cgi/file serves as application/octet-stream + X-Content-Type-Options: nosniff
+  const OCTET_STREAM_MIME_MAP = {
+    '.svg': 'image/svg+xml',
+    '.bmp': 'image/bmp',
+    '.ico': 'image/x-icon',
+    '.avif': 'image/avif'
+  };
+
   // DOM Elements
   const $ = (id) => document.getElementById(id);
   const mainImage = $('main-image');
@@ -182,17 +190,41 @@
 
     // Local inputs fallback
     $('local-image-input').addEventListener('change', onLocalImageSelected);
+
+    // Inter-app messaging (e.g. from ShareCommander)
+    const sos = getSOS();
+    if (sos && typeof sos.on === 'function') {
+      const onExternalImage = (d) => {
+        if (!d || (d.to && d.to !== 'imageviewer')) return;
+        const name = String(d.name || 'Image').slice(0, 200);
+        let url = null;
+        let size = 0;
+        if (d.blob instanceof Blob) {
+          url = URL.createObjectURL(d.blob);
+          size = d.blob.size || 0;
+        } else if (typeof d.url === 'string' && /^(https?:|blob:|\/)/.test(d.url)) {
+          url = d.url;
+        } else return;
+        playlist = [{ name, root: '', path: '', url, size }];
+        renderPlaylist();
+        sidebar.classList.add('collapsed');
+        updateSidebarToggleIcon();
+        showImageAtIndex(0);
+      };
+      sos.on('open-image', onExternalImage);
+      sos.on('open-media', onExternalImage);
+    }
   }
 
-  // Check if opened from ShareOS file manager (?file=ticket)
+  // Check if opened from ShareOS file manager (?file=ticket&name=...)
   async function checkOpenedFile() {
     const q = new URLSearchParams(location.search);
     const ticket = q.get('file');
     if (!ticket) return;
 
     const sos = getSOS();
-    let name = 'Image';
-    let url = '/_shareos/cgi/file?t=' + encodeURIComponent(ticket);
+    let name = q.get('name') || (sos && sos.file && sos.file.name) || 'Image';
+    let url = (sos && sos.file && sos.file.url) || '/_shareos/cgi/file?t=' + encodeURIComponent(ticket);
     let size = 0;
 
     if (sos && sos.file) {
@@ -204,7 +236,7 @@
       } catch (err) {
         console.warn('ShareOS.file.info() error:', err);
       }
-    } else {
+    } else if (name === 'Image') {
       const parts = ticket.split('/');
       const last = parts[parts.length - 1];
       if (last && last.length < 150) {
@@ -418,6 +450,10 @@
         const handle = await sos.fs.open(item.root, item.path || '', item.name);
         streamUrl = handle.url;
         item.url = streamUrl;
+        if (handle.size && !item.size) {
+          item.size = handle.size;
+          renderPlaylist();
+        }
       } catch (err) {
         toast(t('toast.error') + err.message, true);
         return;
@@ -427,6 +463,29 @@
     if (!streamUrl) {
       toast(t('toast.error') + 'URL not found', true);
       return;
+    }
+
+    // /_shareos/cgi/file serves .svg, .bmp, .ico, .avif as application/octet-stream with X-Content-Type-Options: nosniff.
+    // Convert to a typed Blob URL so the browser renders them reliably inside <img>.
+    let displayUrl = streamUrl;
+    const extMatch = /(\.[a-z0-9]+)$/i.exec(item.name || '');
+    const ext = extMatch ? extMatch[1].toLowerCase() : '';
+    if (OCTET_STREAM_MIME_MAP[ext] && streamUrl.startsWith('/_shareos/cgi/file')) {
+      try {
+        const resp = await fetch(streamUrl, { cache: 'no-store' });
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        const buf = await resp.arrayBuffer();
+        const blob = new Blob([buf], { type: OCTET_STREAM_MIME_MAP[ext] });
+        currentImageBlobUrl = URL.createObjectURL(blob);
+        displayUrl = currentImageBlobUrl;
+        if (!item.size && buf.byteLength) {
+          item.size = buf.byteLength;
+          renderPlaylist();
+        }
+      } catch (err) {
+        toast(t('toast.error') + err.message, true);
+        return;
+      }
     }
 
     // Reset transform state for new photo
@@ -444,7 +503,7 @@
     mainImage.onerror = () => {
       toast(t('toast.error') + item.name, true);
     };
-    mainImage.src = streamUrl;
+    mainImage.src = displayUrl;
   }
 
   // Calculate Fit-To-Screen Scale
@@ -645,6 +704,12 @@
     flipH = !flipH;
     applyTransform();
     flashCenter(t('btn.flipH'));
+  }
+
+  function toggleFlipVertical() {
+    flipV = !flipV;
+    applyTransform();
+    flashCenter(t('btn.flipV'));
   }
 
   // Apply CSS transforms to image
@@ -882,6 +947,11 @@
         e.preventDefault();
         toggleFlipHorizontal();
         break;
+      case 'v':
+      case 'V':
+        e.preventDefault();
+        toggleFlipVertical();
+        break;
       case ' ':
         e.preventDefault();
         toggleSlideshow();
@@ -1008,3 +1078,4 @@
     init();
   }
 })();
+
