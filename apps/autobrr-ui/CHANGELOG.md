@@ -3,7 +3,7 @@
 ## 1.0.2
 
 - Added Edit button (✏️) in the Indexers list table to allow modifying existing tracker indexers without duplicate insertion.
-- Prevent `UNIQUE constraint failed: indexer.identifier` errors: automatically switch to edit mode if the identifier matches an existing indexer.
+- Prevent duplicate identifier errors with explicit confirmation: prompt "Indexer “X” already exists – update it?" before overwriting an existing indexer; cancelling leaves the existing indexer untouched and keeps the modal open to edit the identifier.
 - Added quick link to the native autobrr Web UI (:7474) inside the indexer modal for trackers requiring complex IRC bot invites or custom schemas.
 
 ## 1.0.1

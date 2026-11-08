@@ -651,15 +651,16 @@
       return;
     }
 
-    // Prevent duplicate identifier on create
-    if (!editingIndexerId) {
-      const existing = indexers.find((idx) => String(idx.identifier || '').toLowerCase() === identifier.toLowerCase());
-      if (existing) {
-        editingIndexerId = existing.id;
-        if ($('indexer-modal-title')) {
-          $('indexer-modal-title').textContent = t('indexers.edit_title');
-        }
-        toast(t('indexers.exists_switch', { id: identifier }));
+    // Prevent duplicate identifier on create and confirm before overwriting
+    const existing = indexers.find((idx) => String(idx.identifier || '').toLowerCase() === identifier.toLowerCase());
+    if (existing && existing.id !== editingIndexerId) {
+      const ok = confirm(t('indexers.confirm_update', { name: existing.name || identifier }));
+      if (!ok) {
+        return;
+      }
+      editingIndexerId = existing.id;
+      if ($('indexer-modal-title')) {
+        $('indexer-modal-title').textContent = t('indexers.edit_title');
       }
     }
 
