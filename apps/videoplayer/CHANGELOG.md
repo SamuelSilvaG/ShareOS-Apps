@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.2
+
+- Fixed autoplay when opening video files directly from ShareOS File Manager (`?file=<ticket>`).
+- Implemented policy-compliant autoplay fallback: attempts full unmuted playback first; if modern browser Autoplay Policy blocks unmuted media without prior gesture, immediately starts playing muted without delay and displays an unmute prompt (`#unmute-banner`) that restores audio on the first user interaction anywhere in the window.
+- Added direct ticket URL fallback and resilient `window.ShareOS` checking in `checkOpenedFile()`.
+
 ## 1.0.1
 
 - Added **Stop** button (`#btn-stop`) and `S` keyboard shortcut to stop playback, reset player state, and return to the video list.
