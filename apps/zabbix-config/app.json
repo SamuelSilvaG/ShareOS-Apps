@@ -13,10 +13,11 @@
 	"icon": "icon.svg",
 	"category": "system",
 	"license": "GPL-2.0-or-later",
-	"homepage": "https://www.zabbix.com/",
+	"homepage": "https://github.com/UniqueDroid/ShareOS-Apps/tree/main/apps/zabbix-config",
 	"min_shareos": "0.2.0-beta.20",
 	"permissions": [
-		"files"
+		"files",
+		"zabbix"
 	],
 	"requires": [
 		"zabbix-agent"

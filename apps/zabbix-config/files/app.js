@@ -1,12 +1,13 @@
 /**
  * Zabbix Agent Config - Main Application Logic
- * Integrates with ShareOS zabbix-agent service and CLI workflow
+ * Integrates with ShareOS zabbix-agent service (ShareOS.zabbix) and CLI fallback
  */
 (function() {
 	'use strict';
 
-	const SOS = window.ShareOS || null;
-	const ZBX = SOS && SOS.zabbix ? SOS.zabbix : null;
+	function getZBX() {
+		return (window.ShareOS && window.ShareOS.zabbix) || null;
+	}
 
 	// State
 	const state = {
@@ -33,6 +34,7 @@
 		statusText: document.getElementById('statusText'),
 		langSelector: document.getElementById('langSelector'),
 		btnRefresh: document.getElementById('btnRefresh'),
+		btnRestart: document.getElementById('btnRestart'),
 		btnApply: document.getElementById('btnApply'),
 		btnCopyCliFooter: document.getElementById('btnCopyCliFooter'),
 		btnCopyCliTop: document.getElementById('btnCopyCliTop'),
@@ -53,16 +55,20 @@
 		fieldAllow: document.getElementById('fieldAllow'),
 		fieldPort: document.getElementById('fieldPort'),
 		fieldDiskInterval: document.getElementById('fieldDiskInterval'),
-		// CLI & Template
+		// CLI, Template & Logs
 		cliPreview: document.getElementById('cliPreview'),
 		btnCopyCli: document.getElementById('btnCopyCli'),
 		btnDownloadTemplate: document.getElementById('btnDownloadTemplate'),
 		btnCopyTemplate: document.getElementById('btnCopyTemplate'),
+		logsSection: document.getElementById('logsSection'),
+		logsView: document.getElementById('logsView'),
+		btnRefreshLogs: document.getElementById('btnRefreshLogs'),
 		toastContainer: document.getElementById('toastContainer')
 	};
 
 	// Toast Notification
 	function showToast(message, type = 'success') {
+		if (!els.toastContainer) return;
 		const toast = document.createElement('div');
 		toast.className = `toast ${type}`;
 		toast.textContent = message;
@@ -125,7 +131,9 @@
 		};
 
 		const jsonStr = JSON.stringify(payload);
-		els.cliPreview.textContent = `echo '${jsonStr}' | shareos-zabbix set`;
+		if (els.cliPreview) {
+			els.cliPreview.textContent = `echo '${jsonStr}' | shareos-zabbix set`;
+		}
 		return payload;
 	}
 
@@ -142,6 +150,9 @@
 				if (panel) {
 					panel.classList.add('active');
 				}
+				if (targetTab === 'cli' && els.logsSection && els.logsSection.style.display !== 'none') {
+					fetchLogs();
+				}
 			});
 		});
 	}
@@ -149,30 +160,63 @@
 	// Load status and configuration
 	async function loadConfig() {
 		try {
-			if (ZBX && ZBX.status) {
-				const res = await ZBX.status();
+			const zbx = getZBX();
+			if (zbx && zbx.status) {
+				const res = await zbx.status();
 				if (res) {
-					Object.assign(state, res);
+					state.installed = res.installed !== false;
+					state.enabled = res.enabled !== false;
+					state.running = !!res.running;
+					state.server = res.server || '';
+					state.hostname = res.hostname || '';
+					state.hostname_used = res.hostname_used || '';
+					state.metadata = res.metadata || 'ShareOS';
+					state.psk_identity = res.psk_identity || '';
+					// PSK on the box is boolean: status().psk is true/false
+					state.psk_set = !!res.psk;
+					state.passive = !!res.passive;
+					state.allow = res.allow || '';
+					state.port = res.port || 10050;
+					state.disk_interval = res.disk_interval || 30;
 				}
-				// Firmware API is present
+
+				// Native Firmware API is present
 				if (els.cliNoticeCard) els.cliNoticeCard.style.display = 'none';
 				if (els.btnApply) els.btnApply.style.display = 'inline-flex';
 				if (els.btnCopyCliFooter) els.btnCopyCliFooter.style.display = 'none';
+				if (els.btnRestart) els.btnRestart.style.display = zbx.restart ? 'inline-flex' : 'none';
+				if (els.logsSection && zbx.log) {
+					els.logsSection.style.display = 'block';
+				}
 			} else {
-				// Version A: honest CLI command workflow (no simulated apply / no localStorage fallback)
+				// Fallback: honest CLI command workflow
 				state.running = false;
+				state.psk_set = false;
 				if (els.cliNoticeCard) els.cliNoticeCard.style.display = 'flex';
 				if (els.btnApply) els.btnApply.style.display = 'none';
 				if (els.btnCopyCliFooter) els.btnCopyCliFooter.style.display = 'inline-flex';
+				if (els.btnRestart) els.btnRestart.style.display = 'none';
+				if (els.logsSection) els.logsSection.style.display = 'none';
 			}
 
 			// Populate UI fields
 			els.fieldEnabled.checked = !!state.enabled;
 			els.fieldServer.value = state.server || '';
 			els.fieldHostname.value = state.hostname || '';
+			if (!els.fieldHostname.value && state.hostname_used) {
+				els.fieldHostname.placeholder = state.hostname_used;
+			}
 			els.fieldMetadata.value = state.metadata || 'ShareOS';
 			els.fieldPskIdentity.value = state.psk_identity || '';
-			els.fieldPskKey.value = state.psk || '';
+
+			if (state.psk_set) {
+				els.fieldPskKey.value = '';
+				els.fieldPskKey.placeholder = I18n.t('psk_configured_placeholder', '•••••••• (Configured on box – enter new key to change)');
+			} else {
+				els.fieldPskKey.value = state.psk || '';
+				els.fieldPskKey.placeholder = '64 hex characters (256-bit key)';
+			}
+
 			els.fieldPassive.checked = !!state.passive;
 			els.fieldAllow.value = state.allow || '';
 			els.fieldPort.value = state.port || 10050;
@@ -187,9 +231,10 @@
 
 	// Update Status Pill
 	function updateStatusBadge() {
+		const zbx = getZBX();
 		els.statusPill.className = 'status-pill';
 
-		if (!ZBX) {
+		if (!zbx) {
 			// Honest CLI mode indicator when firmware API is not yet available
 			els.statusPill.classList.add('neutral');
 			els.statusText.textContent = I18n.t('status_cli_mode', 'CLI Mode');
@@ -226,22 +271,28 @@
 
 		// Basic Validation
 		if (payload.server && payload.server.split(',').length > 8) {
-			showToast('Maximum 8 servers allowed in active mode.', 'error');
+			showToast(I18n.t('err_max_servers', 'Maximum 8 servers allowed in active mode.'), 'error');
 			return;
 		}
 
 		if (payload.psk && (payload.psk.length < 32 || payload.psk.length > 512 || !/^[0-9a-fA-F]+$/.test(payload.psk))) {
-			showToast('PSK must be between 32 and 512 hexadecimal characters.', 'error');
+			showToast(I18n.t('err_psk_format', 'PSK must be between 32 and 512 hexadecimal characters.'), 'error');
 			return;
 		}
 
 		if (payload.psk && !payload.psk_identity) {
-			showToast('PSK Identity is required when PSK encryption is used.', 'error');
+			showToast(I18n.t('err_psk_identity_req', 'PSK Identity is required when PSK encryption is used.'), 'error');
 			return;
 		}
 
-		if (!ZBX) {
-			// Honest behaviour: no real API available, copy command to apply via Terminal/SSH
+		if (payload.psk_identity && !payload.psk && !state.psk_set) {
+			showToast(I18n.t('err_psk_key_req', 'Pre-Shared Key is required when PSK Identity is set.'), 'error');
+			return;
+		}
+
+		const zbx = getZBX();
+		if (!zbx || !zbx.set) {
+			// Fallback: copy command to apply via Terminal/SSH
 			copyToClipboard(els.cliPreview.textContent, I18n.t('copy_cli_apply_hint', 'Command copied! Run in System → Terminal or SSH to apply settings.'));
 			return;
 		}
@@ -251,20 +302,55 @@
 		els.btnApply.querySelector('span').textContent = I18n.t('applying', 'Applying...');
 
 		try {
-			await ZBX.set(payload);
-			if (ZBX.restart) {
-				await ZBX.restart();
+			const setPayload = { ...payload };
+			// If key input is left blank and key is already configured on the box, preserve existing key
+			if (!setPayload.psk && state.psk_set) {
+				delete setPayload.psk;
 			}
-			Object.assign(state, payload);
-			state.running = payload.enabled;
-			updateStatusBadge();
+			await zbx.set(setPayload);
+			if (zbx.restart) {
+				await zbx.restart();
+			}
+			await loadConfig();
 			showToast(I18n.t('save_success', 'Configuration saved and applied successfully!'), 'success');
 		} catch (err) {
 			console.error('Error applying config:', err);
-			showToast(I18n.t('save_error', 'Error applying configuration. Please check the values.'), 'error');
+			showToast(I18n.t('save_error', 'Error applying configuration. Please check the values: ') + (err.message || err), 'error');
 		} finally {
 			els.btnApply.disabled = false;
 			els.btnApply.querySelector('span').textContent = originalText;
+		}
+	}
+
+	// Restart Daemon
+	async function restartAgent() {
+		const zbx = getZBX();
+		if (!zbx || !zbx.restart) return;
+		if (els.btnRestart) els.btnRestart.disabled = true;
+		try {
+			await zbx.restart();
+			showToast(I18n.t('restart_success', 'Zabbix agent restarted successfully!'), 'success');
+			await loadConfig();
+		} catch (err) {
+			console.error('Restart failed:', err);
+			showToast(I18n.t('restart_error', 'Failed to restart Zabbix agent: ') + (err.message || err), 'error');
+		} finally {
+			if (els.btnRestart) els.btnRestart.disabled = false;
+		}
+	}
+
+	// Fetch Agent Logs
+	async function fetchLogs() {
+		const zbx = getZBX();
+		if (!zbx || !zbx.log || !els.logsView) return;
+		try {
+			els.logsView.textContent = I18n.t('logs_loading', 'Loading logs...');
+			const res = await zbx.log();
+			const logText = typeof res === 'string' ? res : (res && res.log) || '';
+			els.logsView.textContent = logText.trim() || I18n.t('logs_empty', 'No log entries available.');
+			els.logsView.scrollTop = els.logsView.scrollHeight;
+		} catch (err) {
+			els.logsView.textContent = 'Error reading logs: ' + (err.message || err);
 		}
 	}
 
@@ -326,8 +412,10 @@
 			els.fieldDiskInterval
 		];
 		inputs.forEach(input => {
-			input.addEventListener('input', updateCliPreview);
-			input.addEventListener('change', updateCliPreview);
+			if (input) {
+				input.addEventListener('input', updateCliPreview);
+				input.addEventListener('change', updateCliPreview);
+			}
 		});
 
 		// PSK generation
@@ -342,39 +430,47 @@
 			showToast('New 256-bit PSK generated!', 'success');
 		});
 
-		// Copy buttons
+		// Copy PSK
 		els.btnCopyPsk.addEventListener('click', () => {
 			const key = els.fieldPskKey.value.trim();
-			if (!key) {
+			if (key) {
+				copyToClipboard(key, 'PSK key copied to clipboard!');
+			} else if (state.psk_set) {
+				showToast(I18n.t('psk_copy_secure_hint', 'Existing PSK is stored securely on the box and cannot be read back.'), 'warning');
+			} else {
 				showToast('PSK key is empty', 'error');
-				return;
 			}
-			copyToClipboard(key, 'PSK key copied to clipboard!');
 		});
 
 		const handleCopyCommand = () => {
 			copyToClipboard(els.cliPreview.textContent, I18n.t('copy_cli_apply_hint', 'Command copied! Run in System → Terminal or SSH to apply settings.'));
 		};
 
-		els.btnCopyCli.addEventListener('click', handleCopyCommand);
+		if (els.btnCopyCli) els.btnCopyCli.addEventListener('click', handleCopyCommand);
 		if (els.btnCopyCliTop) els.btnCopyCliTop.addEventListener('click', handleCopyCommand);
 		if (els.btnCopyCliFooter) els.btnCopyCliFooter.addEventListener('click', handleCopyCommand);
 
-		els.btnCopyTemplate.addEventListener('click', async () => {
-			if (!state.templateContent) {
-				await fetchTemplate();
-			}
-			copyToClipboard(state.templateContent, 'Zabbix YAML template copied!');
-		});
+		if (els.btnCopyTemplate) {
+			els.btnCopyTemplate.addEventListener('click', async () => {
+				if (!state.templateContent) {
+					await fetchTemplate();
+				}
+				copyToClipboard(state.templateContent, 'Zabbix YAML template copied!');
+			});
+		}
 
-		els.btnDownloadTemplate.addEventListener('click', downloadTemplateFile);
+		if (els.btnDownloadTemplate) els.btnDownloadTemplate.addEventListener('click', downloadTemplateFile);
 
-		// Apply and Refresh
-		els.btnApply.addEventListener('click', saveConfig);
-		els.btnRefresh.addEventListener('click', async () => {
-			await loadConfig();
-			showToast('Status refreshed', 'success');
-		});
+		// Apply, Refresh & Restart
+		if (els.btnApply) els.btnApply.addEventListener('click', saveConfig);
+		if (els.btnRefresh) {
+			els.btnRefresh.addEventListener('click', async () => {
+				await loadConfig();
+				showToast('Status refreshed', 'success');
+			});
+		}
+		if (els.btnRestart) els.btnRestart.addEventListener('click', restartAgent);
+		if (els.btnRefreshLogs) els.btnRefreshLogs.addEventListener('click', fetchLogs);
 	}
 
 	// Init

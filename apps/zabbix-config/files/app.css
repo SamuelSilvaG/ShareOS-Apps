@@ -4,20 +4,17 @@
    ========================================================================== */
 
 :root {
-	--sos-bg: #0f1218;
-	--sos-surface: #171b23;
-	--sos-surface-alt: #1f2430;
-	--sos-border: rgba(255, 255, 255, 0.08);
-	--sos-border-focus: #d40000;
-	--sos-text: #e2e8f0;
-	--sos-text-muted: #94a3b8;
-	--sos-accent: #d40000;
-	--sos-accent-hover: #b80000;
-	--sos-accent-glow: rgba(212, 0, 0, 0.25);
-	--sos-success: #10b981;
-	--sos-success-glow: rgba(16, 185, 129, 0.2);
-	--sos-warning: #f59e0b;
-	--sos-error: #ef4444;
+	--sos-surface: var(--sos-panel);
+	--sos-surface-alt: var(--sos-bar);
+	--sos-border: var(--sos-line);
+	--sos-border-focus: var(--sos-accent);
+	--sos-text-muted: var(--sos-muted);
+	--sos-accent-hover: var(--sos-soft);
+	--sos-accent-glow: rgba(var(--sos-rgb), 0.25);
+	--sos-success: var(--sos-ok);
+	--sos-success-glow: color-mix(in srgb, var(--sos-ok) 20%, transparent);
+	--sos-warning: var(--sos-warn);
+	--sos-error: var(--sos-err);
 	--sos-font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
 	--sos-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 	--sos-radius-sm: 6px;
@@ -27,17 +24,7 @@
 	--sos-transition: 0.18s ease-in-out;
 }
 
-@media (prefers-color-scheme: light) {
-	:root {
-		--sos-bg: #f8fafc;
-		--sos-surface: #ffffff;
-		--sos-surface-alt: #f1f5f9;
-		--sos-border: rgba(0, 0, 0, 0.1);
-		--sos-text: #1e293b;
-		--sos-text-muted: #64748b;
-		--sos-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-	}
-}
+
 
 * {
 	box-sizing: border-box;
@@ -85,8 +72,8 @@ body {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background: linear-gradient(135deg, #d40000 0%, #8b0000 100%);
-	box-shadow: 0 2px 10px var(--sos-accent-glow);
+	background: linear-gradient(135deg, #d40000 0%, #b80000 100%);
+	box-shadow: 0 2px 10px rgba(212, 0, 0, 0.35);
 }
 
 .brand-icon svg {
@@ -155,8 +142,8 @@ body {
 }
 
 .notice-card {
-	background: rgba(245, 158, 11, 0.08);
-	border: 1px solid rgba(245, 158, 11, 0.25);
+	background: color-mix(in srgb, var(--sos-warn) 8%, transparent);
+	border: 1px solid color-mix(in srgb, var(--sos-warn) 25%, transparent);
 	border-radius: var(--sos-radius-md);
 	padding: 16px;
 	display: flex;
@@ -192,9 +179,9 @@ body {
 }
 
 .alert-banner {
-	background: rgba(239, 68, 68, 0.1);
-	border: 1px solid rgba(239, 68, 68, 0.3);
-	color: #fca5a5;
+	background: color-mix(in srgb, var(--sos-err) 10%, transparent);
+	border: 1px solid color-mix(in srgb, var(--sos-err) 30%, transparent);
+	color: var(--sos-accent);
 	padding: 12px 16px;
 	border-radius: var(--sos-radius-md);
 	font-size: 0.8rem;
@@ -466,7 +453,7 @@ body {
 	left: 0;
 	right: 0;
 	bottom: 0;
-	background-color: rgba(255, 255, 255, 0.2);
+	background-color: color-mix(in srgb, var(--sos-text) 20%, transparent);
 	border-radius: 24px;
 	transition: 0.2s;
 }
@@ -519,7 +506,7 @@ input:checked + .slider:before {
 
 .btn-primary {
 	background: var(--sos-accent);
-	color: #ffffff;
+	color: var(--sos-bg);
 	box-shadow: 0 2px 10px var(--sos-accent-glow);
 }
 
@@ -534,8 +521,8 @@ input:checked + .slider:before {
 }
 
 .btn-secondary:hover {
-	background: rgba(255, 255, 255, 0.08);
-	border-color: rgba(255, 255, 255, 0.2);
+	background: color-mix(in srgb, var(--sos-text) 8%, transparent);
+	border-color: color-mix(in srgb, var(--sos-text) 20%, transparent);
 }
 
 .btn-sm {
@@ -569,7 +556,7 @@ input:checked + .slider:before {
 
 .template-card {
 	border-left: 4px solid var(--sos-accent);
-	background: linear-gradient(90deg, rgba(212, 0, 0, 0.05) 0%, var(--sos-surface) 100%);
+	background: linear-gradient(90deg, color-mix(in srgb, var(--sos-accent) 6%, transparent) 0%, var(--sos-surface) 100%);
 }
 
 .step-list {
@@ -604,13 +591,13 @@ input:checked + .slider:before {
 }
 
 .code-snippet {
-	background: #0d1117;
+	background: var(--sos-bg);
 	border: 1px solid var(--sos-border);
 	border-radius: var(--sos-radius-md);
 	padding: 14px;
 	font-family: var(--sos-font-mono);
 	font-size: 0.78rem;
-	color: #58a6ff;
+	color: var(--sos-accent);
 	overflow-x: auto;
 	white-space: pre-wrap;
 	word-break: break-all;
@@ -652,15 +639,15 @@ input:checked + .slider:before {
 }
 
 .pill-badge.green {
-	background: rgba(16, 185, 129, 0.15);
-	color: #10b981;
-	border: 1px solid rgba(16, 185, 129, 0.3);
+	background: color-mix(in srgb, var(--sos-ok) 15%, transparent);
+	color: var(--sos-ok);
+	border: 1px solid color-mix(in srgb, var(--sos-ok) 30%, transparent);
 }
 
 .pill-badge.yellow {
-	background: rgba(245, 158, 11, 0.15);
-	color: #f59e0b;
-	border: 1px solid rgba(245, 158, 11, 0.3);
+	background: color-mix(in srgb, var(--sos-warn) 15%, transparent);
+	color: var(--sos-warn);
+	border: 1px solid color-mix(in srgb, var(--sos-warn) 30%, transparent);
 }
 
 /* ==========================================================================
@@ -679,9 +666,9 @@ input:checked + .slider:before {
 }
 
 .toast {
-	background: #1e293b;
-	border: 1px solid rgba(255, 255, 255, 0.12);
-	color: #f8fafc;
+	background: var(--sos-text);
+	border: 1px solid color-mix(in srgb, var(--sos-text) 12%, transparent);
+	color: var(--sos-bg);
 	padding: 12px 18px;
 	border-radius: var(--sos-radius-md);
 	font-size: 0.82rem;

@@ -98,7 +98,20 @@
 			cli_ref_status: 'Check agent installation, process state, and current settings',
 			cli_ref_set: 'Apply configuration from JSON payload via stdin',
 			cli_ref_restart: 'Restart the Zabbix agent daemon',
-			cli_ref_logs: 'View recent agent log entries'
+			cli_ref_logs: 'View recent agent log entries',
+			btn_restart: 'Restart Agent',
+			restart_success: 'Zabbix agent restarted successfully!',
+			restart_error: 'Failed to restart Zabbix agent: ',
+			psk_configured_placeholder: '•••••••• (Configured on box – enter new key to change)',
+			psk_copy_secure_hint: 'Existing PSK is stored securely on the box and cannot be read back.',
+			logs_title: 'Live Daemon Log (`shareos-zabbix logs`)',
+			btn_refresh_logs: 'Refresh Logs',
+			logs_empty: 'No log entries available.',
+			logs_loading: 'Loading logs...',
+			err_max_servers: 'Maximum 8 servers allowed in active mode.',
+			err_psk_format: 'PSK must be between 32 and 512 hexadecimal characters.',
+			err_psk_identity_req: 'PSK Identity is required when PSK encryption is used.',
+			err_psk_key_req: 'Pre-Shared Key is required when PSK Identity is set.'
 		},
 		pt: {
 			app_name: 'Zabbix Agent Config',
@@ -192,7 +205,20 @@
 			cli_ref_status: 'Verifica instalação, estado do processo e configurações ativas',
 			cli_ref_set: 'Aplica configurações a partir de JSON enviado via stdin',
 			cli_ref_restart: 'Reinicia o serviço do agente Zabbix',
-			cli_ref_logs: 'Exibe os registros recentes de log do agente'
+			cli_ref_logs: 'Exibe os registros recentes de log do agente',
+			btn_restart: 'Reiniciar Agente',
+			restart_success: 'Agente Zabbix reiniciado com sucesso!',
+			restart_error: 'Falha ao reiniciar o agente Zabbix: ',
+			psk_configured_placeholder: '•••••••• (Configurado na box – informe nova chave para alterar)',
+			psk_copy_secure_hint: 'A chave PSK existente é armazenada de forma segura na box e não pode ser lida.',
+			logs_title: 'Logs em Tempo Real do Daemon (`shareos-zabbix logs`)',
+			btn_refresh_logs: 'Atualizar Logs',
+			logs_empty: 'Nenhum registro de log disponível.',
+			logs_loading: 'Carregando logs...',
+			err_max_servers: 'Máximo de 8 servidores permitidos em modo ativo.',
+			err_psk_format: 'A chave PSK deve ter entre 32 e 512 caracteres hexadecimais.',
+			err_psk_identity_req: 'A Identidade PSK é obrigatória quando a criptografia PSK é utilizada.',
+			err_psk_key_req: 'A Chave Pré-Compartilhada é obrigatória quando a Identidade PSK é informada.'
 		},
 		de: {
 			app_name: 'Zabbix Agent Config',
@@ -286,7 +312,20 @@
 			cli_ref_status: 'Prüft Installation, Prozesszustand und aktive Einstellungen',
 			cli_ref_set: 'Wendet Einstellungen aus JSON-Eingabe via stdin an',
 			cli_ref_restart: 'Startet den Zabbix-Agentendienst neu',
-			cli_ref_logs: 'Zeigt aktuelle Protokolleinträge des Agenten'
+			cli_ref_logs: 'Zeigt aktuelle Protokolleinträge des Agenten',
+			btn_restart: 'Agent neu starten',
+			restart_success: 'Zabbix-Agent erfolgreich neu gestartet!',
+			restart_error: 'Fehler beim Neustart des Zabbix-Agenten: ',
+			psk_configured_placeholder: '•••••••• (Auf der Box eingerichtet – neuen Schlüssel eingeben zum Ändern)',
+			psk_copy_secure_hint: 'Der bestehende PSK ist sicher auf der Box gespeichert und kann nicht ausgelesen werden.',
+			logs_title: 'Live-Daemon-Protokoll (`shareos-zabbix logs`)',
+			btn_refresh_logs: 'Logs aktualisieren',
+			logs_empty: 'Keine Protokolleinträge vorhanden.',
+			logs_loading: 'Protokolle werden geladen...',
+			err_max_servers: 'Maximal 8 Server im aktiven Modus erlaubt.',
+			err_psk_format: 'PSK muss zwischen 32 und 512 Hex-Zeichen lang sein.',
+			err_psk_identity_req: 'PSK-Identität ist erforderlich, wenn PSK-Verschlüsselung verwendet wird.',
+			err_psk_key_req: 'Pre-Shared Key ist erforderlich, wenn die PSK-Identität gesetzt ist.'
 		}
 	};
 

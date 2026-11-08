@@ -19,8 +19,10 @@ The underlying service is provided by the classic C Zabbix agent (`zabbix_agentd
    - **Bundled ShareOS Template:** Download or copy the official `shareos_template.yaml` (Zabbix 7.0+) with low-level discovery rules for hard drives, SSDs, and RAID arrays.
    - **Host Setup Checklist:** Step-by-step guidance showing the exact host name, linked templates (`Linux by Zabbix agent active` and `ShareOS by Zabbix agent active`), and encryption parameters.
 
-3. **Honest CLI Command Sync:**
-   - Real-time command generator creating the exact `echo '...' | shareos-zabbix set` command to apply settings via System → Terminal or SSH (until native `ShareOS.zabbix` integration is released in firmware).
+3. **ShareOS App SDK (`ShareOS.zabbix`) & CLI Fallback:**
+   - Native integration with the box daemon via `ShareOS.zabbix` (`status()`, `set()`, `restart()`, `log()`) for administrator accounts.
+   - Secure TLS-PSK handling: the pre-shared key is sent securely to the box and cannot be read back (`status().psk` reports boolean configuration state).
+   - Real-time command generator creating the exact `echo '...' | shareos-zabbix set` command to inspect or apply settings via System → Terminal or SSH when needed.
 
 ---
 
@@ -28,4 +30,4 @@ The underlying service is provided by the classic C Zabbix agent (`zabbix_agentd
 
 - **Firmware:** ShareOS 0.2.0-beta.20 or newer.
 - **System App:** `zabbix-agent` (installed via Store → System Apps).
-- **Permissions:** `files` (administered by box admins).
+- **Permissions:** `files`, `zabbix` (administered by box admins).
