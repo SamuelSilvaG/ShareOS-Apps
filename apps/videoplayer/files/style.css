@@ -411,6 +411,47 @@ video::cue {
   transform: translate(-50%, -50%) scale(1.1);
 }
 
+/* Unmute Floating Banner */
+.unmute-banner {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--sos-accent);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 24px;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  z-index: 30;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  transition: all 0.2s ease;
+  user-select: none;
+  animation: unmute-pulse 2s infinite ease-in-out;
+}
+
+.unmute-banner:hover {
+  background: var(--sos-accent);
+  color: var(--sos-accent-text, #fff);
+  transform: translateX(-50%) scale(1.04);
+}
+
+@keyframes unmute-pulse {
+  0%, 100% {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  }
+  50% {
+    box-shadow: 0 0 20px color-mix(in srgb, var(--sos-accent) 60%, transparent);
+  }
+}
+
 /* Video Controls Overlay */
 .controls-overlay {
   position: absolute;

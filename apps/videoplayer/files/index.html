@@ -77,7 +77,17 @@
       <!-- Viewport / Video Stage -->
       <section class="viewport" id="viewport">
         <div class="video-stage" id="video-stage">
-          <video id="main-video" class="aspect-fit" playsinline preload="metadata" crossorigin="anonymous"></video>
+          <video id="main-video" class="aspect-fit" playsinline webkit-playsinline autoplay preload="metadata" crossorigin="anonymous"></video>
+
+          <!-- Unmute Floating Banner (Fallback when autoplay policy starts video muted) -->
+          <button type="button" id="unmute-banner" class="unmute-banner" style="display:none;" data-i18n-title="toast.clickToUnmute">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              <line x1="23" y1="9" x2="17" y2="15"></line>
+              <line x1="17" y1="9" x2="23" y2="15"></line>
+            </svg>
+            <span data-i18n="toast.clickToUnmute">Click anywhere to unmute</span>
+          </button>
 
           <!-- Center Indicator (Play / Pause / Volume feedback) -->
           <div class="center-indicator" id="center-indicator">

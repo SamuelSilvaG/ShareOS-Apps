@@ -2,7 +2,11 @@
   'use strict';
 
   const t = window.VPI18n ? window.VPI18n.t : (k) => k;
-  const SOS = window.ShareOS || null;
+  const getSOS = () => window.ShareOS || null;
+  const SOS = {
+    get file() { return window.ShareOS && window.ShareOS.file; },
+    get fs() { return window.ShareOS && window.ShareOS.fs; }
+  };
 
   // DOM Elements
   const $ = (id) => document.getElementById(id);
@@ -15,6 +19,8 @@
   const searchInput = $('library-search');
   const folderNameLabel = $('folder-name-label');
   const videoCountLabel = $('video-count-label');
+  const unmuteBanner = $('unmute-banner');
+  let unmuteCleanup = null;
 
   // Controls Elements
   const btnPlayPause = $('btn-play-pause');
@@ -264,23 +270,135 @@
     // Local inputs fallback
     $('local-video-input').addEventListener('change', onLocalVideoSelected);
     $('local-sub-input').addEventListener('change', onLocalSubtitleSelected);
+
+    // Unmute banner click
+    if (unmuteBanner) {
+      unmuteBanner.addEventListener('click', (e) => {
+        e.stopPropagation();
+        video.muted = false;
+        if (externalAudio) externalAudio.muted = false;
+        updateVolumeUI();
+        hideUnmuteBanner();
+        flashCenter(Math.round(video.volume * 100) + '%');
+      });
+    }
+  }
+
+  // Floating Unmute Banner controls (used when autoplay starts muted due to browser policy)
+  function showUnmuteBanner() {
+    if (unmuteBanner) {
+      unmuteBanner.style.display = 'inline-flex';
+    }
+  }
+
+  function hideUnmuteBanner() {
+    if (unmuteBanner) {
+      unmuteBanner.style.display = 'none';
+    }
+    if (unmuteCleanup) {
+      unmuteCleanup();
+      unmuteCleanup = null;
+    }
+  }
+
+  // Reliable Playback with Autoplay Policy fallback
+  function startPlayback(allowMutedFallback = true) {
+    const src = video.currentSrc || video.src;
+    const playPromise = video.play();
+    if (!playPromise) return;
+
+    playPromise.then(() => {
+      if (!video.muted) {
+        hideUnmuteBanner();
+      }
+    }).catch((err) => {
+      // Only handle browser autoplay policy block (NotAllowedError), and only if the same video is still loaded
+      if (!allowMutedFallback || err.name !== 'NotAllowedError') return;
+      if ((video.currentSrc || video.src) !== src || video.muted) return;
+
+      const targetVolume = video.volume > 0 ? video.volume : 1;
+      video.muted = true;
+      updateVolumeUI();
+
+      video.play().then(() => {
+        showUnmuteBanner();
+        toast(t('toast.clickToUnmute'));
+
+        const restoreAudio = (e) => {
+          // If the user pressed 'm' / 'M', skip restoreAudio so toggleMute() handles unmute directly without double-toggling
+          if (e && e.type === 'keydown' && (e.key === 'm' || e.key === 'M')) {
+            return;
+          }
+          video.muted = false;
+          video.volume = targetVolume;
+          if (externalAudio) {
+            externalAudio.muted = false;
+            externalAudio.volume = targetVolume;
+          }
+          updateVolumeUI();
+          hideUnmuteBanner();
+          flashCenter(Math.round(video.volume * 100) + '%');
+        };
+
+        const cleanup = () => {
+          window.removeEventListener('click', restoreAudio, true);
+          window.removeEventListener('keydown', restoreAudio, true);
+          window.removeEventListener('pointerdown', restoreAudio, true);
+          window.removeEventListener('touchstart', restoreAudio, true);
+        };
+
+        unmuteCleanup = cleanup;
+
+        window.addEventListener('click', restoreAudio, { once: true, capture: true });
+        window.addEventListener('keydown', restoreAudio, { capture: true });
+        window.addEventListener('pointerdown', restoreAudio, { once: true, capture: true });
+        window.addEventListener('touchstart', restoreAudio, { once: true, capture: true });
+      }).catch((e2) => {
+        console.warn('Muted autoplay fallback failed:', e2);
+      });
+    });
   }
 
   // Check if opened from ShareOS file manager (?file=ticket)
   async function checkOpenedFile() {
-    if (SOS && SOS.file) {
+    const q = new URLSearchParams(location.search);
+    const ticket = q.get('file');
+    if (!ticket) return;
+
+    const sos = getSOS();
+    let name = 'Video';
+    let url = '/_shareos/cgi/file?t=' + encodeURIComponent(ticket);
+    let size = 0;
+
+    if (sos && sos.file) {
       try {
-        const ticket = new URLSearchParams(location.search).get('file');
-        await SOS.file.info();
-        const name = SOS.file.name;
-        const url = SOS.file.url || '/_shareos/cgi/file?t=' + encodeURIComponent(ticket);
-        playlist = [{ name, root: '', path: '', url, size: 0 }];
-        renderPlaylist();
-        playVideoAtIndex(0);
+        await sos.file.info();
+        if (sos.file.name) name = sos.file.name;
+        if (sos.file.url) url = sos.file.url;
+        if (sos.file.size) size = sos.file.size;
       } catch (err) {
-        toast(t('toast.error') + err.message, true);
+        console.warn('ShareOS.file.info() error:', err);
+      }
+    } else {
+      const parts = ticket.split('/');
+      const last = parts[parts.length - 1];
+      if (last && last.length < 150) {
+        try {
+          name = decodeURIComponent(last);
+        } catch (_) {
+          name = last;
+        }
       }
     }
+
+    document.title = name + ' – VideoPlayer';
+    currentFolder = { root: '', path: '' };
+    updateFolderLabels();
+    playlist = [{ name, root: '', path: '', url, size }];
+    renderPlaylist();
+    sidebar.classList.add('collapsed');
+    updateSidebarToggleIcon();
+    playVideoAtIndex(0);
   }
 
   // Open Video File Picker
@@ -427,8 +545,8 @@
     // Highlight in playlist
     renderPlaylist();
 
-    // Auto-collapse sidebar on mobile so video is visible
-    if (window.innerWidth <= 768) {
+    // Auto-collapse sidebar if only one video in playlist or on mobile/tablet so the cinema video takes full stage
+    if (playlist.length <= 1 || window.innerWidth <= 768) {
       sidebar.classList.add('collapsed');
       updateSidebarToggleIcon();
     }
@@ -445,6 +563,8 @@
       URL.revokeObjectURL(currentVideoBlobUrl);
       currentVideoBlobUrl = null;
     }
+
+    hideUnmuteBanner();
 
     // Teardown previous decoder buffers
     video.pause();
@@ -472,7 +592,7 @@
 
     video.src = streamUrl;
     video.load();
-    video.play().catch(() => {});
+    startPlayback(true);
 
     // Look for matching subtitle files in the same directory (using cached entries if available)
     if (item.root) {
@@ -870,7 +990,7 @@
   function togglePlay() {
     if (!video.src) return;
     if (video.paused) {
-      video.play().catch(() => {});
+      startPlayback(false);
     } else {
       video.pause();
     }
@@ -878,6 +998,9 @@
 
   function onPlay() {
     if (externalAudio) externalAudio.play().catch(() => {});
+    if (!video.muted) {
+      hideUnmuteBanner();
+    }
     iconPlay.style.display = 'none';
     iconPause.style.display = 'inline';
     btnPlayPause.setAttribute('title', t('btn.pause'));
@@ -905,6 +1028,8 @@
       document.exitPictureInPicture().catch(() => {});
     }
 
+    hideUnmuteBanner();
+
     video.pause();
     video.removeAttribute('src');
     video.load();
@@ -928,8 +1053,10 @@
     overlay.classList.remove('autohide');
 
     emptyScreen.style.display = 'flex';
-    sidebar.classList.remove('collapsed');
-    updateSidebarToggleIcon();
+    if (playlist.length > 1 && window.innerWidth > 768) {
+      sidebar.classList.remove('collapsed');
+      updateSidebarToggleIcon();
+    }
     renderPlaylist();
   }
 
@@ -960,6 +1087,9 @@
   function toggleMute() {
     video.muted = !video.muted;
     if (externalAudio) externalAudio.muted = video.muted;
+    if (!video.muted) {
+      hideUnmuteBanner();
+    }
     updateVolumeUI();
     flashCenter(video.muted ? 'muted' : Math.round(video.volume * 100) + '%');
   }
@@ -967,6 +1097,7 @@
   function onVolumeChange(e) {
     video.volume = parseFloat(e.target.value);
     video.muted = false;
+    hideUnmuteBanner();
     if (externalAudio) {
       externalAudio.volume = video.volume;
       externalAudio.muted = false;
