@@ -51,6 +51,9 @@
 		fieldPskKey: document.getElementById('fieldPskKey'),
 		btnGenPsk: document.getElementById('btnGenPsk'),
 		btnCopyPsk: document.getElementById('btnCopyPsk'),
+		btnRemovePsk: document.getElementById('btnRemovePsk'),
+		wrapRemovePsk: document.getElementById('wrapRemovePsk'),
+		fieldRemovePsk: document.getElementById('fieldRemovePsk'),
 		fieldPassive: document.getElementById('fieldPassive'),
 		fieldAllow: document.getElementById('fieldAllow'),
 		fieldPort: document.getElementById('fieldPort'),
@@ -117,22 +120,30 @@
 
 	// Update CLI preview snippet
 	function updateCliPreview() {
+		const removePsk = els.fieldRemovePsk && els.fieldRemovePsk.checked;
 		const payload = {
 			enabled: els.fieldEnabled.checked,
 			server: els.fieldServer.value.trim(),
 			hostname: els.fieldHostname.value.trim(),
 			metadata: els.fieldMetadata.value.trim() || 'ShareOS',
-			psk_identity: els.fieldPskIdentity.value.trim(),
-			psk: els.fieldPskKey.value.trim(),
+			psk_identity: removePsk ? '' : els.fieldPskIdentity.value.trim(),
+			psk: removePsk ? '' : els.fieldPskKey.value.trim(),
 			passive: els.fieldPassive.checked,
 			allow: els.fieldAllow.value.trim(),
 			port: parseInt(els.fieldPort.value, 10) || 10050,
 			disk_interval: parseInt(els.fieldDiskInterval.value, 10) || 30
 		};
 
+		// If PSK is not being removed, and no new key was entered, but PSK was already configured on the box,
+		// omit psk in CLI snippet so existing key is preserved
+		if (!removePsk && !payload.psk && state.psk_set) {
+			delete payload.psk;
+		}
+
 		const jsonStr = JSON.stringify(payload);
 		if (els.cliPreview) {
-			els.cliPreview.textContent = `echo '${jsonStr}' | shareos-zabbix set`;
+			const q = (s) => "'" + s.replace(/'/g, "'\\''") + "'";
+			els.cliPreview.textContent = `echo ${q(jsonStr)} | shareos-zabbix set`;
 		}
 		return payload;
 	}
@@ -212,9 +223,21 @@
 			if (state.psk_set) {
 				els.fieldPskKey.value = '';
 				els.fieldPskKey.placeholder = I18n.t('psk_configured_placeholder', '•••••••• (Configured on box – enter new key to change)');
+				if (els.wrapRemovePsk) els.wrapRemovePsk.style.display = 'block';
+				if (els.btnRemovePsk) els.btnRemovePsk.style.display = 'inline-flex';
 			} else {
 				els.fieldPskKey.value = state.psk || '';
 				els.fieldPskKey.placeholder = '64 hex characters (256-bit key)';
+				if (els.wrapRemovePsk) els.wrapRemovePsk.style.display = 'none';
+				if (els.btnRemovePsk) els.btnRemovePsk.style.display = 'none';
+			}
+
+			if (els.fieldRemovePsk) {
+				els.fieldRemovePsk.checked = false;
+				els.fieldPskIdentity.disabled = false;
+				els.fieldPskKey.disabled = false;
+				els.btnGenPsk.disabled = false;
+				els.btnCopyPsk.disabled = false;
 			}
 
 			els.fieldPassive.checked = !!state.passive;
@@ -268,6 +291,7 @@
 	// Save and Apply Configuration
 	async function saveConfig() {
 		const payload = updateCliPreview();
+		const removePsk = els.fieldRemovePsk && els.fieldRemovePsk.checked;
 
 		// Basic Validation
 		if (payload.server && payload.server.split(',').length > 8) {
@@ -275,19 +299,21 @@
 			return;
 		}
 
-		if (payload.psk && (payload.psk.length < 32 || payload.psk.length > 512 || !/^[0-9a-fA-F]+$/.test(payload.psk))) {
-			showToast(I18n.t('err_psk_format', 'PSK must be between 32 and 512 hexadecimal characters.'), 'error');
-			return;
-		}
+		if (!removePsk) {
+			if (payload.psk && (payload.psk.length < 32 || payload.psk.length > 512 || !/^[0-9a-fA-F]+$/.test(payload.psk))) {
+				showToast(I18n.t('err_psk_format', 'PSK must be between 32 and 512 hexadecimal characters.'), 'error');
+				return;
+			}
 
-		if (payload.psk && !payload.psk_identity) {
-			showToast(I18n.t('err_psk_identity_req', 'PSK Identity is required when PSK encryption is used.'), 'error');
-			return;
-		}
+			if (payload.psk && !payload.psk_identity) {
+				showToast(I18n.t('err_psk_identity_req', 'PSK Identity is required when PSK encryption is used.'), 'error');
+				return;
+			}
 
-		if (payload.psk_identity && !payload.psk && !state.psk_set) {
-			showToast(I18n.t('err_psk_key_req', 'Pre-Shared Key is required when PSK Identity is set.'), 'error');
-			return;
+			if (payload.psk_identity && !payload.psk && !state.psk_set) {
+				showToast(I18n.t('err_psk_key_req', 'Pre-Shared Key is required when PSK Identity is set.'), 'error');
+				return;
+			}
 		}
 
 		const zbx = getZBX();
@@ -303,14 +329,14 @@
 
 		try {
 			const setPayload = { ...payload };
-			// If key input is left blank and key is already configured on the box, preserve existing key
-			if (!setPayload.psk && state.psk_set) {
+			if (removePsk) {
+				setPayload.psk = '';
+				setPayload.psk_identity = '';
+			} else if (!setPayload.psk && state.psk_set) {
+				// If key input is left blank and key is already configured on the box, preserve existing key
 				delete setPayload.psk;
 			}
-			await zbx.set(setPayload);
-			if (zbx.restart) {
-				await zbx.restart();
-			}
+			const res = await zbx.set(setPayload); // resolves to the new status
 			await loadConfig();
 			showToast(I18n.t('save_success', 'Configuration saved and applied successfully!'), 'success');
 		} catch (err) {
@@ -418,8 +444,48 @@
 			}
 		});
 
+		function toggleRemovePsk(remove) {
+			if (els.fieldRemovePsk) els.fieldRemovePsk.checked = remove;
+			if (remove) {
+				els.fieldPskIdentity.disabled = true;
+				els.fieldPskKey.disabled = true;
+				els.btnGenPsk.disabled = true;
+				els.btnCopyPsk.disabled = true;
+				els.fieldPskKey.placeholder = I18n.t('psk_removed_placeholder', 'PSK will be removed on Save & Apply');
+			} else {
+				els.fieldPskIdentity.disabled = false;
+				els.fieldPskKey.disabled = false;
+				els.btnGenPsk.disabled = false;
+				els.btnCopyPsk.disabled = false;
+				els.fieldPskIdentity.value = state.psk_identity || '';
+				els.fieldPskKey.placeholder = state.psk_set
+					? I18n.t('psk_configured_placeholder', '•••••••• (Configured on box – enter new key to change)')
+					: '64 hex characters (256-bit key)';
+			}
+			updateCliPreview();
+		}
+
+		if (els.fieldRemovePsk) {
+			els.fieldRemovePsk.addEventListener('change', () => {
+				toggleRemovePsk(els.fieldRemovePsk.checked);
+			});
+		}
+
+		if (els.btnRemovePsk) {
+			els.btnRemovePsk.addEventListener('click', () => {
+				const newVal = !(els.fieldRemovePsk && els.fieldRemovePsk.checked);
+				toggleRemovePsk(newVal);
+				if (newVal) {
+					showToast(I18n.t('psk_marked_for_removal', 'PSK marked for removal. Click Save & Apply to remove.'), 'warning');
+				}
+			});
+		}
+
 		// PSK generation
 		els.btnGenPsk.addEventListener('click', () => {
+			if (els.fieldRemovePsk && els.fieldRemovePsk.checked) {
+				toggleRemovePsk(false);
+			}
 			const newKey = generatePskHex();
 			els.fieldPskKey.value = newKey;
 			if (!els.fieldPskIdentity.value) {

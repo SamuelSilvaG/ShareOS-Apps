@@ -51,7 +51,7 @@ browser's storage without it.
 | [Tailscale](apps/tailscale) | WireGuard-based mesh VPN client by @SamuelSilvaG: secure zero-config remote access to your box, files (SMB) and web apps from anywhere – connects the box through the ShareOS system app `tailscaled` (admins, ShareOS 0.2.0-beta.8+) |
 | [autobrr-ui](apps/autobrr-ui) | Download automation for IRC announces and RSS feeds by @SamuelSilvaG: filters releases in real time and sends torrents to Transmission (admins, ShareOS 0.2.0-beta.9+) |
 | [Syncthing](apps/syncthing-ui) | Keeps folders in sync between the box, PCs and phones without a cloud: every user has their own Syncthing (system app `syncthing`, ShareOS 0.2.0-beta.20+), only their own folders |
-| [Zabbix Agent Config](apps/zabbix-config) | Configuration dashboard for the Zabbix agent on the box by @SamuelSilvaG: active servers, TLS-PSK encryption, template and metrics (ShareOS 0.2.0-beta.15+) |
+| [Zabbix Agent Config](apps/zabbix-config) | Settings of the Zabbix agent on the box by @SamuelSilvaG: server, hostname, TLS-PSK, passive checks, disk interval, log and the Zabbix 7.0 template (admins, permission `zabbix`, ShareOS 0.2.0-beta.20+) |
 | [SpeedCheck](apps/speedcheck) | Latency, jitter and transfer rate between your device and the box (at home, over VPN), with a log |
 | [HomePing](apps/homeping) | Reachability of your homelab, checked from the box: ping, port or web address, automatically, with a history per host (admins, permission `netcheck`) |
 | [SysMon](apps/sysmon) | System monitor and task manager of the box: CPU, memory, temperature, fan, drives and every process live; end processes (admins, permission `sysinfo`) |

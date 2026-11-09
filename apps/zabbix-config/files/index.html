@@ -169,9 +169,16 @@
 							<input type="text" id="fieldPskKey" class="form-input mono" placeholder="64 hex characters (256-bit key)">
 							<button type="button" class="btn btn-secondary btn-sm" id="btnGenPsk" data-i18n="btn_generate_psk">Generate</button>
 							<button type="button" class="btn btn-secondary btn-sm" id="btnCopyPsk" data-i18n="btn_copy_psk">Copy</button>
+							<button type="button" class="btn btn-secondary btn-sm" id="btnRemovePsk" data-i18n="btn_remove_psk" style="display: none;">Remove PSK</button>
 						</div>
 						<span class="form-hint" data-i18n="hint_psk_key">Hexadecimal key (32 to 512 hex digits; 64 hex characters = 256 bits).</span>
 					</div>
+				</div>
+				<div class="psk-remove-wrap" id="wrapRemovePsk" style="margin-top: 14px; display: none;">
+					<label class="checkbox-inline" for="fieldRemovePsk" style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.82rem;">
+						<input type="checkbox" id="fieldRemovePsk">
+						<span data-i18n="lbl_remove_psk">Remove configured PSK (disable TLS-PSK encryption)</span>
+					</label>
 				</div>
 			</div>
 
