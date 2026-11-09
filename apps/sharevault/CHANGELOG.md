@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.2] - 2026-11-08
+### Hinzugefügt
+- Portugiesische Übersetzung (`i18n/pt.json`) und Lokalisierung der App-Manifestdaten auf Portugiesisch.
+- Verbesserte englische Übersetzungen für Formularfelder und Platzhalter.
+
 ## [1.1.1] - 2026-10-26
 ### Geändert
 - Folgt den Farben von ShareOS: hell/dunkel und Akzentfarbe (bisher immer das eigene dunkle Farbschema); das Layout bleibt.
