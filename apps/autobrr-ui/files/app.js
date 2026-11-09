@@ -619,7 +619,12 @@
     if ($('indexer-name')) $('indexer-name').value = (indexer && indexer.name) || '';
     if ($('indexer-identifier')) $('indexer-identifier').value = (indexer && indexer.identifier) || '';
     if ($('indexer-url')) $('indexer-url').value = (indexer && (indexer.base_url || (indexer.settings && indexer.settings.base_url))) || '';
-    if ($('indexer-apikey')) $('indexer-apikey').value = '';
+    if ($('indexer-apikey')) {
+      $('indexer-apikey').value = '';
+      $('indexer-apikey').placeholder = editingIndexerId
+        ? t('indexers.apikey_edit_placeholder')
+        : t('indexers.apikey_placeholder');
+    }
     if ($('indexer-enabled')) $('indexer-enabled').checked = indexer ? (indexer.enabled !== false) : true;
 
     modal.style.display = 'flex';
@@ -631,6 +636,9 @@
   function closeIndexerModal() {
     const modal = $('indexer-modal');
     if (modal) modal.style.display = 'none';
+    if ($('indexer-apikey')) {
+      $('indexer-apikey').placeholder = t('indexers.apikey_placeholder');
+    }
     editingIndexerId = null;
   }
 
@@ -662,14 +670,18 @@
       if ($('indexer-modal-title')) {
         $('indexer-modal-title').textContent = t('indexers.edit_title');
       }
+      if ($('indexer-apikey')) {
+        $('indexer-apikey').placeholder = t('indexers.apikey_edit_placeholder');
+      }
     }
 
-    const payload = {
+    const base = editingIndexerId ? (indexers.find((i) => i.id === editingIndexerId) || {}) : {};
+    const payload = Object.assign({}, base, {
       name,
       identifier,
       enabled,
-      settings: {}
-    };
+      settings: Object.assign({}, base.settings || {})
+    });
 
     if (url) {
       payload.base_url = url;
@@ -685,7 +697,7 @@
       if (editingIndexerId) {
         payload.id = editingIndexerId;
         await AB.api('PUT', `/api/indexer/${editingIndexerId}`, payload);
-        toast(t('btn.save'));
+        toast(t('toast.indexer_updated'));
       } else {
         await AB.api('POST', '/api/indexer', payload);
         toast(t('toast.indexer_created'));
