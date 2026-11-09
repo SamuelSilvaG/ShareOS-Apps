@@ -303,56 +303,60 @@
 
   // Reliable Playback with Autoplay Policy fallback
   function startPlayback(allowMutedFallback = true) {
+    const src = video.currentSrc || video.src;
     const playPromise = video.play();
-    if (playPromise !== undefined) {
-      playPromise.then(() => {
-        if (!video.muted) {
-          hideUnmuteBanner();
-        }
-      }).catch((err) => {
-        console.warn('Playback request error:', err);
-        if (allowMutedFallback && (err.name === 'NotAllowedError' || err.name === 'AbortError')) {
-          // Browser Autoplay Policy blocked playback with audio:
-          // Immediately play muted so the video starts streaming without delay!
-          const targetVolume = video.volume > 0 ? video.volume : 1;
-          video.muted = true;
+    if (!playPromise) return;
+
+    playPromise.then(() => {
+      if (!video.muted) {
+        hideUnmuteBanner();
+      }
+    }).catch((err) => {
+      // Only handle browser autoplay policy block (NotAllowedError), and only if the same video is still loaded
+      if (!allowMutedFallback || err.name !== 'NotAllowedError') return;
+      if ((video.currentSrc || video.src) !== src || video.muted) return;
+
+      const targetVolume = video.volume > 0 ? video.volume : 1;
+      video.muted = true;
+      updateVolumeUI();
+
+      video.play().then(() => {
+        showUnmuteBanner();
+        toast(t('toast.clickToUnmute'));
+
+        const restoreAudio = (e) => {
+          // If the user pressed 'm' / 'M', skip restoreAudio so toggleMute() handles unmute directly without double-toggling
+          if (e && e.type === 'keydown' && (e.key === 'm' || e.key === 'M')) {
+            return;
+          }
+          video.muted = false;
+          video.volume = targetVolume;
+          if (externalAudio) {
+            externalAudio.muted = false;
+            externalAudio.volume = targetVolume;
+          }
           updateVolumeUI();
+          hideUnmuteBanner();
+          flashCenter(Math.round(video.volume * 100) + '%');
+        };
 
-          video.play().then(() => {
-            showUnmuteBanner();
-            toast(t('toast.clickToUnmute'));
+        const cleanup = () => {
+          window.removeEventListener('click', restoreAudio, true);
+          window.removeEventListener('keydown', restoreAudio, true);
+          window.removeEventListener('pointerdown', restoreAudio, true);
+          window.removeEventListener('touchstart', restoreAudio, true);
+        };
 
-            const restoreAudio = () => {
-              video.muted = false;
-              video.volume = targetVolume;
-              if (externalAudio) {
-                externalAudio.muted = false;
-                externalAudio.volume = targetVolume;
-              }
-              updateVolumeUI();
-              hideUnmuteBanner();
-              flashCenter(Math.round(video.volume * 100) + '%');
-            };
+        unmuteCleanup = cleanup;
 
-            const cleanup = () => {
-              window.removeEventListener('click', restoreAudio, true);
-              window.removeEventListener('keydown', restoreAudio, true);
-              window.removeEventListener('pointerdown', restoreAudio, true);
-              window.removeEventListener('touchstart', restoreAudio, true);
-            };
-
-            unmuteCleanup = cleanup;
-
-            window.addEventListener('click', restoreAudio, { once: true, capture: true });
-            window.addEventListener('keydown', restoreAudio, { once: true, capture: true });
-            window.addEventListener('pointerdown', restoreAudio, { once: true, capture: true });
-            window.addEventListener('touchstart', restoreAudio, { once: true, capture: true });
-          }).catch((e2) => {
-            console.warn('Muted autoplay fallback failed:', e2);
-          });
-        }
+        window.addEventListener('click', restoreAudio, { once: true, capture: true });
+        window.addEventListener('keydown', restoreAudio, { capture: true });
+        window.addEventListener('pointerdown', restoreAudio, { once: true, capture: true });
+        window.addEventListener('touchstart', restoreAudio, { once: true, capture: true });
+      }).catch((e2) => {
+        console.warn('Muted autoplay fallback failed:', e2);
       });
-    }
+    });
   }
 
   // Check if opened from ShareOS file manager (?file=ticket)
@@ -588,14 +592,6 @@
 
     video.src = streamUrl;
     video.load();
-
-    const onCanPlayOnce = () => {
-      video.removeEventListener('canplay', onCanPlayOnce);
-      if (video.paused && !video.ended) {
-        startPlayback(true);
-      }
-    };
-    video.addEventListener('canplay', onCanPlayOnce);
     startPlayback(true);
 
     // Look for matching subtitle files in the same directory (using cached entries if available)
