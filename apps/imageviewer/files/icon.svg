@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="iv-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e1b4b"/>
+    </linearGradient>
+    <linearGradient id="iv-accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#818cf8"/>
+    </linearGradient>
+    <linearGradient id="iv-sun" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#ef4444"/>
+    </linearGradient>
+    <linearGradient id="iv-mountain" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </linearGradient>
+  </defs>
+  <!-- Background Card -->
+  <rect x="4" y="4" width="56" height="56" rx="14" fill="url(#iv-bg)" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"/>
+  <!-- Photo Frame -->
+  <rect x="11" y="12" width="42" height="40" rx="7" fill="#1e293b" stroke="url(#iv-accent)" stroke-width="1.5"/>
+  <!-- Inner Picture Viewport -->
+  <clipPath id="iv-clip">
+    <rect x="14" y="15" width="36" height="34" rx="4"/>
+  </clipPath>
+  <g clip-path="url(#iv-clip)">
+    <!-- Sky background -->
+    <rect x="14" y="15" width="36" height="34" fill="#0f172a"/>
+    <!-- Glowing Sun -->
+    <circle cx="39" cy="24" r="5" fill="url(#iv-sun)"/>
+    <!-- Big Mountain in background -->
+    <polygon points="12,49 27,27 42,49" fill="url(#iv-mountain)" opacity="0.65"/>
+    <!-- Foreground Mountain -->
+    <polygon points="23,49 35,32 50,49" fill="url(#iv-accent)"/>
+  </g>
+  <!-- Frame Corner Highlights -->
+  <circle cx="16" cy="17" r="1" fill="#fff" opacity="0.5"/>
+</svg>
+

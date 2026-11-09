@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ImageViewer</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/_shareos/theme.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="/_shareos/app.js"></script>
+</head>
+<body>
+  <div class="app-wrapper">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand">
+        <button type="button" id="btn-hdr-sidebar" class="sos-btn sos-btn-icon" data-i18n-title="library.title" title="Image Gallery">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <img src="icon.svg" class="brand-icon" alt="ImageViewer Icon">
+        <span class="brand-title" data-i18n="app.title">ImageViewer</span>
+      </div>
+      <div class="header-actions">
+        <button type="button" id="btn-hdr-open" class="sos-btn sos-btn-accent" data-i18n="btn.openFile">Open Image</button>
+        <button type="button" id="btn-hdr-folder" class="sos-btn" data-i18n="btn.openFolder">Open Folder</button>
+        <button type="button" id="btn-hdr-help" class="sos-btn sos-btn-icon" data-i18n-title="btn.shortcuts" title="Shortcuts">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="app-main">
+      <!-- Media Library Sidebar -->
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <div class="sidebar-title-row">
+            <span class="sidebar-title" data-i18n="library.title">Image Gallery</span>
+            <button type="button" id="btn-scan-folder" class="sos-btn sos-btn-icon" data-i18n-title="library.scan" title="Scan Folder">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+              </svg>
+            </button>
+          </div>
+          <input type="text" id="library-search" class="sos-input sidebar-search" data-i18n-placeholder="library.search" placeholder="Search images...">
+          <div class="sidebar-meta">
+            <span id="folder-name-label">Folder: –</span>
+            <span id="image-count-label">0 images</span>
+          </div>
+        </div>
+        <div class="playlist-container" id="playlist-container">
+          <div class="playlist-empty" id="playlist-empty" data-i18n="library.selectPrompt">
+            Choose a folder or open an image to populate the gallery.
+          </div>
+        </div>
+      </aside>
+
+      <!-- Mobile Backdrop for Sidebar -->
+      <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+      <!-- Sidebar Toggle Pill -->
+      <button type="button" id="btn-toggle-sidebar" class="sos-btn sos-btn-icon sidebar-toggle-pill" title="Toggle Gallery">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="icon-toggle-sidebar">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
+      <!-- Viewport / Image Stage -->
+      <section class="viewport" id="viewport">
+        <div class="image-stage" id="image-stage">
+          <!-- Canvas / Transform Container -->
+          <div class="transform-container" id="transform-container">
+            <img id="main-image" class="main-image" alt="Viewer Stage" draggable="false" style="display:none;">
+          </div>
+
+          <!-- Quick Navigation Side Arrows -->
+          <button type="button" id="btn-stage-prev" class="stage-arrow stage-arrow-left" data-i18n-title="btn.prev" title="Previous Image">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+          <button type="button" id="btn-stage-next" class="stage-arrow stage-arrow-right" data-i18n-title="btn.next" title="Next Image">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+
+          <!-- Top Meta Badge -->
+          <div class="image-meta-badge" id="image-meta-badge">
+            <span id="badge-filename">filename.jpg</span>
+            <span class="badge-separator">•</span>
+            <span id="badge-dims">0 × 0</span>
+            <span class="badge-separator">•</span>
+            <span id="badge-size">0 KB</span>
+          </div>
+
+          <!-- Center Indicator (Zoom / Rotate feedback) -->
+          <div class="center-indicator" id="center-indicator">
+            <span id="center-text">100%</span>
+          </div>
+
+          <!-- Empty Screen -->
+          <div class="empty-screen" id="empty-screen">
+            <img src="icon.svg" class="empty-icon" alt="Gallery Icon">
+            <div class="empty-title" data-i18n="empty.title">HTML5 Photo & Image Viewer</div>
+            <div class="empty-desc" data-i18n="empty.desc">
+              Direct streaming from your ShareOS box with interactive zoom & pan, 90° rotation, horizontal/vertical flip, automated slideshow, and instant folder navigation.
+            </div>
+            <div class="empty-actions">
+              <button type="button" id="btn-empty-browse" class="sos-btn sos-btn-accent" data-i18n="empty.btnBrowse">Open Image from Box</button>
+              <button type="button" id="btn-empty-folder" class="sos-btn" data-i18n="empty.btnFolder">Open Photo Folder</button>
+            </div>
+            <div class="empty-drop-hint" data-i18n="empty.drop">or drop image files here</div>
+          </div>
+
+          <!-- Floating Overlay Controls -->
+          <div class="controls-overlay" id="controls-overlay">
+            <div class="controls-row">
+              <div class="controls-left">
+                <button type="button" id="btn-prev" class="ctrl-btn" data-i18n-title="btn.prev" title="Previous Image">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                  </svg>
+                </button>
+                <button type="button" id="btn-next" class="ctrl-btn" data-i18n-title="btn.next" title="Next Image">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </button>
+                <button type="button" id="btn-slideshow" class="ctrl-btn" data-i18n-title="btn.slideshow" title="Slideshow">
+                  <svg id="icon-slide-play" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                  </svg>
+                  <svg id="icon-slide-pause" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="display:none;">
+                    <rect x="6" y="4" width="4" height="16"></rect>
+                    <rect x="14" y="4" width="4" height="16"></rect>
+                  </svg>
+                </button>
+                <button type="button" id="btn-stop" class="ctrl-btn" data-i18n-title="btn.stop" title="Stop">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <rect x="5" y="5" width="14" height="14" rx="1.5"></rect>
+                  </svg>
+                </button>
+                <div class="counter-display" id="counter-display">0 / 0</div>
+              </div>
+
+              <div class="controls-right">
+                <!-- Zoom group -->
+                <button type="button" id="btn-zoom-out" class="ctrl-btn" data-i18n-title="btn.zoomOut" title="Zoom Out">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    <line x1="8" y1="11" x2="14" y2="11"></line>
+                  </svg>
+                </button>
+                <button type="button" id="btn-zoom-level" class="ctrl-btn" data-i18n-title="btn.zoomFit" title="Fit to Screen">
+                  <span id="zoom-text">Fit</span>
+                </button>
+                <button type="button" id="btn-zoom-in" class="ctrl-btn" data-i18n-title="btn.zoomIn" title="Zoom In">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    <line x1="11" y1="8" x2="11" y2="14"></line>
+                    <line x1="8" y1="11" x2="14" y2="11"></line>
+                  </svg>
+                </button>
+                <button type="button" id="btn-zoom-orig" class="ctrl-btn" data-i18n-title="btn.zoomOrig" title="100% Size">
+                  <span style="font-size:12px; font-weight:700;">1:1</span>
+                </button>
+
+                <div class="ctrl-divider"></div>
+
+                <!-- Rotation & Flip -->
+                <button type="button" id="btn-rotate-left" class="ctrl-btn" data-i18n-title="btn.rotateLeft" title="Rotate CCW">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M2.5 2v6h6M2.66 15.57a10 10 0 1 0 .57-8.38L2.5 8"></path>
+                  </svg>
+                </button>
+                <button type="button" id="btn-rotate-right" class="ctrl-btn" data-i18n-title="btn.rotateRight" title="Rotate CW">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38L21.5 8"></path>
+                  </svg>
+                </button>
+                <button type="button" id="btn-flip-h" class="ctrl-btn" data-i18n-title="btn.flipH" title="Flip Horizontal">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="8 4 2 12 8 20"></polyline>
+                    <polyline points="16 4 22 12 16 20"></polyline>
+                    <line x1="12" y1="2" x2="12" y2="22" stroke-dasharray="2 2"></line>
+                  </svg>
+                </button>
+
+                <div class="ctrl-divider"></div>
+
+                <!-- Info Toggle -->
+                <button type="button" id="btn-info" class="ctrl-btn" data-i18n-title="btn.info" title="Image Details">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                  </svg>
+                </button>
+
+                <!-- Fullscreen -->
+                <button type="button" id="btn-fullscreen" class="ctrl-btn" data-i18n-title="btn.fullscreen" title="Fullscreen">
+                  <svg id="icon-fs-enter" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+                  </svg>
+                  <svg id="icon-fs-exit" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
+                    <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Hidden File Pickers (for local drag & drop or fallback) -->
+  <input type="file" id="local-image-input" accept="image/*,.jpg,.jpeg,.png,.webp,.gif,.svg,.bmp,.ico,.avif" multiple hidden>
+
+  <!-- Keyboard Shortcuts Modal -->
+  <div class="modal-backdrop" id="modal-help">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title" data-i18n="help.title">Keyboard & Mouse Shortcuts</h3>
+        <button type="button" id="btn-help-close" class="sos-btn sos-btn-icon">✕</button>
+      </div>
+      <div class="modal-body">
+        <table class="shortcuts-table">
+          <tbody>
+            <tr><td><span class="key-badge">←</span> / <span class="key-badge">→</span></td><td data-i18n="help.arrowsX">Previous / Next image</td></tr>
+            <tr><td><span class="key-badge">+</span> / <span class="key-badge">-</span></td><td data-i18n="help.zoom">Zoom in / Zoom out</td></tr>
+            <tr><td><span class="key-badge">Wheel</span></td><td data-i18n="help.wheel">Mouse wheel: Zoom in / Zoom out</td></tr>
+            <tr><td><span class="key-badge">Drag</span></td><td data-i18n="help.pan">Click & drag: Pan zoomed image</td></tr>
+            <tr><td><span class="key-badge">0</span></td><td data-i18n="help.fit">Fit image to viewport</td></tr>
+            <tr><td><span class="key-badge">1</span></td><td data-i18n="help.orig">Actual 1:1 pixel size (100%)</td></tr>
+            <tr><td><span class="key-badge">R</span></td><td data-i18n="help.rotR">Rotate 90° clockwise</td></tr>
+            <tr><td><span class="key-badge">L</span></td><td data-i18n="help.rotL">Rotate 90° counter-clockwise</td></tr>
+            <tr><td><span class="key-badge">H</span></td><td data-i18n="help.flipH">Flip horizontally (mirror)</td></tr>
+            <tr><td><span class="key-badge">V</span></td><td data-i18n="help.flipV">Flip vertically</td></tr>
+            <tr><td><span class="key-badge">Space</span></td><td data-i18n="help.space">Start / Pause slideshow</td></tr>
+            <tr><td><span class="key-badge">F</span></td><td data-i18n="help.f">Toggle Fullscreen</td></tr>
+            <tr><td><span class="key-badge">I</span></td><td data-i18n="help.i">Toggle image details badge</td></tr>
+            <tr><td><span class="key-badge">S</span> / <span class="key-badge">Esc</span></td><td data-i18n="help.s">Stop & return to gallery list</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="btn-help-ok" class="sos-btn sos-btn-accent" data-i18n="help.close">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast-box" id="toast-box"></div>
+
+  <!-- Scripts -->
+  <script src="i18n.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
+
