@@ -619,7 +619,12 @@
     if ($('indexer-name')) $('indexer-name').value = (indexer && indexer.name) || '';
     if ($('indexer-identifier')) $('indexer-identifier').value = (indexer && indexer.identifier) || '';
     if ($('indexer-url')) $('indexer-url').value = (indexer && (indexer.base_url || (indexer.settings && indexer.settings.base_url))) || '';
-    if ($('indexer-apikey')) $('indexer-apikey').value = '';
+    if ($('indexer-apikey')) {
+      $('indexer-apikey').value = '';
+      $('indexer-apikey').placeholder = editingIndexerId
+        ? t('indexers.apikey_edit_placeholder')
+        : t('indexers.apikey_placeholder');
+    }
     if ($('indexer-enabled')) $('indexer-enabled').checked = indexer ? (indexer.enabled !== false) : true;
 
     modal.style.display = 'flex';
@@ -631,6 +636,9 @@
   function closeIndexerModal() {
     const modal = $('indexer-modal');
     if (modal) modal.style.display = 'none';
+    if ($('indexer-apikey')) {
+      $('indexer-apikey').placeholder = t('indexers.apikey_placeholder');
+    }
     editingIndexerId = null;
   }
 
@@ -651,12 +659,29 @@
       return;
     }
 
-    const payload = {
+    // Prevent duplicate identifier on create and confirm before overwriting
+    const existing = indexers.find((idx) => String(idx.identifier || '').toLowerCase() === identifier.toLowerCase());
+    if (existing && existing.id !== editingIndexerId) {
+      const ok = confirm(t('indexers.confirm_update', { name: existing.name || identifier }));
+      if (!ok) {
+        return;
+      }
+      editingIndexerId = existing.id;
+      if ($('indexer-modal-title')) {
+        $('indexer-modal-title').textContent = t('indexers.edit_title');
+      }
+      if ($('indexer-apikey')) {
+        $('indexer-apikey').placeholder = t('indexers.apikey_edit_placeholder');
+      }
+    }
+
+    const base = editingIndexerId ? (indexers.find((i) => i.id === editingIndexerId) || {}) : {};
+    const payload = Object.assign({}, base, {
       name,
       identifier,
       enabled,
-      settings: {}
-    };
+      settings: Object.assign({}, base.settings || {})
+    });
 
     if (url) {
       payload.base_url = url;
@@ -672,7 +697,7 @@
       if (editingIndexerId) {
         payload.id = editingIndexerId;
         await AB.api('PUT', `/api/indexer/${editingIndexerId}`, payload);
-        toast(t('btn.save'));
+        toast(t('toast.indexer_updated'));
       } else {
         await AB.api('POST', '/api/indexer', payload);
         toast(t('toast.indexer_created'));
@@ -914,12 +939,21 @@
           </span>
         </td>
         <td style="white-space: nowrap;">
+          <button class="sos-btn sos-btn-sm btn-edit-indexer" data-id="${idx.id}" title="${t('btn.edit')}">✏️</button>
           <button class="sos-btn sos-btn-sm btn-test-indexer" data-id="${idx.id}" title="${t('indexers.test')}">⚡</button>
           <button class="sos-btn sos-btn-sm sos-btn-danger btn-del-indexer" data-id="${idx.id}" data-name="${escapeHtml(idx.name || '')}" title="${t('btn.delete')}">✕</button>
         </td>
       `;
       tbody.appendChild(tr);
     }
+
+    tbody.querySelectorAll('.btn-edit-indexer').forEach((btn) => {
+      btn.onclick = () => {
+        const id = parseInt(btn.dataset.id, 10);
+        const idx = indexers.find((item) => item.id === id);
+        if (idx) openIndexerModal(idx);
+      };
+    });
 
     tbody.querySelectorAll('.btn-test-indexer').forEach((btn) => {
       btn.onclick = () => {
@@ -1398,6 +1432,7 @@
 
     // Indexer panel & modal
     if ($('btn-new-indexer-panel')) $('btn-new-indexer-panel').onclick = () => openIndexerModal();
+    if ($('btn-indexer-open-webui')) $('btn-indexer-open-webui').onclick = openAdvancedWebUI;
     if ($('indexer-modal-close-btn')) $('indexer-modal-close-btn').onclick = closeIndexerModal;
     if ($('indexer-modal-cancel-btn')) $('indexer-modal-cancel-btn').onclick = closeIndexerModal;
     if ($('indexer-modal-save-btn')) $('indexer-modal-save-btn').onclick = saveIndexerFromModal;

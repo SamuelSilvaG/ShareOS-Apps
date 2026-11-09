@@ -422,6 +422,12 @@
             <option value="" data-i18n="indexers.custom_preset">Custom / Torznab / Other</option>
           </select>
         </div>
+        <div id="indexer-advanced-hint-box" style="padding: 8px 10px; background: rgba(var(--sos-rgb), 0.08); border: 1px solid var(--sos-line); border-radius: 6px; font-size: 12px; line-height: 1.4; color: var(--sos-muted); margin-bottom: 6px;">
+          <span data-i18n="indexers.advanced_hint">For trackers requiring IRC bot invites, download keys, or complex schemas, configure them directly in the full autobrr Web UI.</span>
+          <div style="margin-top: 6px;">
+            <button type="button" id="btn-indexer-open-webui" class="sos-btn sos-btn-sm" data-i18n="indexers.advanced_btn" style="font-size: 11px; padding: 3px 8px;">Open Advanced Setup (:7474)</button>
+          </div>
+        </div>
         <div class="form-group">
           <label for="indexer-name" data-i18n="indexers.name">Indexer Name</label>
           <input type="text" id="indexer-name" class="sos-input" placeholder="e.g. TorrentLeech">
@@ -436,7 +442,7 @@
         </div>
         <div class="form-group">
           <label for="indexer-apikey" data-i18n="indexers.apikey">API Key / Passkey</label>
-          <input type="password" id="indexer-apikey" class="sos-input" placeholder="API key or Passkey">
+          <input type="password" id="indexer-apikey" class="sos-input" placeholder="API key or Passkey" data-i18n-placeholder="indexers.apikey_placeholder">
         </div>
         <div class="form-group" style="flex-direction: row; align-items: center; gap: 16px; margin-top: 8px;">
           <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; margin: 0;">
