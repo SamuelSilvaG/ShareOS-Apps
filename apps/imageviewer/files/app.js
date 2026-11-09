@@ -66,6 +66,19 @@
   let currentFolder = { root: '', path: '' };
   let currentFolderEntries = null;
   let currentImageBlobUrl = null;
+  let loadSeq = 0;
+
+  function clearPlaylistBlobUrls() {
+    if (currentImageBlobUrl) {
+      URL.revokeObjectURL(currentImageBlobUrl);
+      currentImageBlobUrl = null;
+    }
+    for (const item of playlist) {
+      if (item && item.url && typeof item.url === 'string' && item.url.startsWith('blob:')) {
+        URL.revokeObjectURL(item.url);
+      }
+    }
+  }
 
   // Transform State
   let scale = 1;
@@ -194,8 +207,8 @@
     // Inter-app messaging (e.g. from ShareCommander)
     const sos = getSOS();
     if (sos && typeof sos.on === 'function') {
-      const onExternalImage = (d) => {
-        if (!d || (d.to && d.to !== 'imageviewer')) return;
+      const handleExternalImage = (d) => {
+        if (!d) return;
         const name = String(d.name || 'Image').slice(0, 200);
         let url = null;
         let size = 0;
@@ -205,15 +218,28 @@
         } else if (typeof d.url === 'string' && /^(https?:|blob:|\/)/.test(d.url)) {
           url = d.url;
         } else return;
+        clearPlaylistBlobUrls();
         playlist = [{ name, root: '', path: '', url, size }];
         renderPlaylist();
         sidebar.classList.add('collapsed');
         updateSidebarToggleIcon();
         showImageAtIndex(0);
       };
-      sos.on('open-image', onExternalImage);
-      sos.on('open-media', onExternalImage);
+
+      sos.on('open-image', (d) => {
+        if (!d || (d.to && d.to !== 'imageviewer')) return;
+        handleExternalImage(d);
+      });
+      sos.on('open-media', (d) => {
+        if (!d || d.to !== 'imageviewer') return;
+        handleExternalImage(d);
+      });
     }
+
+    // Clean up created blob URLs when navigating away
+    window.addEventListener('beforeunload', () => {
+      clearPlaylistBlobUrls();
+    });
   }
 
   // Check if opened from ShareOS file manager (?file=ticket&name=...)
@@ -251,6 +277,7 @@
     document.title = name + ' – ImageViewer';
     currentFolder = { root: '', path: '' };
     updateFolderLabels();
+    clearPlaylistBlobUrls();
     playlist = [{ name, root: '', path: '', url, size }];
     renderPlaylist();
 
@@ -272,6 +299,7 @@
           multiple: true
         });
         if (picked && picked.length) {
+          clearPlaylistBlobUrls();
           playlist = [];
           for (const p of picked) {
             playlist.push({
@@ -330,6 +358,7 @@
       const list = await sos.fs.list(root, path);
       currentFolder = { root, path };
       currentFolderEntries = list && list.entries ? list.entries : [];
+      clearPlaylistBlobUrls();
       playlist = [];
 
       if (list && list.entries) {
@@ -415,6 +444,7 @@
   // Display Image by Index
   async function showImageAtIndex(index) {
     if (index < 0 || index >= playlist.length) return;
+    const seq = ++loadSeq;
     currentIndex = index;
     const item = playlist[currentIndex];
 
@@ -436,18 +466,13 @@
       total: playlist.length
     });
 
-    // Clean up previous blob URL if any
-    if (currentImageBlobUrl) {
-      URL.revokeObjectURL(currentImageBlobUrl);
-      currentImageBlobUrl = null;
-    }
-
     // Get stream URL
     let streamUrl = item.url;
     const sos = getSOS();
     if (!streamUrl && sos && sos.fs) {
       try {
         const handle = await sos.fs.open(item.root, item.path || '', item.name);
+        if (seq !== loadSeq) return;
         streamUrl = handle.url;
         item.url = streamUrl;
         if (handle.size && !item.size) {
@@ -455,10 +480,13 @@
           renderPlaylist();
         }
       } catch (err) {
+        if (seq !== loadSeq) return;
         toast(t('toast.error') + err.message, true);
         return;
       }
     }
+
+    if (seq !== loadSeq) return;
 
     if (!streamUrl) {
       toast(t('toast.error') + 'URL not found', true);
@@ -467,26 +495,49 @@
 
     // /_shareos/cgi/file serves .svg, .bmp, .ico, .avif as application/octet-stream with X-Content-Type-Options: nosniff.
     // Convert to a typed Blob URL so the browser renders them reliably inside <img>.
+    // SECURITY NOTE: The blob URL for an SVG inherits the app's origin and does not have the
+    // Content-Security-Policy: sandbox header that /_shareos/cgi/file normally sets.
+    // This is safe when displayed strictly via <img> (where scripts are inert), but this blob URL
+    // must NEVER be opened as a top-level page (e.g. window.open, navigation, or download link)
+    // to prevent potential script execution from untrusted SVG files.
     let displayUrl = streamUrl;
     const extMatch = /(\.[a-z0-9]+)$/i.exec(item.name || '');
     const ext = extMatch ? extMatch[1].toLowerCase() : '';
     if (OCTET_STREAM_MIME_MAP[ext] && streamUrl.startsWith('/_shareos/cgi/file')) {
       try {
         const resp = await fetch(streamUrl, { cache: 'no-store' });
+        if (seq !== loadSeq) return;
         if (!resp.ok) throw new Error('HTTP ' + resp.status);
         const buf = await resp.arrayBuffer();
+        if (seq !== loadSeq) return;
         const blob = new Blob([buf], { type: OCTET_STREAM_MIME_MAP[ext] });
-        currentImageBlobUrl = URL.createObjectURL(blob);
+        const blobUrl = URL.createObjectURL(blob);
+        if (seq !== loadSeq) {
+          URL.revokeObjectURL(blobUrl);
+          return;
+        }
+        if (currentImageBlobUrl) {
+          URL.revokeObjectURL(currentImageBlobUrl);
+        }
+        currentImageBlobUrl = blobUrl;
         displayUrl = currentImageBlobUrl;
         if (!item.size && buf.byteLength) {
           item.size = buf.byteLength;
           renderPlaylist();
         }
       } catch (err) {
+        if (seq !== loadSeq) return;
         toast(t('toast.error') + err.message, true);
         return;
       }
+    } else {
+      if (currentImageBlobUrl) {
+        URL.revokeObjectURL(currentImageBlobUrl);
+        currentImageBlobUrl = null;
+      }
     }
+
+    if (seq !== loadSeq) return;
 
     // Reset transform state for new photo
     resetTransformState();
@@ -494,6 +545,7 @@
     // Load Image
     mainImage.style.display = 'none';
     mainImage.onload = () => {
+      if (seq !== loadSeq) return;
       mainImage.style.display = 'block';
       calculateFitScale();
       applyTransform();
@@ -501,6 +553,7 @@
       resetAutohide();
     };
     mainImage.onerror = () => {
+      if (seq !== loadSeq) return;
       toast(t('toast.error') + item.name, true);
     };
     mainImage.src = displayUrl;
@@ -798,6 +851,7 @@
 
   // Stop & Reset Viewer
   function stopViewer() {
+    loadSeq++;
     stopSlideshow();
     if (document.fullscreenElement && document.exitFullscreen) {
       document.exitFullscreen().catch(() => {});
@@ -1007,6 +1061,7 @@
       });
 
       if (imgFiles.length > 0) {
+        clearPlaylistBlobUrls();
         playlist = [];
         for (const f of imgFiles) {
           playlist.push({
@@ -1029,6 +1084,7 @@
   function onLocalImageSelected(e) {
     const files = e.target.files;
     if (!files || !files.length) return;
+    clearPlaylistBlobUrls();
     playlist = [];
     for (const f of files) {
       playlist.push({

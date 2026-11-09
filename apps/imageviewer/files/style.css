@@ -303,7 +303,7 @@ html, body {
   display: flex;
   flex-direction: column;
   position: relative;
-  background: #060911;
+  background: color-mix(in srgb, var(--sos-bg) 92%, #000);
   overflow: hidden;
 }
 
@@ -315,6 +315,7 @@ html, body {
   justify-content: center;
   overflow: hidden;
   user-select: none;
+  background: color-mix(in srgb, var(--sos-bg) 92%, #000);
 }
 
 /* Canvas / Transform Container */
