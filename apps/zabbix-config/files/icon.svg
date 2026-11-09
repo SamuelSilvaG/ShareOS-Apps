@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e01818"/>
+      <stop offset="100%" stop-color="#b00000"/>
+    </linearGradient>
+    <linearGradient id="gear" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#d0d5dd" stop-opacity="0.9"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="44" height="44" rx="10" fill="url(#bg)"/>
+  <!-- Zabbix stylized Z -->
+  <path d="M12 12 H36 V18 L21 30 H36 V36 H12 V30 L27 18 H12 Z" fill="#ffffff" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.25))"/>
+  <!-- Configuration Gear overlay on bottom-right -->
+  <circle cx="35" cy="35" r="7" fill="#1e222d" stroke="#ffffff" stroke-width="1.5"/>
+  <path d="M35 31.5 V32.5 M35 37.5 V38.5 M31.5 35 H32.5 M37.5 35 H38.5 M32.5 32.5 L33.2 33.2 M36.8 36.8 L37.5 37.5 M32.5 37.5 L33.2 36.8 M36.8 33.2 L37.5 32.5" stroke="#ffffff" stroke-width="1.2" stroke-linecap="round"/>
+  <circle cx="35" cy="35" r="2" fill="#e01818"/>
+</svg>
