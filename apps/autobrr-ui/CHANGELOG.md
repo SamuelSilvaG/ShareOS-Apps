@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.3
+
+- Fix indexer unique constraint error (`UNIQUE constraint failed: indexer.identifier (2067)`):
+  - Always fetch a fresh indexer list from the backend before duplicate validation to avoid stale state.
+  - Automatically suggest unique suffixed identifiers (e.g. `identifier-2`) when a duplicate is detected or when choosing a preset for an already configured tracker.
+  - Catch SQLite unique constraint errors and prompt with a 1-click retry option using a suggested unique identifier.
+  - Ensure payload `id` is deleted when inserting new indexers.
+
 ## 1.0.2
 
 - Added Edit button (✏️) in the Indexers list table to allow modifying existing tracker indexers without duplicate insertion.

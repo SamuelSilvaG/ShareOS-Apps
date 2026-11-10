@@ -604,6 +604,22 @@
     if (currentVal) sel.value = currentVal;
   }
 
+  // Helper to suggest a unique identifier when one already exists
+  function getSuggestedIdentifier(baseIdentifier, list, currentEditId) {
+    const raw = (baseIdentifier || 'indexer').trim().toLowerCase();
+    const cleanBase = raw.replace(/-\d+$/, '');
+    let counter = 2;
+    let candidate = `${cleanBase}-${counter}`;
+    const isTaken = (cand) => (list || []).some((idx) =>
+      idx.id !== currentEditId && String(idx.identifier || '').toLowerCase() === cand.toLowerCase()
+    );
+    while (isTaken(candidate)) {
+      counter++;
+      candidate = `${cleanBase}-${counter}`;
+    }
+    return candidate;
+  }
+
   // Indexer Modal handlers
   function openIndexerModal(indexer = null) {
     editingIndexerId = indexer ? indexer.id : null;
@@ -649,7 +665,7 @@
     }
 
     const name = ($('indexer-name') ? $('indexer-name').value : '').trim();
-    const identifier = ($('indexer-identifier') ? $('indexer-identifier').value : '').trim().toLowerCase();
+    let identifier = ($('indexer-identifier') ? $('indexer-identifier').value : '').trim().toLowerCase();
     const url = ($('indexer-url') ? $('indexer-url').value : '').trim();
     const apikey = ($('indexer-apikey') ? $('indexer-apikey').value : '').trim();
     const enabled = $('indexer-enabled') ? $('indexer-enabled').checked : true;
@@ -659,11 +675,27 @@
       return;
     }
 
-    // Prevent duplicate identifier on create and confirm before overwriting
+    // Always fetch a fresh indexer list from autobrr right before checking
+    try {
+      const fresh = await AB.api('GET', '/api/indexer');
+      if (Array.isArray(fresh)) {
+        indexers = fresh;
+      }
+    } catch (_) {}
+
+    // Check for duplicate identifier
     const existing = indexers.find((idx) => String(idx.identifier || '').toLowerCase() === identifier.toLowerCase());
     if (existing && existing.id !== editingIndexerId) {
       const ok = confirm(t('indexers.confirm_update', { name: existing.name || identifier }));
       if (!ok) {
+        // User wants a separate indexer, not an overwrite: suggest a unique identifier
+        const suggested = getSuggestedIdentifier(identifier, indexers, editingIndexerId);
+        identifier = suggested;
+        if ($('indexer-identifier')) {
+          $('indexer-identifier').value = suggested;
+          $('indexer-identifier').focus();
+        }
+        toast(t('indexers.identifier_suggested', { id: suggested }));
         return;
       }
       editingIndexerId = existing.id;
@@ -699,13 +731,39 @@
         await AB.api('PUT', `/api/indexer/${editingIndexerId}`, payload);
         toast(t('toast.indexer_updated'));
       } else {
+        delete payload.id;
         await AB.api('POST', '/api/indexer', payload);
         toast(t('toast.indexer_created'));
       }
       closeIndexerModal();
       await refreshIRCAndIndexers();
     } catch (err) {
-      toast(`Error saving indexer: ${err.message}`, true);
+      const isUniqueErr = err && err.message && (
+        err.message.includes('UNIQUE constraint failed') ||
+        err.message.includes('indexer.identifier') ||
+        err.message.includes('2067')
+      );
+      if (isUniqueErr) {
+        // Refresh indexer cache
+        try {
+          const fresh = await AB.api('GET', '/api/indexer');
+          if (Array.isArray(fresh)) indexers = fresh;
+        } catch (_) {}
+
+        const suggested = getSuggestedIdentifier(identifier, indexers, editingIndexerId);
+        if ($('indexer-identifier')) {
+          $('indexer-identifier').value = suggested;
+          $('indexer-identifier').focus();
+        }
+        const retry = confirm(t('indexers.confirm_use_suggested', { id: identifier, suggested }));
+        if (retry) {
+          saveIndexerFromModal();
+          return;
+        }
+        toast(t('indexers.err_unique_identifier', { id: identifier, suggested }), true);
+      } else {
+        toast(`Error saving indexer: ${err.message}`, true);
+      }
     }
   }
 
@@ -1441,10 +1499,19 @@
         const id = $('indexer-preset').value;
         const schema = indexerSchemas.find((s) => s.identifier === id);
         if (schema) {
-          if (!$('indexer-name').value || $('indexer-name').value === $('indexer-identifier').value) {
-            $('indexer-name').value = schema.name || schema.identifier;
+          const rawIdentifier = schema.identifier || id;
+          let targetIdentifier = rawIdentifier;
+          let targetName = schema.name || schema.identifier;
+
+          if (!editingIndexerId && indexers.some((idx) => String(idx.identifier || '').toLowerCase() === rawIdentifier.toLowerCase())) {
+            targetIdentifier = getSuggestedIdentifier(rawIdentifier, indexers, null);
+            targetName = `${schema.name || schema.identifier} 2`;
           }
-          $('indexer-identifier').value = schema.identifier;
+
+          if (!$('indexer-name').value || $('indexer-name').value === $('indexer-identifier').value || $('indexer-name').value.startsWith(schema.name || '')) {
+            $('indexer-name').value = targetName;
+          }
+          $('indexer-identifier').value = targetIdentifier;
           if (schema.urls && schema.urls[0] && !$('indexer-url').value) {
             $('indexer-url').value = schema.urls[0];
           }
