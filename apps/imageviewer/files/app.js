@@ -321,9 +321,8 @@
     const shouldRun = await checkSingleInstance();
     if (!shouldRun) return;
 
-    if (window.innerWidth <= 768) {
-      sidebar.classList.add('collapsed');
-    }
+    // Ensure sidebar starts collapsed by default
+    sidebar.classList.add('collapsed');
     updateSidebarToggleIcon();
     bindEvents();
     checkOpenedFile();
