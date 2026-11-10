@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.3
+
+- Single-instance window management: opening multiple video files from ShareOS file manager seamlessly reuses the existing player window instead of opening multiple duplicate windows, appending to the playlist and bringing the active player to focus.
+- Media Library sidebar starts collapsed by default in both HTML and JS, avoiding visual flicker or closing animations on launch, maximizing the cinema viewport.
+
 ## 1.0.2
 
 - Fixed autoplay when opening video files directly from ShareOS File Manager (`?file=<ticket>`).

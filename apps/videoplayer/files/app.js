@@ -86,12 +86,172 @@
   const aspectModes = ['fit', 'wide', 'fill', 'orig'];
   let currentAspectIdx = 0;
 
-  // Initialize
-  function init() {
-    window.VPI18n.applyDOM();
-    if (window.innerWidth <= 768) {
-      sidebar.classList.add('collapsed');
+  // Single-Instance Management
+  const INSTANCE_ID = 'vp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+  const SINGLE_CHANNEL_NAME = 'sos_single_videoplayer';
+  let singleChannel = null;
+  let heartbeatTimer = null;
+  let isPrimaryInstance = false;
+
+  function getActiveInstance() {
+    try {
+      const str = localStorage.getItem('sos_videoplayer_active');
+      if (!str) return null;
+      const data = JSON.parse(str);
+      if (data && data.id && data.ts && (Date.now() - data.ts < 3500)) {
+        return data;
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  function markAsPrimary() {
+    isPrimaryInstance = true;
+    window.name = 'sosapp-videoplayer';
+    const record = { id: INSTANCE_ID, ts: Date.now() };
+    try {
+      localStorage.setItem('sos_videoplayer_active', JSON.stringify(record));
+      localStorage.removeItem('sos_videoplayer_transfer');
+      localStorage.removeItem('sos_videoplayer_ack');
+    } catch (_) {}
+
+    clearInterval(heartbeatTimer);
+    heartbeatTimer = setInterval(() => {
+      try {
+        localStorage.setItem('sos_videoplayer_active', JSON.stringify({ id: INSTANCE_ID, ts: Date.now() }));
+      } catch (_) {}
+    }, 1200);
+  }
+
+  function releasePrimary() {
+    clearInterval(heartbeatTimer);
+    if (!isPrimaryInstance) return;
+    try {
+      const cur = getActiveInstance();
+      if (cur && cur.id === INSTANCE_ID) {
+        localStorage.removeItem('sos_videoplayer_active');
+      }
+      localStorage.removeItem('sos_videoplayer_transfer');
+      localStorage.removeItem('sos_videoplayer_ack');
+    } catch (_) {}
+  }
+
+  function checkSingleInstance() {
+    return new Promise((resolve) => {
+      const q = new URLSearchParams(location.search);
+      const ticket = q.get('file');
+
+      // Setup BroadcastChannel if supported
+      if ('BroadcastChannel' in window) {
+        try {
+          singleChannel = new BroadcastChannel(SINGLE_CHANNEL_NAME);
+        } catch (_) {}
+      }
+
+      // Check if an existing primary instance is running
+      const active = getActiveInstance();
+
+      // If no other instance is alive, we are the primary
+      if (!active || active.id === INSTANCE_ID) {
+        markAsPrimary();
+        setupPrimaryListeners();
+        return resolve(true);
+      }
+
+      // If another instance is alive and we were opened with a file:
+      if (ticket && singleChannel) {
+        const payload = {
+          fromId: INSTANCE_ID,
+          ticket: ticket,
+          name: q.get('name') || '',
+          ts: Date.now()
+        };
+
+        let handled = false;
+
+        const onAck = (targetId) => {
+          if (targetId !== INSTANCE_ID || handled) return;
+          handled = true;
+          // Successfully handed over to existing window, close self
+          try { window.close(); } catch (_) {}
+          // Fallback UI in case popup policy delays window.close
+          document.body.innerHTML = `
+            <div class="sos-app" style="display:flex;height:100vh;align-items:center;justify-content:center;background:var(--sos-bg);color:var(--sos-text);text-align:center;padding:20px;">
+              <div>
+                <p style="font-size:16px;margin-bottom:12px;">✓ ${t('single.transferred')}</p>
+                <button class="sos-btn" onclick="window.close()">${t('single.close')}</button>
+              </div>
+            </div>`;
+          resolve(false);
+        };
+
+        // Listen for ACK from primary window
+        singleChannel.addEventListener('message', (ev) => {
+          if (ev.data && ev.data.type === 'open-file-ack') {
+            onAck(ev.data.targetId);
+          }
+        });
+
+        // Broadcast file open request to primary window
+        singleChannel.postMessage({ type: 'open-file', data: payload });
+
+        // Timeout fallback: if no ACK received in 750ms (e.g. stale crashed window or busy thread)
+        setTimeout(() => {
+          if (!handled) {
+            markAsPrimary();
+            setupPrimaryListeners();
+            resolve(true);
+          }
+        }, 750);
+        return;
+      }
+
+      // If opened without a file ticket (e.g. fresh launch) or no BroadcastChannel, become primary
+      markAsPrimary();
+      setupPrimaryListeners();
+      resolve(true);
+    });
+  }
+
+  function setupPrimaryListeners() {
+    const handleIncoming = (data) => {
+      if (!data || !data.ticket) return;
+
+      // Send ACK back to the requesting window
+      if (singleChannel) {
+        singleChannel.postMessage({ type: 'open-file-ack', targetId: data.fromId });
+      }
+
+      // Bring primary window to front
+      try { window.focus(); } catch (_) {}
+
+      // Load video into current player (append to playlist & play)
+      openTicketFile(data.ticket, data.name, true);
+    };
+
+    if (singleChannel) {
+      singleChannel.addEventListener('message', (ev) => {
+        if (ev.data && ev.data.type === 'open-file') {
+          handleIncoming(ev.data.data);
+        }
+      });
     }
+
+    window.addEventListener('beforeunload', releasePrimary);
+    window.addEventListener('pagehide', releasePrimary);
+  }
+
+  // Initialize
+  async function init() {
+    window.VPI18n.applyDOM();
+
+    // Check single-instance: if an active window already exists and this one opened with a file,
+    // transfer the video to the existing window and close this window immediately.
+    const shouldRun = await checkSingleInstance();
+    if (!shouldRun) return;
+
+    // Sidebar already starts collapsed by default in HTML
+    sidebar.classList.add('collapsed');
     updateSidebarToggleIcon();
     loadPreferences();
     bindEvents();
@@ -359,18 +519,16 @@
     });
   }
 
-  // Check if opened from ShareOS file manager (?file=ticket)
-  async function checkOpenedFile() {
-    const q = new URLSearchParams(location.search);
-    const ticket = q.get('file');
+  // Open a file ticket (supports both initial startup and single-instance transfer)
+  async function openTicketFile(ticket, fallbackName, appendToPlaylist = false) {
     if (!ticket) return;
 
     const sos = getSOS();
-    let name = 'Video';
     let url = '/_shareos/cgi/file?t=' + encodeURIComponent(ticket);
-    let size = 0;
+    let name = fallbackName || 'Video', size = 0;
 
-    if (sos && sos.file) {
+    const initial = !appendToPlaylist && sos && sos.file && typeof sos.file.info === 'function';
+    if (initial) {
       try {
         await sos.file.info();
         if (sos.file.name) name = sos.file.name;
@@ -379,7 +537,7 @@
       } catch (err) {
         console.warn('ShareOS.file.info() error:', err);
       }
-    } else {
+    } else if (name === 'Video') {
       const parts = ticket.split('/');
       const last = parts[parts.length - 1];
       if (last && last.length < 150) {
@@ -392,13 +550,43 @@
     }
 
     document.title = name + ' – VideoPlayer';
-    currentFolder = { root: '', path: '' };
-    updateFolderLabels();
-    playlist = [{ name, root: '', path: '', url, size }];
-    renderPlaylist();
+
+    if (appendToPlaylist && playlist.length > 0) {
+      const existingIdx = playlist.findIndex((item) => item.url === url);
+      if (existingIdx >= 0) {
+        playVideoAtIndex(existingIdx);
+      } else {
+        playlist.push({ name, root: '', path: '', url, size });
+        renderPlaylist();
+        playVideoAtIndex(playlist.length - 1);
+      }
+    } else {
+      currentFolder = { root: '', path: '' };
+      updateFolderLabels();
+      playlist = [{ name, root: '', path: '', url, size }];
+      renderPlaylist();
+      playVideoAtIndex(0);
+    }
+
     sidebar.classList.add('collapsed');
     updateSidebarToggleIcon();
-    playVideoAtIndex(0);
+
+    try {
+      const q = new URLSearchParams(location.search);
+      q.set('file', ticket);
+      if (name) q.set('name', name);
+      window.history.replaceState({}, '', location.pathname + '?' + q.toString());
+    } catch (_) {}
+
+    flashCenter(name);
+  }
+
+  // Check if opened from ShareOS file manager (?file=ticket)
+  async function checkOpenedFile() {
+    const q = new URLSearchParams(location.search);
+    const ticket = q.get('file');
+    if (!ticket) return;
+    await openTicketFile(ticket, q.get('name'), false);
   }
 
   // Open Video File Picker
