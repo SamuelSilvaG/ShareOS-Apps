@@ -10,6 +10,7 @@
 - Automated slideshow mode with 4-second intervals and pause toggle (`Space`).
 - Image Gallery sidebar drawer with instant search filtering, thumbnail placeholders, and folder browsing via `ShareOS.fs`.
 - Smart single-image mode: automatically collapses the sidebar gallery when opening a standalone image file, maximizing view area.
+- Single-instance window management: opening multiple image files from ShareOS file manager seamlessly reuses the existing viewer window instead of opening multiple duplicate windows, appending to the playlist and bringing the active viewer to focus.
 - Fullscreen mode (`F`), image metadata badge (`I`) displaying resolution and size, and keyboard & remote shortcut support.
 - Multilingual support: English, Portuguese, and German.
 
