@@ -83,7 +83,7 @@
   // Transform State
   let scale = 1;
   let fitScale = 1;
-  let isFitMode = true;
+  let isFitMode = false;
   let panX = 0;
   let panY = 0;
   let rotation = 0; // 0, 90, 180, 270
@@ -157,7 +157,13 @@
     // Transform actions
     btnZoomIn.addEventListener('click', () => zoomByStep(1.25));
     btnZoomOut.addEventListener('click', () => zoomByStep(0.8));
-    btnZoomLevel.addEventListener('click', resetToFit);
+    btnZoomLevel.addEventListener('click', () => {
+      if (isFitMode || Math.abs(scale - 1.0) > 0.02) {
+        setActualSize();
+      } else {
+        resetToFit();
+      }
+    });
     btnZoomOrig.addEventListener('click', setActualSize);
     btnRotateLeft.addEventListener('click', rotateCounterClockwise);
     btnRotateRight.addEventListener('click', rotateClockwise);
@@ -546,6 +552,8 @@
     mainImage.style.display = 'none';
     mainImage.onload = () => {
       if (seq !== loadSeq) return;
+      mainImage.style.width = mainImage.naturalWidth + 'px';
+      mainImage.style.height = mainImage.naturalHeight + 'px';
       mainImage.style.display = 'block';
       calculateFitScale();
       applyTransform();
@@ -571,7 +579,7 @@
 
     const scaleX = (stageWidth * 0.96) / naturalW;
     const scaleY = (stageHeight * 0.94) / naturalH;
-    fitScale = Math.min(scaleX, scaleY, 1.0); // Never upscale past 100% in fit mode
+    fitScale = Math.min(scaleX, scaleY);
 
     if (isFitMode) {
       scale = fitScale;
@@ -580,15 +588,15 @@
     }
   }
 
-  // Reset transforms to defaults
+  // Reset transforms to defaults (1:1 actual pixel zoom by default)
   function resetTransformState() {
-    isFitMode = true;
+    isFitMode = false;
     rotation = 0;
     flipH = false;
     flipV = false;
     panX = 0;
     panY = 0;
-    scale = 1;
+    scale = 1.0;
   }
 
   function resetToFit() {
@@ -644,10 +652,10 @@
     // Double tap / click detection
     const now = Date.now();
     if (now - lastTapTime < 280) {
-      if (Math.abs(scale - fitScale) < 0.05) {
-        setActualSize();
-      } else {
+      if (Math.abs(scale - 1.0) < 0.02) {
         resetToFit();
+      } else {
+        setActualSize();
       }
       lastTapTime = 0;
       return;
@@ -706,7 +714,7 @@
     } else if (e.touches.length === 1 && isDragging) {
       const dx = e.touches[0].clientX - touchStartX;
       const dy = e.touches[0].clientY - touchStartY;
-      if (scale > fitScale * 1.05) {
+      if (!isFitMode) {
         e.preventDefault();
         panX = initialPanX + dx;
         panY = initialPanY + dy;
@@ -719,8 +727,8 @@
     if (e.touches.length === 0) {
       touchStartDist = 0;
       isDragging = false;
-      // Detect single swipe if not zoomed in
-      if (scale <= fitScale * 1.05) {
+      // Detect single swipe if in fit mode or not zoomed past fit
+      if (isFitMode || scale <= fitScale * 1.05) {
         const touch = e.changedTouches[0];
         const dx = touch.clientX - touchStartX;
         const dy = touch.clientY - touchStartY;
@@ -864,6 +872,8 @@
 
     mainImage.removeAttribute('src');
     mainImage.style.display = 'none';
+    mainImage.style.width = '';
+    mainImage.style.height = '';
     currentIndex = -1;
     counterDisplay.textContent = '0 / 0';
 
