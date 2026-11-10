@@ -214,22 +214,6 @@ body {
 	background: var(--zc-error);
 }
 
-.lang-selector {
-	background: var(--zc-surface-alt);
-	border: 1px solid var(--zc-border);
-	color: var(--sos-text);
-	border-radius: var(--zc-radius-sm);
-	padding: 6px 8px;
-	font-size: 0.75rem;
-	font-weight: 600;
-	cursor: pointer;
-	outline: none;
-}
-
-.lang-selector:focus {
-	border-color: var(--sos-accent);
-}
-
 /* ==========================================================================
    Navigation Tabs
    ========================================================================== */

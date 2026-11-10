@@ -344,9 +344,25 @@
 	let currentLang = 'en';
 
 	function detectLanguage() {
-		if (window.ShareOS && window.ShareOS.lang && translations[window.ShareOS.lang]) {
-			return window.ShareOS.lang;
+		// 1. Check URL parameter (?lang=pt)
+		try {
+			const q = new URLSearchParams(window.location.search);
+			const urlLang = q.get('lang');
+			if (urlLang) {
+				const short = urlLang.toLowerCase().slice(0, 2);
+				if (translations[short]) return short;
+			}
+		} catch (_) {}
+
+		// 2. Check window.ShareOS
+		const sos = window.ShareOS;
+		const sosLang = sos && (sos.lang || (sos.user && sos.user.lang));
+		if (sosLang) {
+			const short = String(sosLang).toLowerCase().slice(0, 2);
+			if (translations[short]) return short;
 		}
+
+		// 3. Fallback to browser navigator language
 		const navLang = (navigator.language || navigator.userLanguage || 'en').toLowerCase();
 		if (navLang.startsWith('pt')) return 'pt';
 		if (navLang.startsWith('de')) return 'de';
@@ -357,6 +373,13 @@
 
 	const I18n = {
 		translations: translations,
+		init: function() {
+			currentLang = detectLanguage();
+			this.applyToDOM();
+			if (window.onLanguageChanged) {
+				window.onLanguageChanged(currentLang);
+			}
+		},
 		getLang: function() {
 			return currentLang;
 		},
@@ -376,6 +399,7 @@
 			return fallback || key;
 		},
 		applyToDOM: function() {
+			document.documentElement.lang = currentLang;
 			document.querySelectorAll('[data-i18n]').forEach(el => {
 				const key = el.getAttribute('data-i18n');
 				const text = this.t(key);

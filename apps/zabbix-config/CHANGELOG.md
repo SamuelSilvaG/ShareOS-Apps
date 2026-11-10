@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.1
+
+- Automatic language detection matching the ShareOS system language (English, Portuguese, German) and removed redundant manual language dropdown for a cleaner interface.
+
 ## 1.0.0
 
 - First release for ShareOS (requires ShareOS 0.2.0-beta.20+ and system app `zabbix-agent`).
