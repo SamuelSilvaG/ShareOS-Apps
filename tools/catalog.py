@@ -14,6 +14,9 @@ repository and attached to its releases as <id>-<version>.sapp (+ .sha256).
 They are listed too (SYSAPPS_REPO, default UniqueDroid/ShareOS): every
 version once, from the newest firmware release that has it; name,
 description … from sysapps/<id>/app.json at that release's tag.
+A system app that is a module of the firmware ("module": "<id>", e.g. paperless,
+dnsfilter, cloud, desktop) keeps that field, so the store shows it as a module
+(own tab, admins only) instead of a command.
 """
 import json, os, re, sys, time, urllib.request
 
@@ -87,6 +90,7 @@ def system_apps(apps):
                 'id': app_id, 'name': meta.get('name', app_id), 'publisher': meta.get('publisher', ''),
                 'description': meta.get('description', ''), 'category': meta.get('category', ''),
                 'type': 'system', 'homepage': meta.get('homepage', ''), 'license': meta.get('license', ''),
+                'module': app_id if meta.get('module') == app_id else None,
                 'icon_url': '%s/%s/%s/sysapps/%s/%s' % (RAW, SYSAPPS_REPO, rel['tag_name'], app_id, meta['icon']) if meta.get('icon') else None,
                 'versions': []})
             v = version_entry(meta, version, rel, pkg, asset_text(sumf).split()[0])
