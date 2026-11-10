@@ -2,10 +2,12 @@
 
 ## 1.0.3
 
-- Fix indexer unique constraint error (`UNIQUE constraint failed: indexer.identifier (2067)`):
+- Fix indexer unique constraint error (`UNIQUE constraint failed: indexer.identifier`):
   - Always fetch a fresh indexer list from the backend before duplicate validation to avoid stale state.
-  - Automatically suggest unique suffixed identifiers (e.g. `identifier-2`) when a duplicate is detected or when choosing a preset for an already configured tracker.
-  - Catch SQLite unique constraint errors and prompt with a 1-click retry option using a suggested unique identifier.
+  - Suggest unique suffixed identifiers (e.g. `torznab-2`) when adding generic feeds (Torznab/Newznab/RSS), while preserving exact tracker definition identifiers.
+  - Prevent accidental overwrite of custom indexer names when selecting presets.
+  - Make duplicate indexer confirmation semantics explicit (OK = update existing, Cancel = keep editing).
+  - Catch SQLite unique constraint errors, narrow error matching, and return retry call chain.
   - Ensure payload `id` is deleted when inserting new indexers.
 
 ## 1.0.2
