@@ -228,7 +228,7 @@
         // Send file open request to primary window only over the app's channel
         singleChannel.postMessage({ type: 'open-file', data: payload });
 
-        // Timeout fallback: if no ACK received in 1500ms (e.g. stale crashed window)
+        // Timeout fallback: if no ACK received in 800ms (e.g. stale crashed window)
         fallbackTimer = setTimeout(() => {
           if (!handled) {
             try { singleChannel.removeEventListener('message', onMessage); } catch (_) {}
@@ -236,7 +236,7 @@
             setupPrimaryListeners();
             resolve(true);
           }
-        }, 1500);
+        }, 800);
         return;
       }
 
@@ -424,22 +424,20 @@
     if (!ticket) return;
 
     const sos = getSOS();
-    let name = fallbackName || '';
-    let url = '/_shareos/cgi/file?t=' + encodeURIComponent(ticket);
+    const initial = !appendToPlaylist && sos && sos.file;
+    let url = (initial && sos.file.url) || '/_shareos/cgi/file?t=' + encodeURIComponent(ticket);
+    let name = fallbackName || (initial && sos.file.name) || 'Image';
     let size = 0;
 
-    // Only query ShareOS.file on initial launch (when not transferred into an existing window)
-    if (!appendToPlaylist && sos && sos.file) {
-      if (typeof sos.file.info === 'function') {
-        try {
-          await sos.file.info();
-        } catch (err) {
-          console.warn('ShareOS.file.info() error:', err);
-        }
+    if (initial && typeof sos.file.info === 'function') {
+      try {
+        await sos.file.info();
+        if (sos.file.name) name = sos.file.name;
+        if (sos.file.url) url = sos.file.url;
+        if (sos.file.size) size = sos.file.size;
+      } catch (err) {
+        console.warn('ShareOS.file.info() error:', err);
       }
-      if (sos.file.name) name = sos.file.name;
-      if (sos.file.url) url = sos.file.url;
-      if (sos.file.size) size = sos.file.size;
     }
 
     if (!name || name === 'Image') {
@@ -459,7 +457,7 @@
     document.title = name + ' – ImageViewer';
 
     if (appendToPlaylist && playlist.length > 0) {
-      const existingIdx = playlist.findIndex((item) => item.name === name || (item.url && item.url === url));
+      const existingIdx = playlist.findIndex((item) => item.url === url);
       if (existingIdx >= 0) {
         showImageAtIndex(existingIdx);
       } else {
