@@ -6,6 +6,8 @@
 - Implemented policy-compliant autoplay fallback: attempts full unmuted playback first; if modern browser Autoplay Policy blocks unmuted media without prior gesture, immediately starts playing muted without delay and displays an unmute prompt (`#unmute-banner`) that restores audio on the first user interaction anywhere in the window.
 - Added direct ticket URL fallback and resilient `window.ShareOS` checking in `checkOpenedFile()`.
 - Automatically collapse the Media Library sidebar when playing a single video or opening a standalone video file, keeping the full viewport focused on cinema playback.
+- Single-instance window management: opening multiple video files from ShareOS file manager seamlessly reuses the existing player window instead of opening multiple duplicate windows, appending to the playlist and bringing the active player to focus.
+- Media Library sidebar starts collapsed by default in both HTML and JS, avoiding visual flicker or closing animations on launch, maximizing the cinema viewport.
 
 ## 1.0.1
 

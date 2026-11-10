@@ -73,7 +73,9 @@
       'help.brackets': 'Decrease / Increase playback speed',
       'help.p': 'Toggle Picture-in-Picture',
       'help.n': 'Play Next video in playlist',
-      'help.close': 'Close'
+      'help.close': 'Close',
+      'single.transferred': 'Video opened in existing window.',
+      'single.close': 'Close Window'
     },
     pt: {
       'app.title': 'VideoPlayer',
@@ -146,7 +148,9 @@
       'help.brackets': 'Diminuir / Aumentar velocidade de reprodução',
       'help.p': 'Alternar Picture-in-Picture',
       'help.n': 'Próximo vídeo da lista',
-      'help.close': 'Fechar'
+      'help.close': 'Fechar',
+      'single.transferred': 'Vídeo aberto na janela existente.',
+      'single.close': 'Fechar Janela'
     },
     de: {
       'app.title': 'VideoPlayer',
@@ -219,7 +223,9 @@
       'help.brackets': 'Wiedergabegeschwindigkeit verlangsamen / beschleunigen',
       'help.p': 'Bild-in-Bild umschalten',
       'help.n': 'Nächstes Video abspielen',
-      'help.close': 'Schließen'
+      'help.close': 'Schließen',
+      'single.transferred': 'Video im bestehenden Fenster geöffnet.',
+      'single.close': 'Fenster schließen'
     }
   };
 

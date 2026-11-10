@@ -46,6 +46,7 @@ Designed specifically for low-power Kirkwood ARMv5 NAS devices (800 MHz / 1.0 GH
 
 6. **Integrated with ShareOS File Browser:**
    - Associated with `.mp4`, `.m4v`, `.webm`, `.mkv`, `.mov`, and `.ogv` files: double-clicking a video in ShareOS opens VideoPlayer immediately.
+   - Single-instance window management: opening multiple video files from the file manager reuses the existing window instead of cluttering your desktop with duplicate windows.
 
 ---
 
