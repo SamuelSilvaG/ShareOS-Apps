@@ -83,7 +83,7 @@
   // Transform State
   let scale = 1;
   let fitScale = 1;
-  let isFitMode = false;
+  let isFitMode = true;
   let panX = 0;
   let panY = 0;
   let rotation = 0; // 0, 90, 180, 270
@@ -163,8 +163,17 @@
       // Setup BroadcastChannel if supported
       if ('BroadcastChannel' in window) {
         try {
-          singleChannel = new BroadcastChannel(SINGLE_CHANNEL_NAME);
+          if (!singleChannel) {
+            singleChannel = new BroadcastChannel(SINGLE_CHANNEL_NAME);
+          }
         } catch (_) {}
+      }
+
+      // If BroadcastChannel is not supported, run as primary
+      if (!singleChannel) {
+        markAsPrimary();
+        setupPrimaryListeners();
+        return resolve(true);
       }
 
       // Check if an existing primary instance is running
@@ -183,72 +192,51 @@
           fromId: INSTANCE_ID,
           ticket: ticket,
           name: q.get('name') || '',
-          fs: q.get('fs') || '',
           ts: Date.now()
         };
 
         let handled = false;
+        let fallbackTimer = null;
 
         const onAck = (targetId) => {
           if (targetId !== INSTANCE_ID || handled) return;
           handled = true;
+          if (fallbackTimer) clearTimeout(fallbackTimer);
+          try { singleChannel.removeEventListener('message', onMessage); } catch (_) {}
           // Successfully handed over to existing window, close self
           try { window.close(); } catch (_) {}
           // Fallback UI in case popup policy delays window.close
           document.body.innerHTML = `
-            <div style="display:flex;height:100vh;align-items:center;justify-content:center;background:#06090d;color:#c6dff5;font-family:system-ui,sans-serif;text-align:center;padding:20px;">
-              <div>
-                <p style="font-size:16px;margin-bottom:12px;">✓ ${t('single.transferred')}</p>
-                <button onclick="window.close()" style="background:#3da5ff;border:none;border-radius:6px;padding:8px 18px;color:#000;font-weight:600;cursor:pointer;">${t('single.close')}</button>
+            <div class="handover-screen">
+              <div class="handover-screen-content">
+                <p class="handover-screen-text">✓ ${t('single.transferred')}</p>
+                <button type="button" class="sos-btn sos-btn-accent" onclick="window.close()">${t('single.close')}</button>
               </div>
             </div>`;
           resolve(false);
         };
 
-        // Listen for ACK from primary window
-        if (singleChannel) {
-          singleChannel.addEventListener('message', (ev) => {
-            if (ev.data && ev.data.type === 'open-file-ack') {
-              onAck(ev.data.targetId);
-            }
-          });
-        }
-
-        const sos = getSOS();
-        if (sos && typeof sos.on === 'function') {
-          sos.on('imageviewer:open-file-ack', (d) => {
-            if (d && d.targetId) onAck(d.targetId);
-          });
-        }
-
-        window.addEventListener('storage', (ev) => {
-          if (ev.key === 'sos_imageviewer_ack' && ev.newValue) {
-            try {
-              const d = JSON.parse(ev.newValue);
-              if (d && d.targetId) onAck(d.targetId);
-            } catch (_) {}
+        const onMessage = (ev) => {
+          if (ev.data && ev.data.type === 'open-file-ack') {
+            onAck(ev.data.targetId);
           }
-        });
+        };
 
-        // Broadcast file open request to primary window
-        if (singleChannel) {
-          singleChannel.postMessage({ type: 'open-file', data: payload });
-        }
-        if (sos && typeof sos.emit === 'function') {
-          sos.emit('imageviewer:open-file', payload);
-        }
-        try {
-          localStorage.setItem('sos_imageviewer_transfer', JSON.stringify(payload));
-        } catch (_) {}
+        // Listen for ACK from primary window only on the app's channel
+        singleChannel.addEventListener('message', onMessage);
 
-        // Timeout fallback: if no ACK received in 150ms (e.g. stale crashed window)
-        setTimeout(() => {
+        // Send file open request to primary window only over the app's channel
+        singleChannel.postMessage({ type: 'open-file', data: payload });
+
+        // Timeout fallback: if no ACK received in 1500ms (e.g. stale crashed window)
+        fallbackTimer = setTimeout(() => {
           if (!handled) {
+            try { singleChannel.removeEventListener('message', onMessage); } catch (_) {}
             markAsPrimary();
             setupPrimaryListeners();
             resolve(true);
           }
-        }, 150);
+        }, 1500);
         return;
       }
 
@@ -263,23 +251,16 @@
     const handleIncoming = (data) => {
       if (!data || !data.ticket) return;
 
-      // Send ACK back to the requesting window
+      // Send ACK back to the requesting window over the app's channel
       if (singleChannel) {
         singleChannel.postMessage({ type: 'open-file-ack', targetId: data.fromId });
       }
-      const sos = getSOS();
-      if (sos && typeof sos.emit === 'function') {
-        sos.emit('imageviewer:open-file-ack', { targetId: data.fromId });
-      }
-      try {
-        localStorage.setItem('sos_imageviewer_ack', JSON.stringify({ targetId: data.fromId, ts: Date.now() }));
-      } catch (_) {}
 
       // Bring primary window to front
       try { window.focus(); } catch (_) {}
 
       // Load image into current viewer (append to playlist)
-      openTicketFile(data.ticket, data.name, data.fs, true);
+      openTicketFile(data.ticket, data.name, true);
     };
 
     if (singleChannel) {
@@ -289,24 +270,6 @@
         }
       });
     }
-
-    const sos = getSOS();
-    if (sos && typeof sos.on === 'function') {
-      sos.on('imageviewer:open-file', (d) => {
-        handleIncoming(d);
-      });
-    }
-
-    window.addEventListener('storage', (ev) => {
-      if (ev.key === 'sos_imageviewer_transfer' && ev.newValue) {
-        try {
-          const d = JSON.parse(ev.newValue);
-          if (d && d.fromId !== INSTANCE_ID && (Date.now() - d.ts < 3000)) {
-            handleIncoming(d);
-          }
-        } catch (_) {}
-      }
-    });
 
     window.addEventListener('beforeunload', releasePrimary);
     window.addEventListener('pagehide', releasePrimary);
@@ -366,7 +329,7 @@
     btnZoomIn.addEventListener('click', () => zoomByStep(1.25));
     btnZoomOut.addEventListener('click', () => zoomByStep(0.8));
     btnZoomLevel.addEventListener('click', () => {
-      if (isFitMode || Math.abs(scale - 1.0) > 0.02) {
+      if (isFitMode && fitScale < 0.98) {
         setActualSize();
       } else {
         resetToFit();
@@ -457,28 +420,29 @@
   }
 
   // Open a file ticket (supports both initial startup and single-instance transfer)
-  async function openTicketFile(ticket, fallbackName, fsGrant, appendToPlaylist = false) {
+  async function openTicketFile(ticket, fallbackName, appendToPlaylist = false) {
     if (!ticket) return;
 
-    if (fsGrant && /^[0-9a-f]{32}$/.test(fsGrant)) {
-      try { sessionStorage.setItem('sos-fs-imageviewer', fsGrant); } catch (_) {}
-    }
-
     const sos = getSOS();
-    let name = fallbackName || (sos && sos.file && sos.file.name) || 'Image';
-    let url = (sos && sos.file && sos.file.url) || '/_shareos/cgi/file?t=' + encodeURIComponent(ticket);
+    let name = fallbackName || '';
+    let url = '/_shareos/cgi/file?t=' + encodeURIComponent(ticket);
     let size = 0;
 
-    if (sos && sos.file && typeof sos.file.info === 'function') {
-      try {
-        await sos.file.info();
-        if (sos.file.name) name = sos.file.name;
-        if (sos.file.url) url = sos.file.url;
-        if (sos.file.size) size = sos.file.size;
-      } catch (err) {
-        console.warn('ShareOS.file.info() error:', err);
+    // Only query ShareOS.file on initial launch (when not transferred into an existing window)
+    if (!appendToPlaylist && sos && sos.file) {
+      if (typeof sos.file.info === 'function') {
+        try {
+          await sos.file.info();
+        } catch (err) {
+          console.warn('ShareOS.file.info() error:', err);
+        }
       }
-    } else if (name === 'Image') {
+      if (sos.file.name) name = sos.file.name;
+      if (sos.file.url) url = sos.file.url;
+      if (sos.file.size) size = sos.file.size;
+    }
+
+    if (!name || name === 'Image') {
       const parts = ticket.split('/');
       const last = parts[parts.length - 1];
       if (last && last.length < 150) {
@@ -487,6 +451,8 @@
         } catch (_) {
           name = last;
         }
+      } else {
+        name = 'Image';
       }
     }
 
@@ -519,7 +485,6 @@
       const q = new URLSearchParams(location.search);
       q.set('file', ticket);
       if (name) q.set('name', name);
-      if (fsGrant) q.set('fs', fsGrant);
       window.history.replaceState({}, '', location.pathname + '?' + q.toString());
     } catch (_) {}
 
@@ -531,7 +496,7 @@
     const q = new URLSearchParams(location.search);
     const ticket = q.get('file');
     if (!ticket) return;
-    await openTicketFile(ticket, q.get('name'), q.get('fs'), false);
+    await openTicketFile(ticket, q.get('name'), false);
   }
 
   // Open Image File Picker
@@ -819,7 +784,7 @@
 
     const scaleX = (stageWidth * 0.96) / naturalW;
     const scaleY = (stageHeight * 0.94) / naturalH;
-    fitScale = Math.min(scaleX, scaleY);
+    fitScale = Math.min(scaleX, scaleY, 1.0); // Never upscale past 100% in fit mode
 
     if (isFitMode) {
       scale = fitScale;
@@ -828,9 +793,9 @@
     }
   }
 
-  // Reset transforms to defaults (1:1 actual pixel zoom by default)
+  // Reset transforms to defaults
   function resetTransformState() {
-    isFitMode = false;
+    isFitMode = true;
     rotation = 0;
     flipH = false;
     flipV = false;
@@ -892,10 +857,10 @@
     // Double tap / click detection
     const now = Date.now();
     if (now - lastTapTime < 280) {
-      if (Math.abs(scale - 1.0) < 0.02) {
-        resetToFit();
-      } else {
+      if (Math.abs(scale - fitScale) < 0.05 && fitScale < 0.98) {
         setActualSize();
+      } else {
+        resetToFit();
       }
       lastTapTime = 0;
       return;
@@ -954,7 +919,7 @@
     } else if (e.touches.length === 1 && isDragging) {
       const dx = e.touches[0].clientX - touchStartX;
       const dy = e.touches[0].clientY - touchStartY;
-      if (!isFitMode) {
+      if (scale > fitScale * 1.05) {
         e.preventDefault();
         panX = initialPanX + dx;
         panY = initialPanY + dy;
@@ -967,8 +932,8 @@
     if (e.touches.length === 0) {
       touchStartDist = 0;
       isDragging = false;
-      // Detect single swipe if in fit mode or not zoomed past fit
-      if (isFitMode || scale <= fitScale * 1.05) {
+      // Detect single swipe if not zoomed past fit
+      if (scale <= fitScale * 1.05) {
         const touch = e.changedTouches[0];
         const dx = touch.clientX - touchStartX;
         const dy = touch.clientY - touchStartY;
