@@ -61,7 +61,9 @@
       'details.dimensions': 'Dimensions',
       'details.size': 'File Size',
       'details.format': 'Format',
-      'details.zoom': 'Zoom Level'
+      'details.zoom': 'Zoom Level',
+      'single.transferred': 'Image opened in existing window.',
+      'single.close': 'Close Window'
     },
     pt: {
       'app.title': 'ImageViewer',
@@ -122,7 +124,9 @@
       'details.dimensions': 'Dimensões',
       'details.size': 'Tamanho',
       'details.format': 'Formato',
-      'details.zoom': 'Nível de Zoom'
+      'details.zoom': 'Nível de Zoom',
+      'single.transferred': 'Imagem aberta na janela existente.',
+      'single.close': 'Fechar Janela'
     },
     de: {
       'app.title': 'ImageViewer',
@@ -183,7 +187,9 @@
       'details.dimensions': 'Abmessungen',
       'details.size': 'Dateigröße',
       'details.format': 'Format',
-      'details.zoom': 'Zoom-Stufe'
+      'details.zoom': 'Zoom-Stufe',
+      'single.transferred': 'Bild im bestehenden Fenster geöffnet.',
+      'single.close': 'Fenster schließen'
     }
   };
 

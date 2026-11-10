@@ -1,7 +1,7 @@
 {
 	"id": "imageviewer",
 	"name": "ImageViewer",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"publisher": "SamuelSilvaG",
 	"description": {
 		"de": "Leichter und schneller Bildbetrachter und Galerie mit direktem Streaming von der Box, interaktivem Zoom & Schwenken, Rotation, Diashow, Ordnerbrowser und Tastaturnavigation.",

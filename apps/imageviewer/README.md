@@ -27,6 +27,7 @@ Designed specifically for low-power Kirkwood ARMv5 NAS devices (800 MHz / 1.0 GH
 
 5. **Integrated with ShareOS File Browser:**
    - Associated with all major image extensions: clicking an image in ShareOS opens ImageViewer immediately (`?file=<ticket>`).
+   - Single-instance window management: opening multiple image files from the file manager reuses the same window instead of cluttering your desktop with duplicate tabs/windows.
    - Smart single-image mode: automatically collapses the sidebar gallery when opening a standalone image file, keeping the entire screen focused on the picture.
 
 6. **Image Gallery & Folder Browsing:**

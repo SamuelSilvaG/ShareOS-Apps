@@ -109,12 +109,183 @@
   let touchStartY = 0;
   let lastTapTime = 0;
 
-  // Initialize
-  function init() {
-    window.IVI18n.applyDOM();
-    if (window.innerWidth <= 768) {
-      sidebar.classList.add('collapsed');
+  // Single-Instance Management
+  const INSTANCE_ID = 'iv_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+  const SINGLE_CHANNEL_NAME = 'sos_single_imageviewer';
+  let singleChannel = null;
+  let heartbeatTimer = null;
+  let isPrimaryInstance = false;
+
+  function getActiveInstance() {
+    try {
+      const str = localStorage.getItem('sos_imageviewer_active');
+      if (!str) return null;
+      const data = JSON.parse(str);
+      if (data && data.id && data.ts && (Date.now() - data.ts < 3500)) {
+        return data;
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  function markAsPrimary() {
+    isPrimaryInstance = true;
+    window.name = 'sosapp-imageviewer';
+    const record = { id: INSTANCE_ID, ts: Date.now() };
+    try {
+      localStorage.setItem('sos_imageviewer_active', JSON.stringify(record));
+    } catch (_) {}
+
+    clearInterval(heartbeatTimer);
+    heartbeatTimer = setInterval(() => {
+      try {
+        localStorage.setItem('sos_imageviewer_active', JSON.stringify({ id: INSTANCE_ID, ts: Date.now() }));
+      } catch (_) {}
+    }, 1200);
+  }
+
+  function releasePrimary() {
+    clearInterval(heartbeatTimer);
+    if (!isPrimaryInstance) return;
+    try {
+      const cur = getActiveInstance();
+      if (cur && cur.id === INSTANCE_ID) {
+        localStorage.removeItem('sos_imageviewer_active');
+      }
+    } catch (_) {}
+  }
+
+  function checkSingleInstance() {
+    return new Promise((resolve) => {
+      const q = new URLSearchParams(location.search);
+      const ticket = q.get('file');
+
+      // Setup BroadcastChannel if supported
+      if ('BroadcastChannel' in window) {
+        try {
+          if (!singleChannel) {
+            singleChannel = new BroadcastChannel(SINGLE_CHANNEL_NAME);
+          }
+        } catch (_) {}
+      }
+
+      // If BroadcastChannel is not supported, run as primary
+      if (!singleChannel) {
+        markAsPrimary();
+        setupPrimaryListeners();
+        return resolve(true);
+      }
+
+      // Check if an existing primary instance is running
+      const active = getActiveInstance();
+
+      // If no other instance is alive, we are the primary
+      if (!active || active.id === INSTANCE_ID) {
+        markAsPrimary();
+        setupPrimaryListeners();
+        return resolve(true);
+      }
+
+      // If another instance is alive and we were opened with a file:
+      if (ticket) {
+        const payload = {
+          fromId: INSTANCE_ID,
+          ticket: ticket,
+          name: q.get('name') || '',
+          ts: Date.now()
+        };
+
+        let handled = false;
+        let fallbackTimer = null;
+
+        const onAck = (targetId) => {
+          if (targetId !== INSTANCE_ID || handled) return;
+          handled = true;
+          if (fallbackTimer) clearTimeout(fallbackTimer);
+          try { singleChannel.removeEventListener('message', onMessage); } catch (_) {}
+          // Successfully handed over to existing window, close self
+          try { window.close(); } catch (_) {}
+          // Fallback UI in case popup policy delays window.close
+          document.body.innerHTML = `
+            <div class="handover-screen">
+              <div class="handover-screen-content">
+                <p class="handover-screen-text">✓ ${t('single.transferred')}</p>
+                <button type="button" class="sos-btn sos-btn-accent" onclick="window.close()">${t('single.close')}</button>
+              </div>
+            </div>`;
+          resolve(false);
+        };
+
+        const onMessage = (ev) => {
+          if (ev.data && ev.data.type === 'open-file-ack') {
+            onAck(ev.data.targetId);
+          }
+        };
+
+        // Listen for ACK from primary window only on the app's channel
+        singleChannel.addEventListener('message', onMessage);
+
+        // Send file open request to primary window only over the app's channel
+        singleChannel.postMessage({ type: 'open-file', data: payload });
+
+        // Timeout fallback: if no ACK received in 800ms (e.g. stale crashed window)
+        fallbackTimer = setTimeout(() => {
+          if (!handled) {
+            try { singleChannel.removeEventListener('message', onMessage); } catch (_) {}
+            markAsPrimary();
+            setupPrimaryListeners();
+            resolve(true);
+          }
+        }, 800);
+        return;
+      }
+
+      // If opened without a file ticket (e.g. fresh launch), become primary
+      markAsPrimary();
+      setupPrimaryListeners();
+      resolve(true);
+    });
+  }
+
+  function setupPrimaryListeners() {
+    const handleIncoming = (data) => {
+      if (!data || !data.ticket) return;
+
+      // Send ACK back to the requesting window over the app's channel
+      if (singleChannel) {
+        singleChannel.postMessage({ type: 'open-file-ack', targetId: data.fromId });
+      }
+
+      // Bring primary window to front
+      try { window.focus(); } catch (_) {}
+
+      // Load image into current viewer (append to playlist)
+      openTicketFile(data.ticket, data.name, true);
+    };
+
+    if (singleChannel) {
+      singleChannel.addEventListener('message', (ev) => {
+        if (ev.data && ev.data.type === 'open-file') {
+          handleIncoming(ev.data.data);
+        }
+      });
     }
+
+    window.addEventListener('beforeunload', releasePrimary);
+    window.addEventListener('pagehide', releasePrimary);
+  }
+
+  // Initialize
+  async function init() {
+    window.IVI18n.applyDOM();
+
+    // Check single-instance: if an active window already exists and this one opened with a file,
+    // transfer the image to the existing window and close this window immediately.
+    const shouldRun = await checkSingleInstance();
+    if (!shouldRun) return;
+
+    // Ensure sidebar starts collapsed by default
+    sidebar.classList.add('collapsed');
     updateSidebarToggleIcon();
     bindEvents();
     checkOpenedFile();
@@ -157,7 +328,13 @@
     // Transform actions
     btnZoomIn.addEventListener('click', () => zoomByStep(1.25));
     btnZoomOut.addEventListener('click', () => zoomByStep(0.8));
-    btnZoomLevel.addEventListener('click', resetToFit);
+    btnZoomLevel.addEventListener('click', () => {
+      if (isFitMode && fitScale < 0.98) {
+        setActualSize();
+      } else {
+        resetToFit();
+      }
+    });
     btnZoomOrig.addEventListener('click', setActualSize);
     btnRotateLeft.addEventListener('click', rotateCounterClockwise);
     btnRotateRight.addEventListener('click', rotateClockwise);
@@ -242,18 +419,17 @@
     });
   }
 
-  // Check if opened from ShareOS file manager (?file=ticket&name=...)
-  async function checkOpenedFile() {
-    const q = new URLSearchParams(location.search);
-    const ticket = q.get('file');
+  // Open a file ticket (supports both initial startup and single-instance transfer)
+  async function openTicketFile(ticket, fallbackName, appendToPlaylist = false) {
     if (!ticket) return;
 
     const sos = getSOS();
-    let name = q.get('name') || (sos && sos.file && sos.file.name) || 'Image';
-    let url = (sos && sos.file && sos.file.url) || '/_shareos/cgi/file?t=' + encodeURIComponent(ticket);
+    const initial = !appendToPlaylist && sos && sos.file;
+    let url = (initial && sos.file.url) || '/_shareos/cgi/file?t=' + encodeURIComponent(ticket);
+    let name = fallbackName || (initial && sos.file.name) || 'Image';
     let size = 0;
 
-    if (sos && sos.file) {
+    if (initial && typeof sos.file.info === 'function') {
       try {
         await sos.file.info();
         if (sos.file.name) name = sos.file.name;
@@ -262,7 +438,9 @@
       } catch (err) {
         console.warn('ShareOS.file.info() error:', err);
       }
-    } else if (name === 'Image') {
+    }
+
+    if (!name || name === 'Image') {
       const parts = ticket.split('/');
       const last = parts[parts.length - 1];
       if (last && last.length < 150) {
@@ -271,21 +449,52 @@
         } catch (_) {
           name = last;
         }
+      } else {
+        name = 'Image';
       }
     }
 
     document.title = name + ' – ImageViewer';
-    currentFolder = { root: '', path: '' };
-    updateFolderLabels();
-    clearPlaylistBlobUrls();
-    playlist = [{ name, root: '', path: '', url, size }];
-    renderPlaylist();
 
-    // Auto-collapse sidebar when a single image is opened (keeps full stage focused)
+    if (appendToPlaylist && playlist.length > 0) {
+      const existingIdx = playlist.findIndex((item) => item.url === url);
+      if (existingIdx >= 0) {
+        showImageAtIndex(existingIdx);
+      } else {
+        playlist.push({ name, root: '', path: '', url, size });
+        renderPlaylist();
+        showImageAtIndex(playlist.length - 1);
+      }
+    } else {
+      currentFolder = { root: '', path: '' };
+      updateFolderLabels();
+      clearPlaylistBlobUrls();
+      playlist = [{ name, root: '', path: '', url, size }];
+      renderPlaylist();
+      showImageAtIndex(0);
+    }
+
+    // Auto-collapse sidebar when opening a standalone image file
     sidebar.classList.add('collapsed');
     updateSidebarToggleIcon();
 
-    showImageAtIndex(0);
+    // Update query params in address bar
+    try {
+      const q = new URLSearchParams(location.search);
+      q.set('file', ticket);
+      if (name) q.set('name', name);
+      window.history.replaceState({}, '', location.pathname + '?' + q.toString());
+    } catch (_) {}
+
+    flashCenter(name);
+  }
+
+  // Check if opened from ShareOS file manager (?file=ticket&name=...)
+  async function checkOpenedFile() {
+    const q = new URLSearchParams(location.search);
+    const ticket = q.get('file');
+    if (!ticket) return;
+    await openTicketFile(ticket, q.get('name'), false);
   }
 
   // Open Image File Picker
@@ -546,6 +755,8 @@
     mainImage.style.display = 'none';
     mainImage.onload = () => {
       if (seq !== loadSeq) return;
+      mainImage.style.width = mainImage.naturalWidth + 'px';
+      mainImage.style.height = mainImage.naturalHeight + 'px';
       mainImage.style.display = 'block';
       calculateFitScale();
       applyTransform();
@@ -588,7 +799,7 @@
     flipV = false;
     panX = 0;
     panY = 0;
-    scale = 1;
+    scale = 1.0;
   }
 
   function resetToFit() {
@@ -644,7 +855,7 @@
     // Double tap / click detection
     const now = Date.now();
     if (now - lastTapTime < 280) {
-      if (Math.abs(scale - fitScale) < 0.05) {
+      if (Math.abs(scale - fitScale) < 0.05 && fitScale < 0.98) {
         setActualSize();
       } else {
         resetToFit();
@@ -719,7 +930,7 @@
     if (e.touches.length === 0) {
       touchStartDist = 0;
       isDragging = false;
-      // Detect single swipe if not zoomed in
+      // Detect single swipe if not zoomed past fit
       if (scale <= fitScale * 1.05) {
         const touch = e.changedTouches[0];
         const dx = touch.clientX - touchStartX;
@@ -864,6 +1075,8 @@
 
     mainImage.removeAttribute('src');
     mainImage.style.display = 'none';
+    mainImage.style.width = '';
+    mainImage.style.height = '';
     currentIndex = -1;
     counterDisplay.textContent = '0 / 0';
 
