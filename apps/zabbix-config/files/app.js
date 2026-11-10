@@ -32,7 +32,6 @@
 	const els = {
 		statusPill: document.getElementById('statusPill'),
 		statusText: document.getElementById('statusText'),
-		langSelector: document.getElementById('langSelector'),
 		btnRefresh: document.getElementById('btnRefresh'),
 		btnRestart: document.getElementById('btnRestart'),
 		btnApply: document.getElementById('btnApply'),
@@ -412,16 +411,9 @@
 
 	// Event Listeners
 	function setupEvents() {
-		// Language selector
-		els.langSelector.value = I18n.getLang();
-		els.langSelector.addEventListener('change', (e) => {
-			I18n.setLang(e.target.value);
-			updateStatusBadge();
-			updateCliPreview();
-		});
-
 		window.onLanguageChanged = function() {
 			updateStatusBadge();
+			updateCliPreview();
 		};
 
 		// Realtime input sync to CLI snippet
@@ -541,7 +533,7 @@
 
 	// Init
 	document.addEventListener('DOMContentLoaded', () => {
-		I18n.applyToDOM();
+		I18n.init();
 		setupTabs();
 		setupEvents();
 		fetchTemplate();
