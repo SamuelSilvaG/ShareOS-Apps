@@ -604,6 +604,46 @@
     if (currentVal) sel.value = currentVal;
   }
 
+  // Helper to suggest a unique identifier when one already exists
+  function getSuggestedIdentifier(baseIdentifier, list, currentEditId) {
+    const raw = (baseIdentifier || 'indexer').trim().toLowerCase();
+    const cleanBase = raw.replace(/-\d+$/, '');
+    let counter = 2;
+    let candidate = `${cleanBase}-${counter}`;
+    const isTaken = (cand) => (list || []).some((idx) =>
+      idx.id !== currentEditId && String(idx.identifier || '').toLowerCase() === cand.toLowerCase()
+    );
+    while (isTaken(candidate)) {
+      counter++;
+      candidate = `${cleanBase}-${counter}`;
+    }
+    return candidate;
+  }
+
+  // Helper to check if an indexer/schema is a generic feed (Torznab, Newznab, RSS).
+  // Tracker definitions in autobrr map IRC announcements strictly by their definition identifier,
+  // so definition-based trackers must not use suffixed identifiers (e.g. torrentleech-2).
+  function isGenericFeed(identifierOrSchema) {
+    if (!identifierOrSchema) return true;
+    let id = '';
+    let type = '';
+    if (typeof identifierOrSchema === 'string') {
+      id = identifierOrSchema.toLowerCase();
+      const schema = indexerSchemas.find((s) => (s.identifier || '').toLowerCase() === id);
+      if (schema && schema.type) type = String(schema.type).toLowerCase();
+    } else if (typeof identifierOrSchema === 'object') {
+      id = String(identifierOrSchema.identifier || '').toLowerCase();
+      type = String(identifierOrSchema.type || '').toLowerCase();
+    }
+    const cleanId = id.replace(/-\d+$/, '');
+    const generic = ['torznab', 'newznab', 'rss'];
+    if (generic.includes(cleanId) || generic.includes(type)) return true;
+    if (indexerSchemas.length > 0 && !indexerSchemas.some((s) => (s.identifier || '').toLowerCase() === cleanId)) {
+      return true; // custom/user-defined feed
+    }
+    return false;
+  }
+
   // Indexer Modal handlers
   function openIndexerModal(indexer = null) {
     editingIndexerId = indexer ? indexer.id : null;
@@ -649,7 +689,7 @@
     }
 
     const name = ($('indexer-name') ? $('indexer-name').value : '').trim();
-    const identifier = ($('indexer-identifier') ? $('indexer-identifier').value : '').trim().toLowerCase();
+    let identifier = ($('indexer-identifier') ? $('indexer-identifier').value : '').trim().toLowerCase();
     const url = ($('indexer-url') ? $('indexer-url').value : '').trim();
     const apikey = ($('indexer-apikey') ? $('indexer-apikey').value : '').trim();
     const enabled = $('indexer-enabled') ? $('indexer-enabled').checked : true;
@@ -659,7 +699,15 @@
       return;
     }
 
-    // Prevent duplicate identifier on create and confirm before overwriting
+    // Always fetch a fresh indexer list from autobrr right before checking
+    try {
+      const fresh = await AB.api('GET', '/api/indexer');
+      if (Array.isArray(fresh)) {
+        indexers = fresh;
+      }
+    } catch (_) {}
+
+    // Check for duplicate identifier
     const existing = indexers.find((idx) => String(idx.identifier || '').toLowerCase() === identifier.toLowerCase());
     if (existing && existing.id !== editingIndexerId) {
       const ok = confirm(t('indexers.confirm_update', { name: existing.name || identifier }));
@@ -699,13 +747,38 @@
         await AB.api('PUT', `/api/indexer/${editingIndexerId}`, payload);
         toast(t('toast.indexer_updated'));
       } else {
+        delete payload.id;
         await AB.api('POST', '/api/indexer', payload);
         toast(t('toast.indexer_created'));
       }
       closeIndexerModal();
       await refreshIRCAndIndexers();
     } catch (err) {
-      toast(`Error saving indexer: ${err.message}`, true);
+      const isUniqueErr = err && err.message && err.message.includes('UNIQUE constraint failed');
+      if (isUniqueErr) {
+        // Refresh indexer cache
+        try {
+          const fresh = await AB.api('GET', '/api/indexer');
+          if (Array.isArray(fresh)) indexers = fresh;
+        } catch (_) {}
+
+        if (isGenericFeed(identifier)) {
+          const suggested = getSuggestedIdentifier(identifier, indexers, editingIndexerId);
+          if ($('indexer-identifier')) {
+            $('indexer-identifier').value = suggested;
+            $('indexer-identifier').focus();
+          }
+          const retry = confirm(t('indexers.confirm_use_suggested', { id: identifier, suggested }));
+          if (retry) {
+            return saveIndexerFromModal();
+          }
+          toast(t('indexers.err_unique_identifier', { id: identifier, suggested }), true);
+        } else {
+          toast(t('indexers.err_tracker_exists', { id: identifier }), true);
+        }
+      } else {
+        toast(`Error saving indexer: ${err.message}`, true);
+      }
     }
   }
 
@@ -1441,10 +1514,23 @@
         const id = $('indexer-preset').value;
         const schema = indexerSchemas.find((s) => s.identifier === id);
         if (schema) {
-          if (!$('indexer-name').value || $('indexer-name').value === $('indexer-identifier').value) {
-            $('indexer-name').value = schema.name || schema.identifier;
+          const rawIdentifier = schema.identifier || id;
+          let targetIdentifier = rawIdentifier;
+          let targetName = schema.name || schema.identifier;
+
+          // Only suggest suffixed identifier for generic feeds (Torznab/Newznab/RSS).
+          // Tracker definitions must keep their exact identifier to match autobrr definitions.
+          if (!editingIndexerId && isGenericFeed(schema) && indexers.some((idx) => String(idx.identifier || '').toLowerCase() === rawIdentifier.toLowerCase())) {
+            targetIdentifier = getSuggestedIdentifier(rawIdentifier, indexers, null);
+            targetName = `${schema.name || schema.identifier} 2`;
           }
-          $('indexer-identifier').value = schema.identifier;
+
+          const autoName = schema.name || schema.identifier;
+          const cur = $('indexer-name') ? $('indexer-name').value : '';
+          if (!cur || cur === ($('indexer-identifier') ? $('indexer-identifier').value : '') || cur === autoName || cur === `${autoName} 2`) {
+            $('indexer-name').value = targetName;
+          }
+          $('indexer-identifier').value = targetIdentifier;
           if (schema.urls && schema.urls[0] && !$('indexer-url').value) {
             $('indexer-url').value = schema.urls[0];
           }
