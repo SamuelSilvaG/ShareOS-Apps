@@ -111,6 +111,8 @@
     const record = { id: INSTANCE_ID, ts: Date.now() };
     try {
       localStorage.setItem('sos_videoplayer_active', JSON.stringify(record));
+      localStorage.removeItem('sos_videoplayer_transfer');
+      localStorage.removeItem('sos_videoplayer_ack');
     } catch (_) {}
 
     clearInterval(heartbeatTimer);
@@ -129,6 +131,8 @@
       if (cur && cur.id === INSTANCE_ID) {
         localStorage.removeItem('sos_videoplayer_active');
       }
+      localStorage.removeItem('sos_videoplayer_transfer');
+      localStorage.removeItem('sos_videoplayer_ack');
     } catch (_) {}
   }
 
@@ -155,12 +159,11 @@
       }
 
       // If another instance is alive and we were opened with a file:
-      if (ticket) {
+      if (ticket && singleChannel) {
         const payload = {
           fromId: INSTANCE_ID,
           ticket: ticket,
           name: q.get('name') || '',
-          fs: q.get('fs') || '',
           ts: Date.now()
         };
 
@@ -173,63 +176,37 @@
           try { window.close(); } catch (_) {}
           // Fallback UI in case popup policy delays window.close
           document.body.innerHTML = `
-            <div style="display:flex;height:100vh;align-items:center;justify-content:center;background:#06090d;color:#c6dff5;font-family:system-ui,sans-serif;text-align:center;padding:20px;">
+            <div class="sos-app" style="display:flex;height:100vh;align-items:center;justify-content:center;background:var(--sos-bg);color:var(--sos-text);text-align:center;padding:20px;">
               <div>
                 <p style="font-size:16px;margin-bottom:12px;">✓ ${t('single.transferred')}</p>
-                <button onclick="window.close()" style="background:#3da5ff;border:none;border-radius:6px;padding:8px 18px;color:#000;font-weight:600;cursor:pointer;">${t('single.close')}</button>
+                <button class="sos-btn" onclick="window.close()">${t('single.close')}</button>
               </div>
             </div>`;
           resolve(false);
         };
 
         // Listen for ACK from primary window
-        if (singleChannel) {
-          singleChannel.addEventListener('message', (ev) => {
-            if (ev.data && ev.data.type === 'open-file-ack') {
-              onAck(ev.data.targetId);
-            }
-          });
-        }
-
-        const sos = getSOS();
-        if (sos && typeof sos.on === 'function') {
-          sos.on('videoplayer:open-file-ack', (d) => {
-            if (d && d.targetId) onAck(d.targetId);
-          });
-        }
-
-        window.addEventListener('storage', (ev) => {
-          if (ev.key === 'sos_videoplayer_ack' && ev.newValue) {
-            try {
-              const d = JSON.parse(ev.newValue);
-              if (d && d.targetId) onAck(d.targetId);
-            } catch (_) {}
+        singleChannel.addEventListener('message', (ev) => {
+          if (ev.data && ev.data.type === 'open-file-ack') {
+            onAck(ev.data.targetId);
           }
         });
 
         // Broadcast file open request to primary window
-        if (singleChannel) {
-          singleChannel.postMessage({ type: 'open-file', data: payload });
-        }
-        if (sos && typeof sos.emit === 'function') {
-          sos.emit('videoplayer:open-file', payload);
-        }
-        try {
-          localStorage.setItem('sos_videoplayer_transfer', JSON.stringify(payload));
-        } catch (_) {}
+        singleChannel.postMessage({ type: 'open-file', data: payload });
 
-        // Timeout fallback: if no ACK received in 150ms (e.g. stale crashed window)
+        // Timeout fallback: if no ACK received in 750ms (e.g. stale crashed window or busy thread)
         setTimeout(() => {
           if (!handled) {
             markAsPrimary();
             setupPrimaryListeners();
             resolve(true);
           }
-        }, 150);
+        }, 750);
         return;
       }
 
-      // If opened without a file ticket (e.g. fresh launch), become primary
+      // If opened without a file ticket (e.g. fresh launch) or no BroadcastChannel, become primary
       markAsPrimary();
       setupPrimaryListeners();
       resolve(true);
@@ -244,19 +221,12 @@
       if (singleChannel) {
         singleChannel.postMessage({ type: 'open-file-ack', targetId: data.fromId });
       }
-      const sos = getSOS();
-      if (sos && typeof sos.emit === 'function') {
-        sos.emit('videoplayer:open-file-ack', { targetId: data.fromId });
-      }
-      try {
-        localStorage.setItem('sos_videoplayer_ack', JSON.stringify({ targetId: data.fromId, ts: Date.now() }));
-      } catch (_) {}
 
       // Bring primary window to front
       try { window.focus(); } catch (_) {}
 
       // Load video into current player (append to playlist & play)
-      openTicketFile(data.ticket, data.name, data.fs, true);
+      openTicketFile(data.ticket, data.name, true);
     };
 
     if (singleChannel) {
@@ -266,24 +236,6 @@
         }
       });
     }
-
-    const sos = getSOS();
-    if (sos && typeof sos.on === 'function') {
-      sos.on('videoplayer:open-file', (d) => {
-        handleIncoming(d);
-      });
-    }
-
-    window.addEventListener('storage', (ev) => {
-      if (ev.key === 'sos_videoplayer_transfer' && ev.newValue) {
-        try {
-          const d = JSON.parse(ev.newValue);
-          if (d && d.fromId !== INSTANCE_ID && (Date.now() - d.ts < 3000)) {
-            handleIncoming(d);
-          }
-        } catch (_) {}
-      }
-    });
 
     window.addEventListener('beforeunload', releasePrimary);
     window.addEventListener('pagehide', releasePrimary);
@@ -568,19 +520,15 @@
   }
 
   // Open a file ticket (supports both initial startup and single-instance transfer)
-  async function openTicketFile(ticket, fallbackName, fsGrant, appendToPlaylist = false) {
+  async function openTicketFile(ticket, fallbackName, appendToPlaylist = false) {
     if (!ticket) return;
 
-    if (fsGrant && /^[0-9a-f]{32}$/.test(fsGrant)) {
-      try { sessionStorage.setItem('sos-fs-videoplayer', fsGrant); } catch (_) {}
-    }
-
     const sos = getSOS();
-    let name = fallbackName || 'Video';
     let url = '/_shareos/cgi/file?t=' + encodeURIComponent(ticket);
-    let size = 0;
+    let name = fallbackName || 'Video', size = 0;
 
-    if (sos && sos.file && typeof sos.file.info === 'function') {
+    const initial = !appendToPlaylist && sos && sos.file && typeof sos.file.info === 'function';
+    if (initial) {
       try {
         await sos.file.info();
         if (sos.file.name) name = sos.file.name;
@@ -604,7 +552,7 @@
     document.title = name + ' – VideoPlayer';
 
     if (appendToPlaylist && playlist.length > 0) {
-      const existingIdx = playlist.findIndex((item) => item.name === name || (item.url && item.url === url));
+      const existingIdx = playlist.findIndex((item) => item.url === url);
       if (existingIdx >= 0) {
         playVideoAtIndex(existingIdx);
       } else {
@@ -627,7 +575,6 @@
       const q = new URLSearchParams(location.search);
       q.set('file', ticket);
       if (name) q.set('name', name);
-      if (fsGrant) q.set('fs', fsGrant);
       window.history.replaceState({}, '', location.pathname + '?' + q.toString());
     } catch (_) {}
 
@@ -639,7 +586,7 @@
     const q = new URLSearchParams(location.search);
     const ticket = q.get('file');
     if (!ticket) return;
-    await openTicketFile(ticket, q.get('name'), q.get('fs'), false);
+    await openTicketFile(ticket, q.get('name'), false);
   }
 
   // Open Video File Picker
