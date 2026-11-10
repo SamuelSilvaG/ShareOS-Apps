@@ -533,9 +533,9 @@
 
 	// Init
 	document.addEventListener('DOMContentLoaded', () => {
-		I18n.init();
 		setupTabs();
 		setupEvents();
+		I18n.init();
 		fetchTemplate();
 		loadConfig();
 	});
