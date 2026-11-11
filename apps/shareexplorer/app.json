@@ -1,0 +1,24 @@
+{
+	"id": "shareexplorer",
+	"name": "ShareExplorer",
+	"version": "1.0.0",
+	"publisher": "UniqueDroid",
+	"description": {
+		"de": "Dateimanager für die Ordner der Box im Stil des Windows-Explorers: Befehlsleiste, Adressleiste mit Pfad, Navigationsbereich mit Ordnerbaum, Details- und Symbolansicht, Detailbereich mit Vorschau. Kopieren, Ausschneiden, Einfügen, Umbenennen an Ort und Stelle, Ziehen und Ablegen, Hochladen. Per Knopf in den ShareOS-Stil umschaltbar.",
+		"en": "File manager for the folders of the box in the style of the Windows file explorer: command bar, address bar with the path, navigation pane with a folder tree, details and icons view, details pane with a preview. Copy, cut, paste, rename in place, drag and drop, upload. One button switches to the ShareOS look."
+	},
+	"type": "webapp",
+	"entry": "index.html",
+	"icon": "icon.svg",
+	"category": "tools",
+	"license": "GPL-2.0-only",
+	"homepage": "https://github.com/UniqueDroid/ShareOS-Apps/tree/main/apps/shareexplorer",
+	"min_shareos": "0.2.0-beta.11",
+	"permissions": [
+		"files"
+	],
+	"window": {
+		"width": 1120,
+		"height": 700
+	}
+}
