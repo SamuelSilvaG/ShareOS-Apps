@@ -14,7 +14,7 @@ installs them with one click – the same way it offers firmware updates.
 
 ## Apps
 
-39 web apps. Most save their data in the personal folder of the signed-in
+45 web apps. Most save their data in the personal folder of the signed-in
 account on the box (permission `files`, `ShareOS.fs`) and fall back to the
 browser's storage without it.
 
@@ -24,6 +24,8 @@ browser's storage without it.
 |---|---|
 | [Webpad](apps/webpad) | Text editor in the style of Notepad++; opens and saves files on the box or on your computer, takes files from other apps |
 | [ShareCommander](apps/sharecommander) | Two-pane file manager in the style of Total Commander for the folders of the box and the browser file system (shared with WebTerm): ZIP, multi-rename, preview, bridges to Webpad and WinWeb Player |
+| [ShareExplorer](apps/shareexplorer) | File manager in the style of the Windows file explorer: command bar, address bar, folder tree, details/icons view, details pane with a preview, drag and drop; one button switches to the ShareOS look |
+| [ShareFinder](apps/sharefinder) | File manager in the style of the macOS Finder: sidebar, icon/list/column view, Quick Look with the space bar, path bar, drag and drop; one button switches to the ShareOS look |
 | [SheetOS](apps/sheetos) | Small spreadsheet with formulas; opens and saves CSV files of the box |
 | [ShareNotes](apps/notes) | Sticky notes in colour with an edit dialog and search; every note is a file in your personal folder on the box |
 | [TaskBoard](apps/taskboard) | Kanban board for tasks; columns stack on phones |

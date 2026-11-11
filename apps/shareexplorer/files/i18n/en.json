@@ -1,0 +1,256 @@
+{
+ "exact": {
+  "Dateiordner": "File folder",
+  "Bild": "Image",
+  "Video": "Video",
+  "Audio": "Audio",
+  "Textdokument": "Text document",
+  "PDF-Dokument": "PDF document",
+  "Archiv": "Archive",
+  "Dokument": "Document",
+  "Tabelle": "Spreadsheet",
+  "Präsentation": "Presentation",
+  "Datei": "File",
+  "Persönlicher Ordner": "Personal folder",
+  "App-Ordner": "App folder",
+  "Ein Element mit diesem Namen gibt es hier schon.": "An item with this name already exists here.",
+  "Dieser Ordner ist schreibgeschützt.": "This folder is read-only.",
+  "Keine Berechtigung für diesen Ordner.": "No permission for this folder.",
+  "Auf dem Laufwerk ist kein Platz mehr.": "The drive is full.",
+  "Nicht gefunden – vielleicht wurde es inzwischen verschoben oder gelöscht.": "Not found – it may have been moved or deleted meanwhile.",
+  "Ein Ordner kann nicht in sich selbst kopiert werden.": "A folder cannot be copied into itself.",
+  "Ein Ordner kann nicht in sich selbst verschoben werden.": "A folder cannot be moved into itself.",
+  "Unbekannter Fehler": "Unknown error",
+  "Ungültiger Name.": "Invalid name.",
+  "Ordner lassen sich nicht im selben Ordner duplizieren – in einen anderen Ordner einfügen.": "Folders cannot be duplicated in the same folder – paste them into another folder.",
+  "Abbrechen": "Cancel",
+  "OK": "OK",
+  "Schließen": "Close",
+  "Herunterladen": "Download",
+  "Vorheriges": "Previous",
+  "Nächstes": "Next",
+  "Vorheriges (←)": "Previous (←)",
+  "Nächstes (→)": "Next (→)",
+  "Schließen (Esc)": "Close (Esc)",
+  "(gekürzt – zum Lesen herunterladen)": "(shortened – download to read it all)",
+  "Diese App braucht den Zugriff auf die Dateien der Box. Der Admin schaltet ihn unter Benutzer → „Dateien“ ein.": "This app needs access to the files of the box. The admin turns it on under Users → “Files”.",
+  "Für dieses Konto gibt es weder einen persönlichen Ordner noch eine Freigabe.": "This account has neither a personal folder nor a share.",
+  "Zwischen Original- und ShareOS-Stil wechseln": "Switch between the original and the ShareOS style",
+  "Original-Stil": "Original style",
+  "ShareOS-Stil": "ShareOS style",
+  "Dateien": "Files",
+  "Hochladen": "Upload",
+  "Hochladen …": "Upload …",
+  "Neuer Ordner": "New folder",
+  "Öffnen": "Open",
+  "Ort": "Location",
+  "Inhalt": "Contents",
+  "Zugriff": "Access",
+  "Geändert": "Modified",
+  "Größe": "Size",
+  "Name": "Name",
+  "Änderungsdatum": "Date modified",
+  "Sortieren nach": "Sort by",
+  "Ausschneiden": "Cut",
+  "Löschen": "Delete",
+  "Umbenennen": "Rename",
+  "Kopieren": "Copy",
+  "Einfügen": "Paste",
+  "Dateien hochgeladen.": "files uploaded.",
+  "Hochgeladen.": "Uploaded.",
+  "Bytes": "bytes",
+  "1 Byte": "1 byte",
+  "Zurück": "Back",
+  "Vorwärts": "Forward",
+  "Darstellung": "View",
+  "Befehle": "Commands",
+  "Neu": "New",
+  "Ausschneiden (Strg+X)": "Cut (Ctrl+X)",
+  "Kopieren (Strg+C)": "Copy (Ctrl+C)",
+  "Einfügen (Strg+V)": "Paste (Ctrl+V)",
+  "Umbenennen (F2)": "Rename (F2)",
+  "Löschen (Entf)": "Delete (Del)",
+  "Sortieren": "Sort",
+  "Anzeigen": "View",
+  "Dateien vom Computer hochladen": "Upload files from the computer",
+  "Detailbereich ein/aus (Alt+Umschalt+P)": "Details pane on/off (Alt+Shift+P)",
+  "Detailbereich": "Details pane",
+  "Zurück (Alt+←)": "Back (Alt+←)",
+  "Vorwärts (Alt+→)": "Forward (Alt+→)",
+  "Nach oben (Alt+↑)": "Up (Alt+↑)",
+  "Nach oben": "Up",
+  "Aktualisieren (F5)": "Refresh (F5)",
+  "Aktualisieren": "Refresh",
+  "Adresse": "Address",
+  "Navigationsbereich": "Navigation pane",
+  "Details": "Details",
+  "Große Symbole": "Large icons",
+  "Liste": "List",
+  "ShareExplorer läuft in ShareOS: dort unter Apps öffnen.": "ShareExplorer runs in ShareOS: open it under Apps there.",
+  "Keine Elemente entsprechen dem Suchbegriff.": "No items match your search.",
+  "Dieser Ordner ist leer.": "This folder is empty.",
+  "Typ": "Type",
+  "Element": "item",
+  "Elemente": "items",
+  "Element ausgewählt": "item selected",
+  "Elemente ausgewählt": "items selected",
+  "frei": "free",
+  "Element auswählen, um die Details anzuzeigen.": "Select an item to see its details.",
+  "Zuklappen": "Collapse",
+  "Aufklappen": "Expand",
+  "Diese Box": "This box",
+  "Neues Textdokument": "New text document",
+  "Ordner löschen": "Delete folder",
+  "Datei löschen": "Delete file",
+  "Elemente löschen": "Delete items",
+  "Soll": "Should",
+  "endgültig gelöscht werden?": "be deleted for good?",
+  "Ordner werden mit ihrem ganzen Inhalt gelöscht.": "Folders are deleted with everything in them.",
+  "Auf der Box gibt es keinen Papierkorb.": "The box has no recycle bin.",
+  "Gelöscht.": "Deleted.",
+  "Elemente gelöscht.": "items deleted.",
+  "Eingefügt.": "Pasted.",
+  "Eigenschaften": "Properties",
+  "Frei": "Free",
+  "nur lesen": "read only",
+  "lesen und schreiben": "read and write",
+  "(ohne Ordnerinhalt)": "(without folder contents)",
+  "Aufsteigend": "Ascending",
+  "Absteigend": "Descending",
+  "Ausgeblendete Elemente": "Hidden items",
+  "Ordner": "Folder",
+  "Strg+Umschalt+N": "Ctrl+Shift+N",
+  "In die Zwischenablage kopiert.": "Copied to the clipboard.",
+  "Elemente kopiert.": "items copied.",
+  "Ordner nicht gefunden:": "Folder not found:",
+  "In Ordner einfügen": "Paste into folder",
+  "Eingabe": "Enter",
+  "Alt+Eingabe": "Alt+Enter",
+  "Ansicht": "View",
+  "Entf": "Del",
+  "Strg+X": "Ctrl+X",
+  "Strg+C": "Ctrl+C",
+  "Strg+V": "Ctrl+V",
+  "Kopiert.": "Copied.",
+  "Verschoben.": "Moved.",
+  "Durchsuchen:": "Search:",
+  "ShareExplorer – ShareOS": "ShareExplorer – ShareOS",
+  "Heute,": "Today,"
+ },
+ "patterns": [
+  [
+   "^Ordner werden mit ihrem ganzen Inhalt gelöscht\\. Auf der Box gibt es keinen Papierkorb\\.$",
+   "Folders are deleted with everything in them. The box has no recycle bin."
+  ],
+  [
+   "^Soll (.+) endgültig gelöscht werden\\? (.*)$",
+   "Should $1 be deleted for good? $2"
+  ],
+  [
+   "^(\\d+) Elemente ausgewählt(.*)$",
+   "$1 items selected$2"
+  ],
+  [
+   "^(\\d+) Dateien hochgeladen\\.$",
+   "$1 files uploaded."
+  ],
+  [
+   "^Hochladen (\\d+)/(\\d+): (.*)$",
+   "Uploading $1/$2: $3"
+  ],
+  [
+   "^Ordner nicht gefunden: (.*)$",
+   "Folder not found: $1"
+  ],
+  [
+   "^(\\d+) Elemente gelöscht\\.$",
+   "$1 items deleted."
+  ],
+  [
+   "^1 Element ausgewählt(.*)$",
+   "1 item selected$1"
+  ],
+  [
+   "^(\\d+) Elemente kopiert\\.$",
+   "$1 items copied."
+  ],
+  [
+   "^Textdokument \\((.+)\\)$",
+   "Text document ($1)"
+  ],
+  [
+   "^PDF-Dokument \\((.+)\\)$",
+   "PDF document ($1)"
+  ],
+  [
+   "^Präsentation \\((.+)\\)$",
+   "Presentation ($1)"
+  ],
+  [
+   "^(.+) – ShareExplorer$",
+   "$1 – ShareExplorer"
+  ],
+  [
+   "^(.+) um (\\d\\d:\\d\\d)$",
+   "$1 at $2"
+  ],
+  [
+   "^Dokument \\((.+)\\)$",
+   "Document ($1)"
+  ],
+  [
+   "^Durchsuchen: (.*)$",
+   "Search $1"
+  ],
+  [
+   "^Tabelle \\((.+)\\)$",
+   "Spreadsheet ($1)"
+  ],
+  [
+   "^Archiv \\((.+)\\)$",
+   "Archive ($1)"
+  ],
+  [
+   "^Video \\((.+)\\)$",
+   "Video ($1)"
+  ],
+  [
+   "^Audio \\((.+)\\)$",
+   "Audio ($1)"
+  ],
+  [
+   "^(\\d+) Elemente$",
+   "$1 items"
+  ],
+  [
+   "^Gestern, (.+)$",
+   "Yesterday, $1"
+  ],
+  [
+   "^Bild \\((.+)\\)$",
+   "Image ($1)"
+  ],
+  [
+   "^Heute, (.+)$",
+   "Today, $1"
+  ],
+  [
+   "^(\\S+)-Datei$",
+   "$1 file"
+  ],
+  [
+   "^1 Element$",
+   "1 item"
+  ],
+  [
+   "^(.+) frei$",
+   "$1 free"
+  ]
+ ],
+ "words": [
+  [
+   "\\bBytes\\b",
+   "bytes"
+  ]
+ ]
+}

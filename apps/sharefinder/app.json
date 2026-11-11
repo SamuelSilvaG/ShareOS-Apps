@@ -1,0 +1,24 @@
+{
+	"id": "sharefinder",
+	"name": "ShareFinder",
+	"version": "1.0.0",
+	"publisher": "UniqueDroid",
+	"description": {
+		"de": "Dateimanager für die Ordner der Box im Stil des macOS-Finders: Seitenleiste mit Favoriten, Symbol-, Listen- und Spaltenansicht, Übersicht mit der Leertaste, Pfadleiste und Informationen. Kopieren, Einsetzen, Umbenennen, Ziehen und Ablegen, Hochladen. Per Knopf in den ShareOS-Stil umschaltbar.",
+		"en": "File manager for the folders of the box in the style of the macOS Finder: sidebar with favourites, icon, list and column view, Quick Look with the space bar, path bar and Get Info. Copy, paste, rename, drag and drop, upload. One button switches to the ShareOS look."
+	},
+	"type": "webapp",
+	"entry": "index.html",
+	"icon": "icon.svg",
+	"category": "tools",
+	"license": "GPL-2.0-only",
+	"homepage": "https://github.com/UniqueDroid/ShareOS-Apps/tree/main/apps/sharefinder",
+	"min_shareos": "0.2.0-beta.11",
+	"permissions": [
+		"files"
+	],
+	"window": {
+		"width": 1040,
+		"height": 660
+	}
+}

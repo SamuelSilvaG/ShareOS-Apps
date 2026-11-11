@@ -1,0 +1,224 @@
+{
+ "exact": {
+  "Dateiordner": "File folder",
+  "Bild": "Image",
+  "Video": "Video",
+  "Audio": "Audio",
+  "Textdokument": "Text document",
+  "PDF-Dokument": "PDF document",
+  "Archiv": "Archive",
+  "Dokument": "Document",
+  "Tabelle": "Spreadsheet",
+  "Präsentation": "Presentation",
+  "Datei": "File",
+  "Persönlicher Ordner": "Personal folder",
+  "App-Ordner": "App folder",
+  "Ein Element mit diesem Namen gibt es hier schon.": "An item with this name already exists here.",
+  "Dieser Ordner ist schreibgeschützt.": "This folder is read-only.",
+  "Keine Berechtigung für diesen Ordner.": "No permission for this folder.",
+  "Auf dem Laufwerk ist kein Platz mehr.": "The drive is full.",
+  "Nicht gefunden – vielleicht wurde es inzwischen verschoben oder gelöscht.": "Not found – it may have been moved or deleted meanwhile.",
+  "Ein Ordner kann nicht in sich selbst kopiert werden.": "A folder cannot be copied into itself.",
+  "Ein Ordner kann nicht in sich selbst verschoben werden.": "A folder cannot be moved into itself.",
+  "Unbekannter Fehler": "Unknown error",
+  "Ungültiger Name.": "Invalid name.",
+  "Ordner lassen sich nicht im selben Ordner duplizieren – in einen anderen Ordner einfügen.": "Folders cannot be duplicated in the same folder – paste them into another folder.",
+  "Abbrechen": "Cancel",
+  "OK": "OK",
+  "Schließen": "Close",
+  "Herunterladen": "Download",
+  "Vorheriges": "Previous",
+  "Nächstes": "Next",
+  "Vorheriges (←)": "Previous (←)",
+  "Nächstes (→)": "Next (→)",
+  "Schließen (Esc)": "Close (Esc)",
+  "(gekürzt – zum Lesen herunterladen)": "(shortened – download to read it all)",
+  "Diese App braucht den Zugriff auf die Dateien der Box. Der Admin schaltet ihn unter Benutzer → „Dateien“ ein.": "This app needs access to the files of the box. The admin turns it on under Users → “Files”.",
+  "Für dieses Konto gibt es weder einen persönlichen Ordner noch eine Freigabe.": "This account has neither a personal folder nor a share.",
+  "Zwischen Original- und ShareOS-Stil wechseln": "Switch between the original and the ShareOS style",
+  "Original-Stil": "Original style",
+  "ShareOS-Stil": "ShareOS style",
+  "Dateien": "Files",
+  "Hochladen": "Upload",
+  "Hochladen …": "Upload …",
+  "Neuer Ordner": "New folder",
+  "Öffnen": "Open",
+  "Ort": "Location",
+  "Inhalt": "Contents",
+  "Zugriff": "Access",
+  "Geändert": "Modified",
+  "Größe": "Size",
+  "Name": "Name",
+  "Änderungsdatum": "Date modified",
+  "Sortieren nach": "Sort by",
+  "Ausschneiden": "Cut",
+  "Löschen": "Delete",
+  "Umbenennen": "Rename",
+  "Kopieren": "Copy",
+  "Einfügen": "Paste",
+  "Dateien hochgeladen.": "files uploaded.",
+  "Hochgeladen.": "Uploaded.",
+  "Bytes": "bytes",
+  "1 Byte": "1 byte",
+  "Zurück": "Back",
+  "Vorwärts": "Forward",
+  "Darstellung": "View",
+  "Strg+": "Ctrl+",
+  "Umschalt+": "Shift+",
+  "Seitenleiste": "Sidebar",
+  "Als Symbole": "As icons",
+  "Als Liste": "As list",
+  "Als Spalten": "As columns",
+  "Aktionen": "Actions",
+  "Dateien hochladen": "Upload files",
+  "Suchen": "Search",
+  "ShareFinder läuft in ShareOS: dort unter Apps öffnen.": "ShareFinder runs in ShareOS: open it under Apps there.",
+  "Favoriten": "Favourites",
+  "Freigaben": "Shares",
+  "Speicherorte": "Locations",
+  "Dieser Ordner ist leer.": "This folder is empty.",
+  "Keine Treffer.": "No results.",
+  "Art": "Kind",
+  "Vorschau": "Preview",
+  "Laden": "Download",
+  "leer": "empty",
+  "ausgewählt": "selected",
+  "von": "of",
+  "Objekt": "item",
+  "Objekte": "items",
+  "verfügbar": "available",
+  "Verfügbar": "Available",
+  "Nur lesen": "Read only",
+  "Lesen & Schreiben": "Read & write",
+  "nur lesen": "read only",
+  "Ordner": "Folder",
+  "Sofort löschen?": "Delete immediately?",
+  "Möchtest du": "Do you really want to delete",
+  "wirklich löschen? Auf der Box gibt es keinen Papierkorb – das kann nicht widerrufen werden.": "? The box has no trash – this cannot be undone.",
+  "Umgekehrte Reihenfolge": "Reverse order",
+  "Neue Textdatei": "New text file",
+  "Ohne Titel": "Untitled",
+  "übersichtlich zeigen": "Quick Look",
+  "Leertaste": "Space",
+  "Informationen": "Get info",
+  "kopieren": "copy",
+  "Objekte kopieren": "items copy",
+  "Objekt einsetzen": "Paste item",
+  "In diesen Ordner einsetzen": "Paste into this folder",
+  "Objekt hierher bewegen": "Move item here",
+  "Pfadleiste": "Path bar",
+  "Unsichtbare Objekte": "Hidden items",
+  "ShareOS": "ShareOS",
+  "Original": "Original",
+  "ShareFinder – ShareOS": "ShareFinder – ShareOS",
+  "Heute,": "Today,"
+ },
+ "patterns": [
+  [
+   "^Möchtest du (.+) wirklich löschen\\? Auf der Box gibt es keinen Papierkorb – das kann nicht widerrufen werden\\.$",
+   "Do you really want to delete $1? The box has no trash – this cannot be undone."
+  ],
+  [
+   "^(\\d+) von (\\d+) ausgewählt(.*)$",
+   "$1 of $2 selected$3"
+  ],
+  [
+   "^(\\d+) Dateien hochgeladen\\.$",
+   "$1 files uploaded."
+  ],
+  [
+   "^Hochladen (\\d+)/(\\d+): (.*)$",
+   "Uploading $1/$2: $3"
+  ],
+  [
+   "^„(.+)“ übersichtlich zeigen$",
+   "Quick Look “$1”"
+  ],
+  [
+   "^(\\d+) Objekte kopieren$",
+   "Copy $1 items"
+  ],
+  [
+   "^Textdokument \\((.+)\\)$",
+   "Text document ($1)"
+  ],
+  [
+   "^PDF-Dokument \\((.+)\\)$",
+   "PDF document ($1)"
+  ],
+  [
+   "^Präsentation \\((.+)\\)$",
+   "Presentation ($1)"
+  ],
+  [
+   "^(\\d+) Objekte(, .*)?$",
+   "$1 items$2"
+  ],
+  [
+   "^(.+) um (\\d\\d:\\d\\d)$",
+   "$1 at $2"
+  ],
+  [
+   "^(.+) verfügbar(.*)$",
+   "$1 available$2"
+  ],
+  [
+   "^(.+) – ShareFinder$",
+   "$1 – ShareFinder"
+  ],
+  [
+   "^Dokument \\((.+)\\)$",
+   "Document ($1)"
+  ],
+  [
+   "^Tabelle \\((.+)\\)$",
+   "Spreadsheet ($1)"
+  ],
+  [
+   "^(.*) · nur lesen$",
+   "$1 · read only"
+  ],
+  [
+   "^Archiv \\((.+)\\)$",
+   "Archive ($1)"
+  ],
+  [
+   "^1 Objekt(, .*)?$",
+   "1 item$1"
+  ],
+  [
+   "^„(.+)“ kopieren$",
+   "Copy “$1”"
+  ],
+  [
+   "^Video \\((.+)\\)$",
+   "Video ($1)"
+  ],
+  [
+   "^Audio \\((.+)\\)$",
+   "Audio ($1)"
+  ],
+  [
+   "^Gestern, (.+)$",
+   "Yesterday, $1"
+  ],
+  [
+   "^Bild \\((.+)\\)$",
+   "Image ($1)"
+  ],
+  [
+   "^Heute, (.+)$",
+   "Today, $1"
+  ],
+  [
+   "^(\\S+)-Datei$",
+   "$1 file"
+  ]
+ ],
+ "words": [
+  [
+   "\\bBytes\\b",
+   "bytes"
+  ]
+ ]
+}
