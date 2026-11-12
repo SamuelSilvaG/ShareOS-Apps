@@ -532,6 +532,7 @@
           <button class="s-tab" data-stab="speed" data-i18n="cfg.tabSpeed">Speed Limits</button>
           <button class="s-tab" data-stab="net" data-i18n="cfg.tabNetwork">Network & Peers</button>
           <button class="s-tab" data-stab="queue" data-i18n="cfg.tabQueue">Queue & Seeding</button>
+          <button class="s-tab" data-stab="remote" id="s-tab-remote" data-i18n="cfg.tabRemote" hidden>Remote access</button>
         </div>
 
         <!-- Settings: Downloading Tab -->
@@ -685,6 +686,45 @@
           <div class="cfg-section">
             <label class="chk-label"><input type="checkbox" id="cfg-ratio-limited"> <span data-i18n="cfg.seedRatioLimited">Stop seeding at ratio:</span></label>
             <input type="number" id="cfg-ratio-limit" class="sos-input inline-num" min="0" step="0.1" style="width:120px; margin-top:8px;">
+          </div>
+        </div>
+
+        <!-- Settings: Remote access (Transmission programs on other devices) -->
+        <div id="stab-remote" class="stab-content">
+          <div class="cfg-section">
+            <div id="rm-box-off" class="rm-note" data-i18n="cfg.remoteBoxOff" hidden>
+              Remote access is switched off on this box. An administrator can switch it on under Services → Torrents.
+            </div>
+            <label class="chk-label">
+              <input type="checkbox" id="cfg-remote-on">
+              <span data-i18n="cfg.remoteOn">Allow remote programs for my account</span>
+            </label>
+            <div class="rm-hint" data-i18n="cfg.remoteHint">
+              Programs such as Transmission Remote GUI, Transmissionic or Tremotesf then control your torrents from a PC or phone – only in the home network or over VPN. The change applies at once.
+            </div>
+          </div>
+          <div id="rm-details" class="cfg-section" hidden>
+            <h4 data-i18n="cfg.remoteConn">Connection details for the program</h4>
+            <dl class="rm-kv">
+              <dt data-i18n="cfg.remoteHost">Host</dt><dd><code id="rm-host"></code></dd>
+              <dt data-i18n="cfg.remotePort">Port</dt><dd><code id="rm-port"></code><span id="rm-https" class="rm-muted"></span></dd>
+              <dt data-i18n="cfg.remotePath">RPC path</dt><dd><code id="rm-path"></code></dd>
+              <dt data-i18n="cfg.remoteUser">User name</dt><dd><code id="rm-user"></code></dd>
+              <dt data-i18n="cfg.remotePass">Password</dt>
+              <dd>
+                <span id="rm-pass-set" data-i18n="cfg.remotePassSet">set – shown only when it is created</span>
+                <span id="rm-pass-new" hidden><code id="rm-pass"></code> <button type="button" id="btn-rm-copy" class="sos-btn sos-btn-sm" data-i18n="cfg.remoteCopy">Copy</button></span>
+              </dd>
+            </dl>
+            <div id="rm-pass-note" class="rm-note" data-i18n="cfg.remotePassNote" hidden>
+              Note the password now and enter it in the program – it is not shown again.
+            </div>
+            <div style="margin-top:10px;">
+              <button type="button" id="btn-rm-regen" class="sos-btn" data-i18n="cfg.remoteRegen">New password</button>
+            </div>
+            <div class="rm-hint" data-i18n="cfg.remoteRegenHint">
+              A new password replaces the old one: programs using it must be given the new one.
+            </div>
           </div>
         </div>
 

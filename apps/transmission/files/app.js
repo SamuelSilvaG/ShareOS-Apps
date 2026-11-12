@@ -1410,6 +1410,52 @@
     $('modal-settings').style.display = 'flex';
   });
 
+  // Settings: remote access for Transmission programs (ShareOS 0.3.0-beta.6+;
+  // older boxes answer "method not allowed": the tab stays hidden)
+  let remoteState = null;
+  function showRemote(r, password) {
+    remoteState = r;
+    $('s-tab-remote').hidden = false;
+    $('rm-box-off').hidden = !!r.box_enabled;
+    $('cfg-remote-on').checked = !!r.on;
+    $('rm-details').hidden = !r.on;
+    $('rm-host').textContent = r.host || location.hostname;
+    $('rm-port').textContent = String(r.port);
+    $('rm-https').textContent = r.https ? t('cfg.remoteHttps', { port: r.https_port }) : '';
+    $('rm-path').textContent = r.path;
+    $('rm-user').textContent = r.user;
+    $('rm-pass-set').hidden = !!password;
+    $('rm-pass-new').hidden = !password;
+    $('rm-pass-note').hidden = !password;
+    $('rm-pass').textContent = password || '';
+  }
+  async function loadRemote() {
+    try { showRemote(await rpc('shareos-remote-get')); }
+    catch (e) {
+      $('s-tab-remote').hidden = true;
+      if ($('stab-remote').classList.contains('active')) document.querySelector('.s-tab[data-stab="dl"]').click();
+    }
+  }
+  async function setRemote(on, regen) {
+    try {
+      const r = await rpc('shareos-remote-set', { on, regen });
+      showRemote(r, r.password);
+      toast(t(on ? (r.password ? 'toast.remotePass' : 'toast.remoteOn') : 'toast.remoteOff'));
+    } catch (e) {
+      toast(t('toast.remoteError') + e.message, true);
+      if (remoteState) showRemote(remoteState);
+    }
+  }
+  $('cfg-remote-on').addEventListener('change', (e) => setRemote(e.target.checked, false));
+  $('btn-rm-regen').addEventListener('click', () => {
+    if (confirm(t('cfg.remoteRegenConfirm'))) setRemote(true, true);
+  });
+  $('btn-rm-copy').addEventListener('click', () => {
+    const p = $('rm-pass').textContent;
+    navigator.clipboard.writeText(p).then(() => toast(t('toast.copied'))).catch(() => toast(p));
+  });
+  $('btn-settings').addEventListener('click', loadRemote);
+
   // Settings Tabs
   document.querySelectorAll('.s-tab').forEach((btn) => {
     btn.addEventListener('click', () => {

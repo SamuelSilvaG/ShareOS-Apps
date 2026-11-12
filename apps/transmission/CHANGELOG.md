@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.0
+
+- Preferences → **Remote access**: lets programs like Transmission Remote GUI, Transmissionic or Tremotesf control the account's own torrents from a PC or phone ([ShareOS#103](https://github.com/UniqueDroid/ShareOS/issues/103)). Switching it on makes a password on the box (shown once, with a copy button); the tab shows host, port (and the HTTPS port), RPC path `/transmission/rpc` and the user name to enter in the program. *New password* replaces it, switching off deletes it. Only from the home network or over VPN.
+- Shown when the box offers it (ShareOS 0.3.0-beta.6+, methods `shareos-remote-get` / `shareos-remote-set`); an administrator switches the remote access on under *Dienste → Torrents* – until then the tab says so. On older boxes the tab stays hidden.
+
 ## 1.3.2
 
 - Preferences: watch folder (`watch-dir`, `watch-dir-enabled`), chosen with the box's folder dialog as `<root>/<path>` (e.g. `home/Watch`). Transmission watches the folder itself and adds new `.torrent` files to the default download folder – also when the app is closed. Changing it restarts the account's service, so saving takes a few seconds; the two keys are only sent when they change.
