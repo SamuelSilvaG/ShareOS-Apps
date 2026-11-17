@@ -147,7 +147,7 @@
 			}
 			cancel = p.cancel || null;
 			$('[data-p="cancel"]', w).hidden = !cancel;
-			const verb = p.op === 'move' ? 'verschoben' : 'kopiert';
+			const verb = p.op === 'move' ? 'verschoben' : p.op === 'upload' ? 'hochgeladen' : 'kopiert';
 			set('.fm-ptitle', p.count === 1 ? `1 Element wird ${verb}` : `${p.count} Elemente werden ${verb}`);
 			const now = Date.now(), last = hist[hist.length - 1];
 			if (p.done != null && (!last || p.done !== last.done)) hist.push({ t: now, done: p.done });

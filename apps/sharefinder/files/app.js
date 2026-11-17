@@ -87,7 +87,13 @@
 		if (what === 'error') return drawError();
 		if (what === 'roots') { drawSide(); return; }
 		if (what === 'busy') { app.classList.toggle('busy', fm.busy > 0); return; }
-		if (what === 'list') { colCache.set(fm.root + '/' + fm.path, fm.entries); drawAll(); return; }
+		if (what === 'list') {
+			colCache.set(fm.root + '/' + fm.path, fm.entries);
+			// the favourites follow the personal folder (a new "Documents" shows up)
+			const h = (fm.roots || []).find((r) => r.home || r.personal);
+			if (h && fm.root === h.name && !fm.path) drawSide.kids = fm.entries.filter((e) => e.kind === 'dir').map((e) => e.name);
+			drawAll(); return;
+		}
 		if (what === 'sel') { if (view === 'cols') drawContent(); else markSel(); drawFoot(); return; }
 		if (what === 'clip') drawContent();
 	}
@@ -268,17 +274,18 @@
 		await fm.remove(S.map((e) => e.name));
 	});
 	const STOPPED = 'Abgebrochen. Was schon kopiert war, bleibt.';
+	const STOPPED_UP = 'Abgebrochen. Was schon hochgeladen war, bleibt.';
 	const paste = guard(async (into) => { if (await fm.paste(into)) toast(STOPPED); });
 	// ⌥⌘V: the copied objects are moved instead of copied
 	const pasteMove = guard(async () => { if (fm.clip) { fm.clip.op = 'cut'; if (await fm.paste()) toast(STOPPED); } });
 	const upload = guard(async (files, into) => {
 		if (!files || !files.length || fm.readOnly) return;
+		const count = files.length;   // the list of a file input empties when the input is reset
 		const back = into ? { root: fm.root, path: fm.path } : null;
 		if (into) await fm.go(fm.root, FC.joinPath(fm.path, into));
 		try {
-			await fm.upload(files, (i, n, name) => { upl = i < n ? `${T('Hochladen')} ${i + 1}/${n}: ${name}` : null; drawFoot(); });
-			toast(files.length === 1 ? 'Hochgeladen.' : `${files.length} ${T('Dateien hochgeladen.')}`);
-		} finally { upl = null; drawFoot(); if (back) await fm.go(back.root, back.path, false); }
+			toast(await fm.upload(files) ? STOPPED_UP : count === 1 ? 'Hochgeladen.' : `${count} ${T('Dateien hochgeladen.')}`);
+		} finally { if (back) await fm.go(back.root, back.path, false); }
 	});
 	const getInfo = guard(async () => {
 		const S = fm.selected(), e = S[0];

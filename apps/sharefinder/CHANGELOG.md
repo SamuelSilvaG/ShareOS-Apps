@@ -2,6 +2,9 @@
 
 - **Progress of a copy or move that takes longer:** a small window at the bottom right shows how much is copied, the speed and the time left, with *Cancel* (what was copied so far stays). Asked for in [ShareOS discussion #88](https://github.com/UniqueDroid/ShareOS/discussions/88). Needs ShareOS 0.3.0-beta.14 or newer; on older versions copying works as before, without the window.
 - Moving within one drive is done at once and shows no window; a move to another drive is a copy and shows it.
+- **Uploading large files works, with the same window.** Files of more than 64 MB stopped with "Failed to fetch": apps could only save files up to that size, and the box cut the connection instead of saying so. With ShareOS 0.3.0-beta.14 uploads have no limit and show amount, speed, time left and *Cancel*; on older versions a file that is too large is refused with the reason before anything is sent.
+- The favourites follow the personal folder: a new *Documents* or *Pictures* shows up at once.
+- After an upload through the file dialog the message said "0 files uploaded".
 
 ## 1.0.0
 

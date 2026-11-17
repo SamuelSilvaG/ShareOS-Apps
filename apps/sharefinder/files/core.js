@@ -343,17 +343,32 @@
 				return !!(r && r.cancelled);
 			} finally { tell(null); }
 		}
-		// files from the computer (input or drop); progress(i, n, name)
-		async upload(files, progress) {
-			const list = [...files];
-			for (let i = 0; i < list.length; i++) {
-				const f = list[i];
-				if (progress) progress(i, list.length, f.name);
-				const n = this.entries.some((e) => e.name === f.name) ? this.freeName(f.name, false) : f.name;
-				await this.run(async () => { const h = await this.fs.open(this.root, this.path, n, { write: true, create: true }); await h.save(f); });
-			}
-			if (progress) progress(list.length, list.length, '');
-			await this.reload();
+		// files from the computer (input or drop). ShareOS 0.3.0-beta.14+ takes
+		// files of any size and tells how far it is (onProgress, with cancel);
+		// before that a file goes as one request of at most 64 MB. Resolves to
+		// true when it was stopped – the files sent before stay.
+		async upload(files) {
+			const list = [...files], total = list.reduce((n, f) => n + f.size, 0);
+			const tell = (p) => { if (this.onProgress) try { this.onProgress(p); } catch (e) { /* display only */ } };
+			let before = 0, cancelled = false;
+			try {
+				for (const f of list) {
+					const n = this.entries.some((e) => e.name === f.name) ? this.freeName(f.name, false) : f.name;
+					const at = { op: 'upload', count: list.length, total, done: before, cancel: null };
+					if (this.fs.upload) {
+						const r = await this.run(() => this.fs.upload(this.root, this.path, n, f,
+							{ onProgress: (p) => tell({ ...at, done: before + (p.done || 0), cancel: p.cancel }) }));
+						if (r && r.cancelled) { cancelled = true; break; }
+					} else {
+						if (f.size > 64 * 1048576) throw new Error(`„${f.name}“: ${window.FMUI ? window.FMUI.T('Diese ShareOS-Version nimmt von Apps höchstens 64 MB je Datei an (ab 0.3.0-beta.14 ohne Grenze).') : 'max. 64 MB'}`);
+						tell(at);
+						await this.run(async () => { const h = await this.fs.open(this.root, this.path, n, { write: true, create: true }); await h.save(f); });
+					}
+					before += f.size;
+					this.entries.push({ name: n, type: 'file', kind: 'file', size: f.size });   // the next free name counts it
+				}
+			} finally { tell(null); await this.reload(); }
+			return cancelled;
 		}
 		async fileOf(name) { return this.fs.open(this.root, this.path, name, {}); }
 		async download(names) {
