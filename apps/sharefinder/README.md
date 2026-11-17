@@ -8,5 +8,6 @@ Dateimanager für die Ordner der Box **im Stil des macOS-Finders** – mit eigen
 - **Übersicht** mit der Leertaste: Bilder, Videos, Musik, PDF und Text, ← → durch den Ordner. **Informationen** mit ⌘I.
 - **Arbeiten wie gewohnt:** Umbenennen mit Eingabe, neuer Ordner (⇧⌘N), Löschen (⌘⌫, mit Rückfrage), Kopieren/Einsetzen (⌘C/⌘V, ⌥⌘V bewegt), Ziehen und Ablegen (⌥: kopieren), Dateien vom Computer hineinziehen, Pfadleiste.
 - Auf Windows und Linux gelten dieselben Kürzel mit Strg statt ⌘.
+- **Fortschritt:** Dauert ein Kopieren oder Verschieben länger, zeigt ein kleines Fenster unten rechts Menge, Geschwindigkeit und Restzeit, mit *Abbrechen* (ab ShareOS 0.3.0-beta.14).
 
 Arbeitet mit den Rechten des angemeldeten Benutzers (Berechtigung `files`); schreibgeschützte Freigaben bleiben schreibgeschützt. Auf der Box gibt es keinen Papierkorb – Löschen fragt deshalb immer nach.

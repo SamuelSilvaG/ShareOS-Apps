@@ -1,3 +1,8 @@
+## 1.1.0
+
+- **Progress of a copy or move that takes longer:** a small window at the bottom right shows how much is copied, the speed and the time left, with *Cancel* (what was copied so far stays). Asked for in [ShareOS discussion #88](https://github.com/UniqueDroid/ShareOS/discussions/88). Needs ShareOS 0.3.0-beta.14 or newer; on older versions copying works as before, without the window.
+- Moving within one drive is done at once and shows no window; a move to another drive is a copy and shows it.
+
 ## 1.0.0
 
 - First version: file manager for the folders of the box in the style of the macOS Finder (own drawings and colours, no Apple artwork).

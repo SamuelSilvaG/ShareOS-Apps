@@ -94,6 +94,7 @@
 		constructor(o) {
 			this.onChange = o.onChange || (() => {});
 			this.fs = (window.ShareOS && window.ShareOS.fs) || null;
+			this.onProgress = o.onProgress || null;   // ({ op, count, total, done, cancel }) while a copy runs, null at its end
 			this.roots = [];
 			this.root = ''; this.path = '';
 			this.entries = []; this.free = null; this.total = null;
@@ -290,12 +291,13 @@
 			this.onChange('clip');
 		}
 		isCut(name) { return !!(this.clip && this.clip.op === 'cut' && this.clip.root === this.root && this.clip.path === this.path && this.clip.names.includes(name)); }
-		// paste into this folder (or into the folder dest of this folder)
+		// paste into this folder (or into the folder dest of this folder); true: stopped by the user
 		async paste(dest) {
 			const c = this.clip;
-			if (!c) return;
+			let cancelled = false;
+			if (!c) return false;
 			const to = dest ? joinPath(this.path, dest) : this.path;
-			if (c.root === this.root && c.path === to && c.op === 'cut') return;
+			if (c.root === this.root && c.path === to && c.op === 'cut') return false;
 			for (const n of c.names) if (c.root === this.root && (to === joinPath(c.path, n) || to.startsWith(joinPath(c.path, n) + '/'))) throw new Error('Ein Ordner kann nicht in sich selbst kopiert werden.');
 			if (c.op === 'copy' && c.root === this.root && c.path === to) {
 				// a copy in the same folder: "Name - Kopie" (files: read and written again;
@@ -313,19 +315,33 @@
 					});
 				}
 			} else {
-				await this.run(() => (c.op === 'cut' ? this.fs.move : this.fs.copy).call(this.fs, c.root, c.path, c.names, this.root, to));
+				cancelled = await this.transfer(c.op === 'cut', c.root, c.path, c.names, this.root, to);
 			}
-			if (c.op === 'cut') this.clip = null;
+			if (c.op === 'cut' && !cancelled) this.clip = null;
 			this.onChange('clip');
 			await this.reload();
+			return cancelled;
 		}
 		// drag & drop: move (or copy with ctrl/alt) names of this folder into a folder
 		async dropInto(names, destRoot, destPath, copy) {
-			if (!names.length) return;
+			if (!names.length) return false;
 			for (const n of names) if (destRoot === this.root && (destPath === joinPath(this.path, n) || destPath.startsWith(joinPath(this.path, n) + '/'))) throw new Error('Ein Ordner kann nicht in sich selbst verschoben werden.');
-			if (destRoot === this.root && destPath === this.path) return;
-			await this.run(() => (copy ? this.fs.copy : this.fs.move).call(this.fs, this.root, this.path, names, destRoot, destPath));
+			if (destRoot === this.root && destPath === this.path) return false;
+			const cancelled = await this.transfer(!copy, this.root, this.path, names, destRoot, destPath);
 			await this.reload();
+			return cancelled;
+		}
+		// copy or move on the box. What takes longer goes on in the background
+		// there; ShareOS 0.3.0-beta.14+ then tells how far it is (onProgress) and
+		// can stop it. Resolves to true when it was stopped.
+		async transfer(move, root, path, names, destRoot, dest) {
+			const tell = (p) => { if (this.onProgress) try { this.onProgress(p); } catch (e) { /* display only */ } };
+			const op = move ? 'move' : 'copy';
+			try {
+				const r = await this.run(() => (move ? this.fs.move : this.fs.copy).call(this.fs, root, path, names, destRoot, dest,
+					{ onProgress: (p) => tell({ op, count: names.length, total: p.total, done: p.done, cancel: p.cancel }) }));
+				return !!(r && r.cancelled);
+			} finally { tell(null); }
 		}
 		// files from the computer (input or drop); progress(i, n, name)
 		async upload(files, progress) {

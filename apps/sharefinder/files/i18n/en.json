@@ -111,7 +111,14 @@
   "ShareOS": "ShareOS",
   "Original": "Original",
   "ShareFinder – ShareOS": "ShareFinder – ShareOS",
-  "Heute,": "Today,"
+  "Heute,": "Today,",
+  "Wird abgebrochen …": "Stopping …",
+  "Größe wird ermittelt …": "Working out the size …",
+  "Wird abgeschlossen …": "Finishing …",
+  "Restzeit wird berechnet …": "Working out the time left …",
+  "Abgebrochen. Was schon kopiert war, bleibt.": "Stopped. What was copied so far stays.",
+  "1 Element wird kopiert": "Copying 1 item",
+  "1 Element wird verschoben": "Moving 1 item"
  },
  "patterns": [
   [
@@ -213,6 +220,18 @@
   [
    "^(\\S+)-Datei$",
    "$1 file"
+  ],
+  [
+   "^(\\d+) Elemente werden kopiert$",
+   "Copying $1 items"
+  ],
+  [
+   "^(\\d+) Elemente werden verschoben$",
+   "Moving $1 items"
+  ],
+  [
+   "^noch etwa (.+)$",
+   "about $1 left"
   ]
  ],
  "words": [

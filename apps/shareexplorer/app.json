@@ -1,7 +1,7 @@
 {
 	"id": "shareexplorer",
 	"name": "ShareExplorer",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"publisher": "UniqueDroid",
 	"description": {
 		"de": "Dateimanager für die Ordner der Box im Stil des Windows-Explorers: Befehlsleiste, Adressleiste mit Pfad, Navigationsbereich mit Ordnerbaum, Details- und Symbolansicht, Detailbereich mit Vorschau. Kopieren, Ausschneiden, Einfügen, Umbenennen an Ort und Stelle, Ziehen und Ablegen, Hochladen. Per Knopf in den ShareOS-Stil umschaltbar.",

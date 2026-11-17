@@ -6,7 +6,7 @@
  */
 (function () {
 	'use strict';
-	const { esc, $, T, menu, confirmDlg, info, toast, viewer } = FMUI;
+	const { esc, $, T, menu, confirmDlg, info, toast, viewer, progress } = FMUI;
 	const app = $('#app');
 	const look = FMUI.look(app, 'sharefinder-style');
 	const MAC = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
@@ -51,7 +51,7 @@
 	const si = (n) => `<svg class="ci" viewBox="0 0 20 20" aria-hidden="true">${SI[n]}</svg>`;
 
 	/* ---------- state ---------- */
-	const fm = new FileCore({ onChange, store: 'sharefinder' });
+	const fm = new FileCore({ onChange, store: 'sharefinder', onProgress: progress() });
 	const P = fm.prefs();
 	let view = P.view || 'icons';         // icons | list | cols
 	let pathbar = P.pathbar !== false;
@@ -267,9 +267,10 @@
 		if (!await confirmDlg(T('Sofort löschen?'), `${T('Möchtest du')} ${what} ${T('wirklich löschen? Auf der Box gibt es keinen Papierkorb – das kann nicht widerrufen werden.')}`, 'Löschen', true)) return;
 		await fm.remove(S.map((e) => e.name));
 	});
-	const paste = guard(async (into) => { await fm.paste(into); });
+	const STOPPED = 'Abgebrochen. Was schon kopiert war, bleibt.';
+	const paste = guard(async (into) => { if (await fm.paste(into)) toast(STOPPED); });
 	// ⌥⌘V: the copied objects are moved instead of copied
-	const pasteMove = guard(async () => { if (fm.clip) { fm.clip.op = 'cut'; await fm.paste(); } });
+	const pasteMove = guard(async () => { if (fm.clip) { fm.clip.op = 'cut'; if (await fm.paste()) toast(STOPPED); } });
 	const upload = guard(async (files, into) => {
 		if (!files || !files.length || fm.readOnly) return;
 		const back = into ? { root: fm.root, path: fm.path } : null;
@@ -490,7 +491,7 @@
 		if (!dragNames) return;
 		const names = dragNames; dragNames = null;
 		colCache.clear();
-		await fm.dropInto(names, t.root, t.path, ev.altKey || ev.ctrlKey);
+		if (await fm.dropInto(names, t.root, t.path, ev.altKey || ev.ctrlKey)) toast(STOPPED);
 	}));
 
 	drawTb(); drawFoot();

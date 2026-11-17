@@ -6,7 +6,7 @@
  */
 (function () {
 	'use strict';
-	const { esc, $, T, menu, confirmDlg, info, toast, viewer } = FMUI;
+	const { esc, $, T, menu, confirmDlg, info, toast, viewer, progress } = FMUI;
 	const app = $('#app');
 	const look = FMUI.look(app, 'shareexplorer-style');
 
@@ -64,7 +64,7 @@
 	const ci = (n) => `<svg class="ci" viewBox="0 0 20 20" aria-hidden="true">${CI[n]}</svg>`;
 
 	/* ---------- state ---------- */
-	const fm = new FileCore({ onChange, store: 'shareexplorer' });
+	const fm = new FileCore({ onChange, store: 'shareexplorer', onProgress: progress() });
 	const P = fm.prefs();
 	let view = P.view || 'details';          // details | tiles | list
 	let pane = P.pane !== false;               // preview/details pane on the right
@@ -339,7 +339,8 @@
 		await fm.remove(S.map((e) => e.name));
 		toast(S.length === 1 ? 'Gelöscht.' : `${S.length} ${T('Elemente gelöscht.')}`);
 	});
-	const paste = guard(async (into) => { await fm.paste(into); toast('Eingefügt.'); });
+	const STOPPED = 'Abgebrochen. Was schon kopiert war, bleibt.';
+	const paste = guard(async (into) => { toast(await fm.paste(into) ? STOPPED : 'Eingefügt.'); });
 	const upload = guard(async (files, into) => {
 		if (!files || !files.length || fm.readOnly) return;
 		const back = into ? { root: fm.root, path: fm.path } : null;
@@ -580,8 +581,8 @@
 		}
 		if (!dragNames) return;
 		const names = dragNames; dragNames = null;
-		await fm.dropInto(names, t.root, t.path, ev.ctrlKey || ev.altKey);
-		toast(ev.ctrlKey || ev.altKey ? 'Kopiert.' : 'Verschoben.');
+		const copy = ev.ctrlKey || ev.altKey;
+		toast(await fm.dropInto(names, t.root, t.path, copy) ? STOPPED : copy ? 'Kopiert.' : 'Verschoben.');
 	}));
 
 	/* ---------- resizable panes ---------- */

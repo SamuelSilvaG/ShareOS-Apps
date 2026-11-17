@@ -9,5 +9,6 @@ Dateimanager für die Ordner der Box **im Stil des Windows-Explorers** – mit e
 - **Detailbereich:** Vorschau von Bildern, Videos, Musik, PDF und Text, dazu Typ, Größe, Datum und Ort.
 - **Arbeiten wie gewohnt:** Umbenennen an Ort und Stelle (F2), Kopieren/Ausschneiden/Einfügen auch zwischen Freigaben, Ziehen und Ablegen (Strg: kopieren), Dateien vom Computer hineinziehen, Kontextmenü, Eigenschaften (Alt+Eingabe), Betrachter mit ← →.
 - **Tastatur:** Pfeile, Eingabe, Rücktaste, Alt+←/→/↑, Entf, F2, F5, Strg+A/C/X/V, Strg+F, Strg+Umschalt+N.
+- **Fortschritt:** Dauert ein Kopieren oder Verschieben länger, zeigt ein kleines Fenster unten rechts Menge, Geschwindigkeit und Restzeit, mit *Abbrechen* (ab ShareOS 0.3.0-beta.14).
 
 Arbeitet mit den Rechten des angemeldeten Benutzers (Berechtigung `files`); schreibgeschützte Freigaben bleiben schreibgeschützt. Auf der Box gibt es keinen Papierkorb – Löschen fragt deshalb immer nach.
