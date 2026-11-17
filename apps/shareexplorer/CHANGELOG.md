@@ -5,6 +5,7 @@
 - **Uploading large files works, with the same window.** Files of more than 64 MB stopped with "Failed to fetch": apps could only save files up to that size, and the box cut the connection instead of saying so. With ShareOS 0.3.0-beta.14 uploads have no limit and show amount, speed, time left and *Cancel*; on older versions a file that is too large is refused with the reason before anything is sent.
 - **New folders appear in the tree on the left at once**, renamed and deleted ones follow, also in a folder something was pasted or dropped into. The tree kept what it had read once.
 - After an upload through the file dialog the message said "0 files uploaded".
+- Context menu: the sub-menu of the first entry (*View*) stayed open while the pointer was on another entry.
 
 ## 1.0.0
 

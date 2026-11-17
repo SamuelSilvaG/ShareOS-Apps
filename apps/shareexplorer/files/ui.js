@@ -46,8 +46,16 @@
 		m.style.left = Math.max(4, Math.min(x, innerWidth - r.width - 4)) + 'px';
 		m.style.top = Math.max(4, Math.min(y, innerHeight - r.height - 4)) + 'px';
 		openMenu = m;
-		const first = m.querySelector('.fm-mi:not(:disabled)');
-		if (first) first.focus({ preventScroll: true });
+		// The menu itself takes the focus, not its first entry: an entry with a
+		// sub-menu shows it while the focus is in it, and the first one ("View")
+		// stayed open under the pointer on another entry. The arrow keys start
+		// at the first entry; the focus follows the pointer.
+		m.tabIndex = -1;
+		m.focus({ preventScroll: true });
+		m.addEventListener('mousemove', (ev) => {
+			const b = ev.target.closest('.fm-mi');
+			if (b && !b.disabled && document.activeElement !== b && !b.contains(document.activeElement)) b.focus({ preventScroll: true });
+		});
 		m.addEventListener('keydown', (ev) => {
 			const L = [...m.querySelectorAll(':scope > .fm-mi:not(:disabled)')];
 			const i = L.indexOf(document.activeElement);
