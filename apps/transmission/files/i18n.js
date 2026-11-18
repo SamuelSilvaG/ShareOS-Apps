@@ -313,7 +313,7 @@
       'toast.noFolderPicker': 'Seleção de pastas do ShareOS indisponível',
       'toast.needUrl': 'Informe um link magnet ou uma URL válida',
       'toast.needFile': 'Selecione um arquivo .torrent válido',
-      'toast.about': 'Transmission para ShareOS 1.3 – controle completo do daemon',
+      'toast.about': 'Transmission para ShareOS 1.4.1 – controle completo do daemon',
       'rpc.error': 'Erro de RPC do Transmission',
       'err.noShareOS': 'Disponível apenas no ShareOS 0.2.0-beta.4 ou mais recente',
       'why.notInstalled': 'O serviço do Transmission não está instalado: APPS → Store → “transmission-daemon”.',
@@ -653,7 +653,7 @@
       'toast.noFolderPicker': 'ShareOS folder picker unavailable',
       'toast.needUrl': 'Enter a magnet link or valid URL',
       'toast.needFile': 'Select a valid .torrent file',
-      'toast.about': 'Transmission for ShareOS 1.3 – full daemon control',
+      'toast.about': 'Transmission for ShareOS 1.4.1 – full daemon control',
       'rpc.error': 'Transmission RPC Error',
       'err.noShareOS': 'Available only on ShareOS 0.2.0-beta.4 or newer',
       'why.notInstalled': 'Transmission service is not installed: APPS → Store → “transmission-daemon”.',
@@ -993,7 +993,7 @@
       'toast.noFolderPicker': 'ShareOS-Ordnerauswahl nicht verfügbar',
       'toast.needUrl': 'Bitte Magnet-Link oder gültige URL eingeben',
       'toast.needFile': 'Bitte gültige .torrent-Datei auswählen',
-      'toast.about': 'Transmission für ShareOS 1.3 – Vollständige Steuerung',
+      'toast.about': 'Transmission für ShareOS 1.4.1 – Vollständige Steuerung',
       'rpc.error': 'Transmission-RPC-Fehler',
       'err.noShareOS': 'Nur verfügbar auf ShareOS 0.2.0-beta.4 oder neuer',
       'why.notInstalled': 'Transmission ist nicht installiert: APPS → Store → „transmission-daemon“.',
@@ -1045,17 +1045,41 @@
 
   initLang();
 
+  function translate(key, vars = {}) {
+    const dict = STRINGS[currentLang] || STRINGS[FALLBACK];
+    let str = dict[key] || STRINGS[FALLBACK][key] || key;
+    for (const [k, v] of Object.entries(vars)) {
+      str = str.replace(new RegExp(`\\{${k}\\}`, 'g'), v);
+    }
+    return str;
+  }
+
+  function apply(root = document) {
+    document.documentElement.lang = currentLang;
+    root.querySelectorAll('[data-i18n]').forEach((el) => {
+      el.textContent = translate(el.dataset.i18n);
+    });
+    root.querySelectorAll('[data-i18n-html]').forEach((el) => {
+      el.innerHTML = translate(el.dataset.i18nHtml);
+    });
+    root.querySelectorAll('[data-i18n-title]').forEach((el) => {
+      el.title = translate(el.dataset.i18nTitle);
+    });
+    root.querySelectorAll('[data-i18n-placeholder]').forEach((el) => {
+      el.placeholder = translate(el.dataset.i18nPlaceholder);
+    });
+  }
+
   window.I18N = {
     lang: currentLang,
-    t(key, vars = {}) {
-      const dict = STRINGS[currentLang] || STRINGS[FALLBACK];
-      let str = dict[key] || STRINGS[FALLBACK][key] || key;
-      for (const [k, v] of Object.entries(vars)) {
-        str = str.replace(new RegExp(`\\{${k}\\}`, 'g'), v);
-      }
-      return str;
-    }
+    t: translate,
+    apply
   };
 
   document.documentElement.lang = currentLang;
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => apply());
+  } else {
+    apply();
+  }
 })();

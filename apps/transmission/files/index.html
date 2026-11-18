@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Transmission</title>
 <link rel="stylesheet" href="/_shareos/theme.css">
-<link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="app.css?v=1.4.1">
 <script src="/_shareos/app.js"></script>
-<script src="i18n.js"></script>
+<script src="i18n.js?v=1.4.1"></script>
 </head>
 <body class="sos-app">
 
@@ -16,7 +16,7 @@
     <div class="titlebar-left">
       <img src="icon.svg" class="app-icon" alt="Transmission Logo">
       <span class="app-title">Transmission</span>
-      <span class="version-tag">1.3.2</span>
+      <span class="version-tag">1.4.1</span>
     </div>
     <div class="titlebar-right">
       <span id="conn-badge" class="conn-badge checking" data-i18n="conn.checking">Checking connection...</span>
@@ -377,7 +377,7 @@
         <div class="form-group checkbox-group danger-chk">
           <label class="chk-label">
             <input type="checkbox" id="del-data-check">
-            <span data-i18n-html="del.data"></span>
+            <span data-i18n-html="del.data"><strong>Permanently delete downloaded files</strong> from disk</span>
           </label>
         </div>
       </div>
@@ -739,6 +739,6 @@
   <!-- Toast Notification Container -->
   <div id="toast-container" class="toast-container"></div>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=1.4.1"></script>
 </body>
 </html>

@@ -796,6 +796,7 @@ html, body {
   width: 540px;
   max-width: 95vw;
   max-height: 90vh;
+  padding: 0;
   background: var(--sos-panel, #1f2430);
   border: 1px solid var(--sos-line, #384252);
   border-radius: 8px;
@@ -950,6 +951,21 @@ html, body {
   gap: 8px;
   cursor: pointer;
   user-select: none;
+}
+
+#del-prompt {
+  margin: 0 0 14px 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--sos-text, #ffffff);
+}
+
+.danger-chk {
+  margin-bottom: 0;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--sos-line, #282f3d);
+  background: rgba(255, 95, 95, 0.08);
 }
 
 .grid-2 {
