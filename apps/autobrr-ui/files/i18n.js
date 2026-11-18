@@ -37,9 +37,10 @@ window.I18N = (function () {
       'tb.refresh': 'Refresh',
       'tb.add_filter': 'New Filter',
       'tb.view_log': 'Logs',
-      'tb.open_webui': 'Advanced Setup (:7474)',
+      'tb.open_webui': 'Official autobrr UI (:7474)',
       'tb.open_transmission': 'Transmission',
       'tb.search_placeholder': 'Search releases, filters, trackers...',
+      'info.configure_in_webui': 'Configure in Official Web UI (:7474)',
 
       // Tabs
       'tab.releases': 'Releases',
@@ -100,6 +101,10 @@ window.I18N = (function () {
       'filters.max_size': 'Max Size (MB)',
       'filters.freeleech': 'Only Freeleech',
       'filters.enabled': 'Filter Enabled',
+      'filters.resolutions': 'Resolutions',
+      'filters.codecs': 'Codecs',
+      'filters.sources': 'Sources',
+      'filters.actions': 'Actions',
 
       // IRC & Indexers View
       'irc.title': 'Monitored Networks & IRC Channels',
@@ -252,9 +257,10 @@ window.I18N = (function () {
       'tb.refresh': 'Aktualisieren',
       'tb.add_filter': 'Neuer Filter',
       'tb.view_log': 'Protokoll',
-      'tb.open_webui': 'Erweiterte Einstellungen (:7474)',
+      'tb.open_webui': 'Offizielle autobrr-UI (:7474)',
       'tb.open_transmission': 'Transmission',
       'tb.search_placeholder': 'Releases, Filter, Tracker durchsuchen...',
+      'info.configure_in_webui': 'In offizieller Web-UI einrichten (:7474)',
 
       // Tabs
       'tab.releases': 'Releases',
@@ -315,6 +321,10 @@ window.I18N = (function () {
       'filters.max_size': 'Max. Größe (MB)',
       'filters.freeleech': 'Nur Freeleech',
       'filters.enabled': 'Filter aktiviert',
+      'filters.resolutions': 'Auflösungen',
+      'filters.codecs': 'Codecs',
+      'filters.sources': 'Quellen',
+      'filters.actions': 'Aktionen',
 
       // IRC & Indexers View
       'irc.title': 'Überwachte Netzwerke & IRC-Kanäle',
@@ -467,9 +477,10 @@ window.I18N = (function () {
       'tb.refresh': 'Atualizar',
       'tb.add_filter': 'Novo Filtro',
       'tb.view_log': 'Logs',
-      'tb.open_webui': 'Configuração Avançada (:7474)',
+      'tb.open_webui': 'UI Oficial do autobrr (:7474)',
       'tb.open_transmission': 'Transmission',
       'tb.search_placeholder': 'Buscar releases, filtros, trackers...',
+      'info.configure_in_webui': 'Configurar na UI Oficial (:7474)',
 
       // Tabs
       'tab.releases': 'Releases',
@@ -530,6 +541,10 @@ window.I18N = (function () {
       'filters.max_size': 'Tamanho Máximo (MB)',
       'filters.freeleech': 'Apenas Freeleech',
       'filters.enabled': 'Filtro Ativado',
+      'filters.resolutions': 'Resoluções',
+      'filters.codecs': 'Codecs',
+      'filters.sources': 'Fontes',
+      'filters.actions': 'Ações',
 
       // IRC & Indexers View
       'irc.title': 'Redes Monitoradas & Canais IRC',
