@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.0
+
+- Streamlined **autobrr-ui** into a read-only monitoring and status dashboard for ShareOS:
+  - **Releases**: read-only live feed of captured announcements and filter/action outcomes.
+  - **Filters, IRC & Indexers**: read-only overview of configured filter rules, IRC networks/channels, and indexers; all creation and editing are delegated to the official autobrr Web UI (`:7474`).
+  - **Transmission**: shows the handover drop folder and Transmission daemon status with direct launch into the Transmission app.
+  - Updated version tag to `1.1.0` with cache-busting asset URLs.
+
 ## 1.0.3
 
 - Fix indexer unique constraint error (`UNIQUE constraint failed: indexer.identifier`):
