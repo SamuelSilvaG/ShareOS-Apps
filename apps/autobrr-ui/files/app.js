@@ -1103,6 +1103,17 @@
           }
           toast(t('indexers.err_unique_identifier', { id: identifier, suggested }), true);
         } else {
+          const dup = (indexers || []).find((i) => String(i.identifier || '').toLowerCase() === identifier.toLowerCase());
+          if (dup && confirm(t('indexers.confirm_update', { name: dup.name || identifier }))) {
+            try {
+              await AB.api('DELETE', `/api/indexer/${dup.id}`);
+              indexers = indexers.filter((i) => i.id !== dup.id);
+              return saveIndexerFromModal();
+            } catch (delErr) {
+              toast(`Error resolving duplicate indexer: ${delErr.message}`, true);
+              return;
+            }
+          }
           toast(t('indexers.err_tracker_exists', { id: identifier }), true);
         }
       } else {
@@ -1358,7 +1369,7 @@
       const tr = document.createElement('tr');
       const isEnabled = idx.enabled !== false;
       tr.innerHTML = `
-        <td><strong>${escapeHtml(idx.name)}</strong></td>
+        <td><strong>${escapeHtml(idx.name || idx.identifier || '')}</strong></td>
         <td><code>${escapeHtml(idx.identifier || String(idx.name || '').toLowerCase())}</code></td>
         <td style="color: var(--sos-muted); font-size: 12px;">${escapeHtml(idx.type || 'Torznab / IRC')}</td>
         <td>
