@@ -1559,6 +1559,8 @@
     if ($('rm-pass-new')) $('rm-pass-new').hidden = !password;
     if ($('rm-pass-note')) $('rm-pass-note').hidden = !password;
     if ($('rm-pass')) $('rm-pass').textContent = password || '';
+    if ($('btn-rm-revoke')) $('btn-rm-revoke').hidden = !r.on;
+    if ($('btn-rm-regen')) $('btn-rm-regen').textContent = t(r.on ? 'cfg.remoteRegen' : 'cfg.remoteCreate');
   }
   async function loadRemote() {
     if (!$('s-tab-remote')) return;
@@ -1582,6 +1584,12 @@
     $('btn-rm-regen').addEventListener('click', () => {
       if (!remoteState || !remoteState.box_enabled) return;
       if (!remoteState.on || confirm(t('cfg.remoteRegenConfirm'))) setRemote(true, true);
+    });
+  }
+  if ($('btn-rm-revoke')) {
+    $('btn-rm-revoke').addEventListener('click', () => {
+      if (!remoteState || !remoteState.on) return;
+      if (confirm(t('cfg.remoteRevokeConfirm'))) setRemote(false, false);
     });
   }
   if ($('btn-rm-copy')) {
