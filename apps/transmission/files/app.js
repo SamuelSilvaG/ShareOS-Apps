@@ -831,7 +831,7 @@
         isDone = i < completedPieces;
       }
 
-      ctx.fillStyle = isDone ? '#3a7bd5' : 'rgba(255, 255, 255, 0.08)';
+      ctx.fillStyle = isDone ? '#3a7bd5' : 'rgba(127, 127, 127, 0.22)';
       ctx.fillRect(x, y, blockSize, blockSize);
     }
   }
@@ -1544,15 +1544,18 @@
     if (!$('s-tab-remote')) return;
     remoteState = r;
     $('s-tab-remote').hidden = false;
-    if ($('rm-box-off')) $('rm-box-off').hidden = !!r.box_enabled;
-    if ($('cfg-remote-on')) $('cfg-remote-on').checked = !!r.on;
-    if ($('rm-details')) $('rm-details').hidden = !r.on;
+    const boxOn = !!r.box_enabled;
+    if ($('rm-box-off')) $('rm-box-off').hidden = boxOn;
+    if ($('rm-details')) $('rm-details').hidden = !boxOn;
     if ($('rm-host')) $('rm-host').textContent = r.host || location.hostname;
     if ($('rm-port')) $('rm-port').textContent = String(r.port);
     if ($('rm-https')) $('rm-https').textContent = r.https ? t('cfg.remoteHttps', { port: r.https_port }) : '';
     if ($('rm-path')) $('rm-path').textContent = r.path;
     if ($('rm-user')) $('rm-user').textContent = r.user;
-    if ($('rm-pass-set')) $('rm-pass-set').hidden = !!password;
+    if ($('rm-pass-set')) {
+      $('rm-pass-set').hidden = !!password;
+      $('rm-pass-set').textContent = t(r.on ? 'cfg.remotePassSet' : 'cfg.remotePassUnset');
+    }
     if ($('rm-pass-new')) $('rm-pass-new').hidden = !password;
     if ($('rm-pass-note')) $('rm-pass-note').hidden = !password;
     if ($('rm-pass')) $('rm-pass').textContent = password || '';
@@ -1575,12 +1578,10 @@
       if (remoteState) showRemote(remoteState);
     }
   }
-  if ($('cfg-remote-on')) {
-    $('cfg-remote-on').addEventListener('change', (e) => setRemote(e.target.checked, false));
-  }
   if ($('btn-rm-regen')) {
     $('btn-rm-regen').addEventListener('click', () => {
-      if (confirm(t('cfg.remoteRegenConfirm'))) setRemote(true, true);
+      if (!remoteState || !remoteState.box_enabled) return;
+      if (!remoteState.on || confirm(t('cfg.remoteRegenConfirm'))) setRemote(true, true);
     });
   }
   if ($('btn-rm-copy')) {

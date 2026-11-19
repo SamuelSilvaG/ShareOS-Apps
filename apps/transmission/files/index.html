@@ -691,20 +691,14 @@
 
         <!-- Settings: Remote access (Transmission programs on other devices) -->
         <div id="stab-remote" class="stab-content">
-          <div class="cfg-section">
-            <div id="rm-box-off" class="rm-note" data-i18n="cfg.remoteBoxOff" hidden>
-              Remote access is switched off on this box. An administrator can switch it on under Services → Torrents.
-            </div>
-            <label class="chk-label">
-              <input type="checkbox" id="cfg-remote-on">
-              <span data-i18n="cfg.remoteOn">Allow remote programs for my account</span>
-            </label>
-            <div class="rm-hint" data-i18n="cfg.remoteHint">
-              Programs such as Transmission Remote GUI, Transmissionic or Tremotesf then control your torrents from a PC or phone – only in the home network or over VPN. The change applies at once.
-            </div>
+          <div id="rm-box-off" class="rm-note" data-i18n="cfg.remoteBoxOff" hidden>
+            Remote access is switched off on this box. An administrator can switch it on under Services → Torrents.
           </div>
           <div id="rm-details" class="cfg-section" hidden>
             <h4 data-i18n="cfg.remoteConn">Connection details for the program</h4>
+            <div class="rm-hint" style="margin-top:0; margin-bottom:10px;" data-i18n="cfg.remoteHint">
+              Programs such as Transmission Remote GUI, Transmissionic or Tremotesf control your torrents from a PC or phone – only in the home network or over VPN.
+            </div>
             <dl class="rm-kv">
               <dt data-i18n="cfg.remoteHost">Host</dt><dd><code id="rm-host"></code></dd>
               <dt data-i18n="cfg.remotePort">Port</dt><dd><code id="rm-port"></code><span id="rm-https" class="rm-muted"></span></dd>
@@ -716,7 +710,7 @@
                 <span id="rm-pass-new" hidden><code id="rm-pass"></code> <button type="button" id="btn-rm-copy" class="sos-btn sos-btn-sm" data-i18n="cfg.remoteCopy">Copy</button></span>
               </dd>
             </dl>
-            <div id="rm-pass-note" class="rm-note" data-i18n="cfg.remotePassNote" hidden>
+            <div id="rm-pass-note" class="rm-note" style="margin-top:10px;" data-i18n="cfg.remotePassNote" hidden>
               Note the password now and enter it in the program – it is not shown again.
             </div>
             <div style="margin-top:10px;">

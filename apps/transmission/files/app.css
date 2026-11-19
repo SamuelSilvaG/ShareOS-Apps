@@ -1,7 +1,7 @@
 /* Transmission App Styles for ShareOS */
 :root {
-  --row-hover: rgba(255, 255, 255, 0.05);
-  --row-selected: rgba(var(--sos-accent-rgb, 58, 123, 213), 0.22);
+  --row-hover: rgba(var(--sos-rgb, 61, 165, 255), 0.08);
+  --row-selected: rgba(var(--sos-rgb, 61, 165, 255), 0.2);
   --progress-bg: rgba(127, 127, 127, 0.18);
   --badge-bg: rgba(127, 127, 127, 0.15);
   --sidebar-w: 210px;
@@ -124,7 +124,7 @@ html, body {
   padding: 0 10px;
   font-size: 12px;
   font-weight: 500;
-  background: var(--sos-btn, #2a303f);
+  background: var(--sos-panel);
   color: var(--sos-text, #ffffff);
   border: 1px solid var(--sos-line, #384252);
   border-radius: 4px;
@@ -134,7 +134,7 @@ html, body {
 }
 
 .sos-btn:hover:not(:disabled) {
-  background: var(--sos-btn-hover, #363e52);
+  background: rgba(var(--sos-rgb, 61, 165, 255), 0.12);
   border-color: var(--sos-accent, #3a7bd5);
 }
 
@@ -178,7 +178,7 @@ html, body {
   height: 28px;
   padding: 0 8px;
   font-size: 12px;
-  background: var(--sos-input, #13161c);
+  background: var(--sos-bg);
   border: 1px solid var(--sos-line, #384252);
   border-radius: 4px;
   color: var(--sos-text, #ffffff);
@@ -406,7 +406,7 @@ html, body {
 
 .torrent-table td {
   padding: 5px 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid var(--sos-line);
   vertical-align: middle;
 }
 
@@ -597,7 +597,7 @@ html, body {
 }
 
 .det-card {
-  background: rgba(0, 0, 0, 0.15);
+  background: var(--sos-bg);
   border: 1px solid var(--sos-line, #282f3d);
   border-radius: 6px;
   padding: 10px 14px;
@@ -651,7 +651,7 @@ html, body {
 
 .pieces-canvas-wrap {
   flex: 1;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--sos-bg);
   border: 1px solid var(--sos-line, #282f3d);
   border-radius: 4px;
   position: relative;
@@ -883,7 +883,7 @@ html, body {
 }
 
 .m-tab.active, .s-tab.active {
-  background: var(--sos-btn, #2a303f);
+  background: rgba(var(--sos-rgb, 61, 165, 255), 0.14);
   color: var(--sos-accent, #3a7bd5);
   border-color: var(--sos-line, #384252);
   font-weight: 600;
@@ -914,7 +914,7 @@ html, body {
   height: 30px;
   padding: 0 8px;
   font-size: 12px;
-  background: var(--sos-input, #13161c);
+  background: var(--sos-bg);
   border: 1px solid var(--sos-line, #384252);
   border-radius: 4px;
   color: var(--sos-text, #ffffff);
@@ -929,7 +929,7 @@ html, body {
   width: 100%;
   padding: 8px;
   font-size: 12px;
-  background: var(--sos-input, #13161c);
+  background: var(--sos-bg);
   border: 1px solid var(--sos-line, #384252);
   border-radius: 4px;
   color: var(--sos-text, #ffffff);
@@ -975,7 +975,7 @@ html, body {
 }
 
 .cfg-section {
-  background: rgba(0, 0, 0, 0.15);
+  background: var(--sos-bg);
   border: 1px solid var(--sos-line, #282f3d);
   border-radius: 6px;
   padding: 12px;
