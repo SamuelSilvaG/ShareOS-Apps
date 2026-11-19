@@ -2,11 +2,11 @@
 
 ## 1.1.0
 
-- Streamlined **autobrr-ui** into a read-only monitoring and status dashboard for ShareOS:
-  - **Releases**: read-only live feed of captured announcements and filter/action outcomes.
-  - **Filters, IRC & Indexers**: read-only overview of configured filter rules, IRC networks/channels, and indexers; all creation and editing are delegated to the official autobrr Web UI (`:7474`).
-  - **Transmission**: shows the handover drop folder and Transmission daemon status with direct launch into the Transmission app.
-  - Updated version tag to `1.1.0` with cache-busting asset URLs.
+- Security & LAN exposure clarity: ask for confirmation before binding autobrr's native Web UI to `0.0.0.0:7474` and show a toolbar indicator badge when `:7474` is exposed with one-click deactivation back to `127.0.0.1`.
+- Dynamic indexer schema settings: read `schema.settings` from `/api/indexer/schema` so tracker-specific credentials (`passkey`, `api_key`, `rsskey`, `cookie`, `torrent_pass`, etc.) and flags can be entered directly in the Indexer modal, preserving existing secrets on edit when left blank.
+- IRC network editing: added Edit button (✏️) in the IRC table and preserved existing network/auth/channel passwords when updating with empty password fields.
+- Filter enhancements: added optional `resolutions`, `sources`, and `codecs` fields in the Filter modal, preserved unedited filter fields and existing actions on update, and translated filter card labels and Transmission drop-folder labels.
+- Light Mode & reliability: improved Light Mode (`data-theme="light"`) contrast across badges, tables, banners, info boxes, and `.sos-btn-*` variants; added `initTheme()` for ShareOS `{ theme, accent }` objects; added non-overlapping `refreshAll()` polling; sanitized release status badge CSS classes; and guarded against missing indexer names.
 
 ## 1.0.3
 
