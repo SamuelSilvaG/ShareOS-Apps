@@ -236,7 +236,7 @@
       'cfg.tabRemote': 'Acesso remoto',
       'cfg.remoteBoxOff': 'O acesso remoto está desligado neste aparelho. Um administrador pode ligá-lo em Serviços → Torrents.',
       'cfg.remoteOn': 'Permitir programas remotos para a minha conta',
-      'cfg.remoteHint': 'Programas como Transmission Remote GUI, Transmissionic ou Tremotesf passam a controlar seus torrents a partir do PC ou celular – apenas na rede doméstica ou via VPN. A alteração vale na hora.',
+      'cfg.remoteHint': 'Programas como Transmission Remote GUI, Transmissionic ou Tremotesf controlam seus torrents a partir do PC ou celular – apenas na rede doméstica ou via VPN.',
       'cfg.remoteConn': 'Dados de conexão para o programa',
       'cfg.remoteHost': 'Host',
       'cfg.remotePort': 'Porta',
@@ -244,13 +244,17 @@
       'cfg.remoteUser': 'Nome de usuário',
       'cfg.remotePass': 'Senha',
       'cfg.remotePassSet': 'definida – exibida apenas ao ser criada',
+      'cfg.remotePassUnset': 'ainda não definida – clique abaixo para gerar',
       'cfg.remoteCopy': 'Copiar',
       'cfg.remotePassNote': 'Anote a senha agora e insira-a no programa – ela não será exibida novamente.',
       'cfg.remoteRegen': 'Nova senha',
+      'cfg.remoteCreate': 'Criar senha',
+      'cfg.remoteRevoke': 'Revogar senha',
+      'cfg.remoteRevokeConfirm': 'Revogar a senha de acesso remoto? Programas que a utilizam perderão o acesso imediatamente.',
       'cfg.remoteRegenHint': 'Uma nova senha substitui a antiga: os programas que a usam precisarão da nova.',
       'cfg.remoteRegenConfirm': 'Criar uma nova senha? Os programas com a antiga perdem o acesso até você inserir a nova.',
       'cfg.remoteHttps': 'HTTPS: {port}',
-      'toast.remotePass': 'Acesso remoto ligado – nova senha criada',
+      'toast.remotePass': 'Nova senha de acesso remoto criada',
       'toast.remoteOn': 'Acesso remoto ligado',
       'toast.remoteOff': 'Acesso remoto desligado – a senha foi apagada',
       'toast.remoteError': 'Acesso remoto: ',
@@ -313,7 +317,7 @@
       'toast.noFolderPicker': 'Seleção de pastas do ShareOS indisponível',
       'toast.needUrl': 'Informe um link magnet ou uma URL válida',
       'toast.needFile': 'Selecione um arquivo .torrent válido',
-      'toast.about': 'Transmission para ShareOS 1.3 – controle completo do daemon',
+      'toast.about': 'Transmission para ShareOS 1.4.1 – controle completo do daemon',
       'rpc.error': 'Erro de RPC do Transmission',
       'err.noShareOS': 'Disponível apenas no ShareOS 0.2.0-beta.4 ou mais recente',
       'why.notInstalled': 'O serviço do Transmission não está instalado: APPS → Store → “transmission-daemon”.',
@@ -576,7 +580,7 @@
       'cfg.tabRemote': 'Remote access',
       'cfg.remoteBoxOff': 'Remote access is switched off on this box. An administrator can switch it on under Services → Torrents.',
       'cfg.remoteOn': 'Allow remote programs for my account',
-      'cfg.remoteHint': 'Programs such as Transmission Remote GUI, Transmissionic or Tremotesf then control your torrents from a PC or phone – only in the home network or over VPN. The change applies at once.',
+      'cfg.remoteHint': 'Programs such as Transmission Remote GUI, Transmissionic or Tremotesf control your torrents from a PC or phone – only in the home network or over VPN.',
       'cfg.remoteConn': 'Connection details for the program',
       'cfg.remoteHost': 'Host',
       'cfg.remotePort': 'Port',
@@ -584,13 +588,17 @@
       'cfg.remoteUser': 'User name',
       'cfg.remotePass': 'Password',
       'cfg.remotePassSet': 'set – shown only when it is created',
+      'cfg.remotePassUnset': 'not set yet – click below to create one',
       'cfg.remoteCopy': 'Copy',
       'cfg.remotePassNote': 'Note the password now and enter it in the program – it is not shown again.',
       'cfg.remoteRegen': 'New password',
+      'cfg.remoteCreate': 'Create password',
+      'cfg.remoteRevoke': 'Revoke password',
+      'cfg.remoteRevokeConfirm': 'Revoke remote access password? Programs using it will lose access immediately.',
       'cfg.remoteRegenHint': 'A new password replaces the old one: programs using it must be given the new one.',
       'cfg.remoteRegenConfirm': 'Create a new password? Programs using the old one lose access until you enter the new one.',
       'cfg.remoteHttps': 'HTTPS: {port}',
-      'toast.remotePass': 'Remote access on – new password created',
+      'toast.remotePass': 'New remote access password created',
       'toast.remoteOn': 'Remote access on',
       'toast.remoteOff': 'Remote access off – the password is deleted',
       'toast.remoteError': 'Remote access: ',
@@ -653,7 +661,7 @@
       'toast.noFolderPicker': 'ShareOS folder picker unavailable',
       'toast.needUrl': 'Enter a magnet link or valid URL',
       'toast.needFile': 'Select a valid .torrent file',
-      'toast.about': 'Transmission for ShareOS 1.3 – full daemon control',
+      'toast.about': 'Transmission for ShareOS 1.4.1 – full daemon control',
       'rpc.error': 'Transmission RPC Error',
       'err.noShareOS': 'Available only on ShareOS 0.2.0-beta.4 or newer',
       'why.notInstalled': 'Transmission service is not installed: APPS → Store → “transmission-daemon”.',
@@ -916,7 +924,7 @@
       'cfg.tabRemote': 'Fernzugriff',
       'cfg.remoteBoxOff': 'Der Fernzugriff ist auf dieser Box ausgeschaltet. Ein Administrator schaltet ihn unter Dienste → Torrents ein.',
       'cfg.remoteOn': 'Fernsteuer-Programme für mein Konto erlauben',
-      'cfg.remoteHint': 'Programme wie Transmission Remote GUI, Transmissionic oder Tremotesf steuern dann deine Torrents vom PC oder Handy aus – nur im Heimnetz oder über VPN. Die Änderung gilt sofort.',
+      'cfg.remoteHint': 'Programme wie Transmission Remote GUI, Transmissionic oder Tremotesf steuern deine Torrents vom PC oder Handy aus – nur im Heimnetz oder über VPN.',
       'cfg.remoteConn': 'Verbindungsdaten für das Programm',
       'cfg.remoteHost': 'Host',
       'cfg.remotePort': 'Port',
@@ -924,13 +932,17 @@
       'cfg.remoteUser': 'Benutzername',
       'cfg.remotePass': 'Passwort',
       'cfg.remotePassSet': 'gesetzt – wird nur beim Erzeugen angezeigt',
+      'cfg.remotePassUnset': 'noch nicht gesetzt – unten klicken, um eines zu erzeugen',
       'cfg.remoteCopy': 'Kopieren',
       'cfg.remotePassNote': 'Passwort jetzt notieren und im Programm eintragen – es wird nicht noch einmal angezeigt.',
       'cfg.remoteRegen': 'Neues Passwort',
+      'cfg.remoteCreate': 'Passwort erstellen',
+      'cfg.remoteRevoke': 'Passwort widerrufen',
+      'cfg.remoteRevokeConfirm': 'Fernzugriffs-Passwort widerrufen? Programme damit verlieren sofort den Zugriff.',
       'cfg.remoteRegenHint': 'Ein neues Passwort ersetzt das alte: Programme damit brauchen dann das neue.',
       'cfg.remoteRegenConfirm': 'Neues Passwort erzeugen? Programme mit dem alten verlieren den Zugriff, bis du das neue einträgst.',
       'cfg.remoteHttps': 'HTTPS: {port}',
-      'toast.remotePass': 'Fernzugriff an – neues Passwort erzeugt',
+      'toast.remotePass': 'Neues Passwort für den Fernzugriff erzeugt',
       'toast.remoteOn': 'Fernzugriff an',
       'toast.remoteOff': 'Fernzugriff aus – das Passwort ist gelöscht',
       'toast.remoteError': 'Fernzugriff: ',
@@ -993,7 +1005,7 @@
       'toast.noFolderPicker': 'ShareOS-Ordnerauswahl nicht verfügbar',
       'toast.needUrl': 'Bitte Magnet-Link oder gültige URL eingeben',
       'toast.needFile': 'Bitte gültige .torrent-Datei auswählen',
-      'toast.about': 'Transmission für ShareOS 1.3 – Vollständige Steuerung',
+      'toast.about': 'Transmission für ShareOS 1.4.1 – Vollständige Steuerung',
       'rpc.error': 'Transmission-RPC-Fehler',
       'err.noShareOS': 'Nur verfügbar auf ShareOS 0.2.0-beta.4 oder neuer',
       'why.notInstalled': 'Transmission ist nicht installiert: APPS → Store → „transmission-daemon“.',
@@ -1045,16 +1057,35 @@
 
   initLang();
 
+  function translate(key, vars = {}) {
+    const dict = STRINGS[currentLang] || STRINGS[FALLBACK];
+    let str = dict[key] || STRINGS[FALLBACK][key] || key;
+    for (const [k, v] of Object.entries(vars)) {
+      str = str.replace(new RegExp(`\\{${k}\\}`, 'g'), v);
+    }
+    return str;
+  }
+
+  function apply(root = document) {
+    document.documentElement.lang = currentLang;
+    root.querySelectorAll('[data-i18n]').forEach((el) => {
+      el.textContent = translate(el.dataset.i18n);
+    });
+    root.querySelectorAll('[data-i18n-html]').forEach((el) => {
+      el.innerHTML = translate(el.dataset.i18nHtml);
+    });
+    root.querySelectorAll('[data-i18n-title]').forEach((el) => {
+      el.title = translate(el.dataset.i18nTitle);
+    });
+    root.querySelectorAll('[data-i18n-placeholder]').forEach((el) => {
+      el.placeholder = translate(el.dataset.i18nPlaceholder);
+    });
+  }
+
   window.I18N = {
     lang: currentLang,
-    t(key, vars = {}) {
-      const dict = STRINGS[currentLang] || STRINGS[FALLBACK];
-      let str = dict[key] || STRINGS[FALLBACK][key] || key;
-      for (const [k, v] of Object.entries(vars)) {
-        str = str.replace(new RegExp(`\\{${k}\\}`, 'g'), v);
-      }
-      return str;
-    }
+    t: translate,
+    apply
   };
 
   document.documentElement.lang = currentLang;

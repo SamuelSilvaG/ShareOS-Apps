@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.4.1
+
+- Fix startup hang on "Checking connection...": guard `refresh()` against overlapping requests, serialize initial `session-get` before `torrent-get` on cold daemon startup, and add defensive DOM checks.
+- Restore automatic DOM translation (`I18N.apply`) for all `data-i18n` elements (including the *Remote access* tab in Portuguese, English, and German).
+- Fix `initTheme()` handling of the `ShareOS.theme` object (`{ theme, accent }`).
+- Allow opening *Preferences* (`#btn-settings`) to configure *Remote access* even before the daemon session loads.
+- Update the title bar version badge from `1.3.2` to `1.4.1` and add version query parameters to static assets to prevent stale browser cache after updates.
+- Fix the *Delete torrent* dialog layout (`.modal-card` padding, permanent data deletion checkbox label, and default unchecked state).
+- Optimize torrent polling (`LIST_FIELDS` vs on-demand `DETAIL_FIELDS` for the selected torrent and reduced `session-get` frequency) to cut CGI contention on the NAS, and add instant optimistic UI updates with race protection for *Pause*, *Start*, *Force*, and *Delete*.
+- Fix light theme support by using standard ShareOS theme variables (`--sos-panel`, `--sos-bg`, `--sos-line`, `--sos-rgb`) instead of dark fallback hex colours.
+- Update the Preferences → *Remote access* tab to check whether remote access is enabled on the box (`box_enabled`), provide Create, Replace (*New password*), and Revoke (*Revoke password*) actions for the account's remote password, and leave service activation to ShareOS (*Services → Torrents*).
+
 ## 1.4.0
 
 - Preferences → **Remote access**: lets programs like Transmission Remote GUI, Transmissionic or Tremotesf control the account's own torrents from a PC or phone ([ShareOS#103](https://github.com/UniqueDroid/ShareOS/issues/103)). Switching it on makes a password on the box (shown once, with a copy button); the tab shows host, port (and the HTTPS port), RPC path `/transmission/rpc` and the user name to enter in the program. *New password* replaces it, switching off deletes it. Only from the home network or over VPN.

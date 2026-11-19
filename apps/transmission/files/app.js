@@ -15,7 +15,23 @@
   let serverStats = null;
   let refreshTimer = null;
   let isConnected = false;
+  let isRefreshing = false;
+  let refreshQueued = false;
+  let actionSeq = 0;
+  let pollCount = 0;
   let pendingFileMetainfo = null;
+
+  const LIST_FIELDS = [
+    'id', 'name', 'status', 'totalSize', 'percentDone', 'rateDownload',
+    'rateUpload', 'eta', 'errorString', 'downloadDir', 'uploadRatio',
+    'uploadedEver', 'downloadedEver', 'corruptEver', 'peersConnected',
+    'peersSendingToUs', 'peersGettingFromUs', 'trackers', 'hashString',
+    'dateCreated', 'addedDate', 'doneDate', 'pieceCount', 'pieceSize',
+    'bandwidthPriority', 'downloadLimit', 'downloadLimited',
+    'uploadLimit', 'uploadLimited', 'seedRatioLimit', 'seedRatioMode',
+    'queuePosition', 'comment', 'creator', 'maxConnectedPeers', 'isPrivate'
+  ];
+  const DETAIL_FIELDS = ['id', 'files', 'fileStats', 'trackerStats', 'peers', 'pieces'];
 
   // Filter & Sort State
   let activeFilter = { type: 'status', val: 'all' }; // type: 'status' | 'tracker' | 'dir'
@@ -129,29 +145,59 @@
   }
 
   // Refresh Torrent list and server state
-  async function refresh() {
+  async function refresh(forceSession = false) {
+    if (isRefreshing) {
+      refreshQueued = true;
+      return;
+    }
+    isRefreshing = true;
+    clearTimeout(refreshTimer);
+    const seqAtStart = actionSeq;
+    const needSession = !isConnected || !serverSession || forceSession === true || (pollCount % 10 === 0);
+    pollCount++;
     try {
-      const [torrentData, sessionData] = await Promise.all([
-        rpc('torrent-get', {
-          fields: [
-            'id', 'name', 'status', 'totalSize', 'percentDone', 'rateDownload',
-            'rateUpload', 'eta', 'errorString', 'downloadDir', 'uploadRatio',
-            'uploadedEver', 'downloadedEver', 'corruptEver', 'peersConnected',
-            'peersSendingToUs', 'peersGettingFromUs', 'files', 'fileStats',
-            'trackers', 'trackerStats', 'peers', 'hashString', 'dateCreated',
-            'addedDate', 'doneDate', 'pieceCount', 'pieceSize', 'pieces',
-            'bandwidthPriority', 'downloadLimit', 'downloadLimited',
-            'uploadLimit', 'uploadLimited', 'seedRatioLimit', 'seedRatioMode',
-            'queuePosition', 'comment', 'creator', 'maxConnectedPeers', 'isPrivate'
-          ]
-        }),
-        rpc('session-get')
-      ]);
+      let sessionData = serverSession;
+      let torrentData;
+      if (needSession) {
+        if (!isConnected) {
+          sessionData = await rpc('session-get');
+          torrentData = await rpc('torrent-get', { fields: LIST_FIELDS });
+        } else {
+          [torrentData, sessionData] = await Promise.all([
+            rpc('torrent-get', { fields: LIST_FIELDS }),
+            rpc('session-get')
+          ]);
+        }
+      } else {
+        torrentData = await rpc('torrent-get', { fields: LIST_FIELDS });
+      }
 
-      torrents = torrentData.torrents || [];
+      if (actionSeq !== seqAtStart) {
+        refreshQueued = true;
+        return;
+      }
+
+      const listTorrents = torrentData.torrents || [];
+      const drawerOpen = $('details-drawer') && $('details-drawer').style.display !== 'none';
+      const detailId = (drawerOpen && selectedIds.size > 0) ? Array.from(selectedIds)[0] : null;
+      if (detailId != null && listTorrents.some((x) => x.id === detailId)) {
+        try {
+          const detRes = await rpc('torrent-get', { ids: [detailId], fields: DETAIL_FIELDS });
+          if (actionSeq !== seqAtStart) {
+            refreshQueued = true;
+            return;
+          }
+          if (detRes && detRes.torrents && detRes.torrents.length) {
+            const det = detRes.torrents[0];
+            const idx = listTorrents.findIndex((x) => x.id === det.id);
+            if (idx >= 0) Object.assign(listTorrents[idx], det);
+          }
+        } catch (_) { }
+      }
+
+      torrents = listTorrents;
       serverSession = sessionData;
       setConnected(true);
-
 
       renderSidebar();
       renderTorrents();
@@ -160,6 +206,14 @@
     } catch (err) {
       lastError = err.message;
       setConnected(false);
+    } finally {
+      isRefreshing = false;
+      if (refreshQueued) {
+        refreshQueued = false;
+        refresh(forceSession === true);
+      } else {
+        refreshTimer = setTimeout(() => refresh(), 3000);
+      }
     }
   }
 
@@ -567,6 +621,8 @@
           refresh();
         } catch (err) { toast(err.message, true); }
       });
+    } else if (tor.files === undefined) {
+      $('tab-files').innerHTML = `<div class="empty-detail-hint">${t('list.loading')}</div>`;
     } else {
       $('tab-files').innerHTML = `<div class="empty-detail-hint">${t('det.noFiles')}</div>`;
     }
@@ -599,6 +655,8 @@
           </tbody>
         </table>
       `;
+    } else if (tor.peers === undefined) {
+      $('tab-peers').innerHTML = `<div class="empty-detail-hint">${t('list.loading')}</div>`;
     } else {
       $('tab-peers').innerHTML = `<div class="empty-detail-hint">${t('det.noPeers')}</div>`;
     }
@@ -773,7 +831,7 @@
         isDone = i < completedPieces;
       }
 
-      ctx.fillStyle = isDone ? '#3a7bd5' : 'rgba(255, 255, 255, 0.08)';
+      ctx.fillStyle = isDone ? '#3a7bd5' : 'rgba(127, 127, 127, 0.22)';
       ctx.fillRect(x, y, blockSize, blockSize);
     }
   }
@@ -811,6 +869,12 @@
     }
   }
 
+  function ensureDetails() {
+    const id = selectedIds.size ? Array.from(selectedIds)[0] : null;
+    const tor = id != null && torrents.find((x) => x.id === id);
+    if (tor && tor.files === undefined) refresh();
+  }
+
   // Row Selection & Events
   $('torrent-rows').addEventListener('click', (e) => {
     const row = e.target.closest('.torrent-row');
@@ -841,6 +905,7 @@
     }
     renderTorrents();
     renderDetails();
+    ensureDetails();
   });
 
   // Double Click opens properties
@@ -870,6 +935,7 @@
     else selectedIds.clear();
     renderTorrents();
     renderDetails();
+    ensureDetails();
   });
 
   // Search filter
@@ -896,6 +962,7 @@
 
     renderTorrents();
     renderDetails();
+    ensureDetails();
   });
 
   // Toggle Sidebar
@@ -914,6 +981,7 @@
       activeDetailTab = btn.dataset.tab;
       $(`tab-${activeDetailTab}`).classList.add('active');
       renderDetails();
+      ensureDetails();
     });
   });
 
@@ -925,29 +993,73 @@
   // Action Buttons
   $('btn-start').addEventListener('click', async () => {
     if (!selectedIds.size) return;
+    const ids = Array.from(selectedIds);
+    actionSeq++;
+    torrents.forEach((tor) => {
+      if (selectedIds.has(tor.id)) {
+        tor.status = tor.percentDone >= 1 ? 6 : 4;
+      }
+    });
+    renderSidebar();
+    renderTorrents();
+    updateStatusbar();
+    renderDetails();
     try {
-      await rpc('torrent-start', { ids: Array.from(selectedIds) });
+      await rpc('torrent-start', { ids });
       toast(t('toast.started'));
       refresh();
-    } catch (e) { toast(e.message, true); }
+    } catch (e) {
+      toast(e.message, true);
+      refresh();
+    }
   });
 
   $('btn-force').addEventListener('click', async () => {
     if (!selectedIds.size) return;
+    const ids = Array.from(selectedIds);
+    actionSeq++;
+    torrents.forEach((tor) => {
+      if (selectedIds.has(tor.id)) {
+        tor.status = tor.percentDone >= 1 ? 6 : 4;
+      }
+    });
+    renderSidebar();
+    renderTorrents();
+    updateStatusbar();
+    renderDetails();
     try {
-      await rpc('torrent-start-now', { ids: Array.from(selectedIds) });
+      await rpc('torrent-start-now', { ids });
       toast(t('toast.forceStarted'));
       refresh();
-    } catch (e) { toast(e.message, true); }
+    } catch (e) {
+      toast(e.message, true);
+      refresh();
+    }
   });
 
   $('btn-pause').addEventListener('click', async () => {
     if (!selectedIds.size) return;
+    const ids = Array.from(selectedIds);
+    actionSeq++;
+    torrents.forEach((tor) => {
+      if (selectedIds.has(tor.id)) {
+        tor.status = 0;
+        tor.rateDownload = 0;
+        tor.rateUpload = 0;
+      }
+    });
+    renderSidebar();
+    renderTorrents();
+    updateStatusbar();
+    renderDetails();
     try {
-      await rpc('torrent-stop', { ids: Array.from(selectedIds) });
+      await rpc('torrent-stop', { ids });
       toast(t('toast.paused'));
       refresh();
-    } catch (e) { toast(e.message, true); }
+    } catch (e) {
+      toast(e.message, true);
+      refresh();
+    }
   });
 
   $('btn-verify').addEventListener('click', async () => {
@@ -985,6 +1097,9 @@
 
   $('btn-remove').addEventListener('click', () => {
     if (!selectedIds.size) return;
+    $('del-data-check').checked = false;
+    const delSpan = document.querySelector('[data-i18n-html="del.data"]');
+    if (delSpan) delSpan.innerHTML = t('del.data');
     $('modal-delete').style.display = 'flex';
   });
 
@@ -994,7 +1109,7 @@
     try {
       await rpc('session-set', { 'alt-speed-enabled': !current });
       toast(!current ? t('toast.turtleOn') : t('toast.turtleOff'));
-      refresh();
+      refresh(true);
     } catch (e) { toast(e.message, true); }
   });
 
@@ -1231,14 +1346,25 @@
   $('modal-del-close').addEventListener('click', () => $('modal-delete').style.display = 'none');
   $('modal-del-cancel').addEventListener('click', () => $('modal-delete').style.display = 'none');
   $('modal-del-submit').addEventListener('click', async () => {
+    if (!selectedIds.size) return;
+    const ids = Array.from(selectedIds);
     const deleteData = $('del-data-check').checked;
+    actionSeq++;
+    $('modal-delete').style.display = 'none';
+    torrents = torrents.filter((tor) => !selectedIds.has(tor.id));
+    selectedIds.clear();
+    renderSidebar();
+    renderTorrents();
+    updateStatusbar();
+    renderDetails();
     try {
-      await rpc('torrent-remove', { ids: Array.from(selectedIds), 'delete-local-data': deleteData });
-      $('modal-delete').style.display = 'none';
-      selectedIds.clear();
+      await rpc('torrent-remove', { ids, 'delete-local-data': deleteData });
       toast(t('toast.deleted'));
+    } catch (e) {
+      toast(e.message, true);
+    } finally {
       refresh();
-    } catch (e) { toast(e.message, true); }
+    }
   });
 
   // Modal: Add Torrent
@@ -1294,7 +1420,7 @@
   $('btn-browse-dest').addEventListener('click', () => pickFolder($('torrent-dest')));
   $('btn-cfg-browse').addEventListener('click', () => pickFolder($('cfg-download-dir')));
   $('btn-cfg-incomplete-browse').addEventListener('click', () => pickFolder($('cfg-incomplete-dir')));
-  $('btn-cfg-watch-browse').addEventListener('click', () => pickFolder($('cfg-watch-dir'), t('pick.watchTitle')));
+  if ($('btn-cfg-watch-browse')) $('btn-cfg-watch-browse').addEventListener('click', () => pickFolder($('cfg-watch-dir'), t('pick.watchTitle')));
 
   // Local file upload
   $('torrent-file-input').addEventListener('change', (e) => {
@@ -1367,42 +1493,43 @@
 
   // Modal: Settings
   $('btn-settings').addEventListener('click', () => {
-    if (!serverSession) return;
-    $('cfg-download-dir').value = serverSession['download-dir'] || '';
-    $('cfg-incomplete-enabled').checked = !!serverSession['incomplete-dir-enabled'];
-    $('cfg-incomplete-dir').value = serverSession['incomplete-dir'] || '';
-    $('cfg-watch-enabled').checked = !!serverSession['watch-dir-enabled'];
-    $('cfg-watch-dir').value = serverSession['watch-dir'] || '';
-    const watchLocked = !!serverSession['watch-dir-autobrr'];
-    $('cfg-watch-enabled').disabled = watchLocked;
-    $('cfg-watch-dir').readOnly = watchLocked;
-    $('btn-cfg-watch-browse').disabled = watchLocked;
-    $('cfg-watch-autobrr').style.display = watchLocked ? 'block' : 'none';
-    $('cfg-start-added').checked = serverSession['start-added-torrents'] !== false;
-    $('cfg-append-part').checked = serverSession['rename-partial-files'] !== false;
+    if (serverSession) {
+      $('cfg-download-dir').value = serverSession['download-dir'] || '';
+      $('cfg-incomplete-enabled').checked = !!serverSession['incomplete-dir-enabled'];
+      $('cfg-incomplete-dir').value = serverSession['incomplete-dir'] || '';
+      $('cfg-watch-enabled').checked = !!serverSession['watch-dir-enabled'];
+      $('cfg-watch-dir').value = serverSession['watch-dir'] || '';
+      const watchLocked = !!serverSession['watch-dir-autobrr'];
+      $('cfg-watch-enabled').disabled = watchLocked;
+      $('cfg-watch-dir').readOnly = watchLocked;
+      if ($('btn-cfg-watch-browse')) $('btn-cfg-watch-browse').disabled = watchLocked;
+      $('cfg-watch-autobrr').style.display = watchLocked ? 'block' : 'none';
+      $('cfg-start-added').checked = serverSession['start-added-torrents'] !== false;
+      $('cfg-append-part').checked = serverSession['rename-partial-files'] !== false;
 
-    $('cfg-speed-down-enabled').checked = !!serverSession['speed-limit-down-enabled'];
-    $('cfg-speed-down').value = serverSession['speed-limit-down'] || 0;
-    $('cfg-speed-up-enabled').checked = !!serverSession['speed-limit-up-enabled'];
-    $('cfg-speed-up').value = serverSession['speed-limit-up'] || 0;
-    $('cfg-alt-down').value = serverSession['alt-speed-down'] || 50;
-    $('cfg-alt-up').value = serverSession['alt-speed-up'] || 50;
+      $('cfg-speed-down-enabled').checked = !!serverSession['speed-limit-down-enabled'];
+      $('cfg-speed-down').value = serverSession['speed-limit-down'] || 0;
+      $('cfg-speed-up-enabled').checked = !!serverSession['speed-limit-up-enabled'];
+      $('cfg-speed-up').value = serverSession['speed-limit-up'] || 0;
+      $('cfg-alt-down').value = serverSession['alt-speed-down'] || 50;
+      $('cfg-alt-up').value = serverSession['alt-speed-up'] || 50;
 
-    $('cfg-peer-port').value = serverSession['peer-port'] || '';
-    $('cfg-port-forward').checked = serverSession['port-forwarding-enabled'] !== false;
-    $('cfg-random-port').checked = !!serverSession['peer-port-random-on-start'];
-    $('cfg-max-peers-global').value = serverSession['peer-limit-global'] || 200;
-    $('cfg-max-peers-torrent').value = serverSession['peer-limit-per-torrent'] || 50;
-    $('cfg-encryption').value = serverSession['encryption'] || 'preferred';
-    $('cfg-dht').checked = serverSession['dht-enabled'] !== false;
-    $('cfg-pex').checked = serverSession['pex-enabled'] !== false;
-    $('cfg-lpd').checked = !!serverSession['lpd-enabled'];
-    $('cfg-utp').checked = !!serverSession['utp-enabled'];
+      $('cfg-peer-port').value = serverSession['peer-port'] || '';
+      $('cfg-port-forward').checked = serverSession['port-forwarding-enabled'] !== false;
+      $('cfg-random-port').checked = !!serverSession['peer-port-random-on-start'];
+      $('cfg-max-peers-global').value = serverSession['peer-limit-global'] || 200;
+      $('cfg-max-peers-torrent').value = serverSession['peer-limit-per-torrent'] || 50;
+      $('cfg-encryption').value = serverSession['encryption'] || 'preferred';
+      $('cfg-dht').checked = serverSession['dht-enabled'] !== false;
+      $('cfg-pex').checked = serverSession['pex-enabled'] !== false;
+      $('cfg-lpd').checked = !!serverSession['lpd-enabled'];
+      $('cfg-utp').checked = !!serverSession['utp-enabled'];
 
-    $('cfg-dl-queue').value = serverSession['download-queue-size'] || 5;
-    $('cfg-seed-queue').value = serverSession['seed-queue-size'] || 10;
-    $('cfg-ratio-limited').checked = !!serverSession['seedRatioLimited'];
-    $('cfg-ratio-limit').value = serverSession['seedRatioLimit'] || 2.0;
+      $('cfg-dl-queue').value = serverSession['download-queue-size'] || 5;
+      $('cfg-seed-queue').value = serverSession['seed-queue-size'] || 10;
+      $('cfg-ratio-limited').checked = !!serverSession['seedRatioLimited'];
+      $('cfg-ratio-limit').value = serverSession['seedRatioLimit'] || 2.0;
+    }
 
     $('port-test-result').textContent = '';
     $('port-test-result').className = 'port-result';
@@ -1414,26 +1541,33 @@
   // older boxes answer "method not allowed": the tab stays hidden)
   let remoteState = null;
   function showRemote(r, password) {
+    if (!$('s-tab-remote')) return;
     remoteState = r;
     $('s-tab-remote').hidden = false;
-    $('rm-box-off').hidden = !!r.box_enabled;
-    $('cfg-remote-on').checked = !!r.on;
-    $('rm-details').hidden = !r.on;
-    $('rm-host').textContent = r.host || location.hostname;
-    $('rm-port').textContent = String(r.port);
-    $('rm-https').textContent = r.https ? t('cfg.remoteHttps', { port: r.https_port }) : '';
-    $('rm-path').textContent = r.path;
-    $('rm-user').textContent = r.user;
-    $('rm-pass-set').hidden = !!password;
-    $('rm-pass-new').hidden = !password;
-    $('rm-pass-note').hidden = !password;
-    $('rm-pass').textContent = password || '';
+    const boxOn = !!r.box_enabled;
+    if ($('rm-box-off')) $('rm-box-off').hidden = boxOn;
+    if ($('rm-details')) $('rm-details').hidden = !boxOn;
+    if ($('rm-host')) $('rm-host').textContent = r.host || location.hostname;
+    if ($('rm-port')) $('rm-port').textContent = String(r.port);
+    if ($('rm-https')) $('rm-https').textContent = r.https ? t('cfg.remoteHttps', { port: r.https_port }) : '';
+    if ($('rm-path')) $('rm-path').textContent = r.path;
+    if ($('rm-user')) $('rm-user').textContent = r.user;
+    if ($('rm-pass-set')) {
+      $('rm-pass-set').hidden = !!password;
+      $('rm-pass-set').textContent = t(r.on ? 'cfg.remotePassSet' : 'cfg.remotePassUnset');
+    }
+    if ($('rm-pass-new')) $('rm-pass-new').hidden = !password;
+    if ($('rm-pass-note')) $('rm-pass-note').hidden = !password;
+    if ($('rm-pass')) $('rm-pass').textContent = password || '';
+    if ($('btn-rm-revoke')) $('btn-rm-revoke').hidden = !r.on;
+    if ($('btn-rm-regen')) $('btn-rm-regen').textContent = t(r.on ? 'cfg.remoteRegen' : 'cfg.remoteCreate');
   }
   async function loadRemote() {
+    if (!$('s-tab-remote')) return;
     try { showRemote(await rpc('shareos-remote-get')); }
     catch (e) {
-      $('s-tab-remote').hidden = true;
-      if ($('stab-remote').classList.contains('active')) document.querySelector('.s-tab[data-stab="dl"]').click();
+      if ($('s-tab-remote')) $('s-tab-remote').hidden = true;
+      if ($('stab-remote') && $('stab-remote').classList.contains('active')) document.querySelector('.s-tab[data-stab="dl"]').click();
     }
   }
   async function setRemote(on, regen) {
@@ -1446,14 +1580,24 @@
       if (remoteState) showRemote(remoteState);
     }
   }
-  $('cfg-remote-on').addEventListener('change', (e) => setRemote(e.target.checked, false));
-  $('btn-rm-regen').addEventListener('click', () => {
-    if (confirm(t('cfg.remoteRegenConfirm'))) setRemote(true, true);
-  });
-  $('btn-rm-copy').addEventListener('click', () => {
-    const p = $('rm-pass').textContent;
-    navigator.clipboard.writeText(p).then(() => toast(t('toast.copied'))).catch(() => toast(p));
-  });
+  if ($('btn-rm-regen')) {
+    $('btn-rm-regen').addEventListener('click', () => {
+      if (!remoteState || !remoteState.box_enabled) return;
+      if (!remoteState.on || confirm(t('cfg.remoteRegenConfirm'))) setRemote(true, true);
+    });
+  }
+  if ($('btn-rm-revoke')) {
+    $('btn-rm-revoke').addEventListener('click', () => {
+      if (!remoteState || !remoteState.on) return;
+      if (confirm(t('cfg.remoteRevokeConfirm'))) setRemote(false, false);
+    });
+  }
+  if ($('btn-rm-copy')) {
+    $('btn-rm-copy').addEventListener('click', () => {
+      const p = $('rm-pass') ? $('rm-pass').textContent : '';
+      navigator.clipboard.writeText(p).then(() => toast(t('toast.copied'))).catch(() => toast(p));
+    });
+  }
   $('btn-settings').addEventListener('click', loadRemote);
 
   // Settings Tabs
@@ -1549,7 +1693,7 @@
       await rpc('session-set', setArgs);
       $('modal-settings').style.display = 'none';
       toast(t('toast.saved'));
-      refresh();
+      refresh(true);
     } catch (e) {
       toast(t('toast.saveError') + e.message, true);
     } finally {
@@ -1609,8 +1753,26 @@
         items: [
           { label: t('menu.add'), kbd: 'Ctrl+O', action: () => $('btn-add').click() },
           '-',
-          { label: t('menu.pauseAll'), action: async () => { await rpc('torrent-stop'); refresh(); } },
-          { label: t('menu.resumeAll'), action: async () => { await rpc('torrent-start'); refresh(); } },
+          {
+            label: t('menu.pauseAll'),
+            action: async () => {
+              actionSeq++;
+              torrents.forEach((tor) => { tor.status = 0; tor.rateDownload = 0; tor.rateUpload = 0; });
+              renderSidebar(); renderTorrents(); updateStatusbar(); renderDetails();
+              try { await rpc('torrent-stop'); toast(t('toast.paused')); } catch (e) { toast(e.message, true); }
+              refresh();
+            }
+          },
+          {
+            label: t('menu.resumeAll'),
+            action: async () => {
+              actionSeq++;
+              torrents.forEach((tor) => { tor.status = tor.percentDone >= 1 ? 6 : 4; });
+              renderSidebar(); renderTorrents(); updateStatusbar(); renderDetails();
+              try { await rpc('torrent-start'); toast(t('toast.started')); } catch (e) { toast(e.message, true); }
+              refresh();
+            }
+          },
           '-',
           { label: t('menu.close'), action: () => window.close() }
         ]
@@ -1693,26 +1855,39 @@
   }
 
   // Theme Synchronization with ShareOS
+  function applyThemeObj(t, a) {
+    const theme = (t && typeof t === 'object') ? t.theme : t;
+    const accent = (t && typeof t === 'object') ? t.accent : a;
+    if (theme === 'light' || theme === 'dark') {
+      document.documentElement.setAttribute('data-theme', theme);
+    }
+    if (accent) {
+      document.documentElement.setAttribute('data-accent', accent);
+    }
+  }
+
   function initTheme() {
     const params = new URLSearchParams(window.location.search);
-    const theme = params.get('theme') || (window.ShareOS && window.ShareOS.theme);
-    if (theme) {
-      document.documentElement.setAttribute('data-theme', theme);
+    const paramTheme = params.get('theme');
+    const paramAccent = params.get('accent');
+    if (paramTheme) {
+      applyThemeObj(paramTheme, paramAccent);
+    } else if (window.ShareOS && window.ShareOS.theme) {
+      applyThemeObj(window.ShareOS.theme);
     } else if (!document.documentElement.hasAttribute('data-theme')) {
       const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
       document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
     }
     if (window.ShareOS && typeof window.ShareOS.onTheme === 'function') {
-      window.ShareOS.onTheme((t, a) => {
-        if (t) document.documentElement.setAttribute('data-theme', t);
-        if (a) document.documentElement.setAttribute('data-accent', a);
-      });
+      window.ShareOS.onTheme((t, a) => applyThemeObj(t, a));
     }
   }
 
   // Init
+  if (window.I18N && typeof window.I18N.apply === 'function') {
+    window.I18N.apply();
+  }
   initTheme();
   refresh();
   checkOpenedFile();
-  refreshTimer = setInterval(refresh, 2000);
 })();
