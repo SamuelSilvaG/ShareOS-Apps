@@ -111,7 +111,17 @@
   "ShareOS": "ShareOS",
   "Original": "Original",
   "ShareFinder – ShareOS": "ShareFinder – ShareOS",
-  "Heute,": "Today,"
+  "Heute,": "Today,",
+  "Wird abgebrochen …": "Stopping …",
+  "Größe wird ermittelt …": "Working out the size …",
+  "Wird abgeschlossen …": "Finishing …",
+  "Restzeit wird berechnet …": "Working out the time left …",
+  "Abgebrochen. Was schon kopiert war, bleibt.": "Stopped. What was copied so far stays.",
+  "1 Element wird kopiert": "Copying 1 item",
+  "1 Element wird verschoben": "Moving 1 item",
+  "Abgebrochen. Was schon hochgeladen war, bleibt.": "Stopped. What was uploaded so far stays.",
+  "1 Element wird hochgeladen": "Uploading 1 item",
+  "Diese ShareOS-Version nimmt von Apps höchstens 64 MB je Datei an (ab 0.3.0-beta.14 ohne Grenze).": "This ShareOS version takes at most 64 MB per file from apps (no limit from 0.3.0-beta.14 on)."
  },
  "patterns": [
   [
@@ -213,6 +223,22 @@
   [
    "^(\\S+)-Datei$",
    "$1 file"
+  ],
+  [
+   "^(\\d+) Elemente werden kopiert$",
+   "Copying $1 items"
+  ],
+  [
+   "^(\\d+) Elemente werden verschoben$",
+   "Moving $1 items"
+  ],
+  [
+   "^noch etwa (.+)$",
+   "about $1 left"
+  ],
+  [
+   "^(\\d+) Elemente werden hochgeladen$",
+   "Uploading $1 items"
   ]
  ],
  "words": [

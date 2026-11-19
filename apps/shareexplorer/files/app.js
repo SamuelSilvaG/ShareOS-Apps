@@ -6,7 +6,7 @@
  */
 (function () {
 	'use strict';
-	const { esc, $, T, menu, confirmDlg, info, toast, viewer } = FMUI;
+	const { esc, $, T, menu, confirmDlg, info, toast, viewer, progress } = FMUI;
 	const app = $('#app');
 	const look = FMUI.look(app, 'shareexplorer-style');
 
@@ -64,7 +64,7 @@
 	const ci = (n) => `<svg class="ci" viewBox="0 0 20 20" aria-hidden="true">${CI[n]}</svg>`;
 
 	/* ---------- state ---------- */
-	const fm = new FileCore({ onChange, store: 'shareexplorer' });
+	const fm = new FileCore({ onChange, store: 'shareexplorer', onProgress: progress() });
 	const P = fm.prefs();
 	let view = P.view || 'details';          // details | tiles | list
 	let pane = P.pane !== false;               // preview/details pane on the right
@@ -120,7 +120,7 @@
 		if (what === 'error') return drawError();
 		if (what === 'roots') { drawNav(); return; }
 		if (what === 'busy') { app.classList.toggle('busy', fm.busy > 0); return; }
-		if (what === 'list') { drawCrumbs(); drawContent(); drawNav(); drawPane(); drawStatus(); drawCmd(); return; }
+		if (what === 'list') { syncTree(); drawCrumbs(); drawContent(); drawNav(); drawPane(); drawStatus(); drawCmd(); return; }
 		if (what === 'sel') { markSel(); drawPane(); drawStatus(); drawCmd(); return; }
 		if (what === 'clip') { drawContent(); drawCmd(); }
 	}
@@ -282,6 +282,19 @@
 			<div class="ngroup"><div class="nhead"><span class="tico">${ico('dir', 'pc')}</span><span>${esc(T('Diese Box'))}</span></div>
 			${shares.map((r) => node(r.name, '', r.name + (r.ro ? ' 🔒' : ''), rootKind(r), 1)).join('')}</div>`;
 	}
+	// the tree shows what the folder holds now: a new, renamed or deleted
+	// folder of the folder shown, and of a folder something was put into
+	const byName = new Intl.Collator('de', { numeric: true, sensitivity: 'base' }).compare;
+	function syncTree() {
+		const t = tree.get(fm.root + '/' + fm.path);
+		if (t && t.kids) t.kids = fm.entries.filter((e) => e.kind === 'dir').map((e) => e.name).sort(byName);
+	}
+	async function refreshTree(root, path) {
+		const t = tree.get(root + '/' + path);
+		if (!t || !t.kids) return;
+		t.kids = await fm.subdirs(root, path);
+		drawNav();
+	}
 	async function toggleTree(key, open) {
 		const t = tree.get(key) || {};
 		t.open = open ?? !t.open;
@@ -339,15 +352,21 @@
 		await fm.remove(S.map((e) => e.name));
 		toast(S.length === 1 ? 'Gelöscht.' : `${S.length} ${T('Elemente gelöscht.')}`);
 	});
-	const paste = guard(async (into) => { await fm.paste(into); toast('Eingefügt.'); });
+	const STOPPED = 'Abgebrochen. Was schon kopiert war, bleibt.';
+	const STOPPED_UP = 'Abgebrochen. Was schon hochgeladen war, bleibt.';
+	const paste = guard(async (into) => {
+		const stopped = await fm.paste(into);
+		if (into) await refreshTree(fm.root, FC.joinPath(fm.path, into));
+		toast(stopped ? STOPPED : 'Eingefügt.');
+	});
 	const upload = guard(async (files, into) => {
 		if (!files || !files.length || fm.readOnly) return;
+		const count = files.length;   // the list of a file input empties when the input is reset
 		const back = into ? { root: fm.root, path: fm.path } : null;
 		if (into) await fm.go(fm.root, FC.joinPath(fm.path, into));
 		try {
-			await fm.upload(files, (i, n, name) => { upl = i < n ? `${T('Hochladen')} ${i + 1}/${n}: ${name}` : null; drawStatus(); });
-			toast(files.length === 1 ? 'Hochgeladen.' : `${files.length} ${T('Dateien hochgeladen.')}`);
-		} finally { upl = null; drawStatus(); if (back) await fm.go(back.root, back.path, false); }
+			toast(await fm.upload(files) ? STOPPED_UP : count === 1 ? 'Hochgeladen.' : `${count} ${T('Dateien hochgeladen.')}`);
+		} finally { if (back) await fm.go(back.root, back.path, false); }
 	});
 	const props = guard(async () => {
 		const S = fm.selected();
@@ -580,8 +599,10 @@
 		}
 		if (!dragNames) return;
 		const names = dragNames; dragNames = null;
-		await fm.dropInto(names, t.root, t.path, ev.ctrlKey || ev.altKey);
-		toast(ev.ctrlKey || ev.altKey ? 'Kopiert.' : 'Verschoben.');
+		const copy = ev.ctrlKey || ev.altKey;
+		const stopped = await fm.dropInto(names, t.root, t.path, copy);
+		await refreshTree(t.root, t.path);
+		toast(stopped ? STOPPED : copy ? 'Kopiert.' : 'Verschoben.');
 	}));
 
 	/* ---------- resizable panes ---------- */

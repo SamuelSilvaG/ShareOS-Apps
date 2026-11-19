@@ -46,8 +46,16 @@
 		m.style.left = Math.max(4, Math.min(x, innerWidth - r.width - 4)) + 'px';
 		m.style.top = Math.max(4, Math.min(y, innerHeight - r.height - 4)) + 'px';
 		openMenu = m;
-		const first = m.querySelector('.fm-mi:not(:disabled)');
-		if (first) first.focus({ preventScroll: true });
+		// The menu itself takes the focus, not its first entry: an entry with a
+		// sub-menu shows it while the focus is in it, and the first one ("View")
+		// stayed open under the pointer on another entry. The arrow keys start
+		// at the first entry; the focus follows the pointer.
+		m.tabIndex = -1;
+		m.focus({ preventScroll: true });
+		m.addEventListener('mousemove', (ev) => {
+			const b = ev.target.closest('.fm-mi');
+			if (b && !b.disabled && document.activeElement !== b && !b.contains(document.activeElement)) b.focus({ preventScroll: true });
+		});
 		m.addEventListener('keydown', (ev) => {
 			const L = [...m.querySelectorAll(':scope > .fm-mi:not(:disabled)')];
 			const i = L.indexOf(document.activeElement);
@@ -110,6 +118,58 @@
 		t.classList.add('on');
 		clearTimeout(toastT);
 		toastT = setTimeout(() => t.classList.remove('on'), err ? 5000 : 2600);
+	}
+
+	/* ---- progress of a copy or move on the box ----
+	 * progress() gives the function for FileCore.onProgress: called with
+	 * { op, count, total, done, cancel } while the box works (bytes; null while
+	 * it is still counting) and with null at the end. Speed and remaining time
+	 * come from the steps of the last 20 seconds. */
+	function fmtDur(s) {
+		s = Math.max(1, Math.round(s));
+		if (s < 60) return s + ' s';
+		if (s < 3600) return Math.floor(s / 60) + ' min' + (s % 60 && s < 600 ? ' ' + (s % 60) + ' s' : '');
+		return Math.floor(s / 3600) + ' h ' + Math.floor(s % 3600 / 60) + ' min';
+	}
+	function progress() {
+		let w = null, hist = [], cancel = null, stopping = false;
+		const set = (sel, t) => { const e = $(sel, w); if (e.textContent !== t) e.textContent = t; };
+		return (p) => {
+			if (!p) { if (w) w.remove(); w = null; hist = []; cancel = null; stopping = false; return; }
+			if (!w) {
+				w = document.createElement('div');
+				w.className = 'fm-prog';
+				w.setAttribute('role', 'status');
+				w.innerHTML = `<div class="fm-ptitle"></div>
+					<div class="fm-pbar" role="progressbar" aria-valuemin="0" aria-valuemax="100"><i></i></div>
+					<div class="fm-pline"><span class="fm-pamt" data-i18n-skip></span><span class="fm-prate" data-i18n-skip></span></div>
+					<div class="fm-pline"><span class="fm-peta"></span><button type="button" class="fm-btn" data-p="cancel">Abbrechen</button></div>`;
+				host().appendChild(w);
+				$('[data-p="cancel"]', w).addEventListener('click', () => {
+					if (!cancel || stopping) return;
+					stopping = true;
+					$('[data-p="cancel"]', w).disabled = true;
+					set('.fm-peta', 'Wird abgebrochen …');
+					cancel().catch((e) => { stopping = false; if (w) $('[data-p="cancel"]', w).disabled = false; toast(e.message || String(e), true); });
+				});
+			}
+			cancel = p.cancel || null;
+			$('[data-p="cancel"]', w).hidden = !cancel;
+			const verb = p.op === 'move' ? 'verschoben' : p.op === 'upload' ? 'hochgeladen' : 'kopiert';
+			set('.fm-ptitle', p.count === 1 ? `1 Element wird ${verb}` : `${p.count} Elemente werden ${verb}`);
+			const now = Date.now(), last = hist[hist.length - 1];
+			if (p.done != null && (!last || p.done !== last.done)) hist.push({ t: now, done: p.done });
+			while (hist.length > 2 && now - hist[0].t > 20000) hist.shift();
+			const a = hist[0], b = hist[hist.length - 1];
+			const rate = hist.length > 1 && b.t - a.t >= 2000 && b.done > a.done ? (b.done - a.done) / ((b.t - a.t) / 1000) : 0;
+			const known = p.total != null && p.total > 0, pct = known && p.done != null ? Math.min(100, Math.floor(p.done * 100 / p.total)) : null;
+			const bar = $('.fm-pbar', w);
+			bar.classList.toggle('wait', pct == null);
+			if (pct != null) { bar.setAttribute('aria-valuenow', pct); $('i', bar).style.width = pct + '%'; } else bar.removeAttribute('aria-valuenow');
+			set('.fm-pamt', pct != null ? `${pct} % · ${FC.fmtSize(p.done)} ${T('von')} ${FC.fmtSize(p.total)}` : p.done ? FC.fmtSize(p.done) : '');
+			set('.fm-prate', rate ? FC.fmtSize(rate) + '/s' : '');
+			if (!stopping) set('.fm-peta', !known ? 'Größe wird ermittelt …' : pct >= 100 ? 'Wird abgeschlossen …' : rate ? `noch etwa ${fmtDur((p.total - p.done) / rate)}` : 'Restzeit wird berechnet …');
+		};
 	}
 
 	/* ---- viewer: pictures, video, audio, text, PDF straight from the box ----
@@ -186,5 +246,5 @@
 		};
 	}
 
-	window.FMUI = { esc, $, T, menu, closeMenu, dialog, confirmDlg, promptDlg, info, toast, viewer, look };
+	window.FMUI = { esc, $, T, menu, closeMenu, dialog, confirmDlg, promptDlg, info, toast, viewer, progress, look };
 })();
