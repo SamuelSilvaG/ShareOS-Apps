@@ -1,3 +1,7 @@
+## 1.1.1
+
+- Column view: a right click on a folder in a column to the left – usually the folder that is open on the right – showed only the menu for the open folder's contents, without *Delete*, *Rename* or *Copy*. It now selects that folder, as the Finder does, and the menu acts on it. Before, it took a click on the folder above and then on the folder again.
+
 ## 1.1.0
 
 - **Progress of a copy or move that takes longer:** a small window at the bottom right shows how much is copied, the speed and the time left, with *Cancel* (what was copied so far stays). Asked for in [ShareOS discussion #88](https://github.com/UniqueDroid/ShareOS/discussions/88). Needs ShareOS 0.3.0-beta.14 or newer; on older versions copying works as before, without the window.

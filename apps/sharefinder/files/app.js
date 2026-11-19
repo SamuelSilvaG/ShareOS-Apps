@@ -369,6 +369,8 @@
 		const it = ev.target.closest('.it');
 		if (!it) { if (ev.button === 0 && !ev.metaKey && !ev.ctrlKey && !ev.shiftKey) fm.clearSel(); return; }
 		if (it.dataset.col != null) {
+			// right button: the context menu selects it in its own folder (below)
+			if (ev.button === 2) return;
 			// a folder (or file) in a column to the left: show that folder
 			const lvl = +it.dataset.col, parts = fm.path ? fm.path.split('/') : [];
 			const base = parts.slice(0, lvl).join('/');
@@ -398,6 +400,18 @@
 		if (s) return menu([{ label: 'Öffnen', action: () => go(s.dataset.root, s.dataset.path) }], ev.clientX, ev.clientY);
 		if (!ev.target.closest('.content')) return;
 		const it = ev.target.closest('.it');
+		if (it && it.dataset.col != null) {
+			// column view, an item in a column to the left (often the folder that is
+			// open on the right): the menu is for that item, as in the Finder – go
+			// to the folder it is in and select it, so Delete, Rename & co. apply to it
+			const x = ev.clientX, y = ev.clientY, lvl = +it.dataset.col, name = it.dataset.n;
+			const base = (fm.path ? fm.path.split('/') : []).slice(0, lvl).join('/');
+			return guard(async () => {
+				await fm.go(fm.root, base);
+				fm.selectOnly(name);
+				menu(actItems(), x, y);
+			})();
+		}
 		if (!it) fm.clearSel();
 		menu(actItems(), ev.clientX, ev.clientY);
 	});
