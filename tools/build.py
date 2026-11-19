@@ -120,18 +120,47 @@ def notes(app_dir, version):
     return m.group(1).strip() if m else ''
 
 
+# A browser keeps the files of an app by their address. Before ShareOS
+# 0.3.0-beta.14 the box gave it no reason to ask again, so after an update the
+# old scripts and styles could go on running. In the package every local
+# script and stylesheet of an HTML page therefore gets "?v=<version>": a new
+# version is a new address. Sources stay as they are (src="app.js"); what
+# already has a query, an absolute address or another host is left alone.
+TAG_RE = re.compile(r'<(script|link)\b[^>]*>', re.I)
+URL_RE = re.compile(r'''(\s(?:src|href)\s*=\s*)(["'])([^"'<>]+)\2''', re.I)
+
+
+def stamp(html, version):
+    def local(u):
+        return not re.match(r'[a-z][a-z0-9+.-]*:|/|#', u, re.I) and '?' not in u and '#' not in u
+
+    def tag(m):
+        want = 'src' if m.group(1).lower() == 'script' else 'href'
+
+        def url(n):
+            if n.group(1).strip().lower().rstrip('= ').strip() != want or not local(n.group(3)): return n.group(0)
+            return '%s%s%s?v=%s%s' % (n.group(1), n.group(2), n.group(3), version, n.group(2))
+        return URL_RE.sub(url, m.group(0))
+    return TAG_RE.sub(tag, html)
+
+
 def build(app_dir, out):
     a, err = check(app_dir)
     if err:
         raise SystemExit('%s: %s' % (app_dir, '; '.join(err)))
     name = '%s-%s.sapp' % (a['id'], a['version'].lstrip('v'))
     buf = io.BytesIO()
+    ver = re.sub(r'[^A-Za-z0-9._-]', '', a['version'].lstrip('v'))
 
     def add(tar, path, arc):
         ti = tar.gettarinfo(path, arc)
         ti.uid = ti.gid = 0; ti.uname = ti.gname = 'root'; ti.mtime = 0
         ti.mode = 0o755 if ti.isdir() else 0o644
         if ti.isdir(): tar.addfile(ti)
+        elif arc.lower().endswith(('.html', '.htm')):
+            data = stamp(open(path, encoding='utf-8').read(), ver).encode('utf-8')
+            ti.size = len(data)
+            tar.addfile(ti, io.BytesIO(data))
         else:
             with open(path, 'rb') as f: tar.addfile(ti, f)
 

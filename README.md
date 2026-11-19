@@ -104,6 +104,10 @@ A push to `main` runs GitHub Actions:
 
 1. every manifest is checked (`tools/build.py --check`),
 2. each app is packed into `<id>-<version>.sapp` (tar.gz, reproducible) with a `.sha256`,
+   and in its HTML pages every local script and stylesheet gets `?v=<version>`
+   (`src="app.js"` → `app.js?v=1.2.0`), so a browser does not go on running
+   the files of the version before – write the plain names, the number comes
+   from `app.json`,
 3. a version that has no release yet becomes the release `<id>-v<version>`
    (versions with a `-`, e.g. `1.1.0-beta.1`, are pre-releases = beta channel),
 4. the catalog `index.json` is rebuilt and attached to the release `catalog`.
