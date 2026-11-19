@@ -621,6 +621,8 @@
           refresh();
         } catch (err) { toast(err.message, true); }
       });
+    } else if (tor.files === undefined) {
+      $('tab-files').innerHTML = `<div class="empty-detail-hint">${t('list.loading')}</div>`;
     } else {
       $('tab-files').innerHTML = `<div class="empty-detail-hint">${t('det.noFiles')}</div>`;
     }
@@ -653,6 +655,8 @@
           </tbody>
         </table>
       `;
+    } else if (tor.peers === undefined) {
+      $('tab-peers').innerHTML = `<div class="empty-detail-hint">${t('list.loading')}</div>`;
     } else {
       $('tab-peers').innerHTML = `<div class="empty-detail-hint">${t('det.noPeers')}</div>`;
     }
@@ -865,6 +869,12 @@
     }
   }
 
+  function ensureDetails() {
+    const id = selectedIds.size ? Array.from(selectedIds)[0] : null;
+    const tor = id != null && torrents.find((x) => x.id === id);
+    if (tor && tor.files === undefined) refresh();
+  }
+
   // Row Selection & Events
   $('torrent-rows').addEventListener('click', (e) => {
     const row = e.target.closest('.torrent-row');
@@ -895,10 +905,7 @@
     }
     renderTorrents();
     renderDetails();
-    if (selectedIds.size > 0) {
-      const selTor = torrents.find((x) => x.id === Array.from(selectedIds)[0]);
-      if (selTor && selTor.files === undefined) refresh();
-    }
+    ensureDetails();
   });
 
   // Double Click opens properties
@@ -928,10 +935,7 @@
     else selectedIds.clear();
     renderTorrents();
     renderDetails();
-    if (selectedIds.size > 0) {
-      const selTor = torrents.find((x) => x.id === Array.from(selectedIds)[0]);
-      if (selTor && selTor.files === undefined) refresh();
-    }
+    ensureDetails();
   });
 
   // Search filter
@@ -958,10 +962,7 @@
 
     renderTorrents();
     renderDetails();
-    if (selectedIds.size > 0) {
-      const selTor = torrents.find((x) => x.id === Array.from(selectedIds)[0]);
-      if (selTor && selTor.files === undefined) refresh();
-    }
+    ensureDetails();
   });
 
   // Toggle Sidebar
@@ -980,10 +981,7 @@
       activeDetailTab = btn.dataset.tab;
       $(`tab-${activeDetailTab}`).classList.add('active');
       renderDetails();
-      if (selectedIds.size > 0) {
-        const selTor = torrents.find((x) => x.id === Array.from(selectedIds)[0]);
-        if (selTor && selTor.files === undefined) refresh();
-      }
+      ensureDetails();
     });
   });
 
@@ -1359,12 +1357,12 @@
     renderTorrents();
     updateStatusbar();
     renderDetails();
-    toast(t('toast.deleted'));
     try {
       await rpc('torrent-remove', { ids, 'delete-local-data': deleteData });
-      refresh();
+      toast(t('toast.deleted'));
     } catch (e) {
       toast(e.message, true);
+    } finally {
       refresh();
     }
   });

@@ -965,7 +965,7 @@ html, body {
   padding: 10px 12px;
   border-radius: 6px;
   border: 1px solid var(--sos-line, #282f3d);
-  background: rgba(255, 95, 95, 0.08);
+  background: color-mix(in srgb, var(--sos-err) 8%, transparent);
 }
 
 .grid-2 {

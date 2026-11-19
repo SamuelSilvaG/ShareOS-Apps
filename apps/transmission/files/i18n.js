@@ -1077,9 +1077,4 @@
   };
 
   document.documentElement.lang = currentLang;
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => apply());
-  } else {
-    apply();
-  }
 })();
