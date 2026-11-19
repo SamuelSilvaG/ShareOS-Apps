@@ -613,6 +613,63 @@
     }
   }
 
+  function normalizeIndexerSettingsMap(rawSettings) {
+    const map = {};
+    if (Array.isArray(rawSettings)) {
+      for (const s of rawSettings) {
+        if (s && s.name && s.value != null && s.value !== '') {
+          map[s.name] = String(s.value);
+        }
+      }
+    } else if (rawSettings && typeof rawSettings === 'object') {
+      for (const [k, v] of Object.entries(rawSettings)) {
+        if (v != null) map[k] = String(v);
+      }
+    }
+    return map;
+  }
+
+  async function fetchAllIndexers() {
+    const [mappedResp, optionsResp] = await Promise.all([
+      AB.api('GET', '/api/indexer').catch(() => null),
+      AB.api('GET', '/api/indexer/options').catch(() => null)
+    ]);
+    const mapped = Array.isArray(mappedResp) ? mappedResp : [];
+    const options = Array.isArray(optionsResp) ? optionsResp : [];
+    const byKey = new Map();
+
+    for (const item of mapped) {
+      if (!item) continue;
+      const key = item.id != null ? `id:${item.id}` : `ident:${String(item.identifier || '').toLowerCase()}`;
+      byKey.set(key, Object.assign({}, item, {
+        settings: normalizeIndexerSettingsMap(item.settings)
+      }));
+    }
+
+    for (const opt of options) {
+      if (!opt) continue;
+      const idKey = opt.id != null ? `id:${opt.id}` : null;
+      const identKey = `ident:${String(opt.identifier || '').toLowerCase()}`;
+      let matchKey = (idKey && byKey.has(idKey)) ? idKey : null;
+      if (!matchKey) {
+        for (const [k, v] of byKey.entries()) {
+          if (String(v.identifier || '').toLowerCase() === String(opt.identifier || '').toLowerCase()) {
+            matchKey = k;
+            break;
+          }
+        }
+      }
+      const prev = matchKey ? byKey.get(matchKey) : {};
+      const mergedSettings = Object.assign({}, prev.settings || {}, normalizeIndexerSettingsMap(opt.settings));
+      byKey.set(matchKey || idKey || identKey, Object.assign({}, prev, opt, {
+        type: prev.type || opt.implementation || 'Torznab / IRC',
+        settings: mergedSettings
+      }));
+    }
+
+    return Array.from(byKey.values());
+  }
+
   // Fetch IRC networks & indexers
   async function refreshIRCAndIndexers() {
     if (AB && serviceStatus && serviceStatus.ready) {
@@ -623,7 +680,7 @@
         };
         const [irc, idx] = await Promise.all([
           fetchIrc(),
-          AB.api('GET', '/api/indexer').catch(() => null)
+          fetchAllIndexers()
         ]);
         ircNetworks = Array.isArray(irc) ? irc : [];
         indexers = Array.isArray(idx) ? idx : [];
@@ -728,7 +785,8 @@
         inp.type = 'checkbox';
         inp.id = inputId;
         inp.dataset.settingKey = s.name;
-        inp.checked = settingsObj[s.name] !== undefined ? !!settingsObj[s.name] : !!(s.value ?? s.default);
+        const curCheck = settingsObj[s.name] !== undefined ? settingsObj[s.name] : (s.value ?? s.default);
+        inp.checked = curCheck === true || curCheck === 'true' || curCheck === '1' || curCheck === 1;
         const span = document.createElement('span');
         span.textContent = s.label || s.name;
         lbl.appendChild(inp);
@@ -828,10 +886,10 @@
     if (typeof identifierOrSchema === 'string') {
       id = identifierOrSchema.toLowerCase();
       const schema = indexerSchemas.find((s) => (s.identifier || '').toLowerCase() === id);
-      if (schema && schema.type) type = String(schema.type).toLowerCase();
+      if (schema) type = String(schema.implementation || schema.type || '').toLowerCase();
     } else if (typeof identifierOrSchema === 'object') {
       id = String(identifierOrSchema.identifier || '').toLowerCase();
-      type = String(identifierOrSchema.type || '').toLowerCase();
+      type = String(identifierOrSchema.implementation || identifierOrSchema.type || '').toLowerCase();
     }
     const cleanId = id.replace(/-\d+$/, '');
     const generic = ['torznab', 'newznab', 'rss'];
@@ -851,12 +909,13 @@
 
     fetchIndexerSchemas();
 
+    const matchedSchema = indexer ? findIndexerSchema(indexer.identifier, indexer) : null;
     if ($('indexer-modal-title')) {
       $('indexer-modal-title').textContent = editingIndexerId ? t('indexers.edit_title') : t('indexers.new_title');
     }
-    if ($('indexer-preset')) $('indexer-preset').value = (indexer && indexer.identifier) || '';
+    if ($('indexer-preset')) $('indexer-preset').value = (matchedSchema && matchedSchema.identifier) || (indexer && indexer.identifier) || '';
     if ($('indexer-name')) $('indexer-name').value = (indexer && indexer.name) || '';
-    if ($('indexer-identifier')) $('indexer-identifier').value = (indexer && indexer.identifier) || '';
+    if ($('indexer-identifier')) $('indexer-identifier').value = (matchedSchema && !isGenericFeed(matchedSchema) ? matchedSchema.identifier : (indexer && indexer.identifier)) || '';
     if ($('indexer-url')) $('indexer-url').value = (indexer && (indexer.base_url || (indexer.settings && indexer.settings.base_url))) || '';
     if ($('indexer-apikey')) {
       $('indexer-apikey').value = '';
@@ -898,53 +957,69 @@
     }
 
     const name = ($('indexer-name') ? $('indexer-name').value : '').trim();
-    let identifier = ($('indexer-identifier') ? $('indexer-identifier').value : '').trim().toLowerCase();
+    const rawIdentifier = ($('indexer-identifier') ? $('indexer-identifier').value : '').trim();
     const url = ($('indexer-url') ? $('indexer-url').value : '').trim();
     const apikey = ($('indexer-apikey') ? $('indexer-apikey').value : '').trim();
     const enabled = $('indexer-enabled') ? $('indexer-enabled').checked : true;
 
-    if (!name || !identifier) {
+    if (!name || !rawIdentifier) {
       toast('Name and Identifier are required', true);
       return;
     }
 
-    // Always fetch a fresh indexer list from autobrr right before checking
+    const matchedSchema = findIndexerSchema(rawIdentifier, editingIndexerData);
+    let identifier = (matchedSchema && !isGenericFeed(matchedSchema))
+      ? matchedSchema.identifier
+      : rawIdentifier.toLowerCase();
+
+    // Always fetch all SQLite indexers (including any unmapped/wrong-case rows) before checking duplicates
     try {
-      const fresh = await AB.api('GET', '/api/indexer');
+      const fresh = await fetchAllIndexers();
       if (Array.isArray(fresh)) {
         indexers = fresh;
       }
     } catch (_) {}
 
-    // Check for duplicate identifier
+    // Check for duplicate identifier (case-insensitive to catch broken wrong-case SQLite rows like "bj-share")
     const existing = indexers.find((idx) => String(idx.identifier || '').toLowerCase() === identifier.toLowerCase());
-    if (existing && existing.id !== editingIndexerId) {
-      const ok = confirm(t('indexers.confirm_update', { name: existing.name || identifier }));
-      if (!ok) {
-        return;
-      }
-      editingIndexerId = existing.id;
-      editingIndexerData = existing;
-      if ($('indexer-modal-title')) {
-        $('indexer-modal-title').textContent = t('indexers.edit_title');
-      }
-      if ($('indexer-apikey')) {
-        $('indexer-apikey').placeholder = t('indexers.apikey_edit_placeholder');
+    if (existing) {
+      if (existing.identifier !== identifier && matchedSchema && !isGenericFeed(matchedSchema)) {
+        // Broken wrong-case row in SQLite (autobrr UPDATE cannot change identifier column):
+        // remove the orphaned row so we can store it cleanly with canonical casing.
+        const dynSecretMissing = $('indexer-dynamic-fields') &&
+          Array.from($('indexer-dynamic-fields').querySelectorAll('input[data-setting-secret="1"]'))
+            .some((el) => !(el.value || '').trim());
+        const defSecretMissing = (!dynSecretMissing && (!$('indexer-dynamic-fields') || $('indexer-dynamic-fields').style.display === 'none')) && !apikey;
+        if (!editingIndexerId || (!dynSecretMissing && !defSecretMissing)) {
+          try {
+            await AB.api('DELETE', `/api/indexer/${existing.id}`);
+            editingIndexerId = null;
+            editingIndexerData = null;
+            indexers = indexers.filter((i) => i.id !== existing.id);
+          } catch (delErr) {
+            toast(`Error replacing broken indexer "${existing.identifier}": ${delErr.message}`, true);
+            return;
+          }
+        }
+      } else if (existing.id !== editingIndexerId) {
+        const ok = confirm(t('indexers.confirm_update', { name: existing.name || identifier }));
+        if (!ok) {
+          return;
+        }
+        editingIndexerId = existing.id;
+        editingIndexerData = existing;
+        if ($('indexer-modal-title')) {
+          $('indexer-modal-title').textContent = t('indexers.edit_title');
+        }
+        if ($('indexer-apikey')) {
+          $('indexer-apikey').placeholder = t('indexers.apikey_edit_placeholder');
+        }
       }
     }
 
     const base = editingIndexerId ? (indexers.find((i) => i.id === editingIndexerId) || {}) : {};
-    const payload = Object.assign({}, base, {
-      name,
-      identifier,
-      enabled,
-      settings: Object.assign({}, base.settings || {})
-    });
-
     const schema = findIndexerSchema(identifier, base);
-    if (schema && schema.implementation && !payload.implementation) {
-      payload.implementation = schema.implementation;
-    }
+    const settingsMap = normalizeIndexerSettingsMap(base.settings);
 
     const dynFields = $('indexer-dynamic-fields')
       ? Array.from($('indexer-dynamic-fields').querySelectorAll('[data-setting-key]'))
@@ -954,32 +1029,47 @@
       for (const el of dynFields) {
         const key = el.dataset.settingKey;
         if (el.type === 'checkbox') {
-          payload.settings[key] = el.checked;
+          settingsMap[key] = el.checked ? 'true' : 'false';
         } else {
           const val = (el.value || '').trim();
           if (el.dataset.settingSecret === '1') {
-            if (val) payload.settings[key] = val;
+            if (val) settingsMap[key] = val;
           } else if (val) {
-            payload.settings[key] = val;
-            if (key === 'base_url') payload.base_url = val;
-          } else if (!editingIndexerId) {
-            delete payload.settings[key];
+            settingsMap[key] = val;
+          } else if (editingIndexerId) {
+            settingsMap[key] = '';
           } else {
-            payload.settings[key] = '';
+            delete settingsMap[key];
           }
         }
       }
     } else {
       if (url) {
-        payload.base_url = url;
-        payload.settings.base_url = url;
+        settingsMap.base_url = url;
       }
       if (apikey) {
-        payload.settings.api_key = apikey;
-        payload.settings.passkey = apikey;
-        payload.settings.apikey = apikey;
+        settingsMap.api_key = apikey;
+        settingsMap.passkey = apikey;
+        settingsMap.apikey = apikey;
       }
     }
+
+    const baseUrl = url || settingsMap.base_url || base.base_url ||
+      (schema && Array.isArray(schema.urls) && schema.urls[0]) || '';
+    const impl = (schema && schema.implementation) || base.implementation ||
+      ((schema && !isGenericFeed(schema)) ? 'irc' : '');
+
+    const payload = {
+      name,
+      identifier,
+      identifier_external: base.identifier_external || name,
+      enabled,
+      implementation: impl,
+      base_url: baseUrl,
+      use_proxy: !!base.use_proxy,
+      proxy_id: base.proxy_id || 0,
+      settings: settingsMap
+    };
 
     try {
       if (editingIndexerId) {
@@ -987,7 +1077,6 @@
         await AB.api('PUT', `/api/indexer/${editingIndexerId}`, payload);
         toast(t('toast.indexer_updated'));
       } else {
-        delete payload.id;
         await AB.api('POST', '/api/indexer', payload);
         toast(t('toast.indexer_created'));
       }
@@ -996,9 +1085,9 @@
     } catch (err) {
       const isUniqueErr = err && err.message && err.message.includes('UNIQUE constraint failed');
       if (isUniqueErr) {
-        // Refresh indexer cache
+        // Refresh indexer cache including unmapped SQLite rows
         try {
-          const fresh = await AB.api('GET', '/api/indexer');
+          const fresh = await fetchAllIndexers();
           if (Array.isArray(fresh)) indexers = fresh;
         } catch (_) {}
 
