@@ -16,6 +16,8 @@
   let ircNetworks = [];
   let indexers = [];
   let indexerSchemas = [];
+  let downloaders = [];
+  let transRemoteInfo = null;
   let accounts = [];
   let editingFilterId = null;
   let editingFilterData = null;
@@ -599,6 +601,50 @@
     }
   }
 
+  function findShareOSTransmissionClient() {
+    const transClients = (downloaders || []).filter((d) => d && String(d.type || '').toUpperCase() === 'TRANSMISSION');
+    return transClients.find((d) => /127\.0\.0\.1|localhost/.test(String(d.host || ''))) || transClients[0] || null;
+  }
+
+  function populateFilterActionModes(currentActions, isNew) {
+    const sel = $('filter-action-mode');
+    if (!sel) return;
+    sel.innerHTML = '';
+
+    const wfOpt = document.createElement('option');
+    wfOpt.value = 'watch_folder';
+    wfOpt.textContent = t('filters.action_watch_folder');
+    sel.appendChild(wfOpt);
+
+    const transClients = (downloaders || []).filter((d) =>
+      d && String(d.type || '').toUpperCase() === 'TRANSMISSION' && d.enabled !== false && d.id != null
+    );
+    for (const c of transClients) {
+      const opt = document.createElement('option');
+      opt.value = `client:${c.id}`;
+      opt.textContent = t('filters.action_trans_rpc', { name: c.name || `ID ${c.id}` });
+      sel.appendChild(opt);
+    }
+
+    if (isNew) {
+      const preferred = findShareOSTransmissionClient();
+      if (preferred && preferred.enabled !== false && preferred.id != null) {
+        sel.value = `client:${preferred.id}`;
+      } else {
+        sel.value = 'watch_folder';
+      }
+      return;
+    }
+
+    const actionsArr = Array.isArray(currentActions) ? currentActions : [];
+    const transAct = actionsArr.find((a) => a && String(a.type || '').toUpperCase() === 'TRANSMISSION' && a.client_id);
+    if (transAct && transClients.some((c) => Number(c.id) === Number(transAct.client_id))) {
+      sel.value = `client:${transAct.client_id}`;
+    } else {
+      sel.value = 'watch_folder';
+    }
+  }
+
   // Filter modal logic
   async function openFilterModal(idStr = null) {
     editingFilterId = idStr;
@@ -619,6 +665,7 @@
         $('modal-title').textContent = t('filters.edit_title');
         $('filter-name').value = f.name || '';
         renderFilterIndexerCheckboxes(f.indexers, false);
+        populateFilterActionModes(f.actions, false);
         $('filter-match').value = f.match_releases || '';
         $('filter-except').value = f.except_releases || '';
         $('filter-min-size').value = parseInt(f.min_size, 10) || '';
@@ -633,6 +680,7 @@
       $('modal-title').textContent = t('filters.new_title');
       $('filter-name').value = '';
       renderFilterIndexerCheckboxes([], true);
+      populateFilterActionModes([], true);
       $('filter-match').value = '';
       $('filter-except').value = '';
       $('filter-min-size').value = '';
@@ -686,30 +734,47 @@
       return;
     }
 
-    let actionsPayload = Array.isArray(baseFilter.actions)
-      ? baseFilter.actions.map((act) => {
-          if (!act || typeof act !== 'object') return act;
-          const copy = Object.assign({}, act);
-          if (String(copy.type || '').toLowerCase() === 'watch_dir') {
-            copy.type = 'WATCH_FOLDER';
-            if (!copy.watch_folder) {
-              copy.watch_folder = copy.watch_dir || (serviceStatus && serviceStatus.drop) || '';
-            }
-            delete copy.watch_dir;
-          }
-          return copy;
-        })
-      : [];
-    if (actionsPayload.length === 0 && serviceStatus && serviceStatus.drop) {
-      actionsPayload = [
-        {
-          name: 'Transmission Watch Dir',
+    const deliveryMode = $('filter-action-mode') ? $('filter-action-mode').value : 'watch_folder';
+    const existingActions = Array.isArray(baseFilter.actions) ? baseFilter.actions : [];
+    const nonDeliveryActions = existingActions.filter((act) => {
+      const tp = String((act && act.type) || '').toUpperCase();
+      return tp !== 'WATCH_FOLDER' && tp !== 'WATCH_DIR' && tp !== 'TRANSMISSION';
+    });
+
+    let deliveryAction = null;
+    if (deliveryMode.startsWith('client:')) {
+      const clientId = parseInt(deliveryMode.slice(7), 10);
+      const client = (downloaders || []).find((d) => Number(d.id) === clientId) || null;
+      const prevTrans = existingActions.find((a) =>
+        a && String(a.type || '').toUpperCase() === 'TRANSMISSION' && Number(a.client_id) === clientId
+      );
+      deliveryAction = Object.assign({}, prevTrans || {}, {
+        name: (prevTrans && prevTrans.name) || (client && client.name) || 'ShareOS Transmission',
+        type: 'TRANSMISSION',
+        enabled: true,
+        client_id: clientId
+      });
+    } else {
+      const prevWf = existingActions.find((a) => {
+        const tp = String((a && a.type) || '').toUpperCase();
+        return tp === 'WATCH_FOLDER' || tp === 'WATCH_DIR';
+      });
+      const wfFolder = (serviceStatus && serviceStatus.drop) ||
+        (prevWf && (prevWf.watch_folder || prevWf.watch_dir)) || '';
+      if (wfFolder) {
+        deliveryAction = Object.assign({}, prevWf || {}, {
+          name: (prevWf && prevWf.name) || 'Transmission Watch Dir',
           type: 'WATCH_FOLDER',
           enabled: true,
-          watch_folder: serviceStatus.drop
-        }
-      ];
+          watch_folder: wfFolder
+        });
+        delete deliveryAction.watch_dir;
+      }
     }
+
+    const actionsPayload = deliveryAction
+      ? [deliveryAction, ...nonDeliveryActions]
+      : nonDeliveryActions;
 
     const minS = parseInt($('filter-min-size').value, 10) || 0;
     const maxS = parseInt($('filter-max-size').value, 10) || 0;
@@ -2025,6 +2090,9 @@
       await refreshReleases();
       await refreshFilters();
       await refreshIRCAndIndexers();
+      await refreshDownloaders();
+      await refreshTransmissionRemote();
+      renderTransmissionRpcSection();
       if ($('tab-settings') && $('tab-settings').classList.contains('active')) {
         await refreshLog();
       }
@@ -2221,6 +2289,213 @@
     }
   }
 
+  async function refreshDownloaders() {
+    if (AB && serviceStatus && serviceStatus.ready) {
+      try {
+        const list = await AB.api('GET', '/api/downloaders');
+        downloaders = Array.isArray(list) ? list : [];
+      } catch (_) {
+        downloaders = [];
+      }
+    } else {
+      downloaders = [];
+    }
+  }
+
+  async function refreshTransmissionRemote() {
+    const TOR = SOS && SOS.torrent;
+    if (TOR && TOR.rpc) {
+      try {
+        const res = await TOR.rpc('shareos-remote-get');
+        transRemoteInfo = (res && typeof res === 'object') ? res : null;
+        return;
+      } catch (_) {}
+    }
+    transRemoteInfo = null;
+  }
+
+  function renderTransmissionRpcSection() {
+    const badge = $('trans-rpc-client-badge');
+    const infoBox = $('trans-rpc-info');
+    const disabledHint = $('trans-rpc-disabled-hint');
+    const setupBox = $('trans-rpc-setup-box');
+    const existingActions = $('trans-rpc-existing-actions');
+    const genBtn = $('btn-gen-connect-trans-rpc');
+    if (!badge || !setupBox) return;
+
+    const existing = findShareOSTransmissionClient();
+    const boxOn = !!(transRemoteInfo && transRemoteInfo.box_enabled);
+
+    if (existing && existing.enabled !== false) {
+      badge.textContent = t('trans.rpc_connected');
+      badge.className = 'badge ok';
+    } else if (!boxOn) {
+      badge.textContent = t('trans.rpc_remote_off');
+      badge.className = 'badge warn';
+    } else {
+      badge.textContent = t('trans.rpc_not_configured');
+      badge.className = 'badge warn';
+    }
+
+    if (infoBox) {
+      const parts = [];
+      if (existing) {
+        const scheme = existing.tls ? 'https' : 'http';
+        const hostStr = String(existing.host || '127.0.0.1').replace(/^https?:\/\//i, '');
+        const endpoint = `${scheme}://${hostStr}${existing.port ? `:${existing.port}` : ''}`;
+        parts.push(t('trans.rpc_info_configured', {
+          name: existing.name || 'Transmission',
+          endpoint,
+          user: existing.username || (transRemoteInfo && transRemoteInfo.user) || '–'
+        }));
+      } else if (boxOn) {
+        const useHttp = !!(transRemoteInfo.port && transRemoteInfo.port > 0);
+        const port = useHttp ? transRemoteInfo.port : (transRemoteInfo.https_port || 9092);
+        const endpoint = `${useHttp ? 'http' : 'https'}://127.0.0.1:${port}${transRemoteInfo.path || '/transmission/rpc'}`;
+        parts.push(t('trans.rpc_info_ready', {
+          endpoint,
+          user: transRemoteInfo.user || (serviceStatus && serviceStatus.account) || 'root'
+        }));
+      }
+      if (boxOn && serviceStatus && serviceStatus.account && transRemoteInfo.user && serviceStatus.account !== transRemoteInfo.user) {
+        parts.push(t('trans.rpc_account_mismatch', {
+          rpcUser: transRemoteInfo.user,
+          dropUser: serviceStatus.account
+        }));
+      }
+      if (parts.length > 0) {
+        infoBox.textContent = parts.join(' ');
+        infoBox.style.display = 'block';
+      } else {
+        infoBox.style.display = 'none';
+      }
+    }
+
+    if (disabledHint) {
+      disabledHint.style.display = (!boxOn && !existing) ? 'block' : 'none';
+    }
+    setupBox.style.display = (boxOn || existing) ? 'block' : 'none';
+    if (genBtn) genBtn.disabled = !boxOn;
+    if (existingActions) existingActions.style.display = existing ? 'inline-flex' : 'none';
+  }
+
+  async function saveTransmissionDownloader(password) {
+    if (!AB || !serviceStatus || !serviceStatus.ready) {
+      toast(t('err.service_not_ready'), true);
+      return false;
+    }
+    if (!transRemoteInfo || !transRemoteInfo.box_enabled) {
+      toast(t('trans.rpc_disabled_hint'), true);
+      return false;
+    }
+
+    const existing = findShareOSTransmissionClient();
+    const useHttp = !!(transRemoteInfo.port && transRemoteInfo.port > 0);
+    const tls = !useHttp;
+    const port = useHttp ? transRemoteInfo.port : (transRemoteInfo.https_port || 9092);
+    const rpcPath = transRemoteInfo.path || '/transmission/rpc';
+    const user = transRemoteInfo.user || (serviceStatus && serviceStatus.account) || 'root';
+
+    const payload = {
+      name: (existing && existing.name) || `ShareOS Transmission (${user})`,
+      type: 'TRANSMISSION',
+      enabled: true,
+      host: `${tls ? 'https' : 'http'}://127.0.0.1${rpcPath}`,
+      port,
+      tls,
+      tls_skip_verify: tls,
+      username: user,
+      password,
+      settings: (existing && existing.settings) || {}
+    };
+    if (existing && existing.id) {
+      payload.id = existing.id;
+    }
+
+    try {
+      await AB.api('POST', '/api/downloaders/test', payload);
+      if (existing && existing.id) {
+        await AB.api('PUT', '/api/downloaders', payload);
+      } else {
+        await AB.api('POST', '/api/downloaders', payload);
+      }
+      if ($('trans-rpc-password')) $('trans-rpc-password').value = '';
+      await refreshDownloaders();
+      renderTransmissionRpcSection();
+      toast(t('toast.trans_rpc_connected'));
+      return true;
+    } catch (err) {
+      toast(`Error connecting autobrr to Transmission RPC: ${err.message}`, true);
+      return false;
+    }
+  }
+
+  async function connectTransmissionRpcWithInput() {
+    const inp = $('trans-rpc-password');
+    const pw = (inp ? inp.value : '').trim();
+    if (!pw) {
+      toast(t('trans.rpc_err_password'), true);
+      if (inp) inp.focus();
+      return;
+    }
+    await saveTransmissionDownloader(pw);
+  }
+
+  async function generateAndConnectTransmissionRpc() {
+    const TOR = SOS && SOS.torrent;
+    if (!TOR || !TOR.rpc || !transRemoteInfo || !transRemoteInfo.box_enabled) {
+      toast(t('trans.rpc_disabled_hint'), true);
+      return;
+    }
+    const msg = transRemoteInfo.on ? t('trans.rpc_confirm_regen') : t('trans.rpc_confirm_gen');
+    if (!confirm(msg)) return;
+
+    try {
+      const res = await TOR.rpc('shareos-remote-set', { on: true, regen: true });
+      if (!res || !res.password) {
+        toast('ShareOS did not return a remote password', true);
+        return;
+      }
+      const pw = res.password;
+      const sanitized = Object.assign({}, res);
+      delete sanitized.password;
+      transRemoteInfo = sanitized;
+      await saveTransmissionDownloader(pw);
+    } catch (err) {
+      toast(`Error generating remote password: ${err.message}`, true);
+    }
+  }
+
+  async function testAutobrrTransmissionClient() {
+    if (!AB || !serviceStatus || !serviceStatus.ready) {
+      toast(t('err.service_not_ready'), true);
+      return;
+    }
+    const existing = findShareOSTransmissionClient();
+    if (!existing) return;
+    try {
+      await AB.api('POST', '/api/downloaders/test', existing);
+      toast(t('toast.trans_rpc_test_ok'));
+    } catch (err) {
+      toast(`autobrr → Transmission test failed: ${err.message}`, true);
+    }
+  }
+
+  async function removeAutobrrTransmissionClient() {
+    if (!AB || !serviceStatus || !serviceStatus.ready) return;
+    const existing = findShareOSTransmissionClient();
+    if (!existing) return;
+    if (!confirm(t('trans.rpc_confirm_remove', { name: existing.name || existing.id }))) return;
+    try {
+      await AB.api('DELETE', `/api/downloaders/${existing.id}`);
+      await refreshDownloaders();
+      renderTransmissionRpcSection();
+      toast(t('toast.trans_rpc_removed'));
+    } catch (err) {
+      toast(`Error removing download client: ${err.message}`, true);
+    }
+  }
+
   // Explicit Transmission connection test via RPC
   async function testTransmissionRPC() {
     const badge = $('trans-daemon-badge');
@@ -2333,6 +2608,10 @@
     if ($('btn-save-admin-pw')) $('btn-save-admin-pw').onclick = saveAdminPassword;
     if ($('btn-refresh-log')) $('btn-refresh-log').onclick = refreshLog;
     if ($('btn-test-transmission')) $('btn-test-transmission').onclick = testTransmissionRPC;
+    if ($('btn-connect-trans-rpc')) $('btn-connect-trans-rpc').onclick = connectTransmissionRpcWithInput;
+    if ($('btn-gen-connect-trans-rpc')) $('btn-gen-connect-trans-rpc').onclick = generateAndConnectTransmissionRpc;
+    if ($('btn-test-autobrr-trans')) $('btn-test-autobrr-trans').onclick = testAutobrrTransmissionClient;
+    if ($('btn-remove-autobrr-trans')) $('btn-remove-autobrr-trans').onclick = removeAutobrrTransmissionClient;
     if ($('btn-link-webui')) {
       $('btn-link-webui').href = getWebUIUrl();
       $('btn-link-webui').onclick = (e) => {

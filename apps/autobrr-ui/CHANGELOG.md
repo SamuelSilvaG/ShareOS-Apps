@@ -2,6 +2,7 @@
 
 ## 1.1.1
 
+- Direct ShareOS Transmission RPC integration (optional): connect autobrr to ShareOS's local authenticated RPC proxy (`127.0.0.1:<port>/transmission/rpc`, backed by `transmission-rpc.uc`) using the account's remote password, with test/disconnect controls and a delivery mode selector (`Transmission RPC` vs `Watch Folder`) in Filters.
 - Built-in schema-only indexer creation: require selecting a tracker or feed definition from `/api/indexer/schema` with a read-only canonical identifier (preventing invalid or orphaned identifiers), validate required fields and unchanged placeholder values, surface a clear `Unmapped / Orphan` badge on stray SQLite rows, and automatically create the associated IRC network (`POST /api/irc` with channels and `invite_command`) or Feed (`POST /api/feeds`) when adding an indexer.
 - Filters aligned to autobrr's real API: select linked indexers via checkboxes populated from configured indexers, persist `indexers` and `actions` on filter creation with a two-step `POST /api/filters` + `PUT /api/filters/{id}`, fetch the full filter on edit, and send `type: "WATCH_FOLDER"` / `watch_folder` (auto-upgrading legacy `watch_dir` actions).
 - Releases & IRC alignment: parse real `/api/release` objects (`indexer` object, `action_status[]`, numeric byte sizes, and rejection reasons), trigger action retries via `POST /api/release/{id}/actions/{actionStatusId}/retry`, display true IRC connection health (`connected`, `current_nick`, and `connection_errors`), and add `invite_command` to the IRC modal.

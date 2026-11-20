@@ -234,6 +234,37 @@
             </div>
           </div>
         </div>
+
+        <!-- Direct ShareOS Transmission RPC Client -->
+        <div class="settings-section" style="margin-top: 16px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; gap: 8px;">
+            <h4 style="margin: 0;" data-i18n="trans.rpc_client_title">Direct Transmission RPC Client (Optional)</h4>
+            <span class="badge warn" id="trans-rpc-client-badge" data-i18n="trans.rpc_not_configured">Not configured</span>
+          </div>
+          <p class="section-desc" data-i18n="trans.rpc_client_desc">
+            Connect autobrr directly to ShareOS's local Transmission RPC proxy (127.0.0.1) using your account's remote password – the same filtered security proxy used by the Transmission app (enables labels, speed/ratio limits, and automatic reannounce).
+          </p>
+          <div id="trans-rpc-info" class="info-box" style="display:none;"></div>
+          <div id="trans-rpc-disabled-hint" class="info-box warn" style="display:none;" data-i18n="trans.rpc_disabled_hint">
+            Enable "Remote access for torrent programs" under ShareOS Services → Torrents (ShareOS 0.3.0-beta.6+) to use direct RPC, or keep using the Watch Folder handover above.
+          </div>
+          <div id="trans-rpc-setup-box" style="display:none;">
+            <div class="form-row" style="align-items: flex-end; max-width: 560px; margin-bottom: 10px;">
+              <div class="form-group" style="margin: 0;">
+                <label for="trans-rpc-password" data-i18n="trans.rpc_pw_label">Account Remote Password</label>
+                <input type="password" id="trans-rpc-password" class="sos-input" data-i18n-placeholder="trans.rpc_pw_placeholder" placeholder="Paste remote password from Transmission Settings">
+              </div>
+              <button type="button" id="btn-connect-trans-rpc" class="sos-btn sos-btn-sm sos-btn-accent" data-i18n="btn.trans_rpc_connect">Connect &amp; Save</button>
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button type="button" id="btn-gen-connect-trans-rpc" class="sos-btn sos-btn-sm" data-i18n="btn.trans_rpc_generate">Generate Remote Password &amp; Connect</button>
+              <span id="trans-rpc-existing-actions" style="display:none; gap: 8px;">
+                <button type="button" id="btn-test-autobrr-trans" class="sos-btn sos-btn-sm" data-i18n="btn.trans_rpc_test">Test autobrr → Transmission</button>
+                <button type="button" id="btn-remove-autobrr-trans" class="sos-btn sos-btn-sm sos-btn-danger" data-i18n="btn.trans_rpc_disconnect">Disconnect</button>
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -404,6 +435,10 @@
             <label for="filter-codecs" data-i18n="filters.codecs">Codecs</label>
             <input type="text" id="filter-codecs" class="sos-input" placeholder="x264, x265">
           </div>
+        </div>
+        <div class="form-group">
+          <label for="filter-action-mode" data-i18n="filters.delivery_action">Delivery to Transmission</label>
+          <select id="filter-action-mode" class="sos-input"></select>
         </div>
         <div class="form-group" style="flex-direction: row; align-items: center; gap: 16px; margin-top: 8px;">
           <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; margin: 0;">
