@@ -601,9 +601,80 @@
     }
   }
 
+  function parseDownloaderHostUrl(rawHost, tls) {
+    let raw = String(rawHost || '').trim();
+    if (!raw) return null;
+    if (!/^https?:\/\//i.test(raw)) {
+      if ((raw.match(/:/g) || []).length >= 2 && !raw.startsWith('[')) {
+        raw = `[${raw}]`;
+      }
+      raw = `${tls ? 'https' : 'http'}://${raw}`;
+    }
+    try {
+      return new URL(raw);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function formatDownloaderEndpoint(d) {
+    if (!d || typeof d !== 'object') return '–';
+    const u = parseDownloaderHostUrl(d.host || '127.0.0.1', !!d.tls);
+    if (u) {
+      if (d.tls && u.protocol === 'http:') u.protocol = 'https:';
+      if (!u.port && d.port > 0 && d.port !== 80 && d.port !== 443) {
+        u.port = String(d.port);
+      }
+      if (!u.pathname || u.pathname === '/') {
+        u.pathname = '/transmission/rpc';
+      }
+      return u.toString();
+    }
+    const scheme = d.tls ? 'https' : 'http';
+    const hostStr = String(d.host || '127.0.0.1').replace(/^https?:\/\//i, '');
+    return `${scheme}://${hostStr}${d.port ? `:${d.port}` : ''}`;
+  }
+
+  function getKnownShareOSHosts() {
+    let originHost = '';
+    try {
+      const originParam = new URLSearchParams(window.location.search).get('origin');
+      if (originParam) originHost = new URL(originParam).hostname;
+    } catch (_) {}
+    const rawHosts = [
+      transRemoteInfo && transRemoteInfo.host,
+      serviceStatus && serviceStatus.ip,
+      serviceStatus && serviceStatus.host,
+      originHost,
+      window.location && window.location.hostname
+    ];
+    return new Set(
+      rawHosts
+        .map((h) => cleanHost(h).toLowerCase())
+        .filter((h) => h && h !== '0.0.0.0' && h !== '::')
+    );
+  }
+
+  function isShareOSTransmissionHost(hostStr) {
+    const u = parseDownloaderHostUrl(hostStr, false);
+    const hostname = cleanHost(u ? u.hostname : hostStr).toLowerCase();
+    if (!hostname) return false;
+    if (hostname === '127.0.0.1' || hostname === 'localhost' || hostname === '::1') return true;
+    const path = u ? (u.pathname || '').replace(/\/+$/, '') : '';
+    const pathOk = !path || path === '/' || path.includes('/transmission/rpc');
+    return pathOk && getKnownShareOSHosts().has(hostname);
+  }
+
   function findShareOSTransmissionClient() {
     const transClients = (downloaders || []).filter((d) => d && String(d.type || '').toUpperCase() === 'TRANSMISSION');
-    return transClients.find((d) => /127\.0\.0\.1|localhost/.test(String(d.host || ''))) || transClients[0] || null;
+    const isLoopback = (d) => {
+      const u = parseDownloaderHostUrl(d && d.host, d && d.tls);
+      const h = cleanHost(u ? u.hostname : (d && d.host)).toLowerCase();
+      return h === '127.0.0.1' || h === 'localhost' || h === '::1';
+    };
+    return transClients.find(isLoopback) ||
+      transClients.find((d) => isShareOSTransmissionHost(d && d.host)) ||
+      null;
   }
 
   function populateFilterActionModes(currentActions, isNew) {
@@ -627,7 +698,10 @@
     }
 
     if (isNew) {
-      const preferred = findShareOSTransmissionClient();
+      const localPreferred = findShareOSTransmissionClient();
+      const preferred = (localPreferred && localPreferred.enabled !== false && localPreferred.id != null)
+        ? localPreferred
+        : (transClients[0] || null);
       if (preferred && preferred.enabled !== false && preferred.id != null) {
         sel.value = `client:${preferred.id}`;
       } else {
@@ -2325,8 +2399,16 @@
 
     const existing = findShareOSTransmissionClient();
     const boxOn = !!(transRemoteInfo && transRemoteInfo.box_enabled);
+    const boxOffWithClient = !!(existing && transRemoteInfo && !transRemoteInfo.box_enabled);
+    const needsPw = !!(existing && transRemoteInfo && transRemoteInfo.box_enabled && !transRemoteInfo.on && (!existing.username || existing.username === transRemoteInfo.user));
 
-    if (existing && existing.enabled !== false) {
+    if (boxOffWithClient) {
+      badge.textContent = t('trans.rpc_remote_off');
+      badge.className = 'badge warn';
+    } else if (needsPw) {
+      badge.textContent = t('trans.rpc_no_password');
+      badge.className = 'badge warn';
+    } else if (existing && existing.enabled !== false) {
       badge.textContent = t('trans.rpc_connected');
       badge.className = 'badge ok';
     } else if (!boxOn) {
@@ -2340,9 +2422,7 @@
     if (infoBox) {
       const parts = [];
       if (existing) {
-        const scheme = existing.tls ? 'https' : 'http';
-        const hostStr = String(existing.host || '127.0.0.1').replace(/^https?:\/\//i, '');
-        const endpoint = `${scheme}://${hostStr}${existing.port ? `:${existing.port}` : ''}`;
+        const endpoint = formatDownloaderEndpoint(existing);
         parts.push(t('trans.rpc_info_configured', {
           name: existing.name || 'Transmission',
           endpoint,
@@ -2355,6 +2435,11 @@
         parts.push(t('trans.rpc_info_ready', {
           endpoint,
           user: transRemoteInfo.user || (serviceStatus && serviceStatus.account) || 'root'
+        }));
+      }
+      if (needsPw) {
+        parts.push(t('trans.rpc_no_password_hint', {
+          user: (transRemoteInfo && transRemoteInfo.user) || (existing && existing.username) || 'root'
         }));
       }
       if (boxOn && serviceStatus && serviceStatus.account && transRemoteInfo.user && serviceStatus.account !== transRemoteInfo.user) {
@@ -2372,7 +2457,7 @@
     }
 
     if (disabledHint) {
-      disabledHint.style.display = (!boxOn && !existing) ? 'block' : 'none';
+      disabledHint.style.display = !boxOn ? 'block' : 'none';
     }
     setupBox.style.display = (boxOn || existing) ? 'block' : 'none';
     if (genBtn) genBtn.disabled = !boxOn;
@@ -2400,8 +2485,8 @@
       name: (existing && existing.name) || `ShareOS Transmission (${user})`,
       type: 'TRANSMISSION',
       enabled: true,
-      host: `${tls ? 'https' : 'http'}://127.0.0.1${rpcPath}`,
-      port,
+      host: `${tls ? 'https' : 'http'}://127.0.0.1:${port}${rpcPath}`,
+      port: 0,
       tls,
       tls_skip_verify: tls,
       username: user,
