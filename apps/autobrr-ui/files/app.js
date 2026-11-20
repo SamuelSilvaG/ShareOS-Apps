@@ -165,7 +165,7 @@
       if ($('cfg-webui-enable')) $('cfg-webui-enable').checked = !!st.ui;
       if ($('btn-webui-exposed')) $('btn-webui-exposed').style.display = (st.running && st.ui) ? 'inline-flex' : 'none';
       if ($('daemon-state-badge')) {
-        $('daemon-state-badge').textContent = st.running ? (st.ready ? 'Online' : 'Starting...') : t('status.stopped');
+        $('daemon-state-badge').textContent = st.running ? (st.ready ? t('status.online') : t('status.starting')) : t('status.stopped');
         $('daemon-state-badge').className = 'badge ' + (st.running ? 'ok' : 'err');
       }
 
@@ -950,7 +950,7 @@
     editingIndexerData = null;
   }
 
-  async function saveIndexerFromModal() {
+  async function saveIndexerFromModal(retried = false) {
     if (!AB || !serviceStatus || !serviceStatus.ready) {
       toast(t('err.service_not_ready'), true);
       return;
@@ -963,7 +963,7 @@
     const enabled = $('indexer-enabled') ? $('indexer-enabled').checked : true;
 
     if (!name || !rawIdentifier) {
-      toast('Name and Identifier are required', true);
+      toast(t('indexers.err_required'), true);
       return;
     }
 
@@ -980,27 +980,20 @@
       }
     } catch (_) {}
 
+    let healFromId = null;
+
     // Check for duplicate identifier (case-insensitive to catch broken wrong-case SQLite rows like "bj-share")
     const existing = indexers.find((idx) => String(idx.identifier || '').toLowerCase() === identifier.toLowerCase());
     if (existing) {
       if (existing.identifier !== identifier && matchedSchema && !isGenericFeed(matchedSchema)) {
-        // Broken wrong-case row in SQLite (autobrr UPDATE cannot change identifier column):
-        // remove the orphaned row so we can store it cleanly with canonical casing.
-        const dynSecretMissing = $('indexer-dynamic-fields') &&
-          Array.from($('indexer-dynamic-fields').querySelectorAll('input[data-setting-secret="1"]'))
-            .some((el) => !(el.value || '').trim());
-        const defSecretMissing = (!dynSecretMissing && (!$('indexer-dynamic-fields') || $('indexer-dynamic-fields').style.display === 'none')) && !apikey;
-        if (!editingIndexerId || (!dynSecretMissing && !defSecretMissing)) {
-          try {
-            await AB.api('DELETE', `/api/indexer/${existing.id}`);
-            editingIndexerId = null;
-            editingIndexerData = null;
-            indexers = indexers.filter((i) => i.id !== existing.id);
-          } catch (delErr) {
-            toast(`Error replacing broken indexer "${existing.identifier}": ${delErr.message}`, true);
-            return;
-          }
+        // Casing mismatch (e.g. "bj-share" in DB vs canonical "BJ-Share" in schema):
+        // Confirm before replacing, carry old settings over, and delete old row only after new row exists.
+        if (!confirm(t('indexers.confirm_heal', { old: existing.identifier, id: identifier }))) {
+          return;
         }
+        editingIndexerData = existing;
+        healFromId = existing.id;
+        editingIndexerId = null;
       } else if (existing.id !== editingIndexerId) {
         const ok = confirm(t('indexers.confirm_update', { name: existing.name || identifier }));
         if (!ok) {
@@ -1017,7 +1010,9 @@
       }
     }
 
-    const base = editingIndexerId ? (indexers.find((i) => i.id === editingIndexerId) || {}) : {};
+    const base = editingIndexerId
+      ? (indexers.find((i) => i.id === editingIndexerId) || editingIndexerData || {})
+      : (editingIndexerData || {});
     const schema = findIndexerSchema(identifier, base);
     const settingsMap = normalizeIndexerSettingsMap(base.settings);
 
@@ -1077,8 +1072,27 @@
         await AB.api('PUT', `/api/indexer/${editingIndexerId}`, payload);
         toast(t('toast.indexer_updated'));
       } else {
-        await AB.api('POST', '/api/indexer', payload);
-        toast(t('toast.indexer_created'));
+        try {
+          await AB.api('POST', '/api/indexer', payload);
+          if (healFromId) {
+            try {
+              await AB.api('DELETE', `/api/indexer/${healFromId}`);
+            } catch (_) {}
+          }
+          toast(t('toast.indexer_created'));
+        } catch (postErr) {
+          const isUniqueErr = postErr && postErr.message && postErr.message.includes('UNIQUE constraint failed');
+          if (healFromId && isUniqueErr) {
+            // Case-insensitive UNIQUE collision on existing row: delete old row and retry POST with preserved payload
+            await AB.api('DELETE', `/api/indexer/${healFromId}`);
+            indexers = indexers.filter((i) => i.id !== healFromId);
+            healFromId = null;
+            await AB.api('POST', '/api/indexer', payload);
+            toast(t('toast.indexer_created'));
+          } else {
+            throw postErr;
+          }
+        }
       }
       closeIndexerModal();
       await refreshIRCAndIndexers();
@@ -1098,17 +1112,17 @@
             $('indexer-identifier').focus();
           }
           const retry = confirm(t('indexers.confirm_use_suggested', { id: identifier, suggested }));
-          if (retry) {
-            return saveIndexerFromModal();
+          if (retry && !retried) {
+            return saveIndexerFromModal(true);
           }
           toast(t('indexers.err_unique_identifier', { id: identifier, suggested }), true);
         } else {
           const dup = (indexers || []).find((i) => String(i.identifier || '').toLowerCase() === identifier.toLowerCase());
-          if (dup && confirm(t('indexers.confirm_update', { name: dup.name || identifier }))) {
+          if (!retried && dup && confirm(t('indexers.confirm_replace', { name: dup.name || identifier }))) {
             try {
               await AB.api('DELETE', `/api/indexer/${dup.id}`);
               indexers = indexers.filter((i) => i.id !== dup.id);
-              return saveIndexerFromModal();
+              return saveIndexerFromModal(true);
             } catch (delErr) {
               toast(`Error resolving duplicate indexer: ${delErr.message}`, true);
               return;
@@ -1168,18 +1182,18 @@
     if ($('irc-auth-user')) $('irc-auth-user').value = (net && net.auth && net.auth.account) || '';
     if ($('irc-auth-pass')) {
       $('irc-auth-pass').value = '';
-      $('irc-auth-pass').placeholder = editPwPlaceholder || 'Password';
+      $('irc-auth-pass').placeholder = editPwPlaceholder || t('irc.pass_placeholder');
     }
     if ($('irc-server-pass')) {
       $('irc-server-pass').value = '';
-      $('irc-server-pass').placeholder = editPwPlaceholder || 'Server connection password';
+      $('irc-server-pass').placeholder = editPwPlaceholder || t('irc.server_pass_placeholder');
     }
 
     const firstChannel = (net && net.channels && net.channels[0]) || null;
     if ($('irc-channel-name')) $('irc-channel-name').value = (firstChannel && (firstChannel.name || firstChannel)) || '';
     if ($('irc-channel-pass')) {
       $('irc-channel-pass').value = '';
-      $('irc-channel-pass').placeholder = editPwPlaceholder || 'Optional';
+      $('irc-channel-pass').placeholder = editPwPlaceholder || t('irc.optional_placeholder');
     }
 
     modal.style.display = 'flex';
@@ -1475,7 +1489,7 @@
     if (!AB) return;
     try {
       await AB.set({ ui: enable });
-      toast(enable ? 'Web UI enabled on 0.0.0.0:7474' : 'Web UI disabled (127.0.0.1 only)');
+      toast(t(enable ? 'toast.webui_enabled' : 'toast.webui_disabled'));
     } catch (err) {
       toast(`Error updating Web UI setting: ${err.message}`, true);
     } finally {
@@ -1487,7 +1501,7 @@
     if (!AB) return;
     try {
       await AB.set({ enabled: enable });
-      toast(enable ? 'Autostart on boot enabled' : 'Autostart disabled');
+      toast(t(enable ? 'toast.autostart_enabled' : 'toast.autostart_disabled'));
       await refreshStatus();
     } catch (err) {
       toast(`Error: ${err.message}`, true);
