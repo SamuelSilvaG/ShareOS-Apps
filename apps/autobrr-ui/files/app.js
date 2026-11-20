@@ -2663,7 +2663,7 @@
         label: t('menu.help'),
         items: [
           { label: t('menu.docs'), action: () => window.open('https://autobrr.com/', '_blank') },
-          { label: t('menu.about'), action: () => alert('autobrr-ui for ShareOS v1.1.1\nIntegrated via ShareOS.autobrr\nPublisher: @SamuelSilvaG') }
+          { label: t('menu.about'), action: () => alert('autobrr-ui for ShareOS v1.1.2\nIntegrated via ShareOS.autobrr\nPublisher: @SamuelSilvaG') }
         ]
       }
     ]);
