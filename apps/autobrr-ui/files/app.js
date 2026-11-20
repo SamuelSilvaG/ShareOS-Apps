@@ -27,6 +27,7 @@
   let pollTimer = null;
   let isRefreshing = false;
   let refreshQueued = false;
+  let transRpcBusy = false;
 
   function applyTheme(tObj) {
     if (!tObj) return;
@@ -266,6 +267,8 @@
     const actionLabel = primary
       ? (primary.action || primary.type || '–')
       : (typeof (item && item.action) === 'string' ? item.action : '–');
+    const actionType = String((primary && primary.type) || '').toUpperCase();
+    const actionClient = String((primary && primary.client) || '');
     const retryActionStatusId = (primary && primary.id != null) ? primary.id : null;
 
     const rejSet = [];
@@ -277,7 +280,7 @@
       }
     }
 
-    return { statusKey, actionLabel, retryActionStatusId, rejections: rejSet };
+    return { statusKey, actionLabel, actionType, actionClient, retryActionStatusId, rejections: rejSet };
   }
 
   // Fetch releases
@@ -374,7 +377,7 @@
         <td style="font-size: 12px; color: var(--sos-muted);">${escapeHtml(info.actionLabel)}</td>
         <td>
           ${info.retryActionStatusId != null ? `
-            <button class="sos-btn sos-btn-sm btn-retry-action" data-release-id="${item.id}" data-action-id="${info.retryActionStatusId}" title="${escapeHtml(t('btn.retry_action'))}">
+            <button class="sos-btn sos-btn-sm btn-retry-action" data-release-id="${item.id}" data-action-id="${info.retryActionStatusId}" data-action-type="${escapeHtml(info.actionType)}" data-action-client="${escapeHtml(info.actionClient)}" title="${escapeHtml(t('btn.retry_action'))}">
               ↻ ${escapeHtml(t('btn.retry_action'))}
             </button>
           ` : '<span style="color: var(--sos-muted);">–</span>'}
@@ -387,16 +390,32 @@
       btn.onclick = () => {
         const releaseId = parseInt(btn.dataset.releaseId, 10);
         const actionStatusId = parseInt(btn.dataset.actionId, 10);
-        retryReleaseAction(releaseId, actionStatusId);
+        retryReleaseAction(
+          releaseId,
+          actionStatusId,
+          btn.dataset.actionType || '',
+          btn.dataset.actionClient || ''
+        );
       };
     });
   }
 
   // Retry an existing release action via autobrr REST API
-  async function retryReleaseAction(releaseId, actionStatusId) {
+  async function retryReleaseAction(releaseId, actionStatusId, actionType = '', actionClient = '') {
     if (!AB || !serviceStatus || !serviceStatus.ready) {
       toast(t('err.service_not_ready'), true);
       return;
+    }
+
+    if (String(actionType || '').toUpperCase() === 'TRANSMISSION') {
+      const localClients = (downloaders || []).filter((d) =>
+        d && String(d.type || '').toUpperCase() === 'TRANSMISSION' && isShareOSTransmissionHost(d.host)
+      );
+      const clientTarget = String(actionClient || '').trim().toLowerCase();
+      if (localClients.length > 0 && (!clientTarget || localClients.some((c) => String(c.name || '').trim().toLowerCase() === clientTarget))) {
+        toast(t('toast.retry_local_trans_blocked'), true);
+        return;
+      }
     }
 
     try {
@@ -2388,6 +2407,36 @@
     transRemoteInfo = null;
   }
 
+  function getExpectedShareOSTransmissionEndpoint(remoteInfo) {
+    const useHttp = !!(remoteInfo && remoteInfo.port && remoteInfo.port > 0);
+    const tls = !useHttp;
+    const port = useHttp ? remoteInfo.port : ((remoteInfo && remoteInfo.https_port) || 9092);
+    const rpcPath = (remoteInfo && remoteInfo.path) || '/transmission/rpc';
+    return {
+      useHttp,
+      tls,
+      port,
+      rpcPath,
+      url: `${tls ? 'https' : 'http'}://127.0.0.1:${port}${rpcPath}`
+    };
+  }
+
+  function setTransRpcButtonsBusy(busy) {
+    transRpcBusy = !!busy;
+    const boxOn = !!(transRemoteInfo && transRemoteInfo.box_enabled);
+    const ids = [
+      'btn-connect-trans-rpc',
+      'btn-gen-connect-trans-rpc',
+      'btn-test-autobrr-trans',
+      'btn-remove-autobrr-trans'
+    ];
+    for (const id of ids) {
+      const btn = $(id);
+      if (!btn) continue;
+      btn.disabled = (id === 'btn-gen-connect-trans-rpc') ? (transRpcBusy || !boxOn) : transRpcBusy;
+    }
+  }
+
   function renderTransmissionRpcSection() {
     const badge = $('trans-rpc-client-badge');
     const infoBox = $('trans-rpc-info');
@@ -2428,12 +2477,13 @@
           endpoint,
           user: existing.username || (transRemoteInfo && transRemoteInfo.user) || '–'
         }));
+        if (isShareOSTransmissionHost(existing.host)) {
+          parts.push(t('trans.rpc_local_note'));
+        }
       } else if (boxOn) {
-        const useHttp = !!(transRemoteInfo.port && transRemoteInfo.port > 0);
-        const port = useHttp ? transRemoteInfo.port : (transRemoteInfo.https_port || 9092);
-        const endpoint = `${useHttp ? 'http' : 'https'}://127.0.0.1:${port}${transRemoteInfo.path || '/transmission/rpc'}`;
+        const ep = getExpectedShareOSTransmissionEndpoint(transRemoteInfo);
         parts.push(t('trans.rpc_info_ready', {
-          endpoint,
+          endpoint: ep.url,
           user: transRemoteInfo.user || (serviceStatus && serviceStatus.account) || 'root'
         }));
       }
@@ -2460,35 +2510,54 @@
       disabledHint.style.display = !boxOn ? 'block' : 'none';
     }
     setupBox.style.display = (boxOn || existing) ? 'block' : 'none';
-    if (genBtn) genBtn.disabled = !boxOn;
+    if (genBtn) genBtn.disabled = transRpcBusy || !boxOn;
     if (existingActions) existingActions.style.display = existing ? 'inline-flex' : 'none';
+    if (transRpcBusy) setTransRpcButtonsBusy(true);
   }
 
-  async function saveTransmissionDownloader(password) {
+  async function saveTransmissionDownloaderCore(password) {
     if (!AB || !serviceStatus || !serviceStatus.ready) {
       toast(t('err.service_not_ready'), true);
       return false;
     }
+
+    // Check remote proxy state and daemon health sequentially before calling
+    // ShareOS.autobrr.api (rpcd is single-threaded: calling /api/downloaders/test
+    // from inside shareos.appautobrr while tremote calls remote_session deadlocks).
+    await refreshTransmissionRemote();
     if (!transRemoteInfo || !transRemoteInfo.box_enabled) {
       toast(t('trans.rpc_disabled_hint'), true);
       return false;
     }
 
-    const existing = findShareOSTransmissionClient();
-    const useHttp = !!(transRemoteInfo.port && transRemoteInfo.port > 0);
-    const tls = !useHttp;
-    const port = useHttp ? transRemoteInfo.port : (transRemoteInfo.https_port || 9092);
-    const rpcPath = transRemoteInfo.path || '/transmission/rpc';
     const user = transRemoteInfo.user || (serviceStatus && serviceStatus.account) || 'root';
+    if (!transRemoteInfo.on) {
+      toast(t('trans.rpc_no_password_hint', { user }), true);
+      return false;
+    }
 
+    const TOR = SOS && SOS.torrent;
+    if (TOR && TOR.rpc) {
+      try {
+        await TOR.rpc('session-get');
+      } catch (rpcErr) {
+        toast(t('trans.rpc_err_daemon_offline', {
+          error: (rpcErr && rpcErr.message) ? rpcErr.message : String(rpcErr || '')
+        }), true);
+        return false;
+      }
+    }
+
+    const existing = findShareOSTransmissionClient();
+    const ep = getExpectedShareOSTransmissionEndpoint(transRemoteInfo);
     const payload = {
       name: (existing && existing.name) || `ShareOS Transmission (${user})`,
       type: 'TRANSMISSION',
       enabled: true,
-      host: `${tls ? 'https' : 'http'}://127.0.0.1:${port}${rpcPath}`,
+      host: ep.url,
       port: 0,
-      tls,
-      tls_skip_verify: tls,
+      tls: ep.tls,
+      tls_skip_verify: ep.tls,
       username: user,
       password,
       settings: (existing && existing.settings) || {}
@@ -2498,7 +2567,6 @@
     }
 
     try {
-      await AB.api('POST', '/api/downloaders/test', payload);
       if (existing && existing.id) {
         await AB.api('PUT', '/api/downloaders', payload);
       } else {
@@ -2510,8 +2578,18 @@
       toast(t('toast.trans_rpc_connected'));
       return true;
     } catch (err) {
-      toast(`Error connecting autobrr to Transmission RPC: ${err.message}`, true);
+      toast(`Error saving Transmission RPC client: ${err.message}`, true);
       return false;
+    }
+  }
+
+  async function saveTransmissionDownloader(password) {
+    if (transRpcBusy) return false;
+    setTransRpcButtonsBusy(true);
+    try {
+      return await saveTransmissionDownloaderCore(password);
+    } finally {
+      setTransRpcButtonsBusy(false);
     }
   }
 
@@ -2527,6 +2605,7 @@
   }
 
   async function generateAndConnectTransmissionRpc() {
+    if (transRpcBusy) return;
     const TOR = SOS && SOS.torrent;
     if (!TOR || !TOR.rpc || !transRemoteInfo || !transRemoteInfo.box_enabled) {
       toast(t('trans.rpc_disabled_hint'), true);
@@ -2535,6 +2614,7 @@
     const msg = transRemoteInfo.on ? t('trans.rpc_confirm_regen') : t('trans.rpc_confirm_gen');
     if (!confirm(msg)) return;
 
+    setTransRpcButtonsBusy(true);
     try {
       const res = await TOR.rpc('shareos-remote-set', { on: true, regen: true });
       if (!res || !res.password) {
@@ -2545,32 +2625,103 @@
       const sanitized = Object.assign({}, res);
       delete sanitized.password;
       transRemoteInfo = sanitized;
-      await saveTransmissionDownloader(pw);
+      await saveTransmissionDownloaderCore(pw);
     } catch (err) {
       toast(`Error generating remote password: ${err.message}`, true);
+    } finally {
+      setTransRpcButtonsBusy(false);
     }
   }
 
   async function testAutobrrTransmissionClient() {
+    if (transRpcBusy) return;
     if (!AB || !serviceStatus || !serviceStatus.ready) {
       toast(t('err.service_not_ready'), true);
       return;
     }
     const existing = findShareOSTransmissionClient();
     if (!existing) return;
+
+    setTransRpcButtonsBusy(true);
     try {
+      if (isShareOSTransmissionHost(existing.host)) {
+        await refreshDownloaders();
+        await refreshTransmissionRemote();
+        renderTransmissionRpcSection();
+
+        const client = findShareOSTransmissionClient();
+        if (!client || client.enabled === false) {
+          toast('autobrr → Transmission verification failed: client is missing or disabled', true);
+          return;
+        }
+        if (!transRemoteInfo || !transRemoteInfo.box_enabled) {
+          toast(t('trans.rpc_disabled_hint'), true);
+          return;
+        }
+        const user = transRemoteInfo.user || client.username || 'root';
+        if (!transRemoteInfo.on) {
+          toast(t('trans.rpc_no_password_hint', { user }), true);
+          return;
+        }
+
+        const ep = getExpectedShareOSTransmissionEndpoint(transRemoteInfo);
+        const parsed = parseDownloaderHostUrl(client.host, client.tls);
+        const parsedHost = cleanHost(parsed ? parsed.hostname : client.host).toLowerCase();
+        const isLoopback = parsedHost === '127.0.0.1' || parsedHost === 'localhost' || parsedHost === '::1';
+        const actualPort = (parsed && parsed.port)
+          ? parseInt(parsed.port, 10)
+          : (client.port > 0 ? client.port : (client.tls ? 443 : 80));
+        const portMatches = actualPort === ep.port ||
+          (!!client.tls && !!transRemoteInfo.https && actualPort === (transRemoteInfo.https_port || 9092));
+        const pathOk = !!(parsed && (parsed.pathname || '').includes('/transmission/rpc'));
+        if (!isLoopback || !portMatches || !pathOk) {
+          toast(t('trans.rpc_verify_mismatch', {
+            current: formatDownloaderEndpoint(client),
+            expected: ep.url
+          }), true);
+          return;
+        }
+
+        let version = 'Active';
+        const TOR = SOS && SOS.torrent;
+        if (TOR && TOR.rpc) {
+          try {
+            const res = await TOR.rpc('session-get');
+            const session = (res && res.arguments) ? res.arguments : res;
+            if (session && typeof session === 'object' && session.version) {
+              version = `v${session.version}`;
+            }
+          } catch (rpcErr) {
+            toast(t('trans.rpc_err_daemon_offline', {
+              error: (rpcErr && rpcErr.message) ? rpcErr.message : String(rpcErr || '')
+            }), true);
+            return;
+          }
+        }
+
+        toast(t('toast.trans_rpc_verify_ok', {
+          version,
+          endpoint: formatDownloaderEndpoint(client)
+        }));
+        return;
+      }
+
       await AB.api('POST', '/api/downloaders/test', existing);
       toast(t('toast.trans_rpc_test_ok'));
     } catch (err) {
       toast(`autobrr → Transmission test failed: ${err.message}`, true);
+    } finally {
+      setTransRpcButtonsBusy(false);
     }
   }
 
   async function removeAutobrrTransmissionClient() {
+    if (transRpcBusy) return;
     if (!AB || !serviceStatus || !serviceStatus.ready) return;
     const existing = findShareOSTransmissionClient();
     if (!existing) return;
     if (!confirm(t('trans.rpc_confirm_remove', { name: existing.name || existing.id }))) return;
+    setTransRpcButtonsBusy(true);
     try {
       await AB.api('DELETE', `/api/downloaders/${existing.id}`);
       await refreshDownloaders();
@@ -2578,6 +2729,8 @@
       toast(t('toast.trans_rpc_removed'));
     } catch (err) {
       toast(`Error removing download client: ${err.message}`, true);
+    } finally {
+      setTransRpcButtonsBusy(false);
     }
   }
 
@@ -2663,7 +2816,7 @@
         label: t('menu.help'),
         items: [
           { label: t('menu.docs'), action: () => window.open('https://autobrr.com/', '_blank') },
-          { label: t('menu.about'), action: () => alert('autobrr-ui for ShareOS v1.1.2\nIntegrated via ShareOS.autobrr\nPublisher: @SamuelSilvaG') }
+          { label: t('menu.about'), action: () => alert('autobrr-ui for ShareOS v1.1.3\nIntegrated via ShareOS.autobrr\nPublisher: @SamuelSilvaG') }
         ]
       }
     ]);
