@@ -18,7 +18,6 @@
   let indexerSchemas = [];
   let downloaders = [];
   let transRemoteInfo = null;
-  let accounts = [];
   let editingFilterId = null;
   let editingFilterData = null;
   let editingIndexerId = null;
@@ -117,19 +116,14 @@
         updateBanner('offline', t('banner.offline_title'), t('banner.offline_desc'));
       }
 
-      if ($('trans-drop-path')) $('trans-drop-path').textContent = '–';
-      if ($('trans-drop-account')) $('trans-drop-account').textContent = '–';
-      if ($('drop-status-badge')) {
-        $('drop-status-badge').textContent = t('status.inactive');
-        $('drop-status-badge').className = 'badge warn';
-      }
       if ($('daemon-state-badge')) {
         $('daemon-state-badge').textContent = t('status.stopped');
         $('daemon-state-badge').className = 'badge err';
       }
       if ($('btn-webui-exposed')) $('btn-webui-exposed').style.display = 'none';
       if ($('webui-link-container')) $('webui-link-container').style.display = 'none';
-      if ($('sb-account')) $('sb-account').textContent = t('sb.account', { account: '–' });
+      renderLegacyDropNotice();
+      if ($('sb-transmission')) $('sb-transmission').textContent = t('sb.transmission', { status: '–' });
 
       return false;
     }
@@ -156,14 +150,6 @@
         updateBanner(null);
       }
 
-      // Update transmission drop card
-      if ($('trans-drop-path')) $('trans-drop-path').textContent = st.drop || '–';
-      if ($('trans-drop-account')) $('trans-drop-account').textContent = st.account || '–';
-      if ($('drop-status-badge')) {
-        $('drop-status-badge').textContent = st.drop ? t('status.active') : t('status.inactive');
-        $('drop-status-badge').className = 'badge ' + (st.drop ? 'ok' : 'warn');
-      }
-
       // Update settings controls
       if ($('cfg-autostart')) $('cfg-autostart').checked = !!st.enabled;
       if ($('cfg-webui-enable')) $('cfg-webui-enable').checked = !!st.ui;
@@ -180,52 +166,15 @@
       if (linkBtn) linkBtn.href = webuiUrl;
       if (urlText) urlText.textContent = webuiUrl;
 
-      // Check Transmission status
+      // Check Transmission status and legacy drop folder state
       checkTransmissionStatus();
-
-      if ($('sb-account')) {
-        $('sb-account').textContent = t('sb.account', { account: st.account || '–' });
-      }
+      renderLegacyDropNotice();
 
       return st.ready;
     } catch (err) {
       console.warn('Error querying autobrr status:', err);
       updateConnBadge('offline');
       return false;
-    }
-  }
-
-  // Fetch accounts list for handover
-  async function refreshAccounts() {
-    if (!AB || !AB.accounts) {
-      accounts = [];
-    } else {
-      try {
-        accounts = await AB.accounts();
-      } catch (_) {
-        accounts = [];
-      }
-    }
-
-    const sel = $('sel-handover-account');
-    if (!sel) return;
-    sel.innerHTML = '';
-    const current = (serviceStatus && serviceStatus.account) || 'root';
-
-    if (!accounts.length) {
-      const opt = document.createElement('option');
-      opt.value = current;
-      opt.textContent = current;
-      sel.appendChild(opt);
-      return;
-    }
-
-    for (const acc of accounts) {
-      const opt = document.createElement('option');
-      opt.value = acc.name;
-      opt.textContent = acc.name + (acc.fullname ? ` (${acc.fullname})` : '');
-      if (acc.name === current) opt.selected = true;
-      sel.appendChild(opt);
     }
   }
 
@@ -701,14 +650,18 @@
     if (!sel) return;
     sel.innerHTML = '';
 
-    const wfOpt = document.createElement('option');
-    wfOpt.value = 'watch_folder';
-    wfOpt.textContent = t('filters.action_watch_folder');
-    sel.appendChild(wfOpt);
-
     const transClients = (downloaders || []).filter((d) =>
       d && String(d.type || '').toUpperCase() === 'TRANSMISSION' && d.enabled !== false && d.id != null
     );
+    if (transClients.length === 0) {
+      const emptyOpt = document.createElement('option');
+      emptyOpt.value = '';
+      emptyOpt.textContent = t('filters.no_trans_client');
+      sel.appendChild(emptyOpt);
+      sel.value = '';
+      return;
+    }
+
     for (const c of transClients) {
       const opt = document.createElement('option');
       opt.value = `client:${c.id}`;
@@ -716,26 +669,21 @@
       sel.appendChild(opt);
     }
 
-    if (isNew) {
-      const localPreferred = findShareOSTransmissionClient();
-      const preferred = (localPreferred && localPreferred.enabled !== false && localPreferred.id != null)
-        ? localPreferred
-        : (transClients[0] || null);
-      if (preferred && preferred.enabled !== false && preferred.id != null) {
-        sel.value = `client:${preferred.id}`;
-      } else {
-        sel.value = 'watch_folder';
+    const localPreferred = findShareOSTransmissionClient();
+    const preferred = (localPreferred && localPreferred.enabled !== false && localPreferred.id != null)
+      ? localPreferred
+      : transClients[0];
+
+    if (!isNew) {
+      const actionsArr = Array.isArray(currentActions) ? currentActions : [];
+      const transAct = actionsArr.find((a) => a && String(a.type || '').toUpperCase() === 'TRANSMISSION' && a.client_id);
+      if (transAct && transClients.some((c) => Number(c.id) === Number(transAct.client_id))) {
+        sel.value = `client:${transAct.client_id}`;
+        return;
       }
-      return;
     }
 
-    const actionsArr = Array.isArray(currentActions) ? currentActions : [];
-    const transAct = actionsArr.find((a) => a && String(a.type || '').toUpperCase() === 'TRANSMISSION' && a.client_id);
-    if (transAct && transClients.some((c) => Number(c.id) === Number(transAct.client_id))) {
-      sel.value = `client:${transAct.client_id}`;
-    } else {
-      sel.value = 'watch_folder';
-    }
+    sel.value = `client:${preferred.id}`;
   }
 
   // Filter modal logic
@@ -744,6 +692,10 @@
     editingFilterData = null;
     const modal = $('filter-modal');
     if (!modal) return;
+
+    if ((!downloaders || downloaders.length === 0) && AB && serviceStatus && serviceStatus.ready) {
+      await refreshDownloaders();
+    }
 
     if (idStr != null) {
       let f = filters.find((x) => String(x.id) === String(idStr)) || null;
@@ -827,7 +779,7 @@
       return;
     }
 
-    const deliveryMode = $('filter-action-mode') ? $('filter-action-mode').value : 'watch_folder';
+    const deliveryMode = $('filter-action-mode') ? $('filter-action-mode').value : '';
     const existingActions = Array.isArray(baseFilter.actions) ? baseFilter.actions : [];
     const nonDeliveryActions = existingActions.filter((act) => {
       const tp = String((act && act.type) || '').toUpperCase();
@@ -847,22 +799,9 @@
         enabled: true,
         client_id: clientId
       });
-    } else {
-      const prevWf = existingActions.find((a) => {
-        const tp = String((a && a.type) || '').toUpperCase();
-        return tp === 'WATCH_FOLDER' || tp === 'WATCH_DIR';
-      });
-      const wfFolder = (serviceStatus && serviceStatus.drop) ||
-        (prevWf && (prevWf.watch_folder || prevWf.watch_dir)) || '';
-      if (wfFolder) {
-        deliveryAction = Object.assign({}, prevWf || {}, {
-          name: (prevWf && prevWf.name) || 'Transmission Watch Dir',
-          type: 'WATCH_FOLDER',
-          enabled: true,
-          watch_folder: wfFolder
-        });
-        delete deliveryAction.watch_dir;
-      }
+    } else if (nonDeliveryActions.length === 0) {
+      toast(t('filters.err_no_trans_client'), true);
+      return;
     }
 
     const actionsPayload = deliveryAction
@@ -2089,21 +2028,6 @@
     }
   }
 
-  async function saveHandoverAccount() {
-    if (!AB) return;
-    const sel = $('sel-handover-account');
-    if (!sel) return;
-    const acc = sel.value;
-    try {
-      toast(`Updating handover account to "${acc}"...`);
-      await AB.set({ account: acc });
-      toast(`Handover account set to "${acc}"! Transmission watch-dir updated.`);
-      await refreshStatus();
-    } catch (err) {
-      toast(`Error updating account: ${err.message}`, true);
-    }
-  }
-
   async function toggleWebUI(enable) {
     if (!AB) return;
     try {
@@ -2146,12 +2070,30 @@
     }
   }
 
+  function getTransmissionStatusLabel() {
+    if (!AB) return '–';
+    const existing = findShareOSTransmissionClient();
+    if (existing && existing.enabled !== false && (!transRemoteInfo || (transRemoteInfo.box_enabled && transRemoteInfo.on))) {
+      return t('trans.rpc_connected');
+    }
+    if (transRemoteInfo && !transRemoteInfo.box_enabled) {
+      return t('trans.rpc_remote_off');
+    }
+    if (existing && transRemoteInfo && transRemoteInfo.box_enabled && !transRemoteInfo.on) {
+      return t('trans.rpc_no_password');
+    }
+    return t('trans.rpc_not_configured');
+  }
+
   function updateStatusbar() {
     if ($('sb-releases')) {
       $('sb-releases').textContent = t('sb.releases_count', { count: releases.length });
     }
     if ($('sb-filters')) {
       $('sb-filters').textContent = t('sb.filters_count', { count: filters.length });
+    }
+    if ($('sb-transmission')) {
+      $('sb-transmission').textContent = t('sb.transmission', { status: getTransmissionStatusLabel() });
     }
     if ($('sb-updated')) {
       $('sb-updated').textContent = t('sb.updated', {
@@ -2179,7 +2121,6 @@
     }
     try {
       await refreshStatus();
-      await refreshAccounts();
       await refreshReleases();
       await refreshFilters();
       await refreshIRCAndIndexers();
@@ -2373,13 +2314,8 @@
         return;
       }
     }
-    if (serviceStatus && serviceStatus.drop) {
-      badge.textContent = 'Handover Ready';
-      badge.className = 'badge ok';
-    } else {
-      badge.textContent = 'Offline / Standby';
-      badge.className = 'badge warn';
-    }
+    badge.textContent = 'Offline';
+    badge.className = 'badge warn';
   }
 
   async function refreshDownloaders() {
@@ -2484,18 +2420,12 @@
         const ep = getExpectedShareOSTransmissionEndpoint(transRemoteInfo);
         parts.push(t('trans.rpc_info_ready', {
           endpoint: ep.url,
-          user: transRemoteInfo.user || (serviceStatus && serviceStatus.account) || 'root'
+          user: transRemoteInfo.user || 'root'
         }));
       }
       if (needsPw) {
         parts.push(t('trans.rpc_no_password_hint', {
           user: (transRemoteInfo && transRemoteInfo.user) || (existing && existing.username) || 'root'
-        }));
-      }
-      if (boxOn && serviceStatus && serviceStatus.account && transRemoteInfo.user && serviceStatus.account !== transRemoteInfo.user) {
-        parts.push(t('trans.rpc_account_mismatch', {
-          rpcUser: transRemoteInfo.user,
-          dropUser: serviceStatus.account
         }));
       }
       if (parts.length > 0) {
@@ -2513,6 +2443,40 @@
     if (genBtn) genBtn.disabled = transRpcBusy || !boxOn;
     if (existingActions) existingActions.style.display = existing ? 'inline-flex' : 'none';
     if (transRpcBusy) setTransRpcButtonsBusy(true);
+    renderLegacyDropNotice();
+  }
+
+  function renderLegacyDropNotice() {
+    const box = $('trans-legacy-drop-box');
+    const txt = $('trans-legacy-drop-text');
+    if (!box || !txt) return;
+    if (AB && serviceStatus && (serviceStatus.drop || serviceStatus.account)) {
+      txt.textContent = t('trans.legacy_drop_active', {
+        path: serviceStatus.drop || '/mnt/.../.shareos/autobrr-drop',
+        account: serviceStatus.account || '–'
+      });
+      box.style.display = 'flex';
+    } else {
+      box.style.display = 'none';
+    }
+  }
+
+  async function disableLegacyDropFolder() {
+    if (!AB) return;
+    const btn = $('btn-disable-legacy-drop');
+    if (btn) btn.disabled = true;
+    try {
+      await AB.set({ account: '' });
+      await refreshStatus();
+      renderLegacyDropNotice();
+      renderTransmissionRpcSection();
+      updateStatusbar();
+      toast(t('toast.legacy_drop_disabled'));
+    } catch (err) {
+      toast(`Error disabling drop folder: ${err.message}`, true);
+    } finally {
+      if (btn) btn.disabled = false;
+    }
   }
 
   async function saveTransmissionDownloaderCore(password) {
@@ -2530,7 +2494,7 @@
       return false;
     }
 
-    const user = transRemoteInfo.user || (serviceStatus && serviceStatus.account) || 'root';
+    const user = transRemoteInfo.user || 'root';
     if (!transRemoteInfo.on) {
       toast(t('trans.rpc_no_password_hint', { user }), true);
       return false;
@@ -2573,8 +2537,18 @@
         await AB.api('POST', '/api/downloaders', payload);
       }
       if ($('trans-rpc-password')) $('trans-rpc-password').value = '';
+      if (serviceStatus && serviceStatus.account) {
+        try {
+          await AB.set({ account: '' });
+          await refreshStatus();
+        } catch (clearErr) {
+          console.warn('Could not clear legacy ShareOS drop folder:', clearErr);
+        }
+      }
       await refreshDownloaders();
       renderTransmissionRpcSection();
+      renderLegacyDropNotice();
+      updateStatusbar();
       toast(t('toast.trans_rpc_connected'));
       return true;
     } catch (err) {
@@ -2726,6 +2700,7 @@
       await AB.api('DELETE', `/api/downloaders/${existing.id}`);
       await refreshDownloaders();
       renderTransmissionRpcSection();
+      updateStatusbar();
       toast(t('toast.trans_rpc_removed'));
     } catch (err) {
       toast(`Error removing download client: ${err.message}`, true);
@@ -2741,6 +2716,7 @@
       badge.textContent = 'Connecting...';
       badge.className = 'badge warn';
     }
+    let lastErr = '';
     const TOR = SOS && SOS.torrent;
     if (TOR && TOR.rpc) {
       try {
@@ -2758,21 +2734,14 @@
           return;
         }
       } catch (err) {
+        lastErr = (err && err.message) ? err.message : String(err || '');
         console.warn('RPC test failed:', err);
       }
     }
-    if (serviceStatus && serviceStatus.drop) {
-      toast(`Handover drop folder active: ${serviceStatus.drop} (user: ${serviceStatus.account || 'root'})`);
-      if (badge) {
-        badge.textContent = 'Handover Ready';
-        badge.className = 'badge ok';
-      }
-    } else {
-      toast('Transmission daemon offline or drop folder unconfigured.', true);
-      if (badge) {
-        badge.textContent = 'Disconnected';
-        badge.className = 'badge err';
-      }
+    toast(t('trans.rpc_err_daemon_offline', { error: lastErr || 'unavailable' }), true);
+    if (badge) {
+      badge.textContent = 'Disconnected';
+      badge.className = 'badge err';
     }
   }
 
@@ -2842,7 +2811,7 @@
     // Service & settings buttons
     if ($('btn-start-svc')) $('btn-start-svc').onclick = startService;
     if ($('btn-stop-svc')) $('btn-stop-svc').onclick = stopService;
-    if ($('btn-save-account')) $('btn-save-account').onclick = saveHandoverAccount;
+    if ($('btn-disable-legacy-drop')) $('btn-disable-legacy-drop').onclick = disableLegacyDropFolder;
     if ($('btn-save-admin-pw')) $('btn-save-admin-pw').onclick = saveAdminPassword;
     if ($('btn-refresh-log')) $('btn-refresh-log').onclick = refreshLog;
     if ($('btn-test-transmission')) $('btn-test-transmission').onclick = testTransmissionRPC;

@@ -2,6 +2,7 @@
 
 ## 1.1.3
 
+- Remove the Handover Drop Folder (`autobrr-drop` / `WATCH_FOLDER`) UI, Settings handover account selector, and `Handover Ready` fallback so `autobrr-ui` operates natively through `autobrr`'s built-in Transmission RPC download client (`TRANSMISSION` filter actions). Automatically disables legacy `autobrr-drop` handover (`account: ""`) when connecting Transmission RPC and provides a one-click banner in the Transmission tab if a legacy drop folder is still active on the box.
 - Fix ShareOS `rpcd` re-entrant deadlock on local Transmission RPC: stop calling `POST /api/downloaders/test` through `ShareOS.autobrr.api` for ShareOS-local hosts (`127.0.0.1:<port>/transmission/rpc`), which held single-threaded `rpcd` blocked while `uhttpd tremote` called back into `shareos.apptorrent.remote_session`.
 - Save & verify safely: sequentially validate remote access enabled, account remote password presence, and `transmission-daemon` availability (`session-get`) before saving directly via `POST`/`PUT /api/downloaders`, replace the local client test with a non-blocking ShareOS RPC setup verifier, and lock action buttons during in-flight requests to prevent duplicate queued calls.
 - Release retry safety: block retrying local ShareOS `TRANSMISSION` release actions through the app proxy (which would also deadlock `rpcd`) and direct users to autobrr Web UI (`:7474`) for live client testing and manual retries.

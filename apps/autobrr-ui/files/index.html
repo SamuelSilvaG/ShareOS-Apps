@@ -177,68 +177,20 @@
       </div>
     </section>
 
-    <!-- Tab 4: Transmission Handover -->
+    <!-- Tab 4: Transmission Integration -->
     <section id="tab-transmission" class="tab-panel">
       <div style="max-width: 800px;">
-        <h3 style="margin-top: 0; font-size: 16px;" data-i18n="trans.title">Transmission Handover Integration</h3>
+        <h3 style="margin-top: 0; font-size: 16px;" data-i18n="trans.title">Transmission Integration</h3>
 
+        <div id="trans-legacy-drop-box" class="info-box warn" style="display:none; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+          <span id="trans-legacy-drop-text"></span>
+          <button type="button" id="btn-disable-legacy-drop" class="sos-btn sos-btn-sm" data-i18n="btn.disable_legacy_drop">Disable Drop Folder</button>
+        </div>
+
+        <!-- Native ShareOS Transmission RPC Client -->
         <div class="settings-section">
-          <h4 data-i18n="trans.how_it_works">How It Works</h4>
-          <p class="section-desc" data-i18n="trans.how_desc">
-            autobrr runs as a single service for the whole box. When a matching torrent is captured, it is placed into a
-            secure hand-over folder with permissions 2770. The Transmission daemon of the designated user monitors this
-            folder and automatically starts downloading.
-          </p>
-        </div>
-
-        <div class="cards-grid">
-          <!-- Drop Folder Card -->
-          <div class="card">
-            <div class="card-header">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <span style="font-size: 20px;">📂</span>
-                <div class="card-title" data-i18n="trans.drop_title">Handover Drop Folder</div>
-              </div>
-              <span class="badge ok" id="drop-status-badge">Configured</span>
-            </div>
-            <div class="card-desc" style="font-size: 12px;">
-              <div style="margin-bottom: 6px;"><strong data-i18n="trans.drop_path">Folder Path</strong>: <code
-                  id="trans-drop-path">/mnt/.../.shareos/autobrr-drop</code></div>
-              <div style="margin-bottom: 6px;"><strong data-i18n="trans.drop_account">Watching User Account</strong>: <span id="trans-drop-account"
-                  style="font-weight: 600;">root</span></div>
-              <div><strong data-i18n="trans.drop_mode">Permissions Mode</strong>: <code>drwxrws--- (2770)</code></div>
-            </div>
-            <div class="card-meta">
-              <span data-i18n="trans.drop_hint">Torrents placed here are picked up within seconds by
-                Transmission.</span>
-            </div>
-          </div>
-
-          <!-- Transmission Client Card -->
-          <div class="card">
-            <div class="card-header">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <span style="font-size: 20px;">⚡</span>
-                <div class="card-title" data-i18n="trans.daemon_card">Transmission Daemon</div>
-              </div>
-              <span class="badge ok" id="trans-daemon-badge">Checking...</span>
-            </div>
-            <div class="card-desc" style="font-size: 12px;" data-i18n="trans.daemon_desc">
-              Native ShareOS BitTorrent daemon running per-user with isolated file permissions.
-            </div>
-            <div style="margin-top: 14px; display: flex; gap: 8px;">
-              <button id="btn-test-transmission" class="sos-btn sos-btn-sm" data-i18n="btn.test_rpc">Test Transmission
-                RPC</button>
-              <button type="button" id="btn-open-trans-app" class="sos-btn sos-btn-sm sos-btn-accent"
-                data-i18n="btn.open_trans_app">Open Transmission</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Direct ShareOS Transmission RPC Client -->
-        <div class="settings-section" style="margin-top: 16px;">
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; gap: 8px;">
-            <h4 style="margin: 0;" data-i18n="trans.rpc_client_title">Direct Transmission RPC Client (Optional)</h4>
+            <h4 style="margin: 0;" data-i18n="trans.rpc_client_title">Native Transmission RPC Client</h4>
             <span class="badge warn" id="trans-rpc-client-badge" data-i18n="trans.rpc_not_configured">Not configured</span>
           </div>
           <p class="section-desc" data-i18n="trans.rpc_client_desc">
@@ -246,7 +198,7 @@
           </p>
           <div id="trans-rpc-info" class="info-box" style="display:none;"></div>
           <div id="trans-rpc-disabled-hint" class="info-box warn" style="display:none;" data-i18n="trans.rpc_disabled_hint">
-            Enable "Remote access for torrent programs" under ShareOS Services → Torrents (ShareOS 0.3.0-beta.6+) to use direct RPC, or keep using the Watch Folder handover above.
+            Enable "Remote access for torrent programs" under ShareOS Services → Torrents (ShareOS 0.3.0-beta.6+) to connect autobrr natively to Transmission.
           </div>
           <div id="trans-rpc-setup-box" style="display:none;">
             <div class="form-row" style="align-items: flex-end; max-width: 560px; margin-bottom: 10px;">
@@ -263,6 +215,26 @@
                 <button type="button" id="btn-remove-autobrr-trans" class="sos-btn sos-btn-sm sos-btn-danger" data-i18n="btn.trans_rpc_disconnect">Disconnect</button>
               </span>
             </div>
+          </div>
+        </div>
+
+        <!-- Transmission Daemon -->
+        <div class="settings-section">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; gap: 8px;">
+            <h4 style="margin: 0;">
+              <span>⚡</span>
+              <span data-i18n="trans.daemon_card">Transmission Daemon</span>
+            </h4>
+            <span class="badge ok" id="trans-daemon-badge">Checking...</span>
+          </div>
+          <p class="section-desc" data-i18n="trans.daemon_desc">
+            Native ShareOS BitTorrent daemon running per-user with isolated file permissions.
+          </p>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button id="btn-test-transmission" class="sos-btn sos-btn-sm" data-i18n="btn.test_rpc">Test Transmission
+              RPC</button>
+            <button type="button" id="btn-open-trans-app" class="sos-btn sos-btn-sm sos-btn-accent"
+              data-i18n="btn.open_trans_app">Open Transmission</button>
           </div>
         </div>
       </div>
@@ -303,25 +275,7 @@
           </label>
         </div>
 
-        <!-- Section 2: Handover Account -->
-        <div class="settings-section">
-          <h4 data-i18n="settings.handover_section">Transmission Handover Account</h4>
-          <p class="section-desc" data-i18n="settings.handover_desc">
-            Select which ShareOS user account receives torrents from autobrr in their personal Transmission watch
-            directory.
-          </p>
-
-          <div class="form-row" style="align-items: center; max-width: 480px;">
-            <div class="form-group" style="margin: 0;">
-              <select id="sel-handover-account" class="sos-input">
-                <option value="root">root (Administrator)</option>
-              </select>
-            </div>
-            <button id="btn-save-account" class="sos-btn sos-btn-sm" data-i18n="btn.save_account">Save Account</button>
-          </div>
-        </div>
-
-        <!-- Section 3: Native Web Interface -->
+        <!-- Section 2: Native Web Interface -->
         <div class="settings-section">
           <h4 data-i18n="settings.webui_section">Native autobrr Web Interface (Port 7474)</h4>
           <p class="section-desc" data-i18n="settings.webui_desc">
@@ -604,7 +558,7 @@
   <div class="sos-statusbar">
     <span id="sb-releases">0 releases monitored</span>
     <span id="sb-filters">0 active filters</span>
-    <span id="sb-account">Handover: --</span>
+    <span id="sb-transmission">Transmission: --</span>
     <span id="sb-updated">Updated: --</span>
   </div>
 

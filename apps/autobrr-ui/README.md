@@ -11,21 +11,20 @@ autobrr runs as a native box-wide service (system app `autobrr`, version 1.89.0)
    - SQLite database (`autobrr.db`) and secrets reside on the apps storage drive (`/mnt/<drive>/.shareos/autobrr`), never wearing down the internal NAND flash.
    - Listens on `127.0.0.1:7474` by default for maximum security; can be exposed on the local network (`0.0.0.0:7474`) via the app settings.
 
-2. **Transmission Handover Mechanism:**
-   - In ShareOS, each user runs their own isolated `transmission-daemon`.
-   - When an administrator configures a target account in autobrr, ShareOS creates the drop folder `/mnt/<drive>/.shareos/autobrr-drop` with permissions `2770` (`<account>:autobrr`).
-   - The target account's Transmission service is configured to watch this directory.
-   - Matching torrents dropped into this folder are automatically imported and downloaded by Transmission.
+2. **Native Transmission RPC Integration:**
+   - In ShareOS (0.3.0-beta.6+), each user's isolated `transmission-daemon` can be reached through ShareOS's local filtered RPC proxy (`127.0.0.1:<port>/transmission/rpc`).
+   - Enable **"Remote access for torrent programs"** under **ShareOS Services → Torrents**, set or generate your account remote password, and connect `autobrr` directly in the **Transmission** tab.
+   - Filters dispatch matching torrents natively as `TRANSMISSION` download client actions (supporting labels, limits, and automatic reannounce) rather than using the legacy `autobrr-drop` watch folder.
 
-3. **ShareOS App SDK (`window.ShareOS.autobrr`):**
+3. **ShareOS App SDK (`window.ShareOS.autobrr` & `window.ShareOS.torrent`):**
    - Requires permissions `files`, `autobrr`, and `torrent` (admin accounts only, ShareOS 0.2.0-beta.9+).
-   - `.status()`: reports daemon state, ports, drop directory, and active account.
-   - `.start()`: starts the background daemon.
-   - `.set({ enabled, ui, account })`: updates boot configuration, external web UI access, and handover user.
-   - `.password(pw)`: updates the web dashboard password for the `admin` user.
-   - `.accounts()`: queries available user accounts on the box.
-   - `.log()`: retrieves recent daemon execution logs.
-   - `.api(method, path, body)`: proxies requests directly to autobrr's REST API authenticated with the internal ShareOS API key.
+   - `ShareOS.autobrr.status()`: reports daemon state, ports, and any legacy handover configuration.
+   - `ShareOS.autobrr.start()`: starts the background daemon.
+   - `ShareOS.autobrr.set({ enabled, ui, account })`: updates boot configuration and external web UI access (or passes `account: ""` to disable a legacy drop-folder handover).
+   - `ShareOS.autobrr.password(pw)`: updates the web dashboard password for the `admin` user.
+   - `ShareOS.autobrr.log()`: retrieves recent daemon execution logs.
+   - `ShareOS.autobrr.api(method, path, body)`: proxies requests directly to autobrr's REST API authenticated with the internal ShareOS API key.
+   - `ShareOS.torrent.rpc(...)`: inspects remote proxy availability and manages the account's Transmission remote password.
 
 ---
 
