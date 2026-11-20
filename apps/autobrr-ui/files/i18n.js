@@ -180,6 +180,9 @@ window.I18N = (function () {
       'toast.indexer_updated': 'Indexer updated successfully',
       'toast.indexer_deleted': 'Indexer deleted',
       'toast.indexer_tested': 'Indexer connection test succeeded!',
+      'toast.indexer_heal_delete_failed': 'New indexer created, but deleting the old "{old}" entry failed ({error}). Both entries remain – please delete the old one manually.',
+      'toast.indexer_heal_restored': 'Failed to create "{id}" ({error}). Previous indexer "{old}" was restored.',
+      'toast.indexer_heal_restore_failed': 'Failed to create "{id}" ({error}) and could not restore "{old}" ({restoreError}). Your settings remain in the form.',
 
       // Transmission View
       'trans.title': 'Transmission Handover Integration',
@@ -418,6 +421,9 @@ window.I18N = (function () {
       'toast.indexer_updated': 'Indexer erfolgreich aktualisiert',
       'toast.indexer_deleted': 'Indexer gelöscht',
       'toast.indexer_tested': 'Indexer-Verbindungstest erfolgreich!',
+      'toast.indexer_heal_delete_failed': 'Neuer Indexer erstellt, aber das Löschen des alten Eintrags „{old}“ ist fehlgeschlagen ({error}). Beide Einträge bleiben bestehen – bitte den alten manuell löschen.',
+      'toast.indexer_heal_restored': 'Erstellen von „{id}“ fehlgeschlagen ({error}). Vorheriger Indexer „{old}“ wurde wiederhergestellt.',
+      'toast.indexer_heal_restore_failed': 'Erstellen von „{id}“ fehlgeschlagen ({error}) und „{old}“ konnte nicht wiederhergestellt werden ({restoreError}). Ihre Einstellungen bleiben im Formular.',
 
       // Transmission View
       'trans.title': 'Transmission-Übergabe',
@@ -656,6 +662,9 @@ window.I18N = (function () {
       'toast.indexer_updated': 'Indexador atualizado com sucesso',
       'toast.indexer_deleted': 'Indexador excluído',
       'toast.indexer_tested': 'Teste de conexão com o indexador aprovado!',
+      'toast.indexer_heal_delete_failed': 'Novo indexador criado, mas a exclusão do registro antigo "{old}" falhou ({error}). Ambos permaneceram – exclua o antigo manualmente.',
+      'toast.indexer_heal_restored': 'Falha ao criar "{id}" ({error}). O indexador anterior "{old}" foi restaurado.',
+      'toast.indexer_heal_restore_failed': 'Falha ao criar "{id}" ({error}) e não foi possível restaurar "{old}" ({restoreError}). Suas configurações permanecem no formulário.',
 
       // Transmission View
       'trans.title': 'Integração de Entrega para Transmission',

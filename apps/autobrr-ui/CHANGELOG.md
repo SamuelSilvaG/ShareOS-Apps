@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.1
+
+- Rollback on indexer heal/replace failure: keep a backup payload (original identifier, settings, and secrets) before deleting an existing indexer after a UNIQUE collision or duplicate confirmation, and automatically restore it if re-creating the replacement fails (leaving the user's edited settings intact in the modal).
+- Visible error toast when deleting the old indexer row fails after creating a healed replacement, instead of silently ignoring the failure when both rows remain.
+- Fix `#indexer-modal-save-btn` click handler passing the DOM click event as the `retried` flag, and use plain local script/stylesheet paths in `index.html` so `tools/build.py` stamps `?v=1.1.1` automatically.
+
 ## 1.1.0
 
 - Security & LAN exposure clarity: ask for confirmation before binding autobrr's native Web UI to `0.0.0.0:7474` and show a toolbar indicator badge when `:7474` is exposed with one-click deactivation back to `127.0.0.1`.

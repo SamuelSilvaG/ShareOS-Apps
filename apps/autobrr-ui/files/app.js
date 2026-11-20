@@ -950,7 +950,50 @@
     editingIndexerData = null;
   }
 
+  function buildIndexerBackupPayload(src, schema) {
+    if (!src || typeof src !== 'object') return null;
+    const settings = normalizeIndexerSettingsMap(src.settings);
+    const baseUrl = src.base_url || settings.base_url ||
+      (schema && Array.isArray(schema.urls) && schema.urls[0]) || '';
+    const impl = src.implementation || (schema && schema.implementation) ||
+      ((schema && !isGenericFeed(schema)) ? 'irc' : '');
+    return {
+      name: src.name || src.identifier || '',
+      identifier: src.identifier || '',
+      identifier_external: src.identifier_external || src.name || src.identifier || '',
+      enabled: src.enabled !== false,
+      implementation: impl,
+      base_url: baseUrl,
+      use_proxy: !!src.use_proxy,
+      proxy_id: src.proxy_id || 0,
+      settings
+    };
+  }
+
+  async function restoreIndexerBackup(backupPayload, targetId, oldLabel, retryErr) {
+    const retryMsg = (retryErr && retryErr.message) ? retryErr.message : String(retryErr || '');
+    try {
+      await AB.api('POST', '/api/indexer', backupPayload);
+      await refreshIRCAndIndexers();
+      toast(t('toast.indexer_heal_restored', {
+        id: targetId,
+        old: oldLabel || backupPayload.identifier,
+        error: retryMsg
+      }), true);
+    } catch (restoreErr) {
+      const restoreMsg = (restoreErr && restoreErr.message) ? restoreErr.message : String(restoreErr || '');
+      await refreshIRCAndIndexers();
+      toast(t('toast.indexer_heal_restore_failed', {
+        id: targetId,
+        old: oldLabel || backupPayload.identifier,
+        error: retryMsg,
+        restoreError: restoreMsg
+      }), true);
+    }
+  }
+
   async function saveIndexerFromModal(retried = false) {
+    const isRetry = retried === true;
     if (!AB || !serviceStatus || !serviceStatus.ready) {
       toast(t('err.service_not_ready'), true);
       return;
@@ -981,6 +1024,8 @@
     } catch (_) {}
 
     let healFromId = null;
+    let healOldIdentifier = null;
+    let healBackupPayload = null;
 
     // Check for duplicate identifier (case-insensitive to catch broken wrong-case SQLite rows like "bj-share")
     const existing = indexers.find((idx) => String(idx.identifier || '').toLowerCase() === identifier.toLowerCase());
@@ -993,6 +1038,8 @@
         }
         editingIndexerData = existing;
         healFromId = existing.id;
+        healOldIdentifier = existing.identifier;
+        healBackupPayload = buildIndexerBackupPayload(existing, matchedSchema);
         editingIndexerId = null;
       } else if (existing.id !== editingIndexerId) {
         const ok = confirm(t('indexers.confirm_update', { name: existing.name || identifier }));
@@ -1074,12 +1121,22 @@
       } else {
         try {
           await AB.api('POST', '/api/indexer', payload);
+          let deleteOldFailed = false;
           if (healFromId) {
             try {
               await AB.api('DELETE', `/api/indexer/${healFromId}`);
-            } catch (_) {}
+            } catch (delErr) {
+              deleteOldFailed = true;
+              const delMsg = (delErr && delErr.message) ? delErr.message : String(delErr || '');
+              toast(t('toast.indexer_heal_delete_failed', {
+                old: healOldIdentifier || String(healFromId),
+                error: delMsg
+              }), true);
+            }
           }
-          toast(t('toast.indexer_created'));
+          if (!deleteOldFailed) {
+            toast(t('toast.indexer_created'));
+          }
         } catch (postErr) {
           const isUniqueErr = postErr && postErr.message && postErr.message.includes('UNIQUE constraint failed');
           if (healFromId && isUniqueErr) {
@@ -1087,8 +1144,16 @@
             await AB.api('DELETE', `/api/indexer/${healFromId}`);
             indexers = indexers.filter((i) => i.id !== healFromId);
             healFromId = null;
-            await AB.api('POST', '/api/indexer', payload);
-            toast(t('toast.indexer_created'));
+            try {
+              await AB.api('POST', '/api/indexer', payload);
+              toast(t('toast.indexer_created'));
+            } catch (retryErr) {
+              if (healBackupPayload) {
+                await restoreIndexerBackup(healBackupPayload, identifier, healOldIdentifier, retryErr);
+                return;
+              }
+              throw retryErr;
+            }
           } else {
             throw postErr;
           }
@@ -1112,17 +1177,37 @@
             $('indexer-identifier').focus();
           }
           const retry = confirm(t('indexers.confirm_use_suggested', { id: identifier, suggested }));
-          if (retry && !retried) {
+          if (retry && !isRetry) {
             return saveIndexerFromModal(true);
           }
           toast(t('indexers.err_unique_identifier', { id: identifier, suggested }), true);
         } else {
           const dup = (indexers || []).find((i) => String(i.identifier || '').toLowerCase() === identifier.toLowerCase());
-          if (!retried && dup && confirm(t('indexers.confirm_replace', { name: dup.name || identifier }))) {
+          if (!isRetry && dup && confirm(t('indexers.confirm_replace', { name: dup.name || identifier }))) {
+            const dupBackup = buildIndexerBackupPayload(dup, findIndexerSchema(dup.identifier, dup));
             try {
               await AB.api('DELETE', `/api/indexer/${dup.id}`);
               indexers = indexers.filter((i) => i.id !== dup.id);
-              return saveIndexerFromModal(true);
+              editingIndexerId = null;
+              editingIndexerData = dup;
+              const replacePayload = Object.assign({}, payload, {
+                settings: Object.assign({}, (dupBackup && dupBackup.settings) || {}, payload.settings || {})
+              });
+              delete replacePayload.id;
+              try {
+                await AB.api('POST', '/api/indexer', replacePayload);
+                toast(t('toast.indexer_created'));
+                closeIndexerModal();
+                await refreshIRCAndIndexers();
+                return;
+              } catch (retryErr) {
+                if (dupBackup) {
+                  await restoreIndexerBackup(dupBackup, identifier, dup.identifier || dup.name || identifier, retryErr);
+                  return;
+                }
+                toast(`Error saving indexer: ${(retryErr && retryErr.message) ? retryErr.message : String(retryErr || '')}`, true);
+                return;
+              }
             } catch (delErr) {
               toast(`Error resolving duplicate indexer: ${delErr.message}`, true);
               return;
@@ -1842,7 +1927,7 @@
         label: t('menu.help'),
         items: [
           { label: t('menu.docs'), action: () => window.open('https://autobrr.com/', '_blank') },
-          { label: t('menu.about'), action: () => alert('autobrr-ui for ShareOS v1.1.0\nIntegrated via ShareOS.autobrr\nPublisher: @SamuelSilvaG') }
+          { label: t('menu.about'), action: () => alert('autobrr-ui for ShareOS v1.1.1\nIntegrated via ShareOS.autobrr\nPublisher: @SamuelSilvaG') }
         ]
       }
     ]);
@@ -1926,7 +2011,7 @@
     if ($('btn-indexer-open-webui')) $('btn-indexer-open-webui').onclick = openAdvancedWebUI;
     if ($('indexer-modal-close-btn')) $('indexer-modal-close-btn').onclick = closeIndexerModal;
     if ($('indexer-modal-cancel-btn')) $('indexer-modal-cancel-btn').onclick = closeIndexerModal;
-    if ($('indexer-modal-save-btn')) $('indexer-modal-save-btn').onclick = saveIndexerFromModal;
+    if ($('indexer-modal-save-btn')) $('indexer-modal-save-btn').onclick = () => saveIndexerFromModal(false);
     if ($('indexer-preset')) {
       $('indexer-preset').onchange = () => {
         const id = $('indexer-preset').value;
