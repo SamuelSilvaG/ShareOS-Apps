@@ -20,7 +20,35 @@
   let editingFilterId = null;
   let editingIndexerId = null;
   let editingIrcId = null;
+  let editingIndexerData = null;
   let pollTimer = null;
+  let isRefreshing = false;
+  let refreshQueued = false;
+
+  function applyTheme(tObj) {
+    if (!tObj) return;
+    const theme = typeof tObj === 'string' ? tObj : tObj.theme;
+    const accent = typeof tObj === 'object' ? tObj.accent : null;
+    if (theme) document.documentElement.dataset.theme = theme;
+    if (accent) document.documentElement.dataset.accent = accent;
+  }
+
+  function initTheme() {
+    if (!SOS) return;
+    if (SOS.theme) applyTheme(SOS.theme);
+    if (SOS.onTheme) SOS.onTheme(applyTheme);
+  }
+
+  function parseCsvList(str) {
+    return String(str || '').split(',').map((s) => s.trim()).filter(Boolean);
+  }
+
+  function formatFilterIndexers(list) {
+    if (Array.isArray(list)) {
+      return list.map((x) => (typeof x === 'object' && x ? (x.name || x.identifier || '') : String(x || ''))).filter(Boolean).join(', ');
+    }
+    return list || '';
+  }
 
   // Toast feedback
   function toast(msg, isError = false) {
@@ -95,6 +123,7 @@
         $('daemon-state-badge').textContent = t('status.stopped');
         $('daemon-state-badge').className = 'badge err';
       }
+      if ($('btn-webui-exposed')) $('btn-webui-exposed').style.display = 'none';
       if ($('webui-link-container')) $('webui-link-container').style.display = 'none';
       if ($('sb-account')) $('sb-account').textContent = t('sb.account', { account: '–' });
 
@@ -134,8 +163,9 @@
       // Update settings controls
       if ($('cfg-autostart')) $('cfg-autostart').checked = !!st.enabled;
       if ($('cfg-webui-enable')) $('cfg-webui-enable').checked = !!st.ui;
+      if ($('btn-webui-exposed')) $('btn-webui-exposed').style.display = (st.running && st.ui) ? 'inline-flex' : 'none';
       if ($('daemon-state-badge')) {
-        $('daemon-state-badge').textContent = st.running ? (st.ready ? 'Online' : 'Starting...') : t('status.stopped');
+        $('daemon-state-badge').textContent = st.running ? (st.ready ? t('status.online') : t('status.starting')) : t('status.stopped');
         $('daemon-state-badge').className = 'badge ' + (st.running ? 'ok' : 'err');
       }
 
@@ -259,7 +289,10 @@
       const sizeStr = item.size || '';
       const statusRaw = item.filter_status || item.status || 'PENDING';
       const statusKey = String(statusRaw).toUpperCase();
-      const statusLabel = t('status.' + statusKey) || statusKey;
+      const statusClass = /^[A-Z_]+$/.test(statusKey) ? statusKey : 'UNKNOWN';
+      const statusI18nKey = 'status.' + statusKey;
+      const trStatus = t(statusI18nKey);
+      const statusLabel = trStatus !== statusI18nKey ? trStatus : statusKey;
       const actionStr = item.action_status || item.action || 'Watch dir';
 
       tr.innerHTML = `
@@ -273,11 +306,11 @@
           ${sizeStr ? `<div class="release-meta"><span>📦 ${escapeHtml(sizeStr)}</span></div>` : ''}
         </td>
         <td>
-          <span class="status-pill status-${statusKey}">${escapeHtml(statusLabel)}</span>
+          <span class="status-pill status-${statusClass}">${escapeHtml(statusLabel)}</span>
         </td>
         <td style="font-size: 12px; color: var(--sos-muted);">${escapeHtml(actionStr)}</td>
         <td>
-          <button class="sos-btn sos-btn-sm btn-push-release" data-id="${item.id}" title="${t('btn.send_transmission')}">
+          <button class="sos-btn sos-btn-sm btn-push-release" data-id="${item.id}" title="${escapeHtml(t('btn.send_transmission'))}">
             ⚡ Push
           </button>
         </td>
@@ -357,36 +390,44 @@
       const card = document.createElement('div');
       card.className = 'card';
       const isActive = f.enabled !== false;
-      const idxs = Array.isArray(f.indexers) ? f.indexers.join(', ') : (f.indexers || '');
+      const idxs = formatFilterIndexers(f.indexers);
       const minS = f.min_size ? `${f.min_size}` : '0 MB';
-      const maxS = f.max_size ? `${f.max_size}` : 'Unlimited';
+      const maxS = f.max_size ? `${f.max_size}` : t('filters.card_unlimited');
+      const resArr = Array.isArray(f.resolutions) ? f.resolutions : [];
+      const srcArr = Array.isArray(f.sources) ? f.sources : [];
+      const codArr = Array.isArray(f.codecs) ? f.codecs : [];
+      const tagPills = [...resArr, ...srcArr, ...codArr]
+        .filter(Boolean)
+        .map((tag) => `<span class="filter-tag">${escapeHtml(tag)}</span>`)
+        .join('');
 
       card.innerHTML = `
         <div class="card-header">
           <div class="card-title">${escapeHtml(f.name)}</div>
           <span class="status-pill ${isActive ? 'status-APPROVED' : 'status-FILTER_REJECTED'}">
-            ${isActive ? t('status.active') : t('status.inactive')}
+            ${escapeHtml(isActive ? t('status.active') : t('status.inactive'))}
           </span>
         </div>
         <div class="card-desc">
-          ${f.match_releases ? `<div><strong>Match:</strong> <code>${escapeHtml(f.match_releases)}</code></div>` : ''}
-          ${f.except_releases ? `<div><strong>Except:</strong> <code>${escapeHtml(f.except_releases)}</code></div>` : ''}
-          <div><strong>Trackers:</strong> ${idxs ? escapeHtml(idxs) : '<em>All</em>'}</div>
-          ${f.freeleech ? `<div><span class="badge ok">Freeleech Only</span></div>` : ''}
+          ${f.match_releases ? `<div><strong>${escapeHtml(t('filters.card_match'))}</strong> <code>${escapeHtml(f.match_releases)}</code></div>` : ''}
+          ${f.except_releases ? `<div><strong>${escapeHtml(t('filters.card_except'))}</strong> <code>${escapeHtml(f.except_releases)}</code></div>` : ''}
+          <div><strong>${escapeHtml(t('filters.card_trackers'))}</strong> ${idxs ? escapeHtml(idxs) : `<em>${escapeHtml(t('filters.card_all'))}</em>`}</div>
+          ${tagPills ? `<div class="filter-tags">${tagPills}</div>` : ''}
+          ${f.freeleech ? `<div style="margin-top:4px;"><span class="badge ok">${escapeHtml(t('filters.freeleech'))}</span></div>` : ''}
         </div>
         <div class="card-meta">
-          <span>Min: ${escapeHtml(minS)}</span>
-          <span>Max: ${escapeHtml(maxS)}</span>
+          <span>${escapeHtml(t('filters.card_min'))} ${escapeHtml(minS)}</span>
+          <span>${escapeHtml(t('filters.card_max'))} ${escapeHtml(maxS)}</span>
         </div>
         <div style="margin-top: 10px; display: flex; justify-content: flex-end; gap: 6px;">
           <button class="sos-btn sos-btn-sm btn-toggle-filter" data-id="${f.id}">
             ${isActive ? '⏸️' : '▶️'}
           </button>
           <button class="sos-btn sos-btn-sm btn-edit-filter" data-id="${f.id}">
-            ✏️ ${t('btn.edit')}
+            ✏️ ${escapeHtml(t('btn.edit'))}
           </button>
           <button class="sos-btn sos-btn-sm sos-btn-danger btn-del-filter" data-id="${f.id}">
-            🗑️ ${t('btn.delete')}
+            🗑️ ${escapeHtml(t('btn.delete'))}
           </button>
         </div>
       `;
@@ -458,11 +499,14 @@
       if (f) {
         $('modal-title').textContent = t('filters.edit_title');
         $('filter-name').value = f.name || '';
-        $('filter-indexers').value = Array.isArray(f.indexers) ? f.indexers.join(', ') : (f.indexers || '');
+        $('filter-indexers').value = formatFilterIndexers(f.indexers);
         $('filter-match').value = f.match_releases || '';
         $('filter-except').value = f.except_releases || '';
         $('filter-min-size').value = parseInt(f.min_size, 10) || '';
         $('filter-max-size').value = parseInt(f.max_size, 10) || '';
+        if ($('filter-resolutions')) $('filter-resolutions').value = Array.isArray(f.resolutions) ? f.resolutions.join(', ') : '';
+        if ($('filter-sources')) $('filter-sources').value = Array.isArray(f.sources) ? f.sources.join(', ') : '';
+        if ($('filter-codecs')) $('filter-codecs').value = Array.isArray(f.codecs) ? f.codecs.join(', ') : '';
         $('filter-freeleech').checked = !!f.freeleech;
         $('filter-enabled').checked = f.enabled !== false;
       }
@@ -474,6 +518,9 @@
       $('filter-except').value = '';
       $('filter-min-size').value = '';
       $('filter-max-size').value = '';
+      if ($('filter-resolutions')) $('filter-resolutions').value = '';
+      if ($('filter-sources')) $('filter-sources').value = '';
+      if ($('filter-codecs')) $('filter-codecs').value = '';
       $('filter-freeleech').checked = false;
       $('filter-enabled').checked = true;
     }
@@ -499,36 +546,55 @@
       return;
     }
 
-    const idxStr = ($('filter-indexers').value || '').trim();
-    const indexersArr = idxStr ? idxStr.split(',').map((s) => s.trim()).filter(Boolean) : [];
+    const baseFilter = editingFilterId
+      ? (filters.find((x) => String(x.id) === String(editingFilterId)) || {})
+      : {};
+    const idxNames = parseCsvList($('filter-indexers').value);
+    let indexersPayload = idxNames;
+    if (Array.isArray(baseFilter.indexers) && baseFilter.indexers.some((x) => x && typeof x === 'object')) {
+      indexersPayload = idxNames.map((entry) => {
+        const low = entry.toLowerCase();
+        const existingObj = baseFilter.indexers.find((x) =>
+          x && typeof x === 'object' &&
+          (String(x.name || '').toLowerCase() === low || String(x.identifier || '').toLowerCase() === low)
+        );
+        if (existingObj) return existingObj;
+        const known = indexers.find((x) =>
+          String(x.name || '').toLowerCase() === low || String(x.identifier || '').toLowerCase() === low
+        );
+        return known ? { id: known.id, name: known.name, identifier: known.identifier } : entry;
+      });
+    }
     const minS = parseInt($('filter-min-size').value, 10) || 0;
     const maxS = parseInt($('filter-max-size').value, 10) || 0;
 
-    const payload = {
+    const payload = Object.assign({}, baseFilter, {
       name,
       enabled: $('filter-enabled').checked,
-      indexers: indexersArr,
+      indexers: indexersPayload,
       match_releases: ($('filter-match').value || '').trim(),
       except_releases: ($('filter-except').value || '').trim(),
       min_size: minS ? `${minS}MB` : '',
       max_size: maxS ? `${maxS}MB` : '',
       freeleech: $('filter-freeleech').checked,
-      resolutions: [],
-      codecs: [],
-      sources: [],
-      containers: []
-    };
+      resolutions: $('filter-resolutions') ? parseCsvList($('filter-resolutions').value) : (baseFilter.resolutions || []),
+      sources: $('filter-sources') ? parseCsvList($('filter-sources').value) : (baseFilter.sources || []),
+      codecs: $('filter-codecs') ? parseCsvList($('filter-codecs').value) : (baseFilter.codecs || []),
+      containers: Array.isArray(baseFilter.containers) ? baseFilter.containers : []
+    });
 
-    // Use action type "Watch dir" with the drop folder status().drop for Transmission
-    if (serviceStatus && serviceStatus.drop) {
-      payload.actions = [
-        {
-          name: 'Transmission Watch Dir',
-          type: 'watch_dir',
-          enabled: true,
-          watch_dir: serviceStatus.drop
-        }
-      ];
+    // Preserve existing actions when editing; attach Transmission watch_dir for new filters
+    if (!Array.isArray(payload.actions) || payload.actions.length === 0) {
+      if (serviceStatus && serviceStatus.drop) {
+        payload.actions = [
+          {
+            name: 'Transmission Watch Dir',
+            type: 'watch_dir',
+            enabled: true,
+            watch_dir: serviceStatus.drop
+          }
+        ];
+      }
     }
 
     try {
@@ -547,6 +613,63 @@
     }
   }
 
+  function normalizeIndexerSettingsMap(rawSettings) {
+    const map = {};
+    if (Array.isArray(rawSettings)) {
+      for (const s of rawSettings) {
+        if (s && s.name && s.value != null && s.value !== '') {
+          map[s.name] = String(s.value);
+        }
+      }
+    } else if (rawSettings && typeof rawSettings === 'object') {
+      for (const [k, v] of Object.entries(rawSettings)) {
+        if (v != null) map[k] = String(v);
+      }
+    }
+    return map;
+  }
+
+  async function fetchAllIndexers() {
+    const [mappedResp, optionsResp] = await Promise.all([
+      AB.api('GET', '/api/indexer').catch(() => null),
+      AB.api('GET', '/api/indexer/options').catch(() => null)
+    ]);
+    const mapped = Array.isArray(mappedResp) ? mappedResp : [];
+    const options = Array.isArray(optionsResp) ? optionsResp : [];
+    const byKey = new Map();
+
+    for (const item of mapped) {
+      if (!item) continue;
+      const key = item.id != null ? `id:${item.id}` : `ident:${String(item.identifier || '').toLowerCase()}`;
+      byKey.set(key, Object.assign({}, item, {
+        settings: normalizeIndexerSettingsMap(item.settings)
+      }));
+    }
+
+    for (const opt of options) {
+      if (!opt) continue;
+      const idKey = opt.id != null ? `id:${opt.id}` : null;
+      const identKey = `ident:${String(opt.identifier || '').toLowerCase()}`;
+      let matchKey = (idKey && byKey.has(idKey)) ? idKey : null;
+      if (!matchKey) {
+        for (const [k, v] of byKey.entries()) {
+          if (String(v.identifier || '').toLowerCase() === String(opt.identifier || '').toLowerCase()) {
+            matchKey = k;
+            break;
+          }
+        }
+      }
+      const prev = matchKey ? byKey.get(matchKey) : {};
+      const mergedSettings = Object.assign({}, prev.settings || {}, normalizeIndexerSettingsMap(opt.settings));
+      byKey.set(matchKey || idKey || identKey, Object.assign({}, prev, opt, {
+        type: prev.type || opt.implementation || 'Torznab / IRC',
+        settings: mergedSettings
+      }));
+    }
+
+    return Array.from(byKey.values());
+  }
+
   // Fetch IRC networks & indexers
   async function refreshIRCAndIndexers() {
     if (AB && serviceStatus && serviceStatus.ready) {
@@ -557,7 +680,7 @@
         };
         const [irc, idx] = await Promise.all([
           fetchIrc(),
-          AB.api('GET', '/api/indexer').catch(() => null)
+          fetchAllIndexers()
         ]);
         ircNetworks = Array.isArray(irc) ? irc : [];
         indexers = Array.isArray(idx) ? idx : [];
@@ -583,6 +706,10 @@
       if (Array.isArray(data)) {
         indexerSchemas = data;
         populateIndexerPresets();
+        const modal = $('indexer-modal');
+        if (modal && modal.style.display !== 'none') {
+          updateIndexerSchemaUI();
+        }
       }
     } catch (e) {
       console.warn('Could not load indexer schemas:', e);
@@ -592,7 +719,7 @@
   function populateIndexerPresets() {
     const sel = $('indexer-preset');
     if (!sel) return;
-    const currentVal = sel.value;
+    const currentVal = sel.value || (editingIndexerData && editingIndexerData.identifier) || '';
     sel.innerHTML = `<option value="">${escapeHtml(t('indexers.custom_preset'))}</option>`;
     const sorted = [...indexerSchemas].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
     for (const schema of sorted) {
@@ -602,6 +729,135 @@
       sel.appendChild(opt);
     }
     if (currentVal) sel.value = currentVal;
+  }
+
+  function findIndexerSchema(identifier, indexerObj) {
+    const presetVal = ($('indexer-preset') ? $('indexer-preset').value : '').trim().toLowerCase();
+    const rawId = String(identifier || '').trim().toLowerCase();
+    const impl = String((indexerObj && indexerObj.implementation) || '').trim().toLowerCase();
+    const baseId = rawId.replace(/-\d+$/, '');
+    const candidates = [presetVal, rawId, impl, baseId].filter(Boolean);
+    for (const cand of candidates) {
+      const hit = indexerSchemas.find((s) => String(s.identifier || '').toLowerCase() === cand);
+      if (hit) return hit;
+    }
+    return null;
+  }
+
+  function isSecretSetting(s) {
+    const type = String((s && s.type) || '').toLowerCase();
+    const name = String((s && s.name) || '').toLowerCase();
+    return type === 'secret' || type === 'password' ||
+      name.includes('key') || name.includes('pass') || name.includes('secret') ||
+      name.includes('token') || name.includes('cookie');
+  }
+
+  function renderIndexerSchemaFields(schema, existingSettings, isEdit) {
+    const dyn = $('indexer-dynamic-fields');
+    const def = $('indexer-default-fields');
+    if (!dyn || !def) return false;
+
+    const editable = (schema && Array.isArray(schema.settings))
+      ? schema.settings.filter((s) => s && s.name && String(s.type || '').toLowerCase() !== 'info')
+      : [];
+
+    dyn.innerHTML = '';
+    if (!editable.length) {
+      dyn.style.display = 'none';
+      def.style.display = 'block';
+      return false;
+    }
+
+    def.style.display = 'none';
+    dyn.style.display = 'block';
+    const settingsObj = (existingSettings && typeof existingSettings === 'object') ? existingSettings : {};
+
+    for (const s of editable) {
+      const wrap = document.createElement('div');
+      wrap.className = 'form-group';
+      const type = String(s.type || 'text').toLowerCase();
+      const inputId = `idx-dyn-${String(s.name).replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+
+      if (type === 'checkbox' || type === 'bool') {
+        const lbl = document.createElement('label');
+        lbl.className = 'form-check-row';
+        const inp = document.createElement('input');
+        inp.type = 'checkbox';
+        inp.id = inputId;
+        inp.dataset.settingKey = s.name;
+        const curCheck = settingsObj[s.name] !== undefined ? settingsObj[s.name] : (s.value ?? s.default);
+        inp.checked = curCheck === true || curCheck === 'true' || curCheck === '1' || curCheck === 1;
+        const span = document.createElement('span');
+        span.textContent = s.label || s.name;
+        lbl.appendChild(inp);
+        lbl.appendChild(span);
+        wrap.appendChild(lbl);
+      } else {
+        const lbl = document.createElement('label');
+        lbl.htmlFor = inputId;
+        lbl.textContent = s.label || s.name;
+        wrap.appendChild(lbl);
+
+        if (Array.isArray(s.options) && s.options.length > 0) {
+          const sel = document.createElement('select');
+          sel.id = inputId;
+          sel.className = 'sos-input';
+          sel.dataset.settingKey = s.name;
+          for (const optDef of s.options) {
+            const opt = document.createElement('option');
+            if (optDef && typeof optDef === 'object') {
+              opt.value = optDef.value != null ? String(optDef.value) : '';
+              opt.textContent = optDef.label || optDef.name || opt.value;
+            } else {
+              opt.value = String(optDef);
+              opt.textContent = String(optDef);
+            }
+            sel.appendChild(opt);
+          }
+          const curVal = settingsObj[s.name] !== undefined ? settingsObj[s.name] : (s.value ?? s.default);
+          if (curVal !== undefined) sel.value = String(curVal);
+          wrap.appendChild(sel);
+        } else {
+          const inp = document.createElement('input');
+          inp.id = inputId;
+          inp.className = 'sos-input';
+          inp.dataset.settingKey = s.name;
+          if (isSecretSetting(s)) {
+            inp.type = 'password';
+            inp.dataset.settingSecret = '1';
+            inp.value = '';
+            inp.placeholder = isEdit
+              ? t('indexers.apikey_edit_placeholder')
+              : (s.placeholder || s.label || t('indexers.apikey_placeholder'));
+          } else {
+            inp.type = type === 'number' ? 'number' : 'text';
+            const fallbackUrl = (s.name === 'base_url' && schema.urls && schema.urls[0]) ? schema.urls[0] : '';
+            const val = settingsObj[s.name] !== undefined ? settingsObj[s.name] : (s.value ?? s.default ?? fallbackUrl);
+            inp.value = val != null ? String(val) : '';
+            if (s.placeholder) inp.placeholder = s.placeholder;
+          }
+          wrap.appendChild(inp);
+        }
+      }
+
+      if (s.help || s.description) {
+        const hint = document.createElement('div');
+        hint.className = 'form-hint';
+        hint.textContent = s.help || s.description;
+        wrap.appendChild(hint);
+      }
+
+      dyn.appendChild(wrap);
+    }
+
+    return true;
+  }
+
+  function updateIndexerSchemaUI() {
+    const ident = $('indexer-identifier') ? $('indexer-identifier').value : '';
+    const schema = findIndexerSchema(ident, editingIndexerData);
+    const settings = editingIndexerData ? editingIndexerData.settings : {};
+    renderIndexerSchemaFields(schema, settings, !!editingIndexerId);
   }
 
   // Helper to suggest a unique identifier when one already exists
@@ -630,10 +886,10 @@
     if (typeof identifierOrSchema === 'string') {
       id = identifierOrSchema.toLowerCase();
       const schema = indexerSchemas.find((s) => (s.identifier || '').toLowerCase() === id);
-      if (schema && schema.type) type = String(schema.type).toLowerCase();
+      if (schema) type = String(schema.implementation || schema.type || '').toLowerCase();
     } else if (typeof identifierOrSchema === 'object') {
       id = String(identifierOrSchema.identifier || '').toLowerCase();
-      type = String(identifierOrSchema.type || '').toLowerCase();
+      type = String(identifierOrSchema.implementation || identifierOrSchema.type || '').toLowerCase();
     }
     const cleanId = id.replace(/-\d+$/, '');
     const generic = ['torznab', 'newznab', 'rss'];
@@ -647,17 +903,19 @@
   // Indexer Modal handlers
   function openIndexerModal(indexer = null) {
     editingIndexerId = indexer ? indexer.id : null;
+    editingIndexerData = indexer || null;
     const modal = $('indexer-modal');
     if (!modal) return;
 
     fetchIndexerSchemas();
 
+    const matchedSchema = indexer ? findIndexerSchema(indexer.identifier, indexer) : null;
     if ($('indexer-modal-title')) {
       $('indexer-modal-title').textContent = editingIndexerId ? t('indexers.edit_title') : t('indexers.new_title');
     }
-    if ($('indexer-preset')) $('indexer-preset').value = (indexer && indexer.identifier) || '';
+    if ($('indexer-preset')) $('indexer-preset').value = (matchedSchema && matchedSchema.identifier) || (indexer && indexer.identifier) || '';
     if ($('indexer-name')) $('indexer-name').value = (indexer && indexer.name) || '';
-    if ($('indexer-identifier')) $('indexer-identifier').value = (indexer && indexer.identifier) || '';
+    if ($('indexer-identifier')) $('indexer-identifier').value = (matchedSchema && !isGenericFeed(matchedSchema) ? matchedSchema.identifier : (indexer && indexer.identifier)) || '';
     if ($('indexer-url')) $('indexer-url').value = (indexer && (indexer.base_url || (indexer.settings && indexer.settings.base_url))) || '';
     if ($('indexer-apikey')) {
       $('indexer-apikey').value = '';
@@ -666,6 +924,8 @@
         : t('indexers.apikey_placeholder');
     }
     if ($('indexer-enabled')) $('indexer-enabled').checked = indexer ? (indexer.enabled !== false) : true;
+
+    updateIndexerSchemaUI();
 
     modal.style.display = 'flex';
     setTimeout(() => {
@@ -679,67 +939,132 @@
     if ($('indexer-apikey')) {
       $('indexer-apikey').placeholder = t('indexers.apikey_placeholder');
     }
+    if ($('indexer-dynamic-fields')) {
+      $('indexer-dynamic-fields').innerHTML = '';
+      $('indexer-dynamic-fields').style.display = 'none';
+    }
+    if ($('indexer-default-fields')) {
+      $('indexer-default-fields').style.display = 'block';
+    }
     editingIndexerId = null;
+    editingIndexerData = null;
   }
 
-  async function saveIndexerFromModal() {
+  async function saveIndexerFromModal(retried = false) {
     if (!AB || !serviceStatus || !serviceStatus.ready) {
       toast(t('err.service_not_ready'), true);
       return;
     }
 
     const name = ($('indexer-name') ? $('indexer-name').value : '').trim();
-    let identifier = ($('indexer-identifier') ? $('indexer-identifier').value : '').trim().toLowerCase();
+    const rawIdentifier = ($('indexer-identifier') ? $('indexer-identifier').value : '').trim();
     const url = ($('indexer-url') ? $('indexer-url').value : '').trim();
     const apikey = ($('indexer-apikey') ? $('indexer-apikey').value : '').trim();
     const enabled = $('indexer-enabled') ? $('indexer-enabled').checked : true;
 
-    if (!name || !identifier) {
-      toast('Name and Identifier are required', true);
+    if (!name || !rawIdentifier) {
+      toast(t('indexers.err_required'), true);
       return;
     }
 
-    // Always fetch a fresh indexer list from autobrr right before checking
+    const matchedSchema = findIndexerSchema(rawIdentifier, editingIndexerData);
+    let identifier = (matchedSchema && !isGenericFeed(matchedSchema))
+      ? matchedSchema.identifier
+      : rawIdentifier.toLowerCase();
+
+    // Always fetch all SQLite indexers (including any unmapped/wrong-case rows) before checking duplicates
     try {
-      const fresh = await AB.api('GET', '/api/indexer');
+      const fresh = await fetchAllIndexers();
       if (Array.isArray(fresh)) {
         indexers = fresh;
       }
     } catch (_) {}
 
-    // Check for duplicate identifier
+    let healFromId = null;
+
+    // Check for duplicate identifier (case-insensitive to catch broken wrong-case SQLite rows like "bj-share")
     const existing = indexers.find((idx) => String(idx.identifier || '').toLowerCase() === identifier.toLowerCase());
-    if (existing && existing.id !== editingIndexerId) {
-      const ok = confirm(t('indexers.confirm_update', { name: existing.name || identifier }));
-      if (!ok) {
-        return;
-      }
-      editingIndexerId = existing.id;
-      if ($('indexer-modal-title')) {
-        $('indexer-modal-title').textContent = t('indexers.edit_title');
-      }
-      if ($('indexer-apikey')) {
-        $('indexer-apikey').placeholder = t('indexers.apikey_edit_placeholder');
+    if (existing) {
+      if (existing.identifier !== identifier && matchedSchema && !isGenericFeed(matchedSchema)) {
+        // Casing mismatch (e.g. "bj-share" in DB vs canonical "BJ-Share" in schema):
+        // Confirm before replacing, carry old settings over, and delete old row only after new row exists.
+        if (!confirm(t('indexers.confirm_heal', { old: existing.identifier, id: identifier }))) {
+          return;
+        }
+        editingIndexerData = existing;
+        healFromId = existing.id;
+        editingIndexerId = null;
+      } else if (existing.id !== editingIndexerId) {
+        const ok = confirm(t('indexers.confirm_update', { name: existing.name || identifier }));
+        if (!ok) {
+          return;
+        }
+        editingIndexerId = existing.id;
+        editingIndexerData = existing;
+        if ($('indexer-modal-title')) {
+          $('indexer-modal-title').textContent = t('indexers.edit_title');
+        }
+        if ($('indexer-apikey')) {
+          $('indexer-apikey').placeholder = t('indexers.apikey_edit_placeholder');
+        }
       }
     }
 
-    const base = editingIndexerId ? (indexers.find((i) => i.id === editingIndexerId) || {}) : {};
-    const payload = Object.assign({}, base, {
+    const base = editingIndexerId
+      ? (indexers.find((i) => i.id === editingIndexerId) || editingIndexerData || {})
+      : (editingIndexerData || {});
+    const schema = findIndexerSchema(identifier, base);
+    const settingsMap = normalizeIndexerSettingsMap(base.settings);
+
+    const dynFields = $('indexer-dynamic-fields')
+      ? Array.from($('indexer-dynamic-fields').querySelectorAll('[data-setting-key]'))
+      : [];
+
+    if (dynFields.length > 0) {
+      for (const el of dynFields) {
+        const key = el.dataset.settingKey;
+        if (el.type === 'checkbox') {
+          settingsMap[key] = el.checked ? 'true' : 'false';
+        } else {
+          const val = (el.value || '').trim();
+          if (el.dataset.settingSecret === '1') {
+            if (val) settingsMap[key] = val;
+          } else if (val) {
+            settingsMap[key] = val;
+          } else if (editingIndexerId) {
+            settingsMap[key] = '';
+          } else {
+            delete settingsMap[key];
+          }
+        }
+      }
+    } else {
+      if (url) {
+        settingsMap.base_url = url;
+      }
+      if (apikey) {
+        settingsMap.api_key = apikey;
+        settingsMap.passkey = apikey;
+        settingsMap.apikey = apikey;
+      }
+    }
+
+    const baseUrl = url || settingsMap.base_url || base.base_url ||
+      (schema && Array.isArray(schema.urls) && schema.urls[0]) || '';
+    const impl = (schema && schema.implementation) || base.implementation ||
+      ((schema && !isGenericFeed(schema)) ? 'irc' : '');
+
+    const payload = {
       name,
       identifier,
+      identifier_external: base.identifier_external || name,
       enabled,
-      settings: Object.assign({}, base.settings || {})
-    });
-
-    if (url) {
-      payload.base_url = url;
-      payload.settings.base_url = url;
-    }
-    if (apikey) {
-      payload.settings.api_key = apikey;
-      payload.settings.passkey = apikey;
-      payload.settings.apikey = apikey;
-    }
+      implementation: impl,
+      base_url: baseUrl,
+      use_proxy: !!base.use_proxy,
+      proxy_id: base.proxy_id || 0,
+      settings: settingsMap
+    };
 
     try {
       if (editingIndexerId) {
@@ -747,18 +1072,36 @@
         await AB.api('PUT', `/api/indexer/${editingIndexerId}`, payload);
         toast(t('toast.indexer_updated'));
       } else {
-        delete payload.id;
-        await AB.api('POST', '/api/indexer', payload);
-        toast(t('toast.indexer_created'));
+        try {
+          await AB.api('POST', '/api/indexer', payload);
+          if (healFromId) {
+            try {
+              await AB.api('DELETE', `/api/indexer/${healFromId}`);
+            } catch (_) {}
+          }
+          toast(t('toast.indexer_created'));
+        } catch (postErr) {
+          const isUniqueErr = postErr && postErr.message && postErr.message.includes('UNIQUE constraint failed');
+          if (healFromId && isUniqueErr) {
+            // Case-insensitive UNIQUE collision on existing row: delete old row and retry POST with preserved payload
+            await AB.api('DELETE', `/api/indexer/${healFromId}`);
+            indexers = indexers.filter((i) => i.id !== healFromId);
+            healFromId = null;
+            await AB.api('POST', '/api/indexer', payload);
+            toast(t('toast.indexer_created'));
+          } else {
+            throw postErr;
+          }
+        }
       }
       closeIndexerModal();
       await refreshIRCAndIndexers();
     } catch (err) {
       const isUniqueErr = err && err.message && err.message.includes('UNIQUE constraint failed');
       if (isUniqueErr) {
-        // Refresh indexer cache
+        // Refresh indexer cache including unmapped SQLite rows
         try {
-          const fresh = await AB.api('GET', '/api/indexer');
+          const fresh = await fetchAllIndexers();
           if (Array.isArray(fresh)) indexers = fresh;
         } catch (_) {}
 
@@ -769,11 +1112,22 @@
             $('indexer-identifier').focus();
           }
           const retry = confirm(t('indexers.confirm_use_suggested', { id: identifier, suggested }));
-          if (retry) {
-            return saveIndexerFromModal();
+          if (retry && !retried) {
+            return saveIndexerFromModal(true);
           }
           toast(t('indexers.err_unique_identifier', { id: identifier, suggested }), true);
         } else {
+          const dup = (indexers || []).find((i) => String(i.identifier || '').toLowerCase() === identifier.toLowerCase());
+          if (!retried && dup && confirm(t('indexers.confirm_replace', { name: dup.name || identifier }))) {
+            try {
+              await AB.api('DELETE', `/api/indexer/${dup.id}`);
+              indexers = indexers.filter((i) => i.id !== dup.id);
+              return saveIndexerFromModal(true);
+            } catch (delErr) {
+              toast(`Error resolving duplicate indexer: ${delErr.message}`, true);
+              return;
+            }
+          }
           toast(t('indexers.err_tracker_exists', { id: identifier }), true);
         }
       } else {
@@ -823,14 +1177,24 @@
     if ($('irc-nick')) $('irc-nick').value = (net && net.nick) || '';
 
     const authMech = (net && net.auth && net.auth.mechanism) || 'SASL_PLAIN';
+    const editPwPlaceholder = editingIrcId ? t('irc.pass_edit_placeholder') : '';
     if ($('irc-auth-mech')) $('irc-auth-mech').value = authMech;
     if ($('irc-auth-user')) $('irc-auth-user').value = (net && net.auth && net.auth.account) || '';
-    if ($('irc-auth-pass')) $('irc-auth-pass').value = '';
-    if ($('irc-server-pass')) $('irc-server-pass').value = '';
+    if ($('irc-auth-pass')) {
+      $('irc-auth-pass').value = '';
+      $('irc-auth-pass').placeholder = editPwPlaceholder || t('irc.pass_placeholder');
+    }
+    if ($('irc-server-pass')) {
+      $('irc-server-pass').value = '';
+      $('irc-server-pass').placeholder = editPwPlaceholder || t('irc.server_pass_placeholder');
+    }
 
     const firstChannel = (net && net.channels && net.channels[0]) || null;
     if ($('irc-channel-name')) $('irc-channel-name').value = (firstChannel && (firstChannel.name || firstChannel)) || '';
-    if ($('irc-channel-pass')) $('irc-channel-pass').value = '';
+    if ($('irc-channel-pass')) {
+      $('irc-channel-pass').value = '';
+      $('irc-channel-pass').placeholder = editPwPlaceholder || t('irc.optional_placeholder');
+    }
 
     modal.style.display = 'flex';
     setTimeout(() => {
@@ -869,31 +1233,38 @@
       return;
     }
 
-    const channels = [];
+    const base = editingIrcId ? (ircNetworks.find((n) => n.id === editingIrcId) || {}) : {};
+    const existingChannels = Array.isArray(base.channels) ? base.channels.map((ch) => (ch && typeof ch === 'object' ? Object.assign({}, ch) : { name: String(ch) })) : [];
+    let channels = existingChannels;
     if (channelName) {
-      channels.push({
+      const firstBase = existingChannels[0] || {};
+      const updatedFirst = Object.assign({}, firstBase, {
         name: channelName,
-        password: channelPass || '',
-        enabled: true
+        password: channelPass || (editingIrcId ? (firstBase.password || '') : ''),
+        enabled: firstBase.enabled !== undefined ? firstBase.enabled : true
       });
+      channels = [updatedFirst, ...existingChannels.slice(1)];
+    } else if (!editingIrcId) {
+      channels = [];
     }
 
-    const payload = {
+    const baseAuth = (base.auth && typeof base.auth === 'object') ? base.auth : {};
+    const payload = Object.assign({}, base, {
       name,
       server,
       port,
       tls,
       tls_skip_verify: tlsSkip,
-      nick: nick || 'autobrr',
-      pass: serverPass || '',
+      nick: nick || base.nick || 'autobrr',
+      pass: serverPass || (editingIrcId ? (base.pass || '') : ''),
       enabled,
-      auth: {
+      auth: Object.assign({}, baseAuth, {
         mechanism: authMech,
         account: authUser || '',
-        password: authPass || ''
-      },
+        password: authPass || (editingIrcId ? (baseAuth.password || '') : '')
+      }),
       channels
-    };
+    });
 
     try {
       if (editingIrcId) {
@@ -966,12 +1337,21 @@
           </span>
         </td>
         <td style="white-space: nowrap;">
-          <button class="sos-btn sos-btn-sm btn-restart-irc" data-id="${net.id}" data-name="${escapeHtml(net.name || '')}" title="${t('irc.restart')}">↻</button>
-          <button class="sos-btn sos-btn-sm sos-btn-danger btn-del-irc" data-id="${net.id}" data-name="${escapeHtml(net.name || '')}" title="${t('btn.delete')}">✕</button>
+          <button class="sos-btn sos-btn-sm btn-edit-irc" data-id="${net.id}" title="${escapeHtml(t('btn.edit'))}">✏️</button>
+          <button class="sos-btn sos-btn-sm btn-restart-irc" data-id="${net.id}" data-name="${escapeHtml(net.name || '')}" title="${escapeHtml(t('irc.restart'))}">↻</button>
+          <button class="sos-btn sos-btn-sm sos-btn-danger btn-del-irc" data-id="${net.id}" data-name="${escapeHtml(net.name || '')}" title="${escapeHtml(t('btn.delete'))}">✕</button>
         </td>
       `;
       tbody.appendChild(tr);
     }
+
+    tbody.querySelectorAll('.btn-edit-irc').forEach((btn) => {
+      btn.onclick = () => {
+        const id = parseInt(btn.dataset.id, 10);
+        const net = ircNetworks.find((item) => item.id === id);
+        if (net) openIRCModal(net);
+      };
+    });
 
     tbody.querySelectorAll('.btn-restart-irc').forEach((btn) => {
       btn.onclick = () => {
@@ -1003,18 +1383,18 @@
       const tr = document.createElement('tr');
       const isEnabled = idx.enabled !== false;
       tr.innerHTML = `
-        <td><strong>${escapeHtml(idx.name)}</strong></td>
-        <td><code>${escapeHtml(idx.identifier || idx.name.toLowerCase())}</code></td>
+        <td><strong>${escapeHtml(idx.name || idx.identifier || '')}</strong></td>
+        <td><code>${escapeHtml(idx.identifier || String(idx.name || '').toLowerCase())}</code></td>
         <td style="color: var(--sos-muted); font-size: 12px;">${escapeHtml(idx.type || 'Torznab / IRC')}</td>
         <td>
           <span class="badge ${isEnabled ? 'ok' : 'err'}">
-            ${isEnabled ? t('status.active') : t('status.inactive')}
+            ${escapeHtml(isEnabled ? t('status.active') : t('status.inactive'))}
           </span>
         </td>
         <td style="white-space: nowrap;">
-          <button class="sos-btn sos-btn-sm btn-edit-indexer" data-id="${idx.id}" title="${t('btn.edit')}">✏️</button>
-          <button class="sos-btn sos-btn-sm btn-test-indexer" data-id="${idx.id}" title="${t('indexers.test')}">⚡</button>
-          <button class="sos-btn sos-btn-sm sos-btn-danger btn-del-indexer" data-id="${idx.id}" data-name="${escapeHtml(idx.name || '')}" title="${t('btn.delete')}">✕</button>
+          <button class="sos-btn sos-btn-sm btn-edit-indexer" data-id="${idx.id}" title="${escapeHtml(t('btn.edit'))}">✏️</button>
+          <button class="sos-btn sos-btn-sm btn-test-indexer" data-id="${idx.id}" title="${escapeHtml(t('indexers.test'))}">⚡</button>
+          <button class="sos-btn sos-btn-sm sos-btn-danger btn-del-indexer" data-id="${idx.id}" data-name="${escapeHtml(idx.name || '')}" title="${escapeHtml(t('btn.delete'))}">✕</button>
         </td>
       `;
       tbody.appendChild(tr);
@@ -1109,10 +1489,11 @@
     if (!AB) return;
     try {
       await AB.set({ ui: enable });
-      toast(enable ? 'Web UI enabled on 0.0.0.0:7474' : 'Web UI disabled (127.0.0.1 only)');
-      await refreshStatus();
+      toast(t(enable ? 'toast.webui_enabled' : 'toast.webui_disabled'));
     } catch (err) {
       toast(`Error updating Web UI setting: ${err.message}`, true);
+    } finally {
+      await refreshStatus();
     }
   }
 
@@ -1120,7 +1501,7 @@
     if (!AB) return;
     try {
       await AB.set({ enabled: enable });
-      toast(enable ? 'Autostart on boot enabled' : 'Autostart disabled');
+      toast(t(enable ? 'toast.autostart_enabled' : 'toast.autostart_disabled'));
       await refreshStatus();
     } catch (err) {
       toast(`Error: ${err.message}`, true);
@@ -1160,17 +1541,42 @@
     }
   }
 
-  // Refresh everything
+  function scheduleNextPoll() {
+    if (pollTimer) clearTimeout(pollTimer);
+    pollTimer = setTimeout(refreshAll, 12000);
+  }
+
+  // Refresh everything (guarded against overlapping polls)
   async function refreshAll() {
-    await refreshStatus();
-    await refreshAccounts();
-    await refreshReleases();
-    await refreshFilters();
-    await refreshIRCAndIndexers();
-    if ($('tab-settings') && $('tab-settings').classList.contains('active')) {
-      await refreshLog();
+    if (isRefreshing) {
+      refreshQueued = true;
+      return;
     }
-    updateStatusbar();
+    isRefreshing = true;
+    refreshQueued = false;
+    if (pollTimer) {
+      clearTimeout(pollTimer);
+      pollTimer = null;
+    }
+    try {
+      await refreshStatus();
+      await refreshAccounts();
+      await refreshReleases();
+      await refreshFilters();
+      await refreshIRCAndIndexers();
+      if ($('tab-settings') && $('tab-settings').classList.contains('active')) {
+        await refreshLog();
+      }
+      updateStatusbar();
+    } finally {
+      isRefreshing = false;
+      if (refreshQueued) {
+        refreshQueued = false;
+        setTimeout(refreshAll, 50);
+      } else {
+        scheduleNextPoll();
+      }
+    }
   }
 
   // Tab switching
@@ -1269,6 +1675,10 @@
         toast(t('err.popup_blocked'), true);
       }
       return;
+    }
+
+    if (!(serviceStatus && serviceStatus.ui)) {
+      if (!confirm(t('webui.confirm_expose'))) return;
     }
 
     // Open blank tab synchronously during user gesture to avoid popup blockers while starting/rebinding
@@ -1432,7 +1842,7 @@
         label: t('menu.help'),
         items: [
           { label: t('menu.docs'), action: () => window.open('https://autobrr.com/', '_blank') },
-          { label: t('menu.about'), action: () => alert('autobrr-ui for ShareOS v1.0.1\nIntegrated via ShareOS.autobrr\nPublisher: @SamuelSilvaG') }
+          { label: t('menu.about'), action: () => alert('autobrr-ui for ShareOS v1.1.0\nIntegrated via ShareOS.autobrr\nPublisher: @SamuelSilvaG') }
         ]
       }
     ]);
@@ -1440,6 +1850,7 @@
 
   // Safe App Initialization
   function init() {
+    initTheme();
     if (window.I18N) I18N.apply();
     setupTabs();
     setupMenu();
@@ -1452,6 +1863,7 @@
     if ($('btn-open-transmission')) $('btn-open-transmission').onclick = openTransmission;
     if ($('btn-open-trans-app')) $('btn-open-trans-app').onclick = openTransmission;
     if ($('btn-open-webui')) $('btn-open-webui').onclick = openAdvancedWebUI;
+    if ($('btn-webui-exposed')) $('btn-webui-exposed').onclick = () => toggleWebUI(false);
 
     // Service & settings buttons
     if ($('btn-start-svc')) $('btn-start-svc').onclick = startService;
@@ -1490,7 +1902,13 @@
       $('cfg-autostart').onchange = (e) => toggleAutostart(e.target.checked);
     }
     if ($('cfg-webui-enable')) {
-      $('cfg-webui-enable').onchange = (e) => toggleWebUI(e.target.checked);
+      $('cfg-webui-enable').onchange = async (e) => {
+        if (e.target.checked && !confirm(t('webui.confirm_expose'))) {
+          e.target.checked = false;
+          return;
+        }
+        await toggleWebUI(e.target.checked);
+      };
     }
 
     // Search filter
@@ -1531,10 +1949,11 @@
             $('indexer-name').value = targetName;
           }
           $('indexer-identifier').value = targetIdentifier;
-          if (schema.urls && schema.urls[0] && !$('indexer-url').value) {
+          if ($('indexer-url') && schema.urls && schema.urls[0] && !$('indexer-url').value) {
             $('indexer-url').value = schema.urls[0];
           }
         }
+        updateIndexerSchemaUI();
       };
     }
 
@@ -1544,16 +1963,8 @@
     if ($('irc-modal-cancel-btn')) $('irc-modal-cancel-btn').onclick = closeIRCModal;
     if ($('irc-modal-save-btn')) $('irc-modal-save-btn').onclick = saveIRCFromModal;
 
-    // Listen to theme changes from ShareOS
-    if (SOS && SOS.onTheme) {
-      SOS.onTheme(() => {
-        // Automatically handled by ShareOS CSS variables
-      });
-    }
-
-    // Initial load and periodic polling every 12 seconds
+    // Initial load (subsequent polls are self-scheduled in refreshAll)
     refreshAll();
-    pollTimer = setInterval(refreshAll, 12000);
   }
 
   if (document.readyState === 'loading') {
