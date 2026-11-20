@@ -2,9 +2,10 @@
 
 ## 1.1.1
 
-- Rollback on indexer heal/replace failure: keep a backup payload (original identifier, settings, and secrets) before deleting an existing indexer after a UNIQUE collision or duplicate confirmation, and automatically restore it if re-creating the replacement fails (leaving the user's edited settings intact in the modal).
-- Visible error toast when deleting the old indexer row fails after creating a healed replacement, instead of silently ignoring the failure when both rows remain.
-- Fix `#indexer-modal-save-btn` click handler passing the DOM click event as the `retried` flag, and use plain local script/stylesheet paths in `index.html` so `tools/build.py` stamps `?v=1.1.1` automatically.
+- Built-in schema-only indexer creation: require selecting a tracker or feed definition from `/api/indexer/schema` with a read-only canonical identifier (preventing invalid or orphaned identifiers), validate required fields and unchanged placeholder values, surface a clear `Unmapped / Orphan` badge on stray SQLite rows, and automatically create the associated IRC network (`POST /api/irc` with channels and `invite_command`) or Feed (`POST /api/feeds`) when adding an indexer.
+- Filters aligned to autobrr's real API: select linked indexers via checkboxes populated from configured indexers, persist `indexers` and `actions` on filter creation with a two-step `POST /api/filters` + `PUT /api/filters/{id}`, fetch the full filter on edit, and send `type: "WATCH_FOLDER"` / `watch_folder` (auto-upgrading legacy `watch_dir` actions).
+- Releases & IRC alignment: parse real `/api/release` objects (`indexer` object, `action_status[]`, numeric byte sizes, and rejection reasons), trigger action retries via `POST /api/release/{id}/actions/{actionStatusId}/retry`, display true IRC connection health (`connected`, `current_nick`, and `connection_errors`), and add `invite_command` to the IRC modal.
+- Rollback & delete-error visibility: keep a backup payload before deleting an existing indexer after a UNIQUE collision or duplicate confirmation, restore it automatically if re-creating fails, show an error toast if deleting the old row fails after creating the replacement, fix `#indexer-modal-save-btn` passing the click event as `retried`, and use plain local script/stylesheet paths in `index.html` so `tools/build.py` stamps `?v=1.1.1`.
 
 ## 1.1.0
 

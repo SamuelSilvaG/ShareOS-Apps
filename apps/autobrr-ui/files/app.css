@@ -621,6 +621,69 @@ table.data-table tbody tr:hover {
   margin: 0;
 }
 
+.status-FILTER_APPROVED {
+  background: rgba(var(--sos-rgb, 56, 189, 248), 0.15);
+  color: var(--sos-accent, #38bdf8);
+  border: 1px solid rgba(var(--sos-rgb, 56, 189, 248), 0.3);
+}
+
+.status-PUSH_REJECTED {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--sos-warn, #fbbf24);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.checkbox-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px;
+  background: var(--sos-bg);
+  border: 1px solid var(--sos-line);
+  border-radius: 6px;
+  min-height: 36px;
+}
+
+.checkbox-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border: 1px solid var(--sos-line);
+  border-radius: 5px;
+  background: var(--sos-panel);
+  color: var(--sos-text);
+  font-size: 12px;
+  cursor: pointer;
+  margin: 0;
+}
+
+.modal-subsection {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--sos-line);
+}
+
+.modal-subsection-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sos-text);
+  margin-bottom: 6px;
+}
+
+.release-rejections {
+  font-size: 11px;
+  color: var(--sos-err, #f87171);
+  margin-top: 2px;
+}
+
+.irc-error-hint {
+  font-size: 11px;
+  color: var(--sos-err, #f87171);
+  margin-top: 3px;
+  word-break: break-word;
+}
+
 @media (max-width: 720px) {
   .sos-toolbar { flex-wrap: wrap; }
   .tb-group { flex-wrap: wrap; }

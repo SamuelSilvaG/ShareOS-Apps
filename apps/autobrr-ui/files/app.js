@@ -18,6 +18,7 @@
   let indexerSchemas = [];
   let accounts = [];
   let editingFilterId = null;
+  let editingFilterData = null;
   let editingIndexerId = null;
   let editingIrcId = null;
   let editingIndexerData = null;
@@ -225,6 +226,58 @@
     }
   }
 
+  function getReleaseIndexerName(r) {
+    if (!r || r.indexer == null) return '';
+    if (typeof r.indexer === 'object') {
+      return r.indexer.name || r.indexer.identifier_external || r.indexer.identifier || '';
+    }
+    return String(r.indexer);
+  }
+
+  function formatBytes(bytes) {
+    if (bytes == null || bytes === '') return '';
+    const n = Number(bytes);
+    if (!Number.isFinite(n) || n <= 0) return typeof bytes === 'string' ? bytes : '';
+    const units = ['B', 'KiB', 'MiB', 'GiB', 'TiB'];
+    let val = n;
+    let idx = 0;
+    while (val >= 1024 && idx < units.length - 1) {
+      val /= 1024;
+      idx++;
+    }
+    return idx === 0 ? `${Math.round(val)} B` : `${val.toFixed(2)} ${units[idx]}`;
+  }
+
+  function getReleaseActionInfo(item) {
+    const actions = Array.isArray(item && item.action_status) ? item.action_status : [];
+    const priority = ['PUSH_ERROR', 'PUSH_REJECTED', 'PUSH_APPROVED', 'PENDING'];
+    let primary = null;
+    for (const p of priority) {
+      primary = actions.find((a) => a && String(a.status || '').toUpperCase() === p);
+      if (primary) break;
+    }
+    if (!primary && actions.length > 0) primary = actions[0];
+
+    const statusKey = String(
+      (primary && primary.status) || (item && (item.filter_status || item.status)) || 'PENDING'
+    ).toUpperCase();
+    const actionLabel = primary
+      ? (primary.action || primary.type || '–')
+      : (typeof (item && item.action) === 'string' ? item.action : '–');
+    const retryActionStatusId = (primary && primary.id != null) ? primary.id : null;
+
+    const rejSet = [];
+    for (const src of [item && item.rejections, primary && primary.rejections]) {
+      if (Array.isArray(src)) {
+        for (const r of src) {
+          if (r && !rejSet.includes(r)) rejSet.push(r);
+        }
+      }
+    }
+
+    return { statusKey, actionLabel, retryActionStatusId, rejections: rejSet };
+  }
+
   // Fetch releases
   async function refreshReleases() {
     if (AB && serviceStatus && serviceStatus.ready) {
@@ -260,11 +313,15 @@
 
     tbody.innerHTML = '';
     const filtered = releases.filter((r) => {
-      const name = r.torrent_name || r.name || '';
-      const idx = r.indexer || '';
-      const st = r.filter_status || r.status || '';
+      const name = (r && (r.name || r.torrent_name)) || '';
+      const idx = getReleaseIndexerName(r);
+      const filterName = (r && r.filter) || '';
+      const info = getReleaseActionInfo(r);
       if (!query) return true;
-      return name.toLowerCase().includes(query) || idx.toLowerCase().includes(query) || st.toLowerCase().includes(query);
+      return name.toLowerCase().includes(query) ||
+        idx.toLowerCase().includes(query) ||
+        filterName.toLowerCase().includes(query) ||
+        info.statusKey.toLowerCase().includes(query);
     });
 
     if (filtered.length === 0) {
@@ -283,17 +340,20 @@
     for (const item of filtered) {
       const tr = document.createElement('tr');
       const timeStr = item.timestamp ? (item.timestamp.includes('T') ? new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : item.timestamp) : '--:--';
-      const nameStr = item.torrent_name || item.name || 'Unnamed Release';
-      const idxStr = item.indexer || '–';
-      const channelStr = item.protocol || item.channel || '';
-      const sizeStr = item.size || '';
-      const statusRaw = item.filter_status || item.status || 'PENDING';
-      const statusKey = String(statusRaw).toUpperCase();
+      const nameStr = item.name || item.torrent_name || 'Unnamed Release';
+      const idxStr = getReleaseIndexerName(item) || '–';
+      const channelStr = item.implementation || item.protocol || item.channel || '';
+      const sizeStr = formatBytes(item.size);
+      const info = getReleaseActionInfo(item);
+      const statusKey = info.statusKey;
       const statusClass = /^[A-Z_]+$/.test(statusKey) ? statusKey : 'UNKNOWN';
       const statusI18nKey = 'status.' + statusKey;
       const trStatus = t(statusI18nKey);
       const statusLabel = trStatus !== statusI18nKey ? trStatus : statusKey;
-      const actionStr = item.action_status || item.action || 'Watch dir';
+
+      const metaParts = [];
+      if (sizeStr) metaParts.push(`📦 ${escapeHtml(sizeStr)}`);
+      if (item.filter) metaParts.push(`⚙️ ${escapeHtml(item.filter)}`);
 
       tr.innerHTML = `
         <td style="color: var(--sos-muted); font-size: 11px;">${escapeHtml(timeStr)}</td>
@@ -303,52 +363,44 @@
         </td>
         <td>
           <div class="release-title">${escapeHtml(nameStr)}</div>
-          ${sizeStr ? `<div class="release-meta"><span>📦 ${escapeHtml(sizeStr)}</span></div>` : ''}
+          ${metaParts.length ? `<div class="release-meta">${metaParts.join(' · ')}</div>` : ''}
+          ${info.rejections.length ? `<div class="release-rejections">${escapeHtml(info.rejections.join('; '))}</div>` : ''}
         </td>
         <td>
           <span class="status-pill status-${statusClass}">${escapeHtml(statusLabel)}</span>
         </td>
-        <td style="font-size: 12px; color: var(--sos-muted);">${escapeHtml(actionStr)}</td>
+        <td style="font-size: 12px; color: var(--sos-muted);">${escapeHtml(info.actionLabel)}</td>
         <td>
-          <button class="sos-btn sos-btn-sm btn-push-release" data-id="${item.id}" title="${escapeHtml(t('btn.send_transmission'))}">
-            ⚡ Push
-          </button>
+          ${info.retryActionStatusId != null ? `
+            <button class="sos-btn sos-btn-sm btn-retry-action" data-release-id="${item.id}" data-action-id="${info.retryActionStatusId}" title="${escapeHtml(t('btn.retry_action'))}">
+              ↻ ${escapeHtml(t('btn.retry_action'))}
+            </button>
+          ` : '<span style="color: var(--sos-muted);">–</span>'}
         </td>
       `;
       tbody.appendChild(tr);
     }
 
-    tbody.querySelectorAll('.btn-push-release').forEach((btn) => {
+    tbody.querySelectorAll('.btn-retry-action').forEach((btn) => {
       btn.onclick = () => {
-        const id = parseInt(btn.dataset.id, 10);
-        pushRelease(id);
+        const releaseId = parseInt(btn.dataset.releaseId, 10);
+        const actionStatusId = parseInt(btn.dataset.actionId, 10);
+        retryReleaseAction(releaseId, actionStatusId);
       };
     });
   }
 
-  // Push release to Transmission / drop
-  async function pushRelease(releaseId) {
-    const item = releases.find((r) => r.id === releaseId);
-    if (!item) return;
-
+  // Retry an existing release action via autobrr REST API
+  async function retryReleaseAction(releaseId, actionStatusId) {
     if (!AB || !serviceStatus || !serviceStatus.ready) {
       toast(t('err.service_not_ready'), true);
       return;
     }
 
-    toast(`Sending ${item.torrent_name || item.name} to Transmission drop folder...`);
-
-    // Call autobrr's action API (triggers configured Watch dir action)
     try {
-      try {
-        await AB.api('POST', `/api/release/${releaseId}/action`);
-      } catch (_) {
-        await AB.api('POST', `/api/releases/${releaseId}/action`);
-      }
-      toast(t('toast.torrent_dispatched'));
-      item.status = 'PUSH_APPROVED';
-      item.action = 'Watch dir (' + (serviceStatus.account || 'root') + ')';
-      renderReleases();
+      await AB.api('POST', `/api/release/${releaseId}/actions/${actionStatusId}/retry`);
+      toast(t('toast.action_retried'));
+      await refreshReleases();
     } catch (err) {
       toast(`autobrr action error: ${err.message}`, true);
     }
@@ -411,7 +463,7 @@
         <div class="card-desc">
           ${f.match_releases ? `<div><strong>${escapeHtml(t('filters.card_match'))}</strong> <code>${escapeHtml(f.match_releases)}</code></div>` : ''}
           ${f.except_releases ? `<div><strong>${escapeHtml(t('filters.card_except'))}</strong> <code>${escapeHtml(f.except_releases)}</code></div>` : ''}
-          <div><strong>${escapeHtml(t('filters.card_trackers'))}</strong> ${idxs ? escapeHtml(idxs) : `<em>${escapeHtml(t('filters.card_all'))}</em>`}</div>
+          <div><strong>${escapeHtml(t('filters.card_trackers'))}</strong> ${idxs ? escapeHtml(idxs) : `<span class="badge warn">${escapeHtml(t('filters.card_none'))}</span>`}</div>
           ${tagPills ? `<div class="filter-tags">${tagPills}</div>` : ''}
           ${f.freeleech ? `<div style="margin-top:4px;"><span class="badge ok">${escapeHtml(t('filters.freeleech'))}</span></div>` : ''}
         </div>
@@ -488,18 +540,85 @@
     }
   }
 
+  function renderFilterIndexerCheckboxes(selectedList, autoSelectAll) {
+    const container = $('filter-indexers-list');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const selected = Array.isArray(selectedList) ? selectedList : [];
+    const selectedIds = new Set(
+      selected
+        .map((x) => (x && typeof x === 'object' && x.id != null ? Number(x.id) : null))
+        .filter((n) => n != null && !Number.isNaN(n))
+    );
+    const selectedIdents = new Set(
+      selected
+        .map((x) => {
+          if (x && typeof x === 'object') return String(x.identifier || x.name || '').toLowerCase();
+          return String(x || '').toLowerCase();
+        })
+        .filter(Boolean)
+    );
+
+    const candidates = (indexers || []).filter((idx) =>
+      idx._mapped !== false ||
+      selectedIds.has(Number(idx.id)) ||
+      selectedIdents.has(String(idx.identifier || '').toLowerCase()) ||
+      selectedIdents.has(String(idx.name || '').toLowerCase())
+    );
+
+    if (candidates.length === 0) {
+      const hint = document.createElement('span');
+      hint.className = 'form-hint';
+      hint.textContent = t('filters.no_indexers_warning');
+      container.appendChild(hint);
+      return;
+    }
+
+    const useDefaultAll = autoSelectAll && selected.length === 0;
+    for (const idx of candidates) {
+      const chip = document.createElement('label');
+      chip.className = 'checkbox-chip';
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.value = String(idx.id);
+      cb.dataset.idxName = idx.name || idx.identifier || '';
+      cb.dataset.idxIdent = idx.identifier || idx.name || '';
+      cb.checked = useDefaultAll
+        ? (idx.enabled !== false && idx._mapped !== false)
+        : (selectedIds.has(Number(idx.id)) ||
+          selectedIdents.has(String(idx.identifier || '').toLowerCase()) ||
+          selectedIdents.has(String(idx.name || '').toLowerCase()));
+      const span = document.createElement('span');
+      span.textContent = idx._mapped === false
+        ? `${idx.name || idx.identifier} (${t('indexers.status_unmapped')})`
+        : (idx.name || idx.identifier || String(idx.id));
+      chip.appendChild(cb);
+      chip.appendChild(span);
+      container.appendChild(chip);
+    }
+  }
+
   // Filter modal logic
-  function openFilterModal(idStr = null) {
+  async function openFilterModal(idStr = null) {
     editingFilterId = idStr;
+    editingFilterData = null;
     const modal = $('filter-modal');
     if (!modal) return;
 
     if (idStr != null) {
-      const f = filters.find((x) => String(x.id) === String(idStr));
+      let f = filters.find((x) => String(x.id) === String(idStr)) || null;
+      if (AB && serviceStatus && serviceStatus.ready) {
+        try {
+          const full = await AB.api('GET', `/api/filters/${idStr}`);
+          if (full && typeof full === 'object') f = full;
+        } catch (_) {}
+      }
+      editingFilterData = f;
       if (f) {
         $('modal-title').textContent = t('filters.edit_title');
         $('filter-name').value = f.name || '';
-        $('filter-indexers').value = formatFilterIndexers(f.indexers);
+        renderFilterIndexerCheckboxes(f.indexers, false);
         $('filter-match').value = f.match_releases || '';
         $('filter-except').value = f.except_releases || '';
         $('filter-min-size').value = parseInt(f.min_size, 10) || '';
@@ -513,7 +632,7 @@
     } else {
       $('modal-title').textContent = t('filters.new_title');
       $('filter-name').value = '';
-      $('filter-indexers').value = '';
+      renderFilterIndexerCheckboxes([], true);
       $('filter-match').value = '';
       $('filter-except').value = '';
       $('filter-min-size').value = '';
@@ -532,6 +651,7 @@
     const modal = $('filter-modal');
     if (modal) modal.style.display = 'none';
     editingFilterId = null;
+    editingFilterData = null;
   }
 
   async function saveFilterFromModal() {
@@ -547,31 +667,59 @@
     }
 
     const baseFilter = editingFilterId
-      ? (filters.find((x) => String(x.id) === String(editingFilterId)) || {})
+      ? (editingFilterData || filters.find((x) => String(x.id) === String(editingFilterId)) || {})
       : {};
-    const idxNames = parseCsvList($('filter-indexers').value);
-    let indexersPayload = idxNames;
-    if (Array.isArray(baseFilter.indexers) && baseFilter.indexers.some((x) => x && typeof x === 'object')) {
-      indexersPayload = idxNames.map((entry) => {
-        const low = entry.toLowerCase();
-        const existingObj = baseFilter.indexers.find((x) =>
-          x && typeof x === 'object' &&
-          (String(x.name || '').toLowerCase() === low || String(x.identifier || '').toLowerCase() === low)
-        );
-        if (existingObj) return existingObj;
-        const known = indexers.find((x) =>
-          String(x.name || '').toLowerCase() === low || String(x.identifier || '').toLowerCase() === low
-        );
-        return known ? { id: known.id, name: known.name, identifier: known.identifier } : entry;
-      });
+
+    const checkedBoxes = $('filter-indexers-list')
+      ? Array.from($('filter-indexers-list').querySelectorAll('input[type="checkbox"]:checked'))
+      : [];
+    const indexersPayload = checkedBoxes
+      .map((cb) => ({
+        id: parseInt(cb.value, 10),
+        name: cb.dataset.idxName || '',
+        identifier: cb.dataset.idxIdent || ''
+      }))
+      .filter((x) => !Number.isNaN(x.id));
+
+    if (indexersPayload.length === 0) {
+      toast(t('filters.err_no_indexer'), true);
+      return;
     }
+
+    let actionsPayload = Array.isArray(baseFilter.actions)
+      ? baseFilter.actions.map((act) => {
+          if (!act || typeof act !== 'object') return act;
+          const copy = Object.assign({}, act);
+          if (String(copy.type || '').toLowerCase() === 'watch_dir') {
+            copy.type = 'WATCH_FOLDER';
+            if (!copy.watch_folder) {
+              copy.watch_folder = copy.watch_dir || (serviceStatus && serviceStatus.drop) || '';
+            }
+            delete copy.watch_dir;
+          }
+          return copy;
+        })
+      : [];
+    if (actionsPayload.length === 0 && serviceStatus && serviceStatus.drop) {
+      actionsPayload = [
+        {
+          name: 'Transmission Watch Dir',
+          type: 'WATCH_FOLDER',
+          enabled: true,
+          watch_folder: serviceStatus.drop
+        }
+      ];
+    }
+
     const minS = parseInt($('filter-min-size').value, 10) || 0;
     const maxS = parseInt($('filter-max-size').value, 10) || 0;
 
     const payload = Object.assign({}, baseFilter, {
       name,
       enabled: $('filter-enabled').checked,
+      announce_types: (Array.isArray(baseFilter.announce_types) && baseFilter.announce_types.length > 0) ? baseFilter.announce_types : ['NEW'],
       indexers: indexersPayload,
+      actions: actionsPayload,
       match_releases: ($('filter-match').value || '').trim(),
       except_releases: ($('filter-except').value || '').trim(),
       min_size: minS ? `${minS}MB` : '',
@@ -583,26 +731,19 @@
       containers: Array.isArray(baseFilter.containers) ? baseFilter.containers : []
     });
 
-    // Preserve existing actions when editing; attach Transmission watch_dir for new filters
-    if (!Array.isArray(payload.actions) || payload.actions.length === 0) {
-      if (serviceStatus && serviceStatus.drop) {
-        payload.actions = [
-          {
-            name: 'Transmission Watch Dir',
-            type: 'watch_dir',
-            enabled: true,
-            watch_dir: serviceStatus.drop
-          }
-        ];
-      }
-    }
-
     try {
       if (editingFilterId) {
+        payload.id = parseInt(editingFilterId, 10) || editingFilterId;
         await AB.api('PUT', `/api/filters/${editingFilterId}`, payload);
         toast(t('btn.save'));
       } else {
-        await AB.api('POST', '/api/filters', payload);
+        // autobrr's POST /api/filters does not persist indexer links or actions;
+        // follow immediately with PUT /api/filters/{id} so FilterService.Update stores both.
+        const created = await AB.api('POST', '/api/filters', payload);
+        if (created && created.id) {
+          payload.id = created.id;
+          await AB.api('PUT', `/api/filters/${created.id}`, payload);
+        }
         toast(t('toast.filter_created'));
       }
       closeFilterModal();
@@ -642,6 +783,7 @@
       if (!item) continue;
       const key = item.id != null ? `id:${item.id}` : `ident:${String(item.identifier || '').toLowerCase()}`;
       byKey.set(key, Object.assign({}, item, {
+        _mapped: true,
         settings: normalizeIndexerSettingsMap(item.settings)
       }));
     }
@@ -662,6 +804,7 @@
       const prev = matchKey ? byKey.get(matchKey) : {};
       const mergedSettings = Object.assign({}, prev.settings || {}, normalizeIndexerSettingsMap(opt.settings));
       byKey.set(matchKey || idKey || identKey, Object.assign({}, prev, opt, {
+        _mapped: matchKey ? prev._mapped === true : false,
         type: prev.type || opt.implementation || 'Torznab / IRC',
         settings: mergedSettings
       }));
@@ -720,7 +863,7 @@
     const sel = $('indexer-preset');
     if (!sel) return;
     const currentVal = sel.value || (editingIndexerData && editingIndexerData.identifier) || '';
-    sel.innerHTML = `<option value="">${escapeHtml(t('indexers.custom_preset'))}</option>`;
+    sel.innerHTML = `<option value="">${escapeHtml(t('indexers.select_preset'))}</option>`;
     const sorted = [...indexerSchemas].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
     for (const schema of sorted) {
       const opt = document.createElement('option');
@@ -752,133 +895,18 @@
       name.includes('token') || name.includes('cookie');
   }
 
-  function renderIndexerSchemaFields(schema, existingSettings, isEdit) {
-    const dyn = $('indexer-dynamic-fields');
-    const def = $('indexer-default-fields');
-    if (!dyn || !def) return false;
-
-    const editable = (schema && Array.isArray(schema.settings))
-      ? schema.settings.filter((s) => s && s.name && String(s.type || '').toLowerCase() !== 'info')
-      : [];
-
-    dyn.innerHTML = '';
-    if (!editable.length) {
-      dyn.style.display = 'none';
-      def.style.display = 'block';
-      return false;
-    }
-
-    def.style.display = 'none';
-    dyn.style.display = 'block';
-    const settingsObj = (existingSettings && typeof existingSettings === 'object') ? existingSettings : {};
-
-    for (const s of editable) {
-      const wrap = document.createElement('div');
-      wrap.className = 'form-group';
-      const type = String(s.type || 'text').toLowerCase();
-      const inputId = `idx-dyn-${String(s.name).replace(/[^a-zA-Z0-9_-]/g, '_')}`;
-
-      if (type === 'checkbox' || type === 'bool') {
-        const lbl = document.createElement('label');
-        lbl.className = 'form-check-row';
-        const inp = document.createElement('input');
-        inp.type = 'checkbox';
-        inp.id = inputId;
-        inp.dataset.settingKey = s.name;
-        const curCheck = settingsObj[s.name] !== undefined ? settingsObj[s.name] : (s.value ?? s.default);
-        inp.checked = curCheck === true || curCheck === 'true' || curCheck === '1' || curCheck === 1;
-        const span = document.createElement('span');
-        span.textContent = s.label || s.name;
-        lbl.appendChild(inp);
-        lbl.appendChild(span);
-        wrap.appendChild(lbl);
-      } else {
-        const lbl = document.createElement('label');
-        lbl.htmlFor = inputId;
-        lbl.textContent = s.label || s.name;
-        wrap.appendChild(lbl);
-
-        if (Array.isArray(s.options) && s.options.length > 0) {
-          const sel = document.createElement('select');
-          sel.id = inputId;
-          sel.className = 'sos-input';
-          sel.dataset.settingKey = s.name;
-          for (const optDef of s.options) {
-            const opt = document.createElement('option');
-            if (optDef && typeof optDef === 'object') {
-              opt.value = optDef.value != null ? String(optDef.value) : '';
-              opt.textContent = optDef.label || optDef.name || opt.value;
-            } else {
-              opt.value = String(optDef);
-              opt.textContent = String(optDef);
-            }
-            sel.appendChild(opt);
-          }
-          const curVal = settingsObj[s.name] !== undefined ? settingsObj[s.name] : (s.value ?? s.default);
-          if (curVal !== undefined) sel.value = String(curVal);
-          wrap.appendChild(sel);
-        } else {
-          const inp = document.createElement('input');
-          inp.id = inputId;
-          inp.className = 'sos-input';
-          inp.dataset.settingKey = s.name;
-          if (isSecretSetting(s)) {
-            inp.type = 'password';
-            inp.dataset.settingSecret = '1';
-            inp.value = '';
-            inp.placeholder = isEdit
-              ? t('indexers.apikey_edit_placeholder')
-              : (s.placeholder || s.label || t('indexers.apikey_placeholder'));
-          } else {
-            inp.type = type === 'number' ? 'number' : 'text';
-            const fallbackUrl = (s.name === 'base_url' && schema.urls && schema.urls[0]) ? schema.urls[0] : '';
-            const val = settingsObj[s.name] !== undefined ? settingsObj[s.name] : (s.value ?? s.default ?? fallbackUrl);
-            inp.value = val != null ? String(val) : '';
-            if (s.placeholder) inp.placeholder = s.placeholder;
-          }
-          wrap.appendChild(inp);
-        }
-      }
-
-      if (s.help || s.description) {
-        const hint = document.createElement('div');
-        hint.className = 'form-hint';
-        hint.textContent = s.help || s.description;
-        wrap.appendChild(hint);
-      }
-
-      dyn.appendChild(wrap);
-    }
-
-    return true;
+  function isFeedImplementation(impl) {
+    const tImpl = String(impl || '').toLowerCase();
+    return tImpl === 'torznab' || tImpl === 'newznab' || tImpl === 'rss';
   }
 
-  function updateIndexerSchemaUI() {
-    const ident = $('indexer-identifier') ? $('indexer-identifier').value : '';
-    const schema = findIndexerSchema(ident, editingIndexerData);
-    const settings = editingIndexerData ? editingIndexerData.settings : {};
-    renderIndexerSchemaFields(schema, settings, !!editingIndexerId);
+  function slugifyFeedIdentifier(impl, name) {
+    const cleanImpl = String(impl || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+    const cleanName = String(name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    if (!cleanName) return cleanImpl;
+    return cleanImpl ? `${cleanImpl}-${cleanName}` : cleanName;
   }
 
-  // Helper to suggest a unique identifier when one already exists
-  function getSuggestedIdentifier(baseIdentifier, list, currentEditId) {
-    const raw = (baseIdentifier || 'indexer').trim().toLowerCase();
-    const cleanBase = raw.replace(/-\d+$/, '');
-    let counter = 2;
-    let candidate = `${cleanBase}-${counter}`;
-    const isTaken = (cand) => (list || []).some((idx) =>
-      idx.id !== currentEditId && String(idx.identifier || '').toLowerCase() === cand.toLowerCase()
-    );
-    while (isTaken(candidate)) {
-      counter++;
-      candidate = `${cleanBase}-${counter}`;
-    }
-    return candidate;
-  }
-
-  // Helper to check if an indexer/schema is a generic feed (Torznab, Newznab, RSS).
-  // Tracker definitions in autobrr map IRC announcements strictly by their definition identifier,
-  // so definition-based trackers must not use suffixed identifiers (e.g. torrentleech-2).
   function isGenericFeed(identifierOrSchema) {
     if (!identifierOrSchema) return true;
     let id = '';
@@ -892,30 +920,260 @@
       type = String(identifierOrSchema.implementation || identifierOrSchema.type || '').toLowerCase();
     }
     const cleanId = id.replace(/-\d+$/, '');
-    const generic = ['torznab', 'newznab', 'rss'];
-    if (generic.includes(cleanId) || generic.includes(type)) return true;
+    if (isFeedImplementation(type) || isFeedImplementation(cleanId)) return true;
     if (indexerSchemas.length > 0 && !indexerSchemas.some((s) => (s.identifier || '').toLowerCase() === cleanId)) {
-      return true; // custom/user-defined feed
+      return true;
     }
     return false;
   }
 
+  function buildIndexerIRCAuth(definitionAuth, formAuth) {
+    const mechanism = (definitionAuth && definitionAuth.mechanism) || 'SASL_PLAIN';
+    const account = (formAuth && formAuth.account) || '';
+    const password = (formAuth && formAuth.password) || '';
+    if (mechanism === 'NICKSERV' && password !== '') {
+      const out = { mechanism, password };
+      if (account !== '') out.account = account;
+      return out;
+    }
+    if (mechanism === 'SASL_PLAIN' && account !== '' && password !== '') {
+      return { mechanism, account, password };
+    }
+    return { mechanism: 'NONE' };
+  }
+
+  function appendSchemaSettingInput(container, s, curVal, isEdit, idPrefix, dataAttrName) {
+    const wrap = document.createElement('div');
+    wrap.className = 'form-group';
+    const type = String(s.type || 'text').toLowerCase();
+    const inputId = `${idPrefix}-${String(s.name).replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+    const labelText = s.label || s.name;
+
+    if (type === 'checkbox' || type === 'bool') {
+      const lbl = document.createElement('label');
+      lbl.className = 'form-check-row';
+      const inp = document.createElement('input');
+      inp.type = 'checkbox';
+      inp.id = inputId;
+      inp.dataset[dataAttrName] = s.name;
+      inp.dataset.label = labelText;
+      inp.checked = curVal === true || curVal === 'true' || curVal === '1' || curVal === 1;
+      const span = document.createElement('span');
+      span.textContent = labelText;
+      lbl.appendChild(inp);
+      lbl.appendChild(span);
+      wrap.appendChild(lbl);
+    } else {
+      const lbl = document.createElement('label');
+      lbl.htmlFor = inputId;
+      lbl.textContent = labelText + (s.required ? ' *' : '');
+      wrap.appendChild(lbl);
+
+      if (Array.isArray(s.options) && s.options.length > 0) {
+        const sel = document.createElement('select');
+        sel.id = inputId;
+        sel.className = 'sos-input';
+        sel.dataset[dataAttrName] = s.name;
+        sel.dataset.label = labelText;
+        sel.dataset.required = s.required ? '1' : '0';
+        for (const optDef of s.options) {
+          const opt = document.createElement('option');
+          if (optDef && typeof optDef === 'object') {
+            opt.value = optDef.value != null ? String(optDef.value) : '';
+            opt.textContent = optDef.label || optDef.name || opt.value;
+          } else {
+            opt.value = String(optDef);
+            opt.textContent = String(optDef);
+          }
+          sel.appendChild(opt);
+        }
+        if (curVal !== undefined) sel.value = String(curVal);
+        wrap.appendChild(sel);
+      } else {
+        const inp = document.createElement('input');
+        inp.id = inputId;
+        inp.className = 'sos-input';
+        inp.dataset[dataAttrName] = s.name;
+        inp.dataset.label = labelText;
+        inp.dataset.required = s.required ? '1' : '0';
+        inp.dataset.defaultVal = s.default != null ? String(s.default) : '';
+        if (isSecretSetting(s) && s.name !== 'invite_command') {
+          inp.type = 'password';
+          inp.dataset.settingSecret = '1';
+          inp.value = s.default ? String(s.default) : '';
+          inp.placeholder = isEdit
+            ? t('indexers.apikey_edit_placeholder')
+            : (s.placeholder || s.label || t('indexers.apikey_placeholder'));
+        } else {
+          inp.type = type === 'number' ? 'number' : 'text';
+          inp.value = curVal != null ? String(curVal) : '';
+          if (s.placeholder) inp.placeholder = s.placeholder;
+        }
+        wrap.appendChild(inp);
+      }
+    }
+
+    if (s.help || s.description) {
+      const hint = document.createElement('div');
+      hint.className = 'form-hint';
+      hint.textContent = s.help || s.description;
+      wrap.appendChild(hint);
+    }
+
+    container.appendChild(wrap);
+  }
+
+  function renderIndexerSchemaFields(schema, existingSettings, isEdit) {
+    const dyn = $('indexer-dynamic-fields');
+    const ircBox = $('indexer-irc-fields');
+    const feedBox = $('indexer-feed-fields');
+    const def = $('indexer-default-fields');
+    if (!dyn || !def) return false;
+
+    const editable = (schema && Array.isArray(schema.settings))
+      ? schema.settings.filter((s) => s && s.name && String(s.type || '').toLowerCase() !== 'info')
+      : [];
+
+    dyn.innerHTML = '';
+    if (editable.length > 0) {
+      def.style.display = 'none';
+      dyn.style.display = 'block';
+      const settingsObj = (existingSettings && typeof existingSettings === 'object') ? existingSettings : {};
+      for (const s of editable) {
+        const fallbackUrl = (s.name === 'base_url' && schema && schema.urls && schema.urls[0]) ? schema.urls[0] : '';
+        const val = isSecretSetting(s)
+          ? (isEdit ? '' : (s.default ?? ''))
+          : (settingsObj[s.name] !== undefined ? settingsObj[s.name] : (s.value ?? s.default ?? fallbackUrl));
+        appendSchemaSettingInput(dyn, s, val, isEdit, 'idx-dyn', 'settingKey');
+      }
+    } else {
+      dyn.style.display = 'none';
+      def.style.display = (isEdit && !schema) ? 'block' : 'none';
+    }
+
+    if (ircBox) {
+      ircBox.innerHTML = '';
+      if (!isEdit && schema && String(schema.implementation || '').toLowerCase() === 'irc' && schema.irc) {
+        ircBox.className = 'modal-subsection';
+        ircBox.style.display = 'block';
+        const titleEl = document.createElement('div');
+        titleEl.className = 'modal-subsection-title';
+        titleEl.textContent = t('indexers.irc_section');
+        ircBox.appendChild(titleEl);
+
+        const chNames = Array.isArray(schema.irc.channels) ? schema.irc.channels.map((c) => c.name).filter(Boolean).join(', ') : '';
+        const metaHint = document.createElement('div');
+        metaHint.className = 'form-hint';
+        metaHint.style.marginBottom = '10px';
+        metaHint.textContent = [schema.irc.network, schema.irc.server ? `${schema.irc.server}:${schema.irc.port || 6697}` : '', chNames].filter(Boolean).join(' · ');
+        ircBox.appendChild(metaHint);
+
+        const ircSettings = Array.isArray(schema.irc.settings) ? schema.irc.settings : [];
+        for (const s of ircSettings) {
+          if (!s || !s.name) continue;
+          appendSchemaSettingInput(ircBox, s, s.default ?? '', false, 'idx-irc', 'ircKey');
+        }
+
+        const enableWrap = document.createElement('div');
+        enableWrap.className = 'form-group';
+        const enableLbl = document.createElement('label');
+        enableLbl.className = 'form-check-row';
+        const enableCb = document.createElement('input');
+        enableCb.type = 'checkbox';
+        enableCb.id = 'indexer-irc-enable';
+        enableCb.checked = true;
+        const enableSpan = document.createElement('span');
+        enableSpan.textContent = t('indexers.irc_enable');
+        enableLbl.appendChild(enableCb);
+        enableLbl.appendChild(enableSpan);
+        enableWrap.appendChild(enableLbl);
+        ircBox.appendChild(enableWrap);
+      } else {
+        ircBox.style.display = 'none';
+      }
+    }
+
+    if (feedBox) {
+      feedBox.innerHTML = '';
+      const impl = schema ? String(schema.implementation || '').toLowerCase() : '';
+      if (!isEdit && schema && isFeedImplementation(impl)) {
+        feedBox.className = 'modal-subsection';
+        feedBox.style.display = 'block';
+        const titleEl = document.createElement('div');
+        titleEl.className = 'modal-subsection-title';
+        titleEl.textContent = t('indexers.feed_section');
+        feedBox.appendChild(titleEl);
+
+        appendSchemaSettingInput(feedBox, {
+          name: 'url',
+          type: 'text',
+          required: true,
+          label: t('indexers.feed_url'),
+          placeholder: impl === 'rss' ? 'https://.../rss' : 'https://.../api'
+        }, (schema.urls && schema.urls[0]) || '', false, 'idx-feed', 'feedKey');
+
+        if (impl === 'torznab' || impl === 'newznab') {
+          appendSchemaSettingInput(feedBox, {
+            name: 'api_key',
+            type: 'secret',
+            required: false,
+            label: t('indexers.feed_apikey'),
+            placeholder: t('indexers.apikey_placeholder')
+          }, '', false, 'idx-feed', 'feedKey');
+        }
+
+        const enWrap = document.createElement('div');
+        enWrap.className = 'form-group';
+        const enLbl = document.createElement('label');
+        enLbl.className = 'form-check-row';
+        const enCb = document.createElement('input');
+        enCb.type = 'checkbox';
+        enCb.id = 'indexer-feed-enable';
+        enCb.checked = true;
+        const enSpan = document.createElement('span');
+        enSpan.textContent = t('indexers.feed_enable');
+        enLbl.appendChild(enCb);
+        enLbl.appendChild(enSpan);
+        enWrap.appendChild(enLbl);
+        feedBox.appendChild(enWrap);
+      } else {
+        feedBox.style.display = 'none';
+      }
+    }
+
+    return editable.length > 0;
+  }
+
+  function updateIndexerSchemaUI() {
+    const ident = $('indexer-identifier') ? $('indexer-identifier').value : '';
+    const schema = findIndexerSchema(ident, editingIndexerData);
+    const settings = editingIndexerData ? editingIndexerData.settings : {};
+    renderIndexerSchemaFields(schema, settings, !!editingIndexerId);
+  }
+
   // Indexer Modal handlers
-  function openIndexerModal(indexer = null) {
+  async function openIndexerModal(indexer = null) {
     editingIndexerId = indexer ? indexer.id : null;
     editingIndexerData = indexer || null;
     const modal = $('indexer-modal');
     if (!modal) return;
 
-    fetchIndexerSchemas();
+    await fetchIndexerSchemas();
 
     const matchedSchema = indexer ? findIndexerSchema(indexer.identifier, indexer) : null;
     if ($('indexer-modal-title')) {
       $('indexer-modal-title').textContent = editingIndexerId ? t('indexers.edit_title') : t('indexers.new_title');
     }
-    if ($('indexer-preset')) $('indexer-preset').value = (matchedSchema && matchedSchema.identifier) || (indexer && indexer.identifier) || '';
+    if ($('indexer-preset')) {
+      $('indexer-preset').disabled = !!editingIndexerId;
+      $('indexer-preset').value = (matchedSchema && matchedSchema.identifier) || (indexer && indexer.identifier) || '';
+    }
     if ($('indexer-name')) $('indexer-name').value = (indexer && indexer.name) || '';
-    if ($('indexer-identifier')) $('indexer-identifier').value = (matchedSchema && !isGenericFeed(matchedSchema) ? matchedSchema.identifier : (indexer && indexer.identifier)) || '';
+    if ($('indexer-identifier')) {
+      $('indexer-identifier').value = (matchedSchema && !isGenericFeed(matchedSchema)
+        ? matchedSchema.identifier
+        : (indexer && indexer.identifier)) || '';
+    }
     if ($('indexer-url')) $('indexer-url').value = (indexer && (indexer.base_url || (indexer.settings && indexer.settings.base_url))) || '';
     if ($('indexer-apikey')) {
       $('indexer-apikey').value = '';
@@ -936,6 +1194,7 @@
   function closeIndexerModal() {
     const modal = $('indexer-modal');
     if (modal) modal.style.display = 'none';
+    if ($('indexer-preset')) $('indexer-preset').disabled = false;
     if ($('indexer-apikey')) {
       $('indexer-apikey').placeholder = t('indexers.apikey_placeholder');
     }
@@ -943,8 +1202,16 @@
       $('indexer-dynamic-fields').innerHTML = '';
       $('indexer-dynamic-fields').style.display = 'none';
     }
+    if ($('indexer-irc-fields')) {
+      $('indexer-irc-fields').innerHTML = '';
+      $('indexer-irc-fields').style.display = 'none';
+    }
+    if ($('indexer-feed-fields')) {
+      $('indexer-feed-fields').innerHTML = '';
+      $('indexer-feed-fields').style.display = 'none';
+    }
     if ($('indexer-default-fields')) {
-      $('indexer-default-fields').style.display = 'block';
+      $('indexer-default-fields').style.display = 'none';
     }
     editingIndexerId = null;
     editingIndexerData = null;
@@ -992,6 +1259,90 @@
     }
   }
 
+  function validateSchemaFieldsContainer(containerSelector, allowExistingSecrets) {
+    const container = document.getElementById(containerSelector);
+    if (!container || container.style.display === 'none') return true;
+    const inputs = Array.from(container.querySelectorAll('input, select'));
+    for (const el of inputs) {
+      if (el.type === 'checkbox') continue;
+      if (el.dataset.required !== '1') continue;
+      const val = (el.value || '').trim();
+      const defVal = (el.dataset.defaultVal || '').trim();
+      const isSecretEditKeep = allowExistingSecrets && el.dataset.settingSecret === '1';
+      if ((!val && !isSecretEditKeep) || (defVal && val === defVal)) {
+        toast(t('indexers.err_required_field', { field: el.dataset.label || el.id }), true);
+        if (el.focus) el.focus();
+        return false;
+      }
+    }
+    return true;
+  }
+
+  async function createAssociatedNetworkOrFeed(schema, impl, name, createdIdx) {
+    if (!schema) return;
+    if (String(impl || '').toLowerCase() === 'irc' && schema.irc && $('indexer-irc-fields') && $('indexer-irc-fields').style.display !== 'none') {
+      const ircMap = {};
+      for (const el of Array.from($('indexer-irc-fields').querySelectorAll('[data-irc-key]'))) {
+        ircMap[el.dataset.ircKey] = el.type === 'checkbox' ? (el.checked ? 'true' : 'false') : (el.value || '').trim();
+      }
+      const channels = Array.isArray(schema.irc.channels)
+        ? schema.irc.channels.map((ch) => ({
+            id: 0,
+            enabled: true,
+            name: ch.name,
+            password: ircMap['channels.password'] || '',
+            detached: false,
+            monitoring: false
+          }))
+        : [];
+      const ircPayload = {
+        name: schema.irc.network || schema.name || name,
+        pass: ircMap.pass || '',
+        enabled: $('indexer-irc-enable') ? $('indexer-irc-enable').checked : true,
+        connected: false,
+        server: schema.irc.server || '',
+        port: schema.irc.port || 6697,
+        tls: schema.irc.tls !== false,
+        tls_skip_verify: false,
+        nick: ircMap.nick || 'autobrr',
+        auth: buildIndexerIRCAuth(schema.irc.auth, {
+          account: ircMap['auth.account'] || '',
+          password: ircMap['auth.password'] || ''
+        }),
+        invite_command: ircMap.invite_command || '',
+        channels
+      };
+      try {
+        await AB.api('POST', '/api/irc', ircPayload);
+      } catch (ircErr) {
+        toast(t('toast.indexer_irc_failed', { error: (ircErr && ircErr.message) ? ircErr.message : String(ircErr || '') }), true);
+      }
+    } else if (isFeedImplementation(impl) && $('indexer-feed-fields') && $('indexer-feed-fields').style.display !== 'none') {
+      const feedMap = {};
+      for (const el of Array.from($('indexer-feed-fields').querySelectorAll('[data-feed-key]'))) {
+        feedMap[el.dataset.feedKey] = (el.value || '').trim();
+      }
+      if (feedMap.url) {
+        const feedPayload = {
+          name,
+          enabled: $('indexer-feed-enable') ? $('indexer-feed-enable').checked : true,
+          type: String(impl).toUpperCase(),
+          url: feedMap.url,
+          api_key: feedMap.api_key || '',
+          interval: 30,
+          timeout: 60,
+          indexer_id: (createdIdx && createdIdx.id) ? createdIdx.id : 0,
+          settings: { download_type: 'TORRENT' }
+        };
+        try {
+          await AB.api('POST', '/api/feeds', feedPayload);
+        } catch (feedErr) {
+          toast(t('toast.indexer_feed_failed', { error: (feedErr && feedErr.message) ? feedErr.message : String(feedErr || '') }), true);
+        }
+      }
+    }
+  }
+
   async function saveIndexerFromModal(retried = false) {
     const isRetry = retried === true;
     if (!AB || !serviceStatus || !serviceStatus.ready) {
@@ -1005,15 +1356,28 @@
     const apikey = ($('indexer-apikey') ? $('indexer-apikey').value : '').trim();
     const enabled = $('indexer-enabled') ? $('indexer-enabled').checked : true;
 
+    const matchedSchema = findIndexerSchema(rawIdentifier, editingIndexerData);
+    if (!editingIndexerId && !matchedSchema) {
+      toast(t('indexers.err_select_preset'), true);
+      if ($('indexer-preset')) $('indexer-preset').focus();
+      return;
+    }
+
     if (!name || !rawIdentifier) {
       toast(t('indexers.err_required'), true);
       return;
     }
 
-    const matchedSchema = findIndexerSchema(rawIdentifier, editingIndexerData);
-    let identifier = (matchedSchema && !isGenericFeed(matchedSchema))
-      ? matchedSchema.identifier
-      : rawIdentifier.toLowerCase();
+    const schemaImpl = (matchedSchema && matchedSchema.implementation) || (editingIndexerData && editingIndexerData.implementation) || '';
+    const isFeed = isFeedImplementation(schemaImpl);
+    let identifier;
+    if (editingIndexerId) {
+      identifier = (matchedSchema && !isFeed) ? matchedSchema.identifier : rawIdentifier;
+    } else if (isFeed) {
+      identifier = slugifyFeedIdentifier(schemaImpl, name) || matchedSchema.identifier;
+    } else {
+      identifier = matchedSchema.identifier;
+    }
 
     // Always fetch all SQLite indexers (including any unmapped/wrong-case rows) before checking duplicates
     try {
@@ -1030,7 +1394,7 @@
     // Check for duplicate identifier (case-insensitive to catch broken wrong-case SQLite rows like "bj-share")
     const existing = indexers.find((idx) => String(idx.identifier || '').toLowerCase() === identifier.toLowerCase());
     if (existing) {
-      if (existing.identifier !== identifier && matchedSchema && !isGenericFeed(matchedSchema)) {
+      if (existing.identifier !== identifier && matchedSchema && !isFeed) {
         // Casing mismatch (e.g. "bj-share" in DB vs canonical "BJ-Share" in schema):
         // Confirm before replacing, carry old settings over, and delete old row only after new row exists.
         if (!confirm(t('indexers.confirm_heal', { old: existing.identifier, id: identifier }))) {
@@ -1057,10 +1421,14 @@
       }
     }
 
+    if (!validateSchemaFieldsContainer('indexer-dynamic-fields', !!editingIndexerId)) return;
+    if (!validateSchemaFieldsContainer('indexer-irc-fields', false)) return;
+    if (!validateSchemaFieldsContainer('indexer-feed-fields', false)) return;
+
     const base = editingIndexerId
       ? (indexers.find((i) => i.id === editingIndexerId) || editingIndexerData || {})
       : (editingIndexerData || {});
-    const schema = findIndexerSchema(identifier, base);
+    const schema = matchedSchema || findIndexerSchema(identifier, base);
     const settingsMap = normalizeIndexerSettingsMap(base.settings);
 
     const dynFields = $('indexer-dynamic-fields')
@@ -1099,7 +1467,7 @@
     const baseUrl = url || settingsMap.base_url || base.base_url ||
       (schema && Array.isArray(schema.urls) && schema.urls[0]) || '';
     const impl = (schema && schema.implementation) || base.implementation ||
-      ((schema && !isGenericFeed(schema)) ? 'irc' : '');
+      ((schema && !isFeed) ? 'irc' : '');
 
     const payload = {
       name,
@@ -1119,8 +1487,9 @@
         await AB.api('PUT', `/api/indexer/${editingIndexerId}`, payload);
         toast(t('toast.indexer_updated'));
       } else {
+        let createdIdx = null;
         try {
-          await AB.api('POST', '/api/indexer', payload);
+          createdIdx = await AB.api('POST', '/api/indexer', payload);
           let deleteOldFailed = false;
           if (healFromId) {
             try {
@@ -1134,6 +1503,7 @@
               }), true);
             }
           }
+          await createAssociatedNetworkOrFeed(schema, impl, name, createdIdx);
           if (!deleteOldFailed) {
             toast(t('toast.indexer_created'));
           }
@@ -1145,7 +1515,8 @@
             indexers = indexers.filter((i) => i.id !== healFromId);
             healFromId = null;
             try {
-              await AB.api('POST', '/api/indexer', payload);
+              createdIdx = await AB.api('POST', '/api/indexer', payload);
+              await createAssociatedNetworkOrFeed(schema, impl, name, createdIdx);
               toast(t('toast.indexer_created'));
             } catch (retryErr) {
               if (healBackupPayload) {
@@ -1164,57 +1535,44 @@
     } catch (err) {
       const isUniqueErr = err && err.message && err.message.includes('UNIQUE constraint failed');
       if (isUniqueErr) {
-        // Refresh indexer cache including unmapped SQLite rows
         try {
           const fresh = await fetchAllIndexers();
           if (Array.isArray(fresh)) indexers = fresh;
         } catch (_) {}
 
-        if (isGenericFeed(identifier)) {
-          const suggested = getSuggestedIdentifier(identifier, indexers, editingIndexerId);
-          if ($('indexer-identifier')) {
-            $('indexer-identifier').value = suggested;
-            $('indexer-identifier').focus();
-          }
-          const retry = confirm(t('indexers.confirm_use_suggested', { id: identifier, suggested }));
-          if (retry && !isRetry) {
-            return saveIndexerFromModal(true);
-          }
-          toast(t('indexers.err_unique_identifier', { id: identifier, suggested }), true);
-        } else {
-          const dup = (indexers || []).find((i) => String(i.identifier || '').toLowerCase() === identifier.toLowerCase());
-          if (!isRetry && dup && confirm(t('indexers.confirm_replace', { name: dup.name || identifier }))) {
-            const dupBackup = buildIndexerBackupPayload(dup, findIndexerSchema(dup.identifier, dup));
+        const dup = (indexers || []).find((i) => String(i.identifier || '').toLowerCase() === identifier.toLowerCase());
+        if (!isRetry && dup && confirm(t('indexers.confirm_replace', { name: dup.name || identifier }))) {
+          const dupBackup = buildIndexerBackupPayload(dup, findIndexerSchema(dup.identifier, dup));
+          try {
+            await AB.api('DELETE', `/api/indexer/${dup.id}`);
+            indexers = indexers.filter((i) => i.id !== dup.id);
+            editingIndexerId = null;
+            editingIndexerData = dup;
+            const replacePayload = Object.assign({}, payload, {
+              settings: Object.assign({}, (dupBackup && dupBackup.settings) || {}, payload.settings || {})
+            });
+            delete replacePayload.id;
             try {
-              await AB.api('DELETE', `/api/indexer/${dup.id}`);
-              indexers = indexers.filter((i) => i.id !== dup.id);
-              editingIndexerId = null;
-              editingIndexerData = dup;
-              const replacePayload = Object.assign({}, payload, {
-                settings: Object.assign({}, (dupBackup && dupBackup.settings) || {}, payload.settings || {})
-              });
-              delete replacePayload.id;
-              try {
-                await AB.api('POST', '/api/indexer', replacePayload);
-                toast(t('toast.indexer_created'));
-                closeIndexerModal();
-                await refreshIRCAndIndexers();
-                return;
-              } catch (retryErr) {
-                if (dupBackup) {
-                  await restoreIndexerBackup(dupBackup, identifier, dup.identifier || dup.name || identifier, retryErr);
-                  return;
-                }
-                toast(`Error saving indexer: ${(retryErr && retryErr.message) ? retryErr.message : String(retryErr || '')}`, true);
+              const createdIdx = await AB.api('POST', '/api/indexer', replacePayload);
+              await createAssociatedNetworkOrFeed(schema, impl, name, createdIdx);
+              toast(t('toast.indexer_created'));
+              closeIndexerModal();
+              await refreshIRCAndIndexers();
+              return;
+            } catch (retryErr) {
+              if (dupBackup) {
+                await restoreIndexerBackup(dupBackup, identifier, dup.identifier || dup.name || identifier, retryErr);
                 return;
               }
-            } catch (delErr) {
-              toast(`Error resolving duplicate indexer: ${delErr.message}`, true);
+              toast(`Error saving indexer: ${(retryErr && retryErr.message) ? retryErr.message : String(retryErr || '')}`, true);
               return;
             }
+          } catch (delErr) {
+            toast(`Error resolving duplicate indexer: ${delErr.message}`, true);
+            return;
           }
-          toast(t('indexers.err_tracker_exists', { id: identifier }), true);
         }
+        toast(t('indexers.err_tracker_exists', { id: identifier }), true);
       } else {
         toast(`Error saving indexer: ${err.message}`, true);
       }
@@ -1273,6 +1631,12 @@
       $('irc-server-pass').value = '';
       $('irc-server-pass').placeholder = editPwPlaceholder || t('irc.server_pass_placeholder');
     }
+    if ($('irc-invite-cmd')) {
+      const inv = (net && net.invite_command) || '';
+      const isRedacted = editingIrcId && (/^\*+$|^<redacted>$/i.test(inv));
+      $('irc-invite-cmd').value = isRedacted ? '' : inv;
+      $('irc-invite-cmd').placeholder = isRedacted ? t('irc.pass_edit_placeholder') : t('irc.invite_placeholder');
+    }
 
     const firstChannel = (net && net.channels && net.channels[0]) || null;
     if ($('irc-channel-name')) $('irc-channel-name').value = (firstChannel && (firstChannel.name || firstChannel)) || '';
@@ -1310,6 +1674,7 @@
     const authUser = ($('irc-auth-user') ? $('irc-auth-user').value : '').trim();
     const authPass = ($('irc-auth-pass') ? $('irc-auth-pass').value : '').trim();
     const serverPass = ($('irc-server-pass') ? $('irc-server-pass').value : '').trim();
+    const inviteCmd = ($('irc-invite-cmd') ? $('irc-invite-cmd').value : '').trim();
     const channelName = ($('irc-channel-name') ? $('irc-channel-name').value : '').trim();
     const channelPass = ($('irc-channel-pass') ? $('irc-channel-pass').value : '').trim();
 
@@ -1342,6 +1707,7 @@
       tls_skip_verify: tlsSkip,
       nick: nick || base.nick || 'autobrr',
       pass: serverPass || (editingIrcId ? (base.pass || '') : ''),
+      invite_command: inviteCmd || (editingIrcId ? (base.invite_command || '') : ''),
       enabled,
       auth: Object.assign({}, baseAuth, {
         mechanism: authMech,
@@ -1407,19 +1773,24 @@
       const srvStr = net.server ? `${net.server}${net.port ? ':' + net.port : ''}` : (net.name || 'IRC Server');
       const chList = Array.isArray(net.channels) ? net.channels.map((c) => c.name || c).join(', ') : (net.channel || '–');
       const botStr = net.bot || (net.channels && net.channels[0] && net.channels[0].bot) || '–';
-      const nickStr = net.nick || 'autobrr';
-      const st = (net.status && net.status.state) || net.status || 'irc.connected';
-      const isConn = st === 'connected' || st === 'irc.connected';
+      const nickStr = net.current_nick || net.nick || 'autobrr';
+      const isEnabled = net.enabled !== false;
+      const isConn = isEnabled && (net.connected === true || (net.connected === undefined && net.status && (net.status === 'connected' || net.status.state === 'connected')));
+      const badgeClass = !isEnabled ? 'warn' : (isConn ? 'ok' : 'err');
+      const badgeLabel = !isEnabled ? t('status.inactive') : (isConn ? t('irc.connected') : t('irc.disconnected'));
+      const connErrors = Array.isArray(net.connection_errors) ? net.connection_errors.filter(Boolean) : [];
+      const errHint = (!isConn && isEnabled && connErrors.length > 0) ? connErrors[connErrors.length - 1] : '';
 
       tr.innerHTML = `
         <td><strong style="color: var(--sos-text);">${escapeHtml(srvStr)}</strong></td>
         <td><code>${escapeHtml(chList)}</code></td>
-        <td>${escapeHtml(botStr)}</td>
+        <td>${net.invite_command ? `<span class="filter-tag">${escapeHtml(t('irc.invite_set'))}</span>` : escapeHtml(botStr)}</td>
         <td>${escapeHtml(nickStr)}</td>
         <td>
-          <span class="badge ${isConn ? 'ok' : 'warn'}">
-            ● ${isConn ? t('irc.connected') : t('irc.disconnected')}
+          <span class="badge ${badgeClass}">
+            ● ${escapeHtml(badgeLabel)}
           </span>
+          ${errHint ? `<div class="irc-error-hint">${escapeHtml(errHint)}</div>` : ''}
         </td>
         <td style="white-space: nowrap;">
           <button class="sos-btn sos-btn-sm btn-edit-irc" data-id="${net.id}" title="${escapeHtml(t('btn.edit'))}">✏️</button>
@@ -1467,13 +1838,18 @@
     for (const idx of indexers) {
       const tr = document.createElement('tr');
       const isEnabled = idx.enabled !== false;
+      const isUnmapped = idx._mapped === false;
+      const statusBadgeClass = isUnmapped ? 'warn' : (isEnabled ? 'ok' : 'err');
+      const statusLabel = isUnmapped
+        ? t('indexers.status_unmapped')
+        : (isEnabled ? t('status.active') : t('status.inactive'));
       tr.innerHTML = `
         <td><strong>${escapeHtml(idx.name || idx.identifier || '')}</strong></td>
         <td><code>${escapeHtml(idx.identifier || String(idx.name || '').toLowerCase())}</code></td>
-        <td style="color: var(--sos-muted); font-size: 12px;">${escapeHtml(idx.type || 'Torznab / IRC')}</td>
+        <td style="color: var(--sos-muted); font-size: 12px;">${escapeHtml(idx.implementation || idx.type || '–')}</td>
         <td>
-          <span class="badge ${isEnabled ? 'ok' : 'err'}">
-            ${escapeHtml(isEnabled ? t('status.active') : t('status.inactive'))}
+          <span class="badge ${statusBadgeClass}">
+            ${escapeHtml(statusLabel)}
           </span>
         </td>
         <td style="white-space: nowrap;">
@@ -2015,30 +2391,34 @@
     if ($('indexer-preset')) {
       $('indexer-preset').onchange = () => {
         const id = $('indexer-preset').value;
-        const schema = indexerSchemas.find((s) => s.identifier === id);
+        const schema = indexerSchemas.find((s) => s.identifier === id) || null;
         if (schema) {
-          const rawIdentifier = schema.identifier || id;
-          let targetIdentifier = rawIdentifier;
-          let targetName = schema.name || schema.identifier;
-
-          // Only suggest suffixed identifier for generic feeds (Torznab/Newznab/RSS).
-          // Tracker definitions must keep their exact identifier to match autobrr definitions.
-          if (!editingIndexerId && isGenericFeed(schema) && indexers.some((idx) => String(idx.identifier || '').toLowerCase() === rawIdentifier.toLowerCase())) {
-            targetIdentifier = getSuggestedIdentifier(rawIdentifier, indexers, null);
-            targetName = `${schema.name || schema.identifier} 2`;
+          const targetName = schema.name || schema.identifier;
+          if ($('indexer-name')) $('indexer-name').value = targetName;
+          const impl = String(schema.implementation || '').toLowerCase();
+          if ($('indexer-identifier')) {
+            $('indexer-identifier').value = isFeedImplementation(impl)
+              ? slugifyFeedIdentifier(impl, targetName)
+              : schema.identifier;
           }
-
-          const autoName = schema.name || schema.identifier;
-          const cur = $('indexer-name') ? $('indexer-name').value : '';
-          if (!cur || cur === ($('indexer-identifier') ? $('indexer-identifier').value : '') || cur === autoName || cur === `${autoName} 2`) {
-            $('indexer-name').value = targetName;
-          }
-          $('indexer-identifier').value = targetIdentifier;
-          if ($('indexer-url') && schema.urls && schema.urls[0] && !$('indexer-url').value) {
+          if ($('indexer-url') && schema.urls && schema.urls[0]) {
             $('indexer-url').value = schema.urls[0];
           }
+        } else if (!editingIndexerId) {
+          if ($('indexer-name')) $('indexer-name').value = '';
+          if ($('indexer-identifier')) $('indexer-identifier').value = '';
         }
         updateIndexerSchemaUI();
+      };
+    }
+    if ($('indexer-name')) {
+      $('indexer-name').oninput = () => {
+        if (editingIndexerId) return;
+        const presetId = $('indexer-preset') ? $('indexer-preset').value : '';
+        const schema = indexerSchemas.find((s) => s.identifier === presetId);
+        if (schema && isFeedImplementation(schema.implementation) && $('indexer-identifier')) {
+          $('indexer-identifier').value = slugifyFeedIdentifier(schema.implementation, $('indexer-name').value) || schema.identifier;
+        }
       };
     }
 

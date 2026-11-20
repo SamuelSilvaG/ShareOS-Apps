@@ -368,9 +368,9 @@
           <input type="text" id="filter-name" class="sos-input" placeholder="e.g. Movies-1080p-Freeleech">
         </div>
         <div class="form-group">
-          <label for="filter-indexers" data-i18n="filters.indexers">Indexers / Trackers (comma-separated or empty for
-            all)</label>
-          <input type="text" id="filter-indexers" class="sos-input" placeholder="e.g. TorrentLeech, Redacted">
+          <label data-i18n="filters.indexers">Linked Indexers / Trackers</label>
+          <div id="filter-indexers-list" class="checkbox-grid"></div>
+          <div class="form-hint" data-i18n="filters.indexers_hint">Select at least one configured indexer – autobrr only matches releases from linked indexers.</div>
         </div>
         <div class="form-group">
           <label for="filter-match" data-i18n="filters.match_releases">Match Releases (wildcards e.g. *1080p*,
@@ -435,7 +435,7 @@
         <div class="form-group">
           <label for="indexer-preset" data-i18n="indexers.preset">Tracker / Preset</label>
           <select id="indexer-preset" class="sos-input">
-            <option value="" data-i18n="indexers.custom_preset">Custom / Torznab / Other</option>
+            <option value="" data-i18n="indexers.select_preset">— Select a built-in tracker / feed —</option>
           </select>
         </div>
         <div id="indexer-advanced-hint-box" style="padding: 8px 10px; background: rgba(var(--sos-rgb), 0.08); border: 1px solid var(--sos-line); border-radius: 6px; font-size: 12px; line-height: 1.4; color: var(--sos-muted); margin-bottom: 6px;">
@@ -446,14 +446,16 @@
         </div>
         <div class="form-group">
           <label for="indexer-name" data-i18n="indexers.name">Indexer Name</label>
-          <input type="text" id="indexer-name" class="sos-input" placeholder="e.g. TorrentLeech">
+          <input type="text" id="indexer-name" class="sos-input" placeholder="e.g. BJ-Share">
         </div>
         <div class="form-group">
           <label for="indexer-identifier" data-i18n="indexers.identifier">Identifier</label>
-          <input type="text" id="indexer-identifier" class="sos-input" placeholder="e.g. torrentleech">
+          <input type="text" id="indexer-identifier" class="sos-input" readonly>
         </div>
         <div id="indexer-dynamic-fields"></div>
-        <div id="indexer-default-fields">
+        <div id="indexer-irc-fields" style="display:none;"></div>
+        <div id="indexer-feed-fields" style="display:none;"></div>
+        <div id="indexer-default-fields" style="display:none;">
           <div class="form-group">
             <label for="indexer-url" data-i18n="indexers.url">Base URL (Optional)</label>
             <input type="text" id="indexer-url" class="sos-input" placeholder="https://...">
@@ -540,6 +542,10 @@
         <div class="form-group">
           <label for="irc-server-pass" data-i18n="irc.server_pass">Server Password (Optional)</label>
           <input type="password" id="irc-server-pass" class="sos-input" placeholder="Server connection password">
+        </div>
+        <div class="form-group">
+          <label for="irc-invite-cmd" data-i18n="irc.invite_command">Invite Command (Optional)</label>
+          <input type="text" id="irc-invite-cmd" class="sos-input" data-i18n-placeholder="irc.invite_placeholder" placeholder="e.g. BJAnnounce invite IRCKEY">
         </div>
         <div class="form-row">
           <div class="form-group" style="flex: 2;">
