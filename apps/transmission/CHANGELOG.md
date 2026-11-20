@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.2
+
+- Elements with the `hidden` attribute stay hidden even when a class (e.g. `.sos-btn`) sets `display` – the *Revoke password* button no longer shows when there is nothing to revoke. ShareOS 0.3.0-beta.15+ does this in `/_shareos/theme.css` as well.
+- Use plain asset URLs in `index.html` so `tools/build.py` stamps version query parameters on packaging.
+
 ## 1.4.1
 
 - Fix startup hang on "Checking connection...": guard `refresh()` against overlapping requests, serialize initial `session-get` before `torrent-get` on cold daemon startup, and add defensive DOM checks.
