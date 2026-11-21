@@ -526,7 +526,9 @@
 
     const newState = !filter.enabled;
     try {
-      await AB.api('PUT', `/api/filters/${filter.id}`, { ...filter, enabled: newState });
+      // The list endpoint returns a partial filter (no resolutions, sources, ...);
+      // a full PUT with it violates NOT NULL constraints. Use the dedicated toggle route.
+      await AB.api('PUT', `/api/filters/${filter.id}/enabled`, { enabled: newState });
       filter.enabled = newState;
       toast(`Filter "${filter.name}" ${newState ? 'enabled' : 'disabled'}`);
       renderFilters();
@@ -767,6 +769,9 @@
         if ($('filter-codecs')) $('filter-codecs').value = Array.isArray(f.codecs) ? f.codecs.join(', ') : '';
         $('filter-freeleech').checked = !!f.freeleech;
         $('filter-enabled').checked = f.enabled !== false;
+        const transAct = (Array.isArray(f.actions) ? f.actions : []).find((a) => a && String(a.type || '').toUpperCase() === 'TRANSMISSION');
+        if ($('filter-save-path')) $('filter-save-path').value = (transAct && transAct.save_path) || '';
+        if ($('filter-add-paused')) $('filter-add-paused').checked = !!(transAct && transAct.paused);
       }
     } else {
       $('modal-title').textContent = t('filters.new_title');
@@ -782,6 +787,8 @@
       if ($('filter-codecs')) $('filter-codecs').value = '';
       $('filter-freeleech').checked = false;
       $('filter-enabled').checked = true;
+      if ($('filter-save-path')) $('filter-save-path').value = '';
+      if ($('filter-add-paused')) $('filter-add-paused').checked = false;
     }
 
     modal.style.display = 'flex';
@@ -840,11 +847,18 @@
       const prevTrans = existingActions.find((a) =>
         a && String(a.type || '').toUpperCase() === 'TRANSMISSION' && Number(a.client_id) === clientId
       );
+      const savePath = $('filter-save-path') ? ($('filter-save-path').value || '').trim() : ((prevTrans && prevTrans.save_path) || '');
+      if (savePath && !savePath.startsWith('/')) {
+        toast(t('filters.err_save_path'), true);
+        return;
+      }
       deliveryAction = Object.assign({}, prevTrans || {}, {
         name: (prevTrans && prevTrans.name) || (client && client.name) || 'ShareOS Transmission',
         type: 'TRANSMISSION',
         enabled: true,
-        client_id: clientId
+        client_id: clientId,
+        save_path: savePath,
+        paused: $('filter-add-paused') ? $('filter-add-paused').checked : !!(prevTrans && prevTrans.paused)
       });
     } else if (nonDeliveryActions.length === 0) {
       toast(t('filters.err_no_trans_client'), true);
@@ -2871,7 +2885,7 @@
         label: t('menu.help'),
         items: [
           { label: t('menu.docs'), action: () => window.open('https://autobrr.com/', '_blank') },
-          { label: t('menu.about'), action: () => alert('autobrr-ui for ShareOS v1.1.4\nIntegrated via ShareOS.autobrr\nPublisher: @SamuelSilvaG') }
+          { label: t('menu.about'), action: () => alert('autobrr-ui for ShareOS v1.1.5\nIntegrated via ShareOS.autobrr\nPublisher: @SamuelSilvaG') }
         ]
       }
     ]);

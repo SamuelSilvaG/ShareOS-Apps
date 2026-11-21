@@ -18,7 +18,7 @@
     <div class="titlebar-left">
       <img src="icon.svg" class="app-icon" alt="autobrr-ui Logo">
       <span class="app-title" data-i18n="app.title">autobrr-ui</span>
-      <span class="version-tag">1.1.4</span>
+      <span class="version-tag">1.1.5</span>
     </div>
     <div class="titlebar-right">
       <span id="conn-badge" class="conn-badge checking" data-i18n="conn.checking">Checking service...</span>
@@ -405,7 +405,16 @@
           <label for="filter-action-mode" data-i18n="filters.delivery_action">Delivery to Transmission</label>
           <select id="filter-action-mode" class="sos-input"></select>
         </div>
+        <div class="form-group">
+          <label for="filter-save-path" data-i18n="filters.save_path">Download folder (optional)</label>
+          <input type="text" id="filter-save-path" class="sos-input" placeholder="/mnt/dados/filmes">
+          <span class="form-hint" data-i18n="filters.save_path_hint">Absolute path on the box. Leave empty to use Transmission's default folder.</span>
+        </div>
         <div class="form-group" style="flex-direction: row; align-items: center; gap: 16px; margin-top: 8px;">
+          <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; margin: 0;">
+            <input type="checkbox" id="filter-add-paused">
+            <span data-i18n="filters.add_paused">Add torrents paused</span>
+          </label>
           <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; margin: 0;">
             <input type="checkbox" id="filter-freeleech">
             <span data-i18n="filters.freeleech">Only Freeleech</span>
