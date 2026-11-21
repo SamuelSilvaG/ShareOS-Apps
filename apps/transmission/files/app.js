@@ -122,6 +122,33 @@
     return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
+  async function copyTextToClipboard(text) {
+    const val = String(text || '');
+    if (!val) return false;
+    try {
+      if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+        await navigator.clipboard.writeText(val);
+        return true;
+      }
+    } catch (_) {}
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = val;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, val.length);
+      const ok = !!(document.execCommand && document.execCommand('copy'));
+      ta.remove();
+      return ok;
+    } catch (_) {
+      return false;
+    }
+  }
+
   // JSON-RPC via ShareOS daemon proxy
   async function rpc(method, args = {}) {
     if (!TOR) throw new Error(t('err.noShareOS'));
@@ -1204,21 +1231,25 @@
     try { await rpc('queue-move-bottom', { ids: Array.from(selectedIds) }); refresh(); } catch (e) { toast(e.message, true); }
   });
 
-  $('ctx-copy-magnet').addEventListener('click', () => {
+  $('ctx-copy-magnet').addEventListener('click', async () => {
     ctxMenu.style.display = 'none';
     if (!selectedIds.size) return;
     const tor = torrents.find((t) => t.id === Array.from(selectedIds)[0]);
     if (!tor) return;
     const magnet = `magnet:?xt=urn:btih:${tor.hashString}&dn=${encodeURIComponent(tor.name)}`;
-    navigator.clipboard.writeText(magnet).then(() => toast(t('toast.copied'))).catch(() => toast(magnet));
+    const ok = await copyTextToClipboard(magnet);
+    if (ok) toast(t('toast.copied'));
+    else toast(magnet);
   });
 
-  $('ctx-copy-hash').addEventListener('click', () => {
+  $('ctx-copy-hash').addEventListener('click', async () => {
     ctxMenu.style.display = 'none';
     if (!selectedIds.size) return;
     const tor = torrents.find((t) => t.id === Array.from(selectedIds)[0]);
     if (!tor) return;
-    navigator.clipboard.writeText(tor.hashString).then(() => toast(t('toast.copied'))).catch(() => toast(tor.hashString));
+    const ok = await copyTextToClipboard(tor.hashString);
+    if (ok) toast(t('toast.copied'));
+    else toast(tor.hashString);
   });
 
   // Modal: Set Location / Move Data
@@ -1540,9 +1571,16 @@
   // Settings: remote access for Transmission programs (ShareOS 0.3.0-beta.6+;
   // older boxes answer "method not allowed": the tab stays hidden)
   let remoteState = null;
+  let lastRemotePassword = '';
   function showRemote(r, password) {
     if (!$('s-tab-remote')) return;
     remoteState = r;
+    if (!r.on) {
+      lastRemotePassword = '';
+    } else if (password) {
+      lastRemotePassword = password;
+    }
+    const activePass = r.on ? lastRemotePassword : '';
     $('s-tab-remote').hidden = false;
     const boxOn = !!r.box_enabled;
     if ($('rm-box-off')) $('rm-box-off').hidden = boxOn;
@@ -1553,12 +1591,18 @@
     if ($('rm-path')) $('rm-path').textContent = r.path;
     if ($('rm-user')) $('rm-user').textContent = r.user;
     if ($('rm-pass-set')) {
-      $('rm-pass-set').hidden = !!password;
+      $('rm-pass-set').hidden = !!activePass;
       $('rm-pass-set').textContent = t(r.on ? 'cfg.remotePassSet' : 'cfg.remotePassUnset');
     }
-    if ($('rm-pass-new')) $('rm-pass-new').hidden = !password;
-    if ($('rm-pass-note')) $('rm-pass-note').hidden = !password;
-    if ($('rm-pass')) $('rm-pass').textContent = password || '';
+    if ($('rm-pass-new')) $('rm-pass-new').hidden = !activePass;
+    if ($('rm-pass-note')) $('rm-pass-note').hidden = !activePass;
+    if ($('rm-pass')) {
+      $('rm-pass').value = activePass;
+      $('rm-pass').type = 'password';
+    }
+    if ($('btn-rm-toggle-pass')) {
+      $('btn-rm-toggle-pass').textContent = t('cfg.remoteShowPass');
+    }
     if ($('btn-rm-revoke')) $('btn-rm-revoke').hidden = !r.on;
     if ($('btn-rm-regen')) $('btn-rm-regen').textContent = t(r.on ? 'cfg.remoteRegen' : 'cfg.remoteCreate');
   }
@@ -1571,13 +1615,21 @@
     }
   }
   async function setRemote(on, regen) {
+    const regenBtn = $('btn-rm-regen');
+    const revokeBtn = $('btn-rm-revoke');
+    if (regenBtn) regenBtn.disabled = true;
+    if (revokeBtn) revokeBtn.disabled = true;
     try {
       const r = await rpc('shareos-remote-set', { on, regen });
+      if (!on) lastRemotePassword = '';
       showRemote(r, r.password);
       toast(t(on ? (r.password ? 'toast.remotePass' : 'toast.remoteOn') : 'toast.remoteOff'));
     } catch (e) {
       toast(t('toast.remoteError') + e.message, true);
       if (remoteState) showRemote(remoteState);
+    } finally {
+      if (regenBtn) regenBtn.disabled = false;
+      if (revokeBtn) revokeBtn.disabled = false;
     }
   }
   if ($('btn-rm-regen')) {
@@ -1592,10 +1644,21 @@
       if (confirm(t('cfg.remoteRevokeConfirm'))) setRemote(false, false);
     });
   }
+  if ($('btn-rm-toggle-pass')) {
+    $('btn-rm-toggle-pass').addEventListener('click', () => {
+      const inp = $('rm-pass');
+      const btn = $('btn-rm-toggle-pass');
+      if (!inp || !btn) return;
+      const show = inp.type === 'password';
+      inp.type = show ? 'text' : 'password';
+      btn.textContent = t(show ? 'cfg.remoteHidePass' : 'cfg.remoteShowPass');
+    });
+  }
   if ($('btn-rm-copy')) {
-    $('btn-rm-copy').addEventListener('click', () => {
-      const p = $('rm-pass') ? $('rm-pass').textContent : '';
-      navigator.clipboard.writeText(p).then(() => toast(t('toast.copied'))).catch(() => toast(p));
+    $('btn-rm-copy').addEventListener('click', async () => {
+      if (!lastRemotePassword) return;
+      const ok = await copyTextToClipboard(lastRemotePassword);
+      toast(t(ok ? 'toast.copied' : 'toast.copyError'), !ok);
     });
   }
   $('btn-settings').addEventListener('click', loadRemote);

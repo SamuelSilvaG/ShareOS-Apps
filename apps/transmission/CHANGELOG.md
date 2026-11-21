@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.3
+
+- Improve accent button and modal legibility across Dark/Light themes and all ShareOS accent colors (`.sos-btn-accent`, `.ctx-item:hover`, `.modal-backdrop`, `.modal-header`, `.modal-body`, placeholders, and `<option>` contrast).
+- Keep newly created remote access passwords masked (`type="password"`) by default in Preferences → *Remote access*, adding a *Show*/*Hide* toggle and *Copy* button with HTTP LAN clipboard fallback (`copyTextToClipboard`) so the password stays copyable during the session without exposing it in plain text or error toasts.
+
 ## 1.4.2
 
 - Elements with the `hidden` attribute stay hidden even when a class (e.g. `.sos-btn`) sets `display` – the *Revoke password* button no longer shows when there is nothing to revoke. ShareOS 0.3.0-beta.15+ does this in `/_shareos/theme.css` as well.

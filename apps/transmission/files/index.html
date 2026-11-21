@@ -16,7 +16,7 @@
     <div class="titlebar-left">
       <img src="icon.svg" class="app-icon" alt="Transmission Logo">
       <span class="app-title">Transmission</span>
-      <span class="version-tag">1.4.2</span>
+      <span class="version-tag">1.4.3</span>
     </div>
     <div class="titlebar-right">
       <span id="conn-badge" class="conn-badge checking" data-i18n="conn.checking">Checking connection...</span>
@@ -707,7 +707,11 @@
               <dt data-i18n="cfg.remotePass">Password</dt>
               <dd>
                 <span id="rm-pass-set" data-i18n="cfg.remotePassSet">set – shown only when it is created</span>
-                <span id="rm-pass-new" hidden><code id="rm-pass"></code> <button type="button" id="btn-rm-copy" class="sos-btn sos-btn-sm" data-i18n="cfg.remoteCopy">Copy</button></span>
+                <span id="rm-pass-new" class="rm-pass-row" hidden>
+                  <input type="password" id="rm-pass" class="sos-input rm-pass-input" readonly>
+                  <button type="button" id="btn-rm-toggle-pass" class="sos-btn sos-btn-sm" data-i18n="cfg.remoteShowPass">Show</button>
+                  <button type="button" id="btn-rm-copy" class="sos-btn sos-btn-sm sos-btn-accent" data-i18n="cfg.remoteCopy">Copy</button>
+                </span>
               </dd>
             </dl>
             <div id="rm-pass-note" class="rm-note" style="margin-top:10px;" data-i18n="cfg.remotePassNote" hidden>
