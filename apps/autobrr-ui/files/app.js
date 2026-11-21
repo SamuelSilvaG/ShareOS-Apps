@@ -27,6 +27,7 @@
   let isRefreshing = false;
   let refreshQueued = false;
   let transRpcBusy = false;
+  let lastGeneratedRemotePassword = '';
 
   function applyTheme(tObj) {
     if (!tObj) return;
@@ -76,6 +77,33 @@
       .replace(/"/g, '&quot;');
   }
 
+  async function copyTextToClipboard(text) {
+    const val = String(text || '');
+    if (!val) return false;
+    try {
+      if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+        await navigator.clipboard.writeText(val);
+        return true;
+      }
+    } catch (_) {}
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = val;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, val.length);
+      const ok = !!(document.execCommand && document.execCommand('copy'));
+      ta.remove();
+      return ok;
+    } catch (_) {
+      return false;
+    }
+  }
+
   // Update top banner depending on system conditions
   function updateBanner(type, title, desc, actionLabel, actionFn) {
     const banner = $('system-banner');
@@ -104,6 +132,23 @@
     badge.textContent = label || t('conn.' + kind);
   }
 
+  function updateServiceControlButtons(st) {
+    const startBtn = $('btn-start-svc');
+    const stopBtn = $('btn-stop-svc');
+    if (!AB || !st) {
+      if (startBtn) startBtn.hidden = true;
+      if (stopBtn) stopBtn.hidden = true;
+      return;
+    }
+    if (st.running) {
+      if (startBtn) startBtn.hidden = true;
+      if (stopBtn) stopBtn.hidden = false;
+    } else {
+      if (startBtn) startBtn.hidden = !(st.installed && st.drive);
+      if (stopBtn) stopBtn.hidden = true;
+    }
+  }
+
   // Fetch daemon status from ShareOS.autobrr
   async function refreshStatus() {
     if (!AB) {
@@ -120,6 +165,7 @@
         $('daemon-state-badge').textContent = t('status.stopped');
         $('daemon-state-badge').className = 'badge err';
       }
+      updateServiceControlButtons(null);
       if ($('btn-webui-exposed')) $('btn-webui-exposed').style.display = 'none';
       if ($('webui-link-container')) $('webui-link-container').style.display = 'none';
       renderLegacyDropNotice();
@@ -131,6 +177,7 @@
     try {
       const st = await AB.status();
       serviceStatus = st;
+      updateServiceControlButtons(st);
 
       // Update badge and banner based on state
       if (!st.installed) {
@@ -2006,6 +2053,8 @@
       toast(t('conn.no_access'), true);
       return;
     }
+    const startBtn = $('btn-start-svc');
+    if (startBtn) startBtn.disabled = true;
     try {
       toast('Starting autobrr service...');
       await AB.start();
@@ -2013,11 +2062,15 @@
       await refreshAll();
     } catch (err) {
       toast(`Failed to start: ${err.message}`, true);
+    } finally {
+      if (startBtn) startBtn.disabled = false;
     }
   }
 
   async function stopService() {
     if (!AB) return;
+    const stopBtn = $('btn-stop-svc');
+    if (stopBtn) stopBtn.disabled = true;
     try {
       toast('Stopping autobrr service...');
       await AB.set({ enabled: false });
@@ -2025,6 +2078,8 @@
       await refreshAll();
     } catch (err) {
       toast(`Failed to stop: ${err.message}`, true);
+    } finally {
+      if (stopBtn) stopBtn.disabled = false;
     }
   }
 
@@ -2373,11 +2428,32 @@
     }
   }
 
+  function renderGeneratedRemotePasswordBox() {
+    const box = $('trans-rpc-generated-box');
+    const inp = $('trans-rpc-generated-pw');
+    const toggleBtn = $('btn-toggle-trans-rpc-gen-pw');
+    if (!box || !inp || !toggleBtn) return;
+    if (!lastGeneratedRemotePassword) {
+      box.hidden = true;
+      inp.value = '';
+      inp.type = 'password';
+      toggleBtn.textContent = t('btn.show_pw');
+      return;
+    }
+    box.hidden = false;
+    if (inp.value !== lastGeneratedRemotePassword) {
+      inp.value = lastGeneratedRemotePassword;
+      inp.type = 'password';
+      toggleBtn.textContent = t('btn.show_pw');
+    }
+  }
+
   function renderTransmissionRpcSection() {
     const badge = $('trans-rpc-client-badge');
     const infoBox = $('trans-rpc-info');
     const disabledHint = $('trans-rpc-disabled-hint');
     const setupBox = $('trans-rpc-setup-box');
+    const connectForm = $('trans-rpc-connect-form');
     const existingActions = $('trans-rpc-existing-actions');
     const genBtn = $('btn-gen-connect-trans-rpc');
     if (!badge || !setupBox) return;
@@ -2386,6 +2462,10 @@
     const boxOn = !!(transRemoteInfo && transRemoteInfo.box_enabled);
     const boxOffWithClient = !!(existing && transRemoteInfo && !transRemoteInfo.box_enabled);
     const needsPw = !!(existing && transRemoteInfo && transRemoteInfo.box_enabled && !transRemoteInfo.on && (!existing.username || existing.username === transRemoteInfo.user));
+    const isConnected = !!(existing && existing.enabled !== false && boxOn && transRemoteInfo.on);
+    if (transRemoteInfo && !transRemoteInfo.on) {
+      lastGeneratedRemotePassword = '';
+    }
 
     if (boxOffWithClient) {
       badge.textContent = t('trans.rpc_remote_off');
@@ -2439,10 +2519,12 @@
     if (disabledHint) {
       disabledHint.style.display = !boxOn ? 'block' : 'none';
     }
-    setupBox.style.display = (boxOn || existing) ? 'block' : 'none';
+    setupBox.style.display = (boxOn || existing || lastGeneratedRemotePassword) ? 'block' : 'none';
+    if (connectForm) connectForm.hidden = !boxOn || isConnected;
     if (genBtn) genBtn.disabled = transRpcBusy || !boxOn;
-    if (existingActions) existingActions.style.display = existing ? 'inline-flex' : 'none';
+    if (existingActions) existingActions.hidden = !existing;
     if (transRpcBusy) setTransRpcButtonsBusy(true);
+    renderGeneratedRemotePasswordBox();
     renderLegacyDropNotice();
   }
 
@@ -2599,6 +2681,8 @@
       const sanitized = Object.assign({}, res);
       delete sanitized.password;
       transRemoteInfo = sanitized;
+      lastGeneratedRemotePassword = pw;
+      renderGeneratedRemotePasswordBox();
       await saveTransmissionDownloaderCore(pw);
     } catch (err) {
       toast(`Error generating remote password: ${err.message}`, true);
@@ -2698,8 +2782,10 @@
     setTransRpcButtonsBusy(true);
     try {
       await AB.api('DELETE', `/api/downloaders/${existing.id}`);
+      lastGeneratedRemotePassword = '';
       await refreshDownloaders();
       renderTransmissionRpcSection();
+      renderGeneratedRemotePasswordBox();
       updateStatusbar();
       toast(t('toast.trans_rpc_removed'));
     } catch (err) {
@@ -2785,7 +2871,7 @@
         label: t('menu.help'),
         items: [
           { label: t('menu.docs'), action: () => window.open('https://autobrr.com/', '_blank') },
-          { label: t('menu.about'), action: () => alert('autobrr-ui for ShareOS v1.1.3\nIntegrated via ShareOS.autobrr\nPublisher: @SamuelSilvaG') }
+          { label: t('menu.about'), action: () => alert('autobrr-ui for ShareOS v1.1.4\nIntegrated via ShareOS.autobrr\nPublisher: @SamuelSilvaG') }
         ]
       }
     ]);
@@ -2819,6 +2905,30 @@
     if ($('btn-gen-connect-trans-rpc')) $('btn-gen-connect-trans-rpc').onclick = generateAndConnectTransmissionRpc;
     if ($('btn-test-autobrr-trans')) $('btn-test-autobrr-trans').onclick = testAutobrrTransmissionClient;
     if ($('btn-remove-autobrr-trans')) $('btn-remove-autobrr-trans').onclick = removeAutobrrTransmissionClient;
+    if ($('btn-toggle-trans-rpc-gen-pw')) {
+      $('btn-toggle-trans-rpc-gen-pw').onclick = () => {
+        const inp = $('trans-rpc-generated-pw');
+        const btn = $('btn-toggle-trans-rpc-gen-pw');
+        if (!inp || !btn) return;
+        const show = inp.type === 'password';
+        inp.type = show ? 'text' : 'password';
+        btn.textContent = t(show ? 'btn.hide_pw' : 'btn.show_pw');
+      };
+    }
+    if ($('btn-copy-trans-rpc-gen-pw')) {
+      $('btn-copy-trans-rpc-gen-pw').onclick = async () => {
+        if (!lastGeneratedRemotePassword) return;
+        const ok = await copyTextToClipboard(lastGeneratedRemotePassword);
+        toast(t(ok ? 'toast.pw_copied' : 'toast.copy_failed'), !ok);
+      };
+    }
+    if ($('btn-dismiss-trans-rpc-gen-pw')) {
+      $('btn-dismiss-trans-rpc-gen-pw').onclick = () => {
+        lastGeneratedRemotePassword = '';
+        renderGeneratedRemotePasswordBox();
+        renderTransmissionRpcSection();
+      };
+    }
     if ($('btn-link-webui')) {
       $('btn-link-webui').href = getWebUIUrl();
       $('btn-link-webui').onclick = (e) => {
@@ -2835,12 +2945,10 @@
       $('webui-url-text').style.cursor = 'pointer';
       $('webui-url-text').title = 'Click to copy URL';
       $('webui-url-text').onclick = async () => {
-        try {
-          await navigator.clipboard.writeText(getWebUIUrl());
-          toast('Web UI URL copied to clipboard!');
-        } catch (e) {
-          toast(getWebUIUrl());
-        }
+        const url = getWebUIUrl();
+        const ok = await copyTextToClipboard(url);
+        if (ok) toast('Web UI URL copied to clipboard!');
+        else toast(url);
       };
     }
 

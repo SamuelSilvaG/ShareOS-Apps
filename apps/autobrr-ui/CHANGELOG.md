@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.4
+
+- Fix accent button and modal legibility: increase contrast on `<a class="sos-btn-accent">` links (such as *Open autobrr Web Interface*), modal headers/bodies/placeholders/read-only inputs across Dark and Light themes, and stop primary action buttons inside `.form-row` from stretching horizontally.
+- Hide redundant state actions: hide *Start autobrr* while the daemon is running and *Stop Service* while stopped, and hide the Transmission RPC password/connect form once the client is connected (reappearing only when disconnected or when a remote password is missing).
+- Copy generated remote password while hidden: keep newly generated Transmission remote passwords masked (`type="password"`) in a dedicated copy box with *Show*/*Hide* toggle, *Copy Password* button (supporting HTTP LAN clipboard fallback), and dismiss control.
+
 ## 1.1.3
 
 - Remove the Handover Drop Folder (`autobrr-drop` / `WATCH_FOLDER`) UI, Settings handover account selector, and `Handover Ready` fallback so `autobrr-ui` operates natively through `autobrr`'s built-in Transmission RPC download client (`TRANSMISSION` filter actions). Automatically disables legacy `autobrr-drop` handover (`account: ""`) when connecting Transmission RPC and provides a one-click banner in the Transmission tab if a legacy drop folder is still active on the box.

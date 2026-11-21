@@ -1,5 +1,9 @@
 /* autobrr ShareOS Web Client Stylesheet */
 
+[hidden] {
+  display: none !important;
+}
+
 html, body {
   margin: 0;
   padding: 0;
@@ -104,18 +108,35 @@ html, body {
 }
 
 /* Button variants */
+.sos-app a.sos-btn,
+a.sos-btn {
+  color: var(--sos-text);
+  text-decoration: none;
+}
+
+.sos-app a.sos-btn:hover:not(:disabled),
+a.sos-btn:hover:not(:disabled) {
+  color: var(--sos-accent);
+}
+
 .sos-btn-sm {
   min-height: 24px;
   padding: 0 8px;
   font-size: 11px;
 }
 
+.sos-app .sos-btn-accent,
+.sos-app a.sos-btn-accent,
+.sos-app a.sos-btn-accent:visited,
 .sos-btn-accent {
   background: var(--sos-accent, #38bdf8);
   border-color: var(--sos-accent, #38bdf8);
   color: var(--sos-bg, #0f172a);
+  font-weight: 600;
 }
 
+.sos-app .sos-btn-accent:hover:not(:disabled),
+.sos-app a.sos-btn-accent:hover:not(:disabled),
 .sos-btn-accent:hover:not(:disabled) {
   filter: brightness(1.08);
   color: var(--sos-bg, #0f172a);
@@ -405,13 +426,44 @@ table.data-table tbody tr:hover {
 
 .form-row > * {
   flex: 1;
+  min-width: 0;
+}
+
+.form-row > button,
+.form-row > .sos-btn,
+.form-row > a.sos-btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.sos-input {
+  background: var(--sos-bg);
+  color: var(--sos-text);
+}
+
+.sos-input::placeholder {
+  color: var(--sos-muted);
+  opacity: 0.85;
+}
+
+.sos-input option {
+  background: var(--sos-panel);
+  color: var(--sos-text);
+}
+
+.sos-input[readonly] {
+  background: var(--sos-bar);
+  color: var(--sos-text);
+  opacity: 0.92;
 }
 
 /* Dialog / Modal */
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0, 0, 0, 0.65);
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(2px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -420,39 +472,73 @@ table.data-table tbody tr:hover {
 
 .modal-card {
   background: var(--sos-panel, #182234);
+  color: var(--sos-text);
   border: 1px solid var(--sos-line, #334155);
   border-radius: 8px;
   padding: 0;
   overflow: hidden;
-  width: 520px;
-  max-width: 90vw;
-  max-height: 85vh;
+  width: 580px;
+  max-width: 94vw;
+  max-height: 88vh;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
 }
 
 .modal-header {
   padding: 12px 16px;
+  background: var(--sos-bar);
+  color: var(--sos-text);
   border-bottom: 1px solid var(--sos-line, #334155);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  font-size: 14px;
   font-weight: 600;
 }
 
+.modal-header .sos-btn {
+  color: var(--sos-muted);
+}
+
+.modal-header .sos-btn:hover:not(:disabled) {
+  color: var(--sos-err);
+}
+
 .modal-body {
-  padding: 16px;
+  padding: 16px 18px;
   overflow-y: auto;
   flex: 1;
+  color: var(--sos-text);
+  font-size: 13px;
+  line-height: 1.45;
 }
 
 .modal-footer {
   padding: 12px 16px;
+  background: var(--sos-bar);
   border-top: 1px solid var(--sos-line, #334155);
   display: flex;
   justify-content: flex-end;
   gap: 8px;
+}
+
+.pw-copy-box {
+  margin-top: 12px;
+}
+
+.pw-copy-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.pw-copy-row .sos-input {
+  flex: 1;
+  min-width: 180px;
+  font-family: var(--sos-font, monospace);
 }
 
 /* Statusbar */

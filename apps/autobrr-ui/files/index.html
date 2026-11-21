@@ -18,7 +18,7 @@
     <div class="titlebar-left">
       <img src="icon.svg" class="app-icon" alt="autobrr-ui Logo">
       <span class="app-title" data-i18n="app.title">autobrr-ui</span>
-      <span class="version-tag">1.1.3</span>
+      <span class="version-tag">1.1.4</span>
     </div>
     <div class="titlebar-right">
       <span id="conn-badge" class="conn-badge checking" data-i18n="conn.checking">Checking service...</span>
@@ -201,19 +201,30 @@
             Enable "Remote access for torrent programs" under ShareOS Services → Torrents (ShareOS 0.3.0-beta.6+) to connect autobrr natively to Transmission.
           </div>
           <div id="trans-rpc-setup-box" style="display:none;">
-            <div class="form-row" style="align-items: flex-end; max-width: 560px; margin-bottom: 10px;">
-              <div class="form-group" style="margin: 0;">
-                <label for="trans-rpc-password" data-i18n="trans.rpc_pw_label">Account Remote Password</label>
-                <input type="password" id="trans-rpc-password" class="sos-input" data-i18n-placeholder="trans.rpc_pw_placeholder" placeholder="Paste remote password from Transmission Settings">
+            <div id="trans-rpc-connect-form">
+              <div class="form-row" style="align-items: flex-end; max-width: 560px; margin-bottom: 10px;">
+                <div class="form-group" style="margin: 0;">
+                  <label for="trans-rpc-password" data-i18n="trans.rpc_pw_label">Account Remote Password</label>
+                  <input type="password" id="trans-rpc-password" class="sos-input" data-i18n-placeholder="trans.rpc_pw_placeholder" placeholder="Paste remote password from Transmission Settings">
+                </div>
+                <button type="button" id="btn-connect-trans-rpc" class="sos-btn sos-btn-sm sos-btn-accent" data-i18n="btn.trans_rpc_connect">Connect &amp; Save</button>
               </div>
-              <button type="button" id="btn-connect-trans-rpc" class="sos-btn sos-btn-sm sos-btn-accent" data-i18n="btn.trans_rpc_connect">Connect &amp; Save</button>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button type="button" id="btn-gen-connect-trans-rpc" class="sos-btn sos-btn-sm" data-i18n="btn.trans_rpc_generate">Generate Remote Password &amp; Connect</button>
+              </div>
             </div>
-            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-              <button type="button" id="btn-gen-connect-trans-rpc" class="sos-btn sos-btn-sm" data-i18n="btn.trans_rpc_generate">Generate Remote Password &amp; Connect</button>
-              <span id="trans-rpc-existing-actions" style="display:none; gap: 8px;">
-                <button type="button" id="btn-test-autobrr-trans" class="sos-btn sos-btn-sm" data-i18n="btn.trans_rpc_test">Verify ShareOS RPC Setup</button>
-                <button type="button" id="btn-remove-autobrr-trans" class="sos-btn sos-btn-sm sos-btn-danger" data-i18n="btn.trans_rpc_disconnect">Disconnect</button>
-              </span>
+            <div id="trans-rpc-existing-actions" style="display:flex; gap: 8px; flex-wrap: wrap;" hidden>
+              <button type="button" id="btn-test-autobrr-trans" class="sos-btn sos-btn-sm" data-i18n="btn.trans_rpc_test">Verify ShareOS RPC Setup</button>
+              <button type="button" id="btn-remove-autobrr-trans" class="sos-btn sos-btn-sm sos-btn-danger" data-i18n="btn.trans_rpc_disconnect">Disconnect</button>
+            </div>
+            <div id="trans-rpc-generated-box" class="info-box pw-copy-box" hidden>
+              <div style="font-weight:600;" data-i18n="trans.rpc_gen_pw_label">Generated Remote Password (copy now to connect remote apps)</div>
+              <div class="pw-copy-row">
+                <input type="password" id="trans-rpc-generated-pw" class="sos-input" readonly>
+                <button type="button" id="btn-toggle-trans-rpc-gen-pw" class="sos-btn sos-btn-sm" data-i18n="btn.show_pw">Show</button>
+                <button type="button" id="btn-copy-trans-rpc-gen-pw" class="sos-btn sos-btn-sm sos-btn-accent" data-i18n="btn.copy_pw">Copy Password</button>
+                <button type="button" id="btn-dismiss-trans-rpc-gen-pw" class="sos-btn sos-btn-sm" aria-label="Close">✕</button>
+              </div>
             </div>
           </div>
         </div>
@@ -260,7 +271,7 @@
             <div style="display: flex; gap: 8px;">
               <button id="btn-start-svc" class="sos-btn sos-btn-sm sos-btn-accent" data-i18n="btn.start_service">Start
                 autobrr</button>
-              <button id="btn-stop-svc" class="sos-btn sos-btn-sm sos-btn-danger" data-i18n="btn.stop_service">Stop
+              <button id="btn-stop-svc" class="sos-btn sos-btn-sm sos-btn-danger" data-i18n="btn.stop_service" hidden>Stop
                 Service</button>
             </div>
           </div>
@@ -297,7 +308,7 @@
               <span>🌐</span> <span data-i18n="settings.webui_open">Open autobrr Web Interface</span>
             </a>
             <code id="webui-url-text"
-              style="font-size: 12px; color: var(--sos-muted, #8b949e); padding: 4px 8px; background: var(--sos-bg); border: 1px solid var(--sos-line); border-radius: 4px;">http://...:7474</code>
+              style="font-size: 12px; color: var(--sos-text); padding: 4px 8px; background: var(--sos-bg); border: 1px solid var(--sos-line); border-radius: 4px;">http://...:7474</code>
           </div>
           <div style="font-size: 11px; color: var(--sos-muted, #8b949e); margin-top: 8px; line-height: 1.45;"
             data-i18n="settings.webui_hint">
@@ -427,7 +438,7 @@
             <option value="" data-i18n="indexers.select_preset">— Select a built-in tracker / feed —</option>
           </select>
         </div>
-        <div id="indexer-advanced-hint-box" style="padding: 8px 10px; background: rgba(var(--sos-rgb), 0.08); border: 1px solid var(--sos-line); border-radius: 6px; font-size: 12px; line-height: 1.4; color: var(--sos-muted); margin-bottom: 6px;">
+        <div id="indexer-advanced-hint-box" style="padding: 8px 10px; background: rgba(var(--sos-rgb), 0.08); border: 1px solid var(--sos-line); border-radius: 6px; font-size: 12px; line-height: 1.4; color: var(--sos-text); margin-bottom: 6px;">
           <span data-i18n="indexers.advanced_hint">For trackers requiring IRC bot invites, download keys, or complex schemas, configure them directly in the full autobrr Web UI.</span>
           <div style="margin-top: 6px;">
             <button type="button" id="btn-indexer-open-webui" class="sos-btn sos-btn-sm" data-i18n="indexers.advanced_btn" style="font-size: 11px; padding: 3px 8px;">Open Advanced Setup (:7474)</button>
