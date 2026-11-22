@@ -1603,7 +1603,10 @@
     if ($('btn-rm-toggle-pass')) {
       $('btn-rm-toggle-pass').textContent = t('cfg.remoteShowPass');
     }
-    if ($('btn-rm-revoke')) $('btn-rm-revoke').hidden = !r.on;
+    if ($('btn-rm-revoke')) {
+      $('btn-rm-revoke').hidden = !r.on;
+      $('btn-rm-revoke').disabled = !r.on;
+    }
     if ($('btn-rm-regen')) $('btn-rm-regen').textContent = t(r.on ? 'cfg.remoteRegen' : 'cfg.remoteCreate');
   }
   async function loadRemote() {
@@ -1629,7 +1632,7 @@
       if (remoteState) showRemote(remoteState);
     } finally {
       if (regenBtn) regenBtn.disabled = false;
-      if (revokeBtn) revokeBtn.disabled = false;
+      if (revokeBtn) revokeBtn.disabled = !(remoteState && remoteState.on);
     }
   }
   if ($('btn-rm-regen')) {
