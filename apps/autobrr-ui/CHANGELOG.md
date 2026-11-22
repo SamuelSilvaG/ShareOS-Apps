@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.5
+
+- Fix the filter toggle: use `PUT /api/filters/{id}/enabled` instead of a full `PUT` with the partial list object (SQLite `NOT NULL constraint failed: filter.resolutions`).
+- Filter dialog: download folder (`save_path`) and *Add torrents paused* (`paused`) for the Transmission action.
+- Raise `min_shareos` to `0.3.0-beta.6`, mark filters still using legacy `WATCH_FOLDER`/`WATCH_DIR` actions and keep the ShareOS drop folder active until none remain, and localize the new Transmission RPC error toasts.
+
 ## 1.1.4
 
 - Fix accent button and modal legibility: increase contrast on `<a class="sos-btn-accent">` links (such as *Open autobrr Web Interface*), modal headers/bodies/placeholders/read-only inputs across Dark and Light themes, and stop primary action buttons inside `.form-row` from stretching horizontally.

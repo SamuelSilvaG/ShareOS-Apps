@@ -423,6 +423,19 @@
     }
   }
 
+  function isLegacyDropAction(a) {
+    const tp = String((a && a.type) || '').toUpperCase();
+    return (tp === 'WATCH_FOLDER' || tp === 'WATCH_DIR') && a.enabled !== false;
+  }
+
+  function hasLegacyDeliveryAction(f) {
+    return Array.isArray(f && f.actions) && f.actions.some(isLegacyDropAction);
+  }
+
+  function getLegacyDeliveryFiltersCount() {
+    return (filters || []).filter(hasLegacyDeliveryAction).length;
+  }
+
   // Fetch filters from autobrr
   async function refreshFilters() {
     if (AB && serviceStatus && serviceStatus.ready) {
@@ -430,6 +443,20 @@
         const resp = await AB.api('GET', '/api/filters');
         if (Array.isArray(resp)) {
           filters = resp;
+          // The list endpoint may omit actions; fetch details for filters with actions
+          // so legacy WATCH_FOLDER/WATCH_DIR actions are surfaced and protected.
+          for (const f of filters) {
+            if (!f || f.id == null || Array.isArray(f.actions)) continue;
+            const hasActions = (f.actions_count > 0) || (f.actions_enabled_count > 0) ||
+              (f.actions_count === undefined && f.actions_enabled_count === undefined);
+            if (!hasActions) continue;
+            try {
+              const full = await AB.api('GET', `/api/filters/${f.id}`);
+              if (full && Array.isArray(full.actions)) {
+                f.actions = full.actions;
+              }
+            } catch (_) {}
+          }
         } else {
           filters = [];
         }
@@ -441,6 +468,7 @@
       filters = [];
     }
     renderFilters();
+    renderLegacyDropNotice();
   }
 
   // Render filter cards
@@ -483,6 +511,7 @@
           <div><strong>${escapeHtml(t('filters.card_trackers'))}</strong> ${idxs ? escapeHtml(idxs) : `<span class="badge warn">${escapeHtml(t('filters.card_none'))}</span>`}</div>
           ${tagPills ? `<div class="filter-tags">${tagPills}</div>` : ''}
           ${f.freeleech ? `<div style="margin-top:4px;"><span class="badge ok">${escapeHtml(t('filters.freeleech'))}</span></div>` : ''}
+          ${hasLegacyDeliveryAction(f) ? `<div style="margin-top:4px;"><span class="badge warn">${escapeHtml(t('filters.legacy_delivery'))}</span></div>` : ''}
         </div>
         <div class="card-meta">
           <span>${escapeHtml(t('filters.card_min'))} ${escapeHtml(minS)}</span>
@@ -2547,10 +2576,15 @@
     const txt = $('trans-legacy-drop-text');
     if (!box || !txt) return;
     if (AB && serviceStatus && (serviceStatus.drop || serviceStatus.account)) {
-      txt.textContent = t('trans.legacy_drop_active', {
+      const legacyCount = getLegacyDeliveryFiltersCount();
+      const params = {
         path: serviceStatus.drop || '/mnt/.../.shareos/autobrr-drop',
-        account: serviceStatus.account || '–'
-      });
+        account: serviceStatus.account || '–',
+        count: legacyCount
+      };
+      txt.textContent = legacyCount > 0
+        ? t('trans.legacy_drop_active_with_filters', params)
+        : t('trans.legacy_drop_active', params);
       box.style.display = 'flex';
     } else {
       box.style.display = 'none';
@@ -2559,6 +2593,10 @@
 
   async function disableLegacyDropFolder() {
     if (!AB) return;
+    const legacyCount = getLegacyDeliveryFiltersCount();
+    if (legacyCount > 0 && !confirm(t('trans.legacy_drop_confirm_disable', { count: legacyCount }))) {
+      return;
+    }
     const btn = $('btn-disable-legacy-drop');
     if (btn) btn.disabled = true;
     try {
@@ -2569,7 +2607,7 @@
       updateStatusbar();
       toast(t('toast.legacy_drop_disabled'));
     } catch (err) {
-      toast(`Error disabling drop folder: ${err.message}`, true);
+      toast(t('trans.legacy_drop_err_disable', { error: err.message }), true);
     } finally {
       if (btn) btn.disabled = false;
     }
@@ -2633,22 +2671,31 @@
         await AB.api('POST', '/api/downloaders', payload);
       }
       if ($('trans-rpc-password')) $('trans-rpc-password').value = '';
+      await refreshFilters();
+      const legacyCount = getLegacyDeliveryFiltersCount();
+      let keptLegacyDrop = false;
       if (serviceStatus && serviceStatus.account) {
-        try {
-          await AB.set({ account: '' });
-          await refreshStatus();
-        } catch (clearErr) {
-          console.warn('Could not clear legacy ShareOS drop folder:', clearErr);
+        if (legacyCount === 0) {
+          try {
+            await AB.set({ account: '' });
+            await refreshStatus();
+          } catch (clearErr) {
+            console.warn('Could not clear legacy ShareOS drop folder:', clearErr);
+          }
+        } else {
+          keptLegacyDrop = true;
         }
       }
       await refreshDownloaders();
       renderTransmissionRpcSection();
       renderLegacyDropNotice();
       updateStatusbar();
-      toast(t('toast.trans_rpc_connected'));
+      toast(keptLegacyDrop
+        ? t('toast.trans_rpc_connected_legacy_kept', { count: legacyCount })
+        : t('toast.trans_rpc_connected'));
       return true;
     } catch (err) {
-      toast(`Error saving Transmission RPC client: ${err.message}`, true);
+      toast(t('trans.rpc_err_save', { error: err.message }), true);
       return false;
     }
   }
@@ -2688,7 +2735,7 @@
     try {
       const res = await TOR.rpc('shareos-remote-set', { on: true, regen: true });
       if (!res || !res.password) {
-        toast('ShareOS did not return a remote password', true);
+        toast(t('trans.rpc_err_no_pw_returned'), true);
         return;
       }
       const pw = res.password;
@@ -2699,7 +2746,7 @@
       renderGeneratedRemotePasswordBox();
       await saveTransmissionDownloaderCore(pw);
     } catch (err) {
-      toast(`Error generating remote password: ${err.message}`, true);
+      toast(t('trans.rpc_err_gen_pw', { error: err.message }), true);
     } finally {
       setTransRpcButtonsBusy(false);
     }
@@ -2723,7 +2770,7 @@
 
         const client = findShareOSTransmissionClient();
         if (!client || client.enabled === false) {
-          toast('autobrr → Transmission verification failed: client is missing or disabled', true);
+          toast(t('trans.rpc_err_client_missing'), true);
           return;
         }
         if (!transRemoteInfo || !transRemoteInfo.box_enabled) {
