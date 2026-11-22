@@ -263,9 +263,6 @@
     const actionLabel = primary
       ? (primary.action || primary.type || '–')
       : (typeof (item && item.action) === 'string' ? item.action : '–');
-    const actionType = String((primary && primary.type) || '').toUpperCase();
-    const actionClient = String((primary && primary.client) || '');
-    const retryActionStatusId = (primary && primary.id != null) ? primary.id : null;
 
     const rejSet = [];
     for (const src of [item && item.rejections, primary && primary.rejections]) {
@@ -276,7 +273,7 @@
       }
     }
 
-    return { statusKey, actionLabel, actionType, actionClient, retryActionStatusId, rejections: rejSet };
+    return { statusKey, actionLabel, rejections: rejSet };
   }
 
   // Fetch releases
@@ -333,7 +330,7 @@
       } else if (!AB && SOS) {
         msg = t('releases.no_access');
       }
-      tr.innerHTML = `<td colspan="6" style="text-align: center; color: var(--sos-muted); padding: 24px;">${escapeHtml(msg)}</td>`;
+      tr.innerHTML = `<td colspan="5" style="text-align: center; color: var(--sos-muted); padding: 24px;">${escapeHtml(msg)}</td>`;
       tbody.appendChild(tr);
       return;
     }
@@ -371,55 +368,8 @@
           <span class="status-pill status-${statusClass}">${escapeHtml(statusLabel)}</span>
         </td>
         <td style="font-size: 12px; color: var(--sos-muted);">${escapeHtml(info.actionLabel)}</td>
-        <td>
-          ${info.retryActionStatusId != null ? `
-            <button class="sos-btn sos-btn-sm btn-retry-action" data-release-id="${item.id}" data-action-id="${info.retryActionStatusId}" data-action-type="${escapeHtml(info.actionType)}" data-action-client="${escapeHtml(info.actionClient)}" title="${escapeHtml(t('btn.retry_action'))}">
-              ↻ ${escapeHtml(t('btn.retry_action'))}
-            </button>
-          ` : '<span style="color: var(--sos-muted);">–</span>'}
-        </td>
       `;
       tbody.appendChild(tr);
-    }
-
-    tbody.querySelectorAll('.btn-retry-action').forEach((btn) => {
-      btn.onclick = () => {
-        const releaseId = parseInt(btn.dataset.releaseId, 10);
-        const actionStatusId = parseInt(btn.dataset.actionId, 10);
-        retryReleaseAction(
-          releaseId,
-          actionStatusId,
-          btn.dataset.actionType || '',
-          btn.dataset.actionClient || ''
-        );
-      };
-    });
-  }
-
-  // Retry an existing release action via autobrr REST API
-  async function retryReleaseAction(releaseId, actionStatusId, actionType = '', actionClient = '') {
-    if (!AB || !serviceStatus || !serviceStatus.ready) {
-      toast(t('err.service_not_ready'), true);
-      return;
-    }
-
-    if (String(actionType || '').toUpperCase() === 'TRANSMISSION') {
-      const localClients = (downloaders || []).filter((d) =>
-        d && String(d.type || '').toUpperCase() === 'TRANSMISSION' && isShareOSTransmissionHost(d.host)
-      );
-      const clientTarget = String(actionClient || '').trim().toLowerCase();
-      if (localClients.length > 0 && (!clientTarget || localClients.some((c) => String(c.name || '').trim().toLowerCase() === clientTarget))) {
-        toast(t('toast.retry_local_trans_blocked'), true);
-        return;
-      }
-    }
-
-    try {
-      await AB.api('POST', `/api/release/${releaseId}/actions/${actionStatusId}/retry`);
-      toast(t('toast.action_retried'));
-      await refreshReleases();
-    } catch (err) {
-      toast(`autobrr action error: ${err.message}`, true);
     }
   }
 

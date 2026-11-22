@@ -76,7 +76,6 @@ window.I18N = (function () {
       'status.starting': 'Starting...',
 
       // Action buttons
-      'btn.retry_action': 'Retry Action',
       'btn.edit': 'Edit',
       'btn.delete': 'Delete',
       'btn.save': 'Save Changes',
@@ -257,7 +256,6 @@ window.I18N = (function () {
       'toast.trans_rpc_test_ok': 'autobrr connected to ShareOS Transmission RPC successfully!',
       'toast.trans_rpc_verify_ok': 'Verified: autobrr client, ShareOS remote proxy ({endpoint}), and Transmission ({version}) are ready!',
       'toast.trans_rpc_removed': 'Transmission download client removed from autobrr',
-      'toast.retry_local_trans_blocked': 'Retrying a local ShareOS Transmission RPC action from inside the app proxy would deadlock ShareOS rpcd. Please retry this release from autobrr Web UI (:7474).',
 
       // Settings View
       'settings.title': 'autobrr Service & System Settings',
@@ -300,7 +298,6 @@ window.I18N = (function () {
       // Messages and Errors
       'err.service_not_ready': 'autobrr service is not running or not ready.',
       'err.popup_blocked': 'Window blocked by browser – please allow pop-ups for this site.',
-      'toast.action_retried': 'Action retry triggered',
       'toast.filter_deleted': 'Filter deleted',
       'toast.filter_created': 'Filter created successfully'
     },
@@ -378,7 +375,6 @@ window.I18N = (function () {
       'status.starting': 'Startet...',
 
       // Action buttons
-      'btn.retry_action': 'Aktion wiederholen',
       'btn.edit': 'Bearbeiten',
       'btn.delete': 'Löschen',
       'btn.save': 'Änderungen speichern',
@@ -559,7 +555,6 @@ window.I18N = (function () {
       'toast.trans_rpc_test_ok': 'autobrr ist erfolgreich mit dem ShareOS Transmission-RPC verbunden!',
       'toast.trans_rpc_verify_ok': 'Geprüft: autobrr-Client, ShareOS-Remote-Proxy ({endpoint}) und Transmission ({version}) sind bereit!',
       'toast.trans_rpc_removed': 'Transmission-Download-Client aus autobrr entfernt',
-      'toast.retry_local_trans_blocked': 'Das Wiederholen einer lokalen ShareOS-Transmission-RPC-Aktion über den App-Proxy würde ShareOS rpcd blockieren. Bitte den Release in der autobrr-Weboberfläche (:7474) erneut ausführen.',
 
       // Settings View
       'settings.title': 'autobrr Dienst- & Systemeinstellungen',
@@ -602,7 +597,6 @@ window.I18N = (function () {
       // Messages and Errors
       'err.service_not_ready': 'autobrr-Dienst läuft nicht oder ist noch nicht bereit.',
       'err.popup_blocked': 'Fenster vom Browser blockiert – bitte Pop-ups für diese Seite erlauben.',
-      'toast.action_retried': 'Aktion erneut ausgelöst',
       'toast.filter_deleted': 'Filter gelöscht',
       'toast.filter_created': 'Filter erfolgreich erstellt'
     },
@@ -680,7 +674,6 @@ window.I18N = (function () {
       'status.starting': 'Iniciando...',
 
       // Action buttons
-      'btn.retry_action': 'Reenviar Ação',
       'btn.edit': 'Editar',
       'btn.delete': 'Excluir',
       'btn.save': 'Salvar Alterações',
@@ -861,7 +854,6 @@ window.I18N = (function () {
       'toast.trans_rpc_test_ok': 'autobrr conectado ao Transmission RPC do ShareOS com sucesso!',
       'toast.trans_rpc_verify_ok': 'Verificado: cliente no autobrr, proxy remoto do ShareOS ({endpoint}) e Transmission ({version}) estão prontos!',
       'toast.trans_rpc_removed': 'Cliente Transmission removido do autobrr',
-      'toast.retry_local_trans_blocked': 'Reenviar uma ação local do Transmission RPC via proxy do app causaria bloqueio no rpcd do ShareOS. Repita este release pela Web UI do autobrr (:7474).',
 
       // Settings View
       'settings.title': 'Configurações do Serviço autobrr',
@@ -904,7 +896,6 @@ window.I18N = (function () {
       // Messages and Errors
       'err.service_not_ready': 'Serviço autobrr não está em execução ou não está pronto.',
       'err.popup_blocked': 'Janela bloqueada pelo navegador – permita pop-ups para este endereço.',
-      'toast.action_retried': 'Reenvio da ação solicitado',
       'toast.filter_deleted': 'Filtro excluído',
       'toast.filter_created': 'Filtro criado com sucesso'
     }

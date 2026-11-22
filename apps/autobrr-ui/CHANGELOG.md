@@ -5,6 +5,7 @@
 - Fix the filter toggle: use `PUT /api/filters/{id}/enabled` instead of a full `PUT` with the partial list object (SQLite `NOT NULL constraint failed: filter.resolutions`).
 - Filter dialog: download folder (`save_path`) and *Add torrents paused* (`paused`) for the Transmission action.
 - Raise `min_shareos` to `0.3.0-beta.6`, mark filters still using legacy `WATCH_FOLDER`/`WATCH_DIR` actions and keep the ShareOS drop folder active until none remain, and localize the new Transmission RPC error toasts.
+- Releases table: remove the Retry Action button, since retrying local ShareOS Transmission actions through the app proxy would deadlock ShareOS `rpcd` (use autobrr Web UI `:7474` for manual retries).
 
 ## 1.1.4
 
